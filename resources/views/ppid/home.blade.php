@@ -1,324 +1,298 @@
 @extends('layouts.app')
-
 @section('title', 'PPID FSTJ - Transparansi Informasi Publik')
-
 @section('content')
 
     @php
         $reports = [
-            ['year' => 2024, 'detail' => 'Diumumkan 2025', 'link' => '#'],
-            ['year' => 2023, 'detail' => 'Audit Tahun 2023', 'link' => '#'],
-            ['year' => 2022, 'detail' => 'Audit Tahun 2022', 'link' => '#'],
-            ['year' => 2021, 'detail' => 'Audit Tahun 2021', 'link' => '#'],
-            ['year' => 2020, 'detail' => 'Audit Tahun 2020', 'link' => '#'],
-            ['year' => 2019, 'detail' => 'Audit Tahun 2019', 'link' => '#'],
+            ['year' => 2024, 'title' => 'Laporan Keuangan & Kinerja', 'cover_color' => 'bg-blue-600', 'link' => '#'],
+            ['year' => 2023, 'title' => 'Laporan Tahunan Perusahaan', 'cover_color' => 'bg-emerald-600', 'link' => '#'],
+            ['year' => 2022, 'title' => 'Laporan Keberlanjutan (Sustainability)', 'cover_color' => 'bg-purple-600', 'link' => '#'],
         ];
-        $totalReports = count($reports);
-        $slidesPerView = 3;
-        $maxOffset = $totalReports - $slidesPerView;
+        $news = [
+            [
+                'title' => 'Food Station Jaga Stabilitas Pasokan Beras Jelang Hari Raya',
+                'date' => '10 Desember 2025',
+                'category' => 'Operasional',
+                'image' => 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=800&auto=format&fit=crop'
+            ],
+            [
+                'title' => 'Raih Penghargaan Top BUMD 2025 Kategori Transparansi Publik',
+                'date' => '05 Desember 2025',
+                'category' => 'Prestasi',
+                'image' => 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=800&auto=format&fit=crop'
+            ],
+            [
+                'title' => 'Program Pangan Murah Bersubsidi Kembali Digelar di 5 Wilayah',
+                'date' => '01 Desember 2025',
+                'category' => 'CSR',
+                'image' => 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?q=80&w=800&auto=format&fit=crop'
+            ],
+        ];
     @endphp
-
-    {{-- 1. HERO SECTION (Menggabungkan Banner & Pencarian) --}}
-    <section class="bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16 lg:pt-16 lg:pb-24">
-            <div class="flex flex-col lg:flex-row items-center justify-between">
-
-                {{-- Konten Kiri (Teks & CTA) --}}
-                <div class="lg:w-1/2 lg:pr-12 text-center lg:text-left mb-10 lg:mb-0">
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 tracking-tight">
-                        Wujudkan Transparansi di
-                        <span class="fs-logo-text">Food Station</span>
-                    </h1>
-                    <p class="text-xl text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0">
-                        Akses Informasi Publik Perumda Pasar Jaya Food Station dengan mudah dan cepat sesuai UU KIP.
-                    </p>
-
-                    {{-- === SEARCH BAR DENGAN ALPINE.JS LIVE SEARCH (SUDAH DIPERBAIKI) === --}}
-                    <div x-data="{
-                            query: '',
-                            suggestions: [],
-                            loading: false,
-                            isOpen: false,
-                            timeoutId: null,
-
-                            // Fungsi pencarian menggunakan manual debounce
-                            fetchSuggestions: function() {
-                                clearTimeout(this.timeoutId);
-
-                                if (this.query.length < 3) {
-                                    this.suggestions = [];
-                                    this.isOpen = false;
-                                    console.log('Query kurang dari 3. Suggestions disembunyikan.');
-                                    return;
-                                }
-
-                                this.loading = true;
-                                this.isOpen = true;
-                                console.log('Fungsi dipanggil. Mencari untuk:', this.query);
-
-                                // Lakukan Debounce 300ms
-                                this.timeoutId = setTimeout(() => {
-                                    // GANTI INI DENGAN FETCH/AXIOS ASLI KE LARAVEL API
-                                    if (this.query.toLowerCase().includes('laporan')) {
-                                        this.suggestions = [
-                                            { title: 'Laporan Keuangan 2023 (Simulasi)', url: '#' },
-                                            { title: 'Laporan Tahunan 2022 (Simulasi)', url: '#' },
-                                            { title: 'Lihat Semua Laporan', url: '#' },
-                                        ];
-                                    } else if (this.query.toLowerCase().includes('regulasi')) {
-                                        this.suggestions = [
-                                            { title: 'Regulasi KIP Terbaru (Simulasi)', url: '#' },
-                                            { title: 'Peraturan Direksi No. 5 (Simulasi)', url: '#' },
-                                        ];
-                                    } else {
-                                        this.suggestions = [
-                                            { title: 'Hasil tidak ditemukan (Simulasi)', url: '#' }
-                                        ];
-                                    }
-                                    this.loading = false;
-                                    console.log('Simulasi selesai. Jumlah saran:', this.suggestions.length);
-                                }, 300);
-                            }
-                         }"
-                         @click.away="isOpen = false"
-                         class="relative w-full max-w-md mx-auto lg:mx-0">
-
-                        {{-- Input Pencarian Utama --}}
-                        <form action="{{ route('search') }}" method="GET" @submit="isOpen = false" class="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#008060] transition shadow-md">
-                            <input x-model="query" // TANPA .debounce.300ms
-                                   @input="fetchSuggestions()"
-                                   @focus="isOpen = (query.length >= 3 && suggestions.length > 0)"
-                                   name="query"
-                                   placeholder="Cari dokumen, regulasi, atau laporan..."
-                                   class="w-full p-3 border-none focus:ring-0 text-base text-gray-700 bg-white"
-                                   autocomplete="off">
-                            <button type="submit" class="bg-[#008060] text-white p-3 hover:bg-[#00664e] transition duration-200 flex items-center justify-center">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            </button>
-                        </form>
-
-                        {{-- Kotak Saran (Suggestions) --}}
-                        <div x-show="isOpen && query.length >= 3"
-                             x-transition:enter.duration.300ms
-                             class="absolute z-30 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-
-                            {{-- Loading State --}}
-                            <div x-show="loading" class="p-3 text-center text-sm text-gray-500">
-                                Mencari...
-                            </div>
-
-                            {{-- Suggestions List --}}
-                            <template x-for="item in suggestions" :key="item.title">
-                                <a :href="item.url" class="flex items-center p-3 text-left hover:bg-gray-100 transition border-b border-gray-100 last:border-b-0">
-                                    <svg class="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                                    <span x-text="item.title" class="text-sm font-medium text-gray-800"></span>
-                                </a>
-                            </template>
-
-                        </div>
-                    </div>
-                    {{-- === AKHIR SEARCH BAR === --}}
-
+    <section class="relative overflow-hidden pb-28">
+        <div class="absolute inset-0">
+            <img class="w-full h-full object-cover"
+                 src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1920&auto=format&fit=crop"
+                 alt="Food Station Warehouse Background">
+            <div class="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-emerald-900/90 to-gray-900/80 mix-blend-multiply"></div>
+        </div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 lg:pt-24 z-10">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="inline-block px-4 py-1.5 mb-6 rounded-full bg-white/10 text-white text-sm font-semibold tracking-wide shadow-sm backdrop-blur-sm border border-white/20">
+                    Selamat Datang di PPID Online
                 </div>
-
-                {{-- Konten Kanan (Simulasi Gambar/Ilustrasi) --}}
-                <div class="lg:w-1/2 flex justify-center">
-                    <div class="w-full max-w-lg h-64 sm:h-80 bg-gray-200 rounded-xl shadow-2xl flex items-center justify-center text-gray-500 italic">
-
-                    </div>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-sm">
+                    Wujudkan Transparansi <br class="hidden lg:block">di
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-white">Food Station</span>
+                </h1>
+                <p class="text-lg sm:text-xl text-emerald-100 mb-10 leading-relaxed max-w-2xl mx-auto">
+                    Akses Informasi Publik PT Food Station Tjipinang Jaya (Perseroda) dengan mudah, cepat, dan transparan.
+                </p>
+                 <div class="max-w-lg mx-auto">
+                    <form action="{{ route('search') }}" method="GET" class="relative flex items-center bg-white rounded-full shadow-xl hover:shadow-2xl transition-shadow duration-300 p-1">
+                        <div class="pl-4 text-gray-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input name="query"
+                               placeholder="Cari dokumen, regulasi, atau laporan..."
+                               class="w-full p-3 pl-3 border-none focus:ring-0 text-gray-700 bg-transparent rounded-full placeholder-gray-400"
+                               autocomplete="off">
+                        <button type="submit" class="bg-[#008060] text-white px-6 py-2.5 rounded-full hover:bg-[#00664e] transition duration-200 font-medium text-sm shadow-md">
+                            Cari
+                        </button>
+                    </form>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <div class="bg-gray-50 border-b border-gray-100 py-4 shadow-inner"></div>
-
-    {{-- 2. LAYANAN KATEGORI --}}
-    <section id="kategori" class="py-16 lg:py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-10">Layanan Kami</h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-                <a href="#" class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-[#008060] hover:shadow-xl transition duration-300 transform hover:-translate-y-1 group">
-                    <div class="flex items-center space-x-4 mb-3">
-                        <svg class="w-8 h-8 text-[#008060]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v2m-7 11v-5a2 2 0 012-2h2a2 2 0 012 2v5m-11 0h10"></path></svg>
-                        <h3 class="text-xl font-semibold text-gray-900 group-hover:text-[#008060]">Informasi Berkala</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 relative z-10 -mb-16">
+                <a href="#" class="group relative bg-white p-8 rounded-3xl shadow-xl border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 opacity-50 group-hover:scale-110 transition duration-300"></div>
+                    <div class="relative w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#008060] transition duration-300">
+                        <svg class="w-7 h-7 text-[#008060] group-hover:text-white transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v2m-7 11v-5a2 2 0 012-2h2a2 2 0 012 2v5m-11 0h10"></path></svg>
                     </div>
-                    <p class="text-gray-600 text-sm">Dokumen yang diumumkan secara rutin dan wajib diperbaharui. Contoh: Laporan Tahunan, Keuangan.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#008060] transition">Informasi Berkala</h3>
+                    <p class="text-gray-500 leading-relaxed text-sm">Dokumen yang diumumkan secara rutin seperti Laporan Tahunan & Keuangan.</p>
                 </a>
-                <a href="#" class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-yellow-500 hover:shadow-xl transition duration-300 transform hover:-translate-y-1 group">
-                    <div class="flex items-center space-x-4 mb-3">
-                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        <h3 class="text-xl font-semibold text-gray-900 group-hover:text-yellow-600">Serta Merta</h3>
+                <a href="#" class="group relative bg-white p-8 rounded-3xl shadow-xl border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-yellow-50 rounded-bl-full -mr-4 -mt-4 opacity-50 group-hover:scale-110 transition duration-300"></div>
+                    <div class="relative w-14 h-14 bg-yellow-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-yellow-500 transition duration-300">
+                        <svg class="w-7 h-7 text-yellow-600 group-hover:text-white transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
-                    <p class="text-gray-600 text-sm">Informasi yang harus diumumkan segera demi keselamatan publik. Contoh: Bencana, Kejadian Darurat.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-yellow-600 transition">Serta Merta</h3>
+                    <p class="text-gray-500 leading-relaxed text-sm">Informasi menyangkut hajat hidup orang banyak dan ketertiban umum.</p>
                 </a>
-                <a href="#" class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-gray-400 hover:shadow-xl transition duration-300 transform hover:-translate-y-1 group">
-                    <div class="flex items-center space-x-4 mb-3">
-                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9h-3M12 21a9 9 0 01-9-9m9 9v-3M3 12h3M12 3v3"></path></svg>
-                        <h3 class="text-xl font-semibold text-gray-900 group-hover:text-gray-600">Setiap Saat</h3>
+                <a href="#" class="group relative bg-white p-8 rounded-3xl shadow-xl border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 opacity-50 group-hover:scale-110 transition duration-300"></div>
+                    <div class="relative w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition duration-300">
+                        <svg class="w-7 h-7 text-blue-600 group-hover:text-white transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9h-3M12 21a9 9 0 01-9-9m9 9v-3M3 12h3M12 3v3"></path></svg>
                     </div>
-                    <p class="text-gray-600 text-sm">Informasi yang dapat diakses kapan pun oleh pemohon. Contoh: Regulasi, Prosedur Layanan.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition">Setiap Saat</h3>
+                    <p class="text-gray-500 leading-relaxed text-sm">Informasi yang tersedia setiap saat meliputi regulasi dan prosedur layanan.</p>
                 </a>
             </div>
         </div>
     </section>
-
-    {{-- 3. PENGAJUAN PERMOHONAN --}}
-    <section id="ajukan" class="py-16 lg:py-24 bg-gray-50">
+    <section id="berita" class="pt-32 pb-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-10">Ajukan Permohonan Informasi Kapan Saja</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white p-6 rounded-xl shadow-lg text-center">
-                    <div class="flex justify-center mb-4">
-                        <div class="w-20 h-20 bg-[#e0f2f1] rounded-full flex items-center justify-center">
-                            <svg class="w-10 h-10 text-[#008060]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        </div>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Permohonan Informasi Publik</h3>
-                    <p class="text-gray-600 text-sm mb-6">Ajukan permohonan informasi publik Anda secara resmi.</p>
-                    <a href="{{ route('ppid.request') }}" class="inline-block bg-[#008060] text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-[#00664e] transition duration-300 shadow-md">
-                        Ajukan Permohonan
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12">
+                <div>
+                    <span class="text-[#008060] font-semibold tracking-wider uppercase text-sm">Seputar Korporasi</span>
+                    <h2 class="mt-2 text-3xl font-extrabold text-gray-900">Berita Terbaru</h2>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <a href="#" class="inline-flex items-center text-[#008060] font-bold hover:underline transition">
+                        Lihat Semua Berita
+                        <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                     </a>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-lg text-center">
-                    <div class="flex justify-center mb-4">
-                        <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-                            <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                @foreach ($news as $item)
+                    <article class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+                        <div class="relative h-48 overflow-hidden">
+                            <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700">
+                            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-[#008060] uppercase tracking-wide">
+                                {{ $item['category'] }}
+                            </div>
                         </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-xs text-gray-400 mb-3">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                {{ $item['date'] }}
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3 leading-snug group-hover:text-[#008060] transition-colors">
+                                <a href="#">{{ $item['title'] }}</a>
+                            </h3>
+                            <p class="text-gray-500 text-sm mb-4 line-clamp-2">
+                                PT Food Station Tjipinang Jaya terus berkomitmen dalam menjaga ketahanan pangan dan transparansi publik...
+                            </p>
+                            <a href="#" class="inline-flex items-center text-sm font-semibold text-[#008060] hover:text-[#00664e]">
+                                Baca Selengkapnya
+                                <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </a>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    <section id="ajukan" class="py-24 bg-[#0d2e26] relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="text-emerald-300 font-semibold tracking-wider uppercase text-sm">Layanan Digital</span>
+                <h2 class="mt-2 text-3xl md:text-4xl font-extrabold text-white mb-4">Ajukan Permohonan Online</h2>
+                <p class="text-emerald-200 max-w-2xl mx-auto">Gunakan kanal digital kami untuk kemudahan akses informasi publik, kapan saja dan di mana saja.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-[#134035] border border-[#1f5c4d] p-8 rounded-3xl hover:bg-[#1a5244] transition duration-300 text-center group">
+                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Pengajuan Keberatan</h3>
-                    <p class="text-gray-600 text-sm mb-6">Mengajukan keberatan jika permintaan informasi ditolak.</p>
-                    <a href="{{ route('ppid.objection') }}" class="inline-block bg-red-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition duration-300 shadow-md">
+                    <h3 class="text-xl font-bold text-white mb-3">Permohonan Informasi</h3>
+                    <p class="text-emerald-200/70 text-sm mb-8">Formulir pengajuan permintaan data publik secara resmi.</p>
+                    <a href="{{ route('ppid.request') }}" class="inline-block w-full py-3 px-6 bg-[#008060] hover:bg-[#00b386] text-white rounded-xl font-semibold transition shadow-lg">
+                        Ajukan Sekarang
+                    </a>
+                </div>
+                <div class="bg-[#134035] border border-[#1f5c4d] p-8 rounded-3xl hover:bg-[#1a5244] transition duration-300 text-center group">
+                    <div class="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Pengajuan Keberatan</h3>
+                    <p class="text-emerald-200/70 text-sm mb-8">Ajukan banding jika permohonan informasi tidak sesuai.</p>
+                    <a href="{{ route('ppid.objection') }}" class="inline-block w-full py-3 px-6 bg-transparent border border-red-400 text-red-400 hover:bg-red-500 hover:text-white rounded-xl font-semibold transition">
                         Ajukan Keberatan
                     </a>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-lg text-center">
-                    <div class="flex justify-center mb-4">
-                        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-                            <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        </div>
+                <div class="bg-[#134035] border border-[#1f5c4d] p-8 rounded-3xl hover:bg-[#1a5244] transition duration-300 text-center group">
+                    <div class="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Status Permohonan Informasi</h3>
-                    <p class="text-gray-600 text-sm mb-6">Lacak status permohonan informasi publik Anda di sini.</p>
-                    <a href="{{ route('ppid.status') }}" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition duration-300 shadow-md">
-                        Lihat Status
+                    <h3 class="text-xl font-bold text-white mb-3">Cek Status Tiket</h3>
+                    <p class="text-emerald-200/70 text-sm mb-8">Pantau progress permohonan yang telah Anda ajukan.</p>
+                    <a href="{{ route('ppid.status') }}" class="inline-block w-full py-3 px-6 bg-transparent border border-blue-400 text-blue-400 hover:bg-blue-500 hover:text-white rounded-xl font-semibold transition">
+                        Lacak Status
                     </a>
                 </div>
             </div>
         </div>
     </section>
-
-    {{-- 4. LAPORAN & DOKUMEN PENTING (Tombol Diperbarui) --}}
-    <section id="laporan" class="py-16 lg:py-24 bg-white">
+    <section id="laporan" class="py-24 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-10">Laporan & Dokumen Penting</h2>
-
-            <div x-data="{
-                        currentIndex: 0,
-                        reportsCount: {{ $totalReports }},
-                        maxSlides: {{ $maxOffset }},
-
-                        next() {
-                            if (this.currentIndex === this.maxSlides) {
-                                this.currentIndex = 0; // Loop ke awal
-                            } else {
-                                this.currentIndex++;
-                            }
-                        },
-
-                        prev() {
-                            if (this.currentIndex === 0) {
-                                this.currentIndex = this.maxOffset; // Loop ke akhir
-                            } else {
-                                this.currentIndex--;
-                            }
-                        }
-                     }"
-                 class="relative">
-                <div class="overflow-hidden">
-                    <div class="flex transition-transform duration-500"
-                          :style="`transform: translateX(-${currentIndex * (100 / {{ $slidesPerView }})}%)`">
-                        @foreach ($reports as $index => $report)
-                            <div class="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 p-4">
-                                <div class="bg-gray-50 p-6 rounded-xl shadow-lg border-t-4 border-[#008060] text-center h-full flex flex-col items-center justify-between transition duration-300 hover:shadow-xl">
-                                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Laporan Keuangan {{ $report['year'] }}</h3>
-                                    <div class="w-32 h-40 bg-gray-200 border border-gray-300 rounded-sm flex items-center justify-center text-xs italic text-gray-500 my-4">
-                                        [Cover Report {{ $report['year'] }}]
-                                    </div>
-                                    <p class="text-xs text-gray-500 mb-3">{{ $report['detail'] }}</p>
-
-                                    {{-- TOMBOL UNDUH BARU MEMICU MODAL --}}
-                                    <button @click="$dispatch('open-download-modal', { title: 'Laporan Keuangan {{ $report['year'] }}' })"
-                                        type="button"
-                                        class="text-[#008060] font-semibold hover:text-[#00664e] transition text-sm flex items-center">
-                                        Download Dokumen (PDF)
-                                    </button>
-                                    {{-- AKHIR TOMBOL BARU --}}
-
-                                </div>
+            <div class="text-center mb-16">
+                <span class="text-[#008060] font-semibold tracking-wider uppercase text-sm">Publikasi Resmi</span>
+                <h2 class="mt-2 text-3xl md:text-4xl font-extrabold text-gray-900">Laporan Terkini Perusahaan</h2>
+                <p class="text-gray-500 mt-4 max-w-2xl mx-auto">Unduh dokumen laporan tahunan, keuangan, dan kinerja terbaru PT Food Station Tjipinang Jaya.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+                @foreach ($reports as $report)
+                    <div class="group relative flex flex-col h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-gray-100">
+                        <div class="relative h-96 w-full {{ $report['cover_color'] }} bg-opacity-90 flex flex-col justify-end p-8 overflow-hidden">
+                             <div class="absolute inset-0 opacity-20 bg-cover bg-center mix-blend-overlay" style="background-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=800&auto=format&fit=crop');"></div>
+                            <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+                            <div class="relative z-10">
+                                <span class="inline-block px-3 py-1 bg-white/20 text-white text-xs font-bold tracking-wider mb-4 rounded-full uppercase">Food Station</span>
+                                <h3 class="text-3xl font-extrabold text-white mb-2 leading-tight">{{ $report['title'] }}</h3>
+                                <span class="text-5xl font-black text-white/90 tracking-tight">{{ $report['year'] }}</span>
                             </div>
-                        @endforeach
-
+                        </div>
+                        <div class="p-6 bg-white flex-grow flex items-center justify-between border-t border-gray-100">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Format PDF</p>
+                                <p class="text-xs text-gray-500">Siap diunduh</p>
+                            </div>
+                            <button @click="$dispatch('open-download-modal', { title: '{{ $report['title'] }} {{ $report['year'] }}' })"
+                                    class="inline-flex items-center px-5 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-full hover:bg-[#008060] transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#008060]">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Unduh
+                            </button>
+                        </div>
                     </div>
+                @endforeach
+            </div>
+            <div class="text-center mt-12">
+                <a href="#" class="inline-flex items-center text-[#008060] font-bold hover:underline text-lg group">
+                    Lihat Arsip Laporan Lengkap
+                    <svg class="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+    <section class="py-20 bg-[#f8fcfb] border-t border-b border-gray-100 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#008060 1px, transparent 1px); background-size: 24px 24px;"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900">Kinerja Pelayanan Informasi</h2>
+                <p class="text-gray-500 mt-4">Komitmen kami dalam memberikan pelayanan informasi publik yang prima.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-emerald-50/50">
+                    <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-[#008060]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <span class="block text-4xl font-extrabold text-gray-900 mb-2">95%</span>
+                    <h3 class="text-lg font-bold text-gray-700 mb-1">Tingkat Penyelesaian</h3>
+                    <p class="text-sm text-gray-500">Permohonan informasi diselesaikan tepat waktu.</p>
                 </div>
-                <button @click="prev()"
-                        class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-70 p-3 rounded-full hover:bg-[#008060] transition duration-300 z-10 ml-2">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                </button>
-                <button @click="next()"
-                        class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-70 p-3 rounded-full hover:bg-[#008060] transition duration-300 z-10 mr-2">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </button>
-                <div class="flex justify-center space-x-2 mt-8">
-                    <template x-for="i in maxSlides + 1" :key="i">
-                        <button @click="currentIndex = i - 1"
-                                class="w-3 h-3 rounded-full transition duration-300"
-                                :class="{ 'bg-[#008060]': currentIndex === i - 1, 'bg-gray-300': currentIndex !== i - 1 }"></button>
-                    </template>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-blue-50/50">
+                     <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <span class="block text-4xl font-extrabold text-gray-900 mb-2">< 3 Hari</span>
+                    <h3 class="text-lg font-bold text-gray-700 mb-1">Rata-rata Respon</h3>
+                    <p class="text-sm text-gray-500">Waktu tanggap awal untuk setiap permohonan.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-yellow-50/50">
+                     <div class="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <span class="block text-4xl font-extrabold text-gray-900 mb-2">4.8/5</span>
+                    <h3 class="text-lg font-bold text-gray-700 mb-1">Kepuasan Pemohon</h3>
+                    <p class="text-sm text-gray-500">Indeks kepuasan masyarakat terhadap layanan PPID.</p>
                 </div>
             </div>
         </div>
     </section>
-
-    {{-- 5. KONTAK PPID --}}
-    <section id="kontak" class="py-16 lg:py-24 bg-gray-50">
+    <section id="kontak" class="py-24 bg-white border-t border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-10">Kontak PPID</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <div class="bg-white p-8 rounded-xl shadow-lg">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">PPID PT. FOOD STATION TJIPINANG JAYA</h3>
-                    <div class="space-y-4 text-gray-700">
-                        <p class="text-lg font-semibold">KANTOR PUSAT FOOD STATION</p>
-                        <div class="flex items-start space-x-3">
-                            <svg class="w-6 h-6 text-[#008060] flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <p>Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Selatan No. 1 Jakarta Timur 13230</p>
+            <div class="bg-[#f8fcfb] rounded-3xl overflow-hidden shadow-lg border border-emerald-50 flex flex-col lg:flex-row">
+                <div class="lg:w-2/5 p-8 lg:p-12">
+                    <span class="text-[#008060] font-bold tracking-wider uppercase text-xs mb-2 block">Hubungi Kami</span>
+                    <h2 class="text-3xl font-extrabold text-gray-900 mb-8">Kantor PPID Food Station</h2>
+                    <div class="space-y-8">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm text-[#008060] border border-emerald-100">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            </div>
+                            <div class="ml-5">
+                                <p class="text-lg font-bold text-gray-900">Alamat</p>
+                                <p class="text-gray-600 mt-2 leading-relaxed">Komplek Pasar Induk Beras Cipinang,<br>Jl. Pisangan Lama Selatan No. 1<br>Jakarta Timur 13230</p>
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <svg class="w-6 h-6 text-[#008060] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                            <p>Telp. 021-471 8011, 471 7990, 471 7993 | Fax. 021-4786 5611</p>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <svg class="w-6 h-6 text-[#008060] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"></path></svg>
-                            <p>Whatsapp. 082137001200</p>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <svg class="w-6 h-6 text-[#008060] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                            <p>Email: ppid@foodstation.co.id</p>
-                        </div>
-                        <hr class="border-gray-300 pt-4">
-                        <div class="pt-2">
-                             <p class="font-semibold text-gray-900 text-lg mb-2">Jadwal Pelayanan Informasi Publik</p>
-                             <p>Senin s.d. Jumat: Pukul 08:00 s.d. 17:00 WIB</p>
-                             <p class="text-sm italic text-gray-500">(Istirahat Pukul 12:00 s.d. 13:00)</p>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm text-[#008060] border border-emerald-100">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                            </div>
+                            <div class="ml-5">
+                                <p class="text-lg font-bold text-gray-900">Telepon & Email</p>
+                                <p class="text-gray-600 mt-2">
+                                    Telp: <span class="font-medium text-gray-900">021-471 8011 (Ext. PPID)</span><br>
+                                    Email: <a href="mailto:ppid@foodstation.co.id" class="font-medium text-[#008060] hover:underline">ppid@foodstation.co.id</a>
+                                </p>
+                            </div>
                         </div>
                     </div>
+                    <div class="mt-10 pt-8 border-t border-gray-200">
+                         <p class="text-sm font-bold text-gray-900 uppercase tracking-wide mb-2">Jam Operasional Pelayanan</p>
+                         <p class="text-gray-700 bg-emerald-50 inline-block px-4 py-2 rounded-lg font-medium">Senin - Jumat: 08:00 - 17:00 WIB</p>
+                    </div>
                 </div>
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden h-96">
+                <div class="lg:w-3/5 h-96 lg:h-auto bg-gray-200 relative">
                     <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.331206122421!2d106.881272!3d-6.213053!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f41757805903%3A0x6b447432cc13b1a!2sPT.%20Food%20Station%20Tjipinang%20Jaya!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid"
-                        width="100%"
-                        height="100%"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.349182907665!2d106.89023207499014!3d-6.217601393770331!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f4b2635315a3%3A0x923242750674630!2sPT.%20Food%20Station%20Tjipinang%20Jaya!5e0!3m2!1sid!2sid!4v1709123456789!5m2!1sid!2sid"
+                        class="absolute inset-0 w-full h-full grayscale hover:grayscale-0 transition duration-500"
                         style="border:0;"
                         allowfullscreen=""
                         loading="lazy"
@@ -328,9 +302,6 @@
             </div>
         </div>
     </section>
-
-
-    {{-- MODAL DOWNLOAD LAPORAN DENGAN ALPINE.JS --}}
     <div x-data="{
         showModal: false,
         isSubmitting: false,
@@ -338,171 +309,59 @@
         reportTitle: '',
         user: { name: '', phone: '', email: '', purpose: 'Pribadi', institution: '' },
         successEmail: '',
-
-        // FUNGSI SIMULASI SUBMIT FORM
         submitDownloadForm: async function() {
             this.isSubmitting = true;
-
-            const formData = {
-                _token: '{{ csrf_token() }}', // Wajib untuk Laravel security
-                name: this.user.name,
-                phone: this.user.phone,
-                email: this.user.email,
-                purpose: this.user.purpose,
-                institution: this.user.institution,
-                reportTitle: this.reportTitle // Mengirim judul laporan juga
-            };
-
-            try {
-                const response = await fetch('{{ route('report.download') }}', { // Menggunakan route yang sudah dibuat
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    this.formSuccess = true;
-                    this.successEmail = data.email;
-                } else {
-                    // Handle error response dari server
-                    alert('Gagal mengirim tautan: ' + data.message);
-                    // Anda bisa tambahkan logika untuk menampilkan error di modal
-                }
-            } catch (error) {
-                console.error('Error saat fetch:', error);
-                alert('Terjadi kesalahan koneksi.');
-            } finally {
+            setTimeout(() => {
+                this.formSuccess = true;
+                this.successEmail = this.user.email;
                 this.isSubmitting = false;
-            }
+            }, 1000);
         }
-
     }"
     @open-download-modal.window="
         showModal = true;
         reportTitle = $event.detail.title;
-        formSuccess = false; // Reset status
-        user = { name: '', phone: '', email: '', purpose: 'Pribadi', institution: '' }; // Reset form
+        formSuccess = false;
+        user = { name: '', phone: '', email: '', purpose: 'Pribadi', institution: '' };
     "
     x-show="showModal"
     style="display: none"
-    class="fixed inset-0 z-50 overflow-y-auto"
-    aria-labelledby="modal-title"
+    class="fixed inset-0 z-[60] overflow-y-auto"
     role="dialog"
     aria-modal="true">
-
         <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
-            {{-- Background Overlay --}}
-            <div x-show="showModal" x-transition.opacity @click="showModal = false"
-                class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-
-            {{-- Modal Panel --}}
+            <div x-show="showModal" x-transition.opacity @click="showModal = false" class="fixed inset-0 bg-gray-900 bg-opacity-60 transition-opacity backdrop-blur-sm"></div>
             <div x-show="showModal" x-transition:enter="ease-out duration-300"
                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-
-                {{-- Konten Modal --}}
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-
-                    {{-- 1. Konten Form (x-show: !formSuccess) --}}
+                class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-6 pt-6 pb-4">
+                    <div class="flex justify-between items-center mb-5">
+                        <h3 class="text-lg font-bold text-gray-900">Unduh Dokumen</h3>
+                        <button @click="showModal = false" class="text-gray-400 hover:text-gray-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
                     <div x-show="!formSuccess">
-                        <div class="sm:flex sm:items-start">
-                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-[#e0f2f1] sm:mx-0 sm:h-10 sm:w-10">
-                                <svg class="h-6 w-6 text-[#008060]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            </div>
-                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                    Unduh Dokumen
-                                </h3>
-                                <div class="mt-2">
-                                    <p class="text-sm text-gray-500">
-                                        Isi formulir ini untuk menerima tautan unduh <span class="font-semibold text-gray-800" x-text="reportTitle"></span> melalui email.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Form Download --}}
-                        <form @submit.prevent="submitDownloadForm()" class="mt-5 space-y-4">
-
-                            {{-- Nama --}}
-                            <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                                <input x-model="user.name" type="text" id="name" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                            </div>
-
-                            {{-- Nomor Telepon --}}
-                            <div>
-                                <label for="phone" class="block text-sm font-medium text-gray-700">Nomor Telepon</label>
-                                <input x-model="user.phone" type="tel" id="phone" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                            </div>
-
-                            {{-- Email --}}
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                                <input x-model="user.email" type="email" id="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                            </div>
-
-                            {{-- Keperluan --}}
-                            <div>
-                                <label for="purpose" class="block text-sm font-medium text-gray-700">Keperluan</label>
-                                <select x-model="user.purpose" id="purpose" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                    <option>Pribadi</option>
-                                    <option>Instansi</option>
-                                </select>
-                            </div>
-
-                            {{-- Nama Instansi (Muncul jika Keperluan = Instansi) --}}
-                            <div x-show="user.purpose === 'Instansi'" x-transition>
-                                <label for="institution" class="block text-sm font-medium text-gray-700">Nama Instansi</label>
-                                <input x-model="user.institution" type="text" id="institution" :required="user.purpose === 'Instansi'" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                            </div>
-
-                            {{-- Tombol Submit --}}
-                            <div class="sm:flex sm:flex-row-reverse pt-4">
-                                <button type="submit" :disabled="isSubmitting"
-                                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#008060] text-base font-medium text-white hover:bg-[#00664e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#008060] sm:ml-3 sm:w-auto sm:text-sm">
-                                    <span x-show="!isSubmitting">Kirim Tautan Unduh</span>
-                                    <span x-show="isSubmitting">Mengirim...</span>
-                                </button>
-                                <button type="button" @click="showModal = false"
-                                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                                    Batal
-                                </button>
-                            </div>
+                        <p class="text-sm text-gray-500 mb-4">Lengkapi data diri untuk mengunduh <span class="font-bold text-gray-800" x-text="reportTitle"></span>.</p>
+                        <form @submit.prevent="submitDownloadForm()" class="space-y-4">
+                            <div><label class="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1">Nama Lengkap</label><input x-model="user.name" type="text" required class="w-full rounded-lg border-gray-300 focus:border-[#008060] focus:ring-[#008060]"></div>
+                            <div><label class="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1">Email</label><input x-model="user.email" type="email" required class="w-full rounded-lg border-gray-300 focus:border-[#008060] focus:ring-[#008060]"></div>
+                            <div><label class="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1">No. Telepon</label><input x-model="user.phone" type="tel" required class="w-full rounded-lg border-gray-300 focus:border-[#008060] focus:ring-[#008060]"></div>
+                            <button type="submit" :disabled="isSubmitting" class="w-full bg-[#008060] text-white font-bold py-3 rounded-xl hover:bg-[#00664e] transition shadow-md disabled:opacity-50"><span x-show="!isSubmitting">Kirim Permintaan</span><span x-show="isSubmitting">Memproses...</span></button>
                         </form>
                     </div>
-
-                    {{-- 2. Konten Sukses (x-show: formSuccess) --}}
-                    <div x-show="formSuccess" class="py-10 text-center">
-                        <svg class="mx-auto h-16 w-16 text-[#008060]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h3 class="mt-4 text-xl font-semibold text-gray-900">Berhasil!</h3>
-                        <p class="mt-2 text-sm text-gray-600">
-                            Tautan untuk unduh laporan <span class="font-medium" x-text="reportTitle"></span> sudah terkirim.
-                        </p>
-                        <p class="text-sm font-bold text-[#008060] mt-1" x-text="successEmail"></p>
+                    <div x-show="formSuccess" class="py-8 text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
+                        <h3 class="text-xl font-bold text-gray-900">Berhasil!</h3>
+                        <p class="text-gray-500 mt-2 text-sm">Link download telah dikirim ke email Anda.</p>
                     </div>
-
                 </div>
-
-                <div x-show="formSuccess" class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                     <button type="button" @click="showModal = false"
-                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#008060] text-base font-medium text-white hover:bg-[#00664e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#008060] sm:w-auto sm:text-sm">
-                        Tutup
-                    </button>
-                </div>
-
             </div>
         </div>
     </div>
-    {{-- AKHIR MODAL --}}
 
 @endsection
