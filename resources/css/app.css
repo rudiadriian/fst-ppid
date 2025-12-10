@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+    html {
+      /* Menerapkan Poppins sebagai font-sans default */
+      font-family: 'Poppins', sans-serif;
+    }
+  }
+
+
+:root {
+    --color-fs-primary: #008060; /* Forest Green/Teal untuk Branding */
+    --color-fs-accent: #A0C3A7; /* Mint Green Muted untuk Aksen */
+    --color-fs-hover: #00664e;  /* Hijau sedikit lebih gelap untuk Hover */
+}
+
+/* -------------------------------------------------------------------
+   2. CUSTOM UTILITIES (Menggunakan @apply Tailwind)
+   ------------------------------------------------------------------- */
+
+/* Kelas untuk Logo Utama */
+.fs-logo-text {
+    color: var(--color-fs-primary);
+}
+
+/* Kelas untuk Tombol/Aksen Utama (Pencarian) */
+.fs-btn-primary {
+    @apply bg-[var(--color-fs-primary)] text-white p-3 text-sm font-semibold transition duration-200;
+}
+.fs-btn-primary:hover {
+    @apply bg-[var(--color-fs-hover)];
+}
+
+/* Kelas untuk Tautan Navigasi Aktif (Beranda) */
+.fs-nav-active {
+    @apply text-[var(--color-fs-primary)] border-b-2 border-[var(--color-fs-accent)] pb-1 font-semibold transition duration-200;
+}
+
+/* Kelas untuk Tautan Navigasi Normal */
+.fs-nav-link {
+    @apply text-gray-600 hover:text-[var(--color-fs-primary)] font-medium transition duration-200;
+}
+
+/* Kelas untuk Border Input Pencarian saat Focus */
+.fs-search-focus {
+    @apply border border-gray-300 rounded-full overflow-hidden transition duration-300;
+}
+.fs-search-focus:focus-within {
+    border-color: var(--color-fs-primary);
+}
