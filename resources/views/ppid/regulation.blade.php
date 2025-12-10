@@ -3,12 +3,7 @@
 @section('title', 'Regulasi | PPID FSTJ')
 
 @section('content')
-
-    {{-- =====================================================================
-         1. HEADER HALAMAN (MODERN DENGAN GRADIENT DAN POLA)
-         ===================================================================== --}}
     <section class="relative bg-gradient-to-r from-emerald-900 to-gray-900 py-16 lg:py-24 overflow-hidden">
-        {{-- Pola Latar Belakang --}}
         <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
 
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
@@ -20,17 +15,13 @@
             </p>
         </div>
     </section>
-
-    {{-- =====================================================================
-         2. KONTEN TABEL REGULASI (RESPONSIVE DAN ZEBRA STRIPING)
-         ===================================================================== --}}
     <section class="py-16 lg:py-24 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
             <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-                <div class="overflow-x-auto"> {{-- Membuat tabel bisa discroll horizontal --}}
+                <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-emerald-50 sticky top-0"> {{-- Header sticky untuk scroll horizontal --}}
+                        <thead class="bg-emerald-50 sticky top-0">
                             <tr>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-12">
                                     No.
@@ -62,7 +53,6 @@
                                         {{ $regulation['number'] }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-xs">
-                                        {{-- Badge Kategori --}}
                                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full shadow-sm
                                             {{ $regulation['type'] == 'Internal PPID' ? 'bg-[#e0f2f1] text-[#008060]' :
                                             ($regulation['type'] == 'Hukum Negara' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
@@ -91,8 +81,6 @@
                     </table>
                 </div>
             </div>
-
-            {{-- Catatan Penting (Alert Card) --}}
             <div class="mt-12 p-6 bg-emerald-50 rounded-2xl border-l-4 border-[#008060] shadow-md flex items-start space-x-4">
                 <svg class="w-6 h-6 text-[#008060] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <div>
@@ -100,8 +88,6 @@
                     <p class="text-sm text-gray-700">Dokumen regulasi di halaman ini tersedia untuk diunduh secara langsung (Setiap Saat). Jika Anda membutuhkan dokumen regulasi spesifik lainnya, silakan gunakan menu <a href="{{ route('ppid.request') }}" class="font-semibold text-[#008060] hover:underline">Permohonan Informasi Publik</a>.</p>
                 </div>
             </div>
-
         </div>
     </section>
-
 @endsection
