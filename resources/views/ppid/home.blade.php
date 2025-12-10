@@ -226,7 +226,6 @@
                 <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900">Kinerja Pelayanan Informasi</h2>
                 <p class="text-gray-500 mt-4">Komitmen kami dalam memberikan pelayanan informasi publik yang prima.</p>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-emerald-50/50">
                     <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
