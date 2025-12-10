@@ -1,15 +1,9 @@
 @extends('layouts.app')
 
-{{-- Menggunakan judul dinamis dari data --}}
 @section('title', $data['title'] . ' | PPID FSTJ')
 
 @section('content')
-
-    {{-- =====================================================================
-         1. HEADER HALAMAN (KONSISTEN DENGAN GRADIENT DAN POLA)
-         ===================================================================== --}}
     <section class="relative bg-gradient-to-r from-emerald-900 to-gray-900 py-16 lg:py-24 overflow-hidden">
-        {{-- Pola Latar Belakang --}}
         <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
 
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
@@ -21,14 +15,8 @@
             </p>
         </div>
     </section>
-
-    {{-- =====================================================================
-         2. KONTEN TABEL INFORMASI (MODERN & RESPONSIVE)
-         ===================================================================== --}}
     <section class="py-16 lg:py-24 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-            {{-- Fitur Pencarian / Filter --}}
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <h2 class="text-2xl font-bold text-gray-800 hidden md:block">
                     Dokumen & Arsip
@@ -40,8 +28,6 @@
                     Tampilkan Filter Lanjut
                 </button>
             </div>
-
-            {{-- Container Tabel (Horizontal Scroll di Mobile) --}}
             <div class="bg-white rounded-2xl shadow-2xl overflow-x-auto border border-gray-100">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-800">
@@ -75,7 +61,6 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                    {{-- Tombol Aksi (Pill Button) --}}
                                     <a href="#" class="inline-flex items-center px-4 py-2 border border-[#008060] text-sm font-semibold rounded-full text-[#008060] bg-white hover:bg-[#008060] hover:text-white transition duration-200 shadow-sm">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                         Lihat
@@ -97,8 +82,6 @@
                     </tbody>
                 </table>
             </div>
-
-            {{-- Catatan Kaki (Penting) --}}
             <div class="mt-8 p-6 bg-yellow-50 rounded-2xl border-l-4 border-yellow-500 shadow-md text-sm text-gray-700">
                 <p class="font-bold text-lg text-yellow-700 mb-2 flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z"></path></svg>
