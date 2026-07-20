@@ -7,9 +7,9 @@
     @php
         // Data Laporan (Tetap)
         $reports = [
-            ['year' => 2025, 'title' => 'Laporan Keuangan & Kinerja', 'cover_color' => 'bg-blue-600', 'link' => '#'],
+            ['year' => 2024, 'title' => 'Laporan Keuangan & Kinerja', 'cover_color' => 'bg-blue-600', 'link' => '#'],
             ['year' => 2023, 'title' => 'Laporan Tahunan Perusahaan', 'cover_color' => 'bg-emerald-600', 'link' => '#'],
-            ['year' => 2022, 'title' => 'Laporan Keberlanjutan (Sustainability)', 'cover_color' => 'bg-purple-600', 'link' => '#'],
+            ['year' => 2021, 'title' => 'Laporan Keberlanjutan (Sustainability)', 'cover_color' => 'bg-purple-600', 'link' => '#'],
         ];
 
         // Data Berita (Gambar Diperbaiki dengan Link Stabil)
