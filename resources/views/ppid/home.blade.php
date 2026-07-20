@@ -1,445 +1,424 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPID FSTJ — Transparansi Informasi Publik</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600&family=Roboto+Mono:wght@500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --green-deep:#0A3B2A;    /* hijau tua utama - identitas korporat */
-    --green-mid:#0F5C3F;     /* hijau pertengahan untuk gradasi */
-    --green-bright:#1B8354;  /* hijau terang aksen/hover */
-    --black:#14170F;         /* hitam kehijauan, dipakai footer & teks berat */
-    --gold:#C6A15B;          /* emas resmi - lambang, garis, badge */
-    --gold-deep:#9C7C3A;     /* emas gelap untuk hover/kontras teks */
-    --mist:#F6F7F2;          /* latar terang, hijau sangat muda */
-    --line:#E1E5DC;          /* garis pembatas */
-    --ink:#2B3026;           /* teks isi */
-  }
-  body{font-family:'Noto Sans',sans-serif; color:var(--ink); background:#fff;}
-  .font-display{font-family:'Plus Jakarta Sans',sans-serif;}
-  .font-mono{font-family:'Roboto Mono',monospace;}
-  .grad-hero{
-    background: linear-gradient(155deg, var(--black) 0%, var(--green-deep) 42%, var(--green-mid) 78%, var(--green-bright) 100%);
-  }
-  .grad-line{
-    height:4px;
-    background: linear-gradient(90deg, var(--gold) 0%, var(--green-bright) 35%, var(--green-deep) 70%, var(--black) 100%);
-  }
-  .badge{
-    font-family:'Roboto Mono',monospace;
-    font-size:11px; letter-spacing:.05em;
-    color:var(--green-deep);
-    background:var(--mist);
-    border:1px solid var(--line);
-    padding:5px 12px; border-radius:2px;
-    display:inline-block;
-  }
-  .badge-dark{
-    font-family:'Roboto Mono',monospace;
-    font-size:11px; letter-spacing:.05em;
-    color:var(--gold);
-    background:rgba(255,255,255,.06);
-    border:1px solid rgba(198,161,91,.35);
-    padding:5px 12px; border-radius:2px;
-    display:inline-block;
-  }
-  .menu-panel{display:none;}
-  .menu-item:hover .menu-panel{display:block;}
-  input:focus, button:focus, a:focus{outline: 2px solid var(--gold); outline-offset: 2px;}
-  .book-cover{aspect-ratio: 3/4;}
-  .emblem-ring{
-    background: conic-gradient(from 180deg, var(--gold), #E8D7A8, var(--gold));
-  }
-  .gold-rule::after{
-    content:"";
-    display:block;
-    width:56px;
-    height:3px;
-    background:var(--gold);
-    margin-top:14px;
-  }
-</style>
-</head>
-<body class="bg-white">
+@extends('layouts.app')
 
-<!-- ============ TOP BAR RESMI ============ -->
-<div class="bg-[var(--black)] text-white/70 text-[11px]">
-  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-8">
-    <span>Pemerintah Provinsi DKI Jakarta — Badan Usaha Milik Daerah</span>
-    <div class="flex items-center gap-4">
-      <a href="#" class="hover:text-[var(--gold)] transition">Peta Situs</a>
-      <span class="w-px h-3 bg-white/15"></span>
-      <a href="#" class="hover:text-[var(--gold)] transition">Bahasa Indonesia</a>
+@section('title', 'PPID FSTJ - Transparansi Informasi Publik')
+
+@section('content')
+
+    @php
+        // Data Laporan (Tetap)
+        $reports = [
+            ['year' => 2024, 'title' => 'Laporan Keuangan & Kinerja', 'cover_color' => 'bg-blue-600', 'link' => '#'],
+            ['year' => 2023, 'title' => 'Laporan Tahunan Perusahaan', 'cover_color' => 'bg-emerald-600', 'link' => '#'],
+            ['year' => 2022, 'title' => 'Laporan Keberlanjutan (Sustainability)', 'cover_color' => 'bg-purple-600', 'link' => '#'],
+        ];
+
+        // Data Berita (Gambar Diperbaiki dengan Link Stabil)
+        $news = [
+            [
+                'title' => 'Food Station Jaga Stabilitas Pasokan Beras Jelang Hari Raya',
+                'date' => '10 Desember 2025',
+                'category' => 'Operasional',
+                // Gambar Beras/Gudang
+                'image' => 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=800&auto=format&fit=crop'
+            ],
+            [
+                'title' => 'Raih Penghargaan Top BUMD 2025 Kategori Transparansi Publik',
+                'date' => '05 Desember 2025',
+                'category' => 'Prestasi',
+                // Gambar Penghargaan/Bisnis
+                'image' => 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=800&auto=format&fit=crop'
+            ],
+            [
+                'title' => 'Program Pangan Murah Bersubsidi Kembali Digelar di 5 Wilayah',
+                'date' => '01 Desember 2025',
+                'category' => 'CSR',
+                // Gambar Pasar/Masyarakat
+                'image' => 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?q=80&w=800&auto=format&fit=crop'
+            ],
+        ];
+    @endphp
+
+    {{-- =====================================================================
+         1. HERO SECTION (GAMBAR BACKGROUND DIPERBAIKI)
+         ===================================================================== --}}
+    <section class="relative overflow-hidden pb-28">
+        {{-- A. BACKGROUND IMAGE & DARK OVERLAY --}}
+        <div class="absolute inset-0">
+            {{-- Gambar Gudang/Logistik Modern (Link Stabil) --}}
+            <img class="w-full h-full object-cover"
+                 src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1920&auto=format&fit=crop"
+                 alt="Food Station Warehouse Background">
+
+            {{-- Lapisan Gradien Gelap --}}
+            <div class="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-emerald-900/90 to-gray-900/80 mix-blend-multiply"></div>
+        </div>
+
+        {{-- B. KONTEN HERO --}}
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 lg:pt-24 z-10">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="inline-block px-4 py-1.5 mb-6 rounded-full bg-white/10 text-white text-sm font-semibold tracking-wide shadow-sm backdrop-blur-sm border border-white/20">
+                    Selamat Datang di PPID Online
+                </div>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-sm">
+                    Wujudkan Transparansi <br class="hidden lg:block">di
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-white">Food Station</span>
+                </h1>
+                <p class="text-lg sm:text-xl text-emerald-100 mb-10 leading-relaxed max-w-2xl mx-auto">
+                    Akses Informasi Publik PT Food Station Tjipinang Jaya (Perseroda) dengan mudah, cepat, dan transparan.
+                </p>
+
+                 <div class="max-w-lg mx-auto">
+                    <form action="{{ route('search') }}" method="GET" class="relative flex items-center bg-white rounded-full shadow-xl hover:shadow-2xl transition-shadow duration-300 p-1">
+                        <div class="pl-4 text-gray-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input name="query"
+                               placeholder="Cari dokumen, regulasi, atau laporan..."
+                               class="w-full p-3 pl-3 border-none focus:ring-0 text-gray-700 bg-transparent rounded-full placeholder-gray-400"
+                               autocomplete="off">
+                        <button type="submit" class="bg-[#008060] text-white px-6 py-2.5 rounded-full hover:bg-[#00664e] transition duration-200 font-medium text-sm shadow-md">
+                            Cari
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {{-- KARTU LAYANAN --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 relative z-10 -mb-16">
+                {{-- Card 1 --}}
+                <a href="#" class="group relative bg-white p-8 rounded-3xl shadow-xl border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 opacity-50 group-hover:scale-110 transition duration-300"></div>
+                    <div class="relative w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#008060] transition duration-300">
+                        <svg class="w-7 h-7 text-[#008060] group-hover:text-white transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v2m-7 11v-5a2 2 0 012-2h2a2 2 0 012 2v5m-11 0h10"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#008060] transition">Informasi Berkala</h3>
+                    <p class="text-gray-500 leading-relaxed text-sm">Dokumen yang diumumkan secara rutin seperti Laporan Tahunan & Keuangan.</p>
+                </a>
+                {{-- Card 2 --}}
+                <a href="#" class="group relative bg-white p-8 rounded-3xl shadow-xl border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-yellow-50 rounded-bl-full -mr-4 -mt-4 opacity-50 group-hover:scale-110 transition duration-300"></div>
+                    <div class="relative w-14 h-14 bg-yellow-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-yellow-500 transition duration-300">
+                        <svg class="w-7 h-7 text-yellow-600 group-hover:text-white transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-yellow-600 transition">Serta Merta</h3>
+                    <p class="text-gray-500 leading-relaxed text-sm">Informasi menyangkut hajat hidup orang banyak dan ketertiban umum.</p>
+                </a>
+                {{-- Card 3 --}}
+                <a href="#" class="group relative bg-white p-8 rounded-3xl shadow-xl border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 opacity-50 group-hover:scale-110 transition duration-300"></div>
+                    <div class="relative w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition duration-300">
+                        <svg class="w-7 h-7 text-blue-600 group-hover:text-white transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9h-3M12 21a9 9 0 01-9-9m9 9v-3M3 12h3M12 3v3"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition">Setiap Saat</h3>
+                    <p class="text-gray-500 leading-relaxed text-sm">Informasi yang tersedia setiap saat meliputi regulasi dan prosedur layanan.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {{-- =====================================================================
+         2. SECTION BERITA TERBARU (POSISI SETELAH HERO)
+         ===================================================================== --}}
+    <section id="berita" class="pt-32 pb-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12">
+                <div>
+                    <span class="text-[#008060] font-semibold tracking-wider uppercase text-sm">Seputar Korporasi</span>
+                    <h2 class="mt-2 text-3xl font-extrabold text-gray-900">Berita Terbaru</h2>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <a href="#" class="inline-flex items-center text-[#008060] font-bold hover:underline transition">
+                        Lihat Semua Berita
+                        <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                @foreach ($news as $item)
+                    <article class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+                        <div class="relative h-48 overflow-hidden">
+                            {{-- Gambar Berita --}}
+                            <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700">
+                            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-[#008060] uppercase tracking-wide">
+                                {{ $item['category'] }}
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-xs text-gray-400 mb-3">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                {{ $item['date'] }}
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3 leading-snug group-hover:text-[#008060] transition-colors">
+                                <a href="#">{{ $item['title'] }}</a>
+                            </h3>
+                            <p class="text-gray-500 text-sm mb-4 line-clamp-2">
+                                PT Food Station Tjipinang Jaya terus berkomitmen dalam menjaga ketahanan pangan dan transparansi publik...
+                            </p>
+                            <a href="#" class="inline-flex items-center text-sm font-semibold text-[#008060] hover:text-[#00664e]">
+                                Baca Selengkapnya
+                                <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </a>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    {{-- =====================================================================
+         3. SECTION PENGAJUAN (DARK MODE)
+         ===================================================================== --}}
+    <section id="ajukan" class="py-24 bg-[#0d2e26] relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="text-emerald-300 font-semibold tracking-wider uppercase text-sm">Layanan Digital</span>
+                <h2 class="mt-2 text-3xl md:text-4xl font-extrabold text-white mb-4">Ajukan Permohonan Online</h2>
+                <p class="text-emerald-200 max-w-2xl mx-auto">Gunakan kanal digital kami untuk kemudahan akses informasi publik, kapan saja dan di mana saja.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {{-- Card Permohonan --}}
+                <div class="bg-[#134035] border border-[#1f5c4d] p-8 rounded-3xl hover:bg-[#1a5244] transition duration-300 text-center group">
+                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Permohonan Informasi</h3>
+                    <p class="text-emerald-200/70 text-sm mb-8">Formulir pengajuan permintaan data publik secara resmi.</p>
+                    <a href="{{ route('ppid.request') }}" class="inline-block w-full py-3 px-6 bg-[#008060] hover:bg-[#00b386] text-white rounded-xl font-semibold transition shadow-lg">
+                        Ajukan Sekarang
+                    </a>
+                </div>
+                {{-- Card Keberatan --}}
+                <div class="bg-[#134035] border border-[#1f5c4d] p-8 rounded-3xl hover:bg-[#1a5244] transition duration-300 text-center group">
+                    <div class="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Pengajuan Keberatan</h3>
+                    <p class="text-emerald-200/70 text-sm mb-8">Ajukan banding jika permohonan informasi tidak sesuai.</p>
+                    <a href="{{ route('ppid.objection') }}" class="inline-block w-full py-3 px-6 bg-transparent border border-red-400 text-red-400 hover:bg-red-500 hover:text-white rounded-xl font-semibold transition">
+                        Ajukan Keberatan
+                    </a>
+                </div>
+                {{-- Card Status --}}
+                <div class="bg-[#134035] border border-[#1f5c4d] p-8 rounded-3xl hover:bg-[#1a5244] transition duration-300 text-center group">
+                    <div class="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Cek Status Tiket</h3>
+                    <p class="text-emerald-200/70 text-sm mb-8">Pantau progress permohonan yang telah Anda ajukan.</p>
+                    <a href="{{ route('ppid.status') }}" class="inline-block w-full py-3 px-6 bg-transparent border border-blue-400 text-blue-400 hover:bg-blue-500 hover:text-white rounded-xl font-semibold transition">
+                        Lacak Status
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- =====================================================================
+         4. LAPORAN TERKINI
+         ===================================================================== --}}
+    <section id="laporan" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="text-[#008060] font-semibold tracking-wider uppercase text-sm">Publikasi Resmi</span>
+                <h2 class="mt-2 text-3xl md:text-4xl font-extrabold text-gray-900">Laporan Terkini Perusahaan</h2>
+                <p class="text-gray-500 mt-4 max-w-2xl mx-auto">Unduh dokumen laporan tahunan, keuangan, dan kinerja terbaru PT Food Station Tjipinang Jaya.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+                @foreach ($reports as $report)
+                    <div class="group relative flex flex-col h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-gray-100">
+                        {{-- Cover Laporan dengan Pattern Stabil --}}
+                        <div class="relative h-96 w-full {{ $report['cover_color'] }} bg-opacity-90 flex flex-col justify-end p-8 overflow-hidden">
+                             <div class="absolute inset-0 opacity-20 bg-cover bg-center mix-blend-overlay" style="background-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=800&auto=format&fit=crop');"></div>
+                            <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+                            <div class="relative z-10">
+                                <span class="inline-block px-3 py-1 bg-white/20 text-white text-xs font-bold tracking-wider mb-4 rounded-full uppercase">Food Station</span>
+                                <h3 class="text-3xl font-extrabold text-white mb-2 leading-tight">{{ $report['title'] }}</h3>
+                                <span class="text-5xl font-black text-white/90 tracking-tight">{{ $report['year'] }}</span>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-white flex-grow flex items-center justify-between border-t border-gray-100">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Format PDF</p>
+                                <p class="text-xs text-gray-500">Siap diunduh</p>
+                            </div>
+                            <button @click="$dispatch('open-download-modal', { title: '{{ $report['title'] }} {{ $report['year'] }}' })"
+                                    class="inline-flex items-center px-5 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-full hover:bg-[#008060] transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#008060]">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Unduh
+                            </button>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="#" class="inline-flex items-center text-[#008060] font-bold hover:underline text-lg group">
+                    Lihat Arsip Laporan Lengkap
+                    <svg class="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {{-- =====================================================================
+         5. STATISTIK KINERJA
+         ===================================================================== --}}
+    <section class="py-20 bg-[#f8fcfb] border-t border-b border-gray-100 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#008060 1px, transparent 1px); background-size: 24px 24px;"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900">Kinerja Pelayanan Informasi</h2>
+                <p class="text-gray-500 mt-4">Komitmen kami dalam memberikan pelayanan informasi publik yang prima.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                {{-- Statistik 1 --}}
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-emerald-50/50">
+                    <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-[#008060]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <span class="block text-4xl font-extrabold text-gray-900 mb-2">95%</span>
+                    <h3 class="text-lg font-bold text-gray-700 mb-1">Tingkat Penyelesaian</h3>
+                    <p class="text-sm text-gray-500">Permohonan informasi diselesaikan tepat waktu.</p>
+                </div>
+                {{-- Statistik 2 --}}
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-blue-50/50">
+                     <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <span class="block text-4xl font-extrabold text-gray-900 mb-2">< 3 Hari</span>
+                    <h3 class="text-lg font-bold text-gray-700 mb-1">Rata-rata Respon</h3>
+                    <p class="text-sm text-gray-500">Waktu tanggap awal untuk setiap permohonan.</p>
+                </div>
+                {{-- Statistik 3 --}}
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-yellow-50/50">
+                     <div class="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <span class="block text-4xl font-extrabold text-gray-900 mb-2">4.8/5</span>
+                    <h3 class="text-lg font-bold text-gray-700 mb-1">Kepuasan Pemohon</h3>
+                    <p class="text-sm text-gray-500">Indeks kepuasan masyarakat terhadap layanan PPID.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- =====================================================================
+         6. KONTAK PPID
+         ===================================================================== --}}
+    <section id="kontak" class="py-24 bg-white border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-[#f8fcfb] rounded-3xl overflow-hidden shadow-lg border border-emerald-50 flex flex-col lg:flex-row">
+                <div class="lg:w-2/5 p-8 lg:p-12">
+                    <span class="text-[#008060] font-bold tracking-wider uppercase text-xs mb-2 block">Hubungi Kami</span>
+                    <h2 class="text-3xl font-extrabold text-gray-900 mb-8">Kantor PPID Food Station</h2>
+                    <div class="space-y-8">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm text-[#008060] border border-emerald-100">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            </div>
+                            <div class="ml-5">
+                                <p class="text-lg font-bold text-gray-900">Alamat</p>
+                                <p class="text-gray-600 mt-2 leading-relaxed">Komplek Pasar Induk Beras Cipinang,<br>Jl. Pisangan Lama Selatan No. 1<br>Jakarta Timur 13230</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm text-[#008060] border border-emerald-100">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                            </div>
+                            <div class="ml-5">
+                                <p class="text-lg font-bold text-gray-900">Telepon & Email</p>
+                                <p class="text-gray-600 mt-2">
+                                    Telp: <span class="font-medium text-gray-900">021-471 8011 (Ext. PPID)</span><br>
+                                    Email: <a href="mailto:ppid@foodstation.co.id" class="font-medium text-[#008060] hover:underline">ppid@foodstation.co.id</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-10 pt-8 border-t border-gray-200">
+                         <p class="text-sm font-bold text-gray-900 uppercase tracking-wide mb-2">Jam Operasional Pelayanan</p>
+                         <p class="text-gray-700 bg-emerald-50 inline-block px-4 py-2 rounded-lg font-medium">Senin - Jumat: 08:00 - 17:00 WIB</p>
+                    </div>
+                </div>
+                <div class="lg:w-3/5 h-96 lg:h-auto bg-gray-200 relative">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.349182907665!2d106.89023207499014!3d-6.217601393770331!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f4b2635315a3%3A0x923242750674630!2sPT.%20Food%20Station%20Tjipinang%20Jaya!5e0!3m2!1sid!2sid!4v1709123456789!5m2!1sid!2sid"
+                        class="absolute inset-0 w-full h-full grayscale hover:grayscale-0 transition duration-500"
+                        style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- MODAL DOWNLOAD (TETAP) --}}
+    <div x-data="{
+        showModal: false,
+        isSubmitting: false,
+        formSuccess: false,
+        reportTitle: '',
+        user: { name: '', phone: '', email: '', purpose: 'Pribadi', institution: '' },
+        successEmail: '',
+        submitDownloadForm: async function() {
+            this.isSubmitting = true;
+            setTimeout(() => {
+                this.formSuccess = true;
+                this.successEmail = this.user.email;
+                this.isSubmitting = false;
+            }, 1000);
+        }
+    }"
+    @open-download-modal.window="
+        showModal = true;
+        reportTitle = $event.detail.title;
+        formSuccess = false;
+        user = { name: '', phone: '', email: '', purpose: 'Pribadi', institution: '' };
+    "
+    x-show="showModal"
+    style="display: none"
+    class="fixed inset-0 z-[60] overflow-y-auto"
+    role="dialog"
+    aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
+            <div x-show="showModal" x-transition.opacity @click="showModal = false" class="fixed inset-0 bg-gray-900 bg-opacity-60 transition-opacity backdrop-blur-sm"></div>
+            <div x-show="showModal" x-transition:enter="ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-6 pt-6 pb-4">
+                    <div class="flex justify-between items-center mb-5">
+                        <h3 class="text-lg font-bold text-gray-900">Unduh Dokumen</h3>
+                        <button @click="showModal = false" class="text-gray-400 hover:text-gray-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div x-show="!formSuccess">
+                        <p class="text-sm text-gray-500 mb-4">Lengkapi data diri untuk mengunduh <span class="font-bold text-gray-800" x-text="reportTitle"></span>.</p>
+                        <form @submit.prevent="submitDownloadForm()" class="space-y-4">
+                            <div><label class="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1">Nama Lengkap</label><input x-model="user.name" type="text" required class="w-full rounded-lg border-gray-300 focus:border-[#008060] focus:ring-[#008060]"></div>
+                            <div><label class="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1">Email</label><input x-model="user.email" type="email" required class="w-full rounded-lg border-gray-300 focus:border-[#008060] focus:ring-[#008060]"></div>
+                            <div><label class="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1">No. Telepon</label><input x-model="user.phone" type="tel" required class="w-full rounded-lg border-gray-300 focus:border-[#008060] focus:ring-[#008060]"></div>
+                            <button type="submit" :disabled="isSubmitting" class="w-full bg-[#008060] text-white font-bold py-3 rounded-xl hover:bg-[#00664e] transition shadow-md disabled:opacity-50"><span x-show="!isSubmitting">Kirim Permintaan</span><span x-show="isSubmitting">Memproses...</span></button>
+                        </form>
+                    </div>
+                    <div x-show="formSuccess" class="py-8 text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
+                        <h3 class="text-xl font-bold text-gray-900">Berhasil!</h3>
+                        <p class="text-gray-500 mt-2 text-sm">Link download telah dikirim ke email Anda.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<!-- ============ HEADER + MEGA MENU ============ -->
-<header class="bg-white sticky top-0 z-40 shadow-sm">
-  <div class="grad-line"></div>
-  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-24">
-      <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded emblem-ring p-[2px]">
-          <div class="w-full h-full rounded bg-[var(--green-deep)] flex items-center justify-center">
-            <span class="text-white font-display font-black text-lg">FS</span>
-          </div>
-        </div>
-        <div>
-          <p class="font-display font-extrabold text-[var(--green-deep)] leading-tight text-lg">PPID FSTJ</p>
-          <p class="text-xs text-[var(--ink)]/60 leading-tight">PT Food Station Tjipinang Jaya (Perseroda)</p>
-        </div>
-      </div>
-
-      <nav class="hidden lg:flex items-stretch h-24 font-display font-semibold text-sm text-[var(--green-deep)]">
-        <div class="menu-item relative flex items-center px-5 hover:bg-[var(--mist)] cursor-pointer transition">
-          <span>Tentang</span>
-          <div class="menu-panel absolute top-full left-0 bg-white border border-[var(--line)] shadow-lg w-64 py-2 z-50">
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Dasar Hukum</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Profil Singkat</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Visi &amp; Misi</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Struktur Organisasi PPID</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Maklumat Pelayanan Informasi</a>
-          </div>
-        </div>
-        <div class="menu-item relative flex items-center px-5 hover:bg-[var(--mist)] cursor-pointer transition">
-          <span>Informasi Publik</span>
-          <div class="menu-panel absolute top-full left-0 bg-white border border-[var(--line)] shadow-lg w-72 py-2 z-50">
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Daftar Informasi Publik</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Informasi Berkala</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Informasi Serta Merta</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Informasi Setiap Saat</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Laporan Tahunan</a>
-          </div>
-        </div>
-        <div class="menu-item relative flex items-center px-5 hover:bg-[var(--mist)] cursor-pointer transition">
-          <span>Layanan Informasi</span>
-          <div class="menu-panel absolute top-full left-0 bg-white border border-[var(--line)] shadow-lg w-80 py-2 z-50">
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Permohonan Informasi Publik</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Pengajuan Keberatan Informasi</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Status Permohonan</a>
-            <a href="#" class="block px-5 py-2.5 text-sm font-medium hover:bg-[var(--mist)] hover:text-[var(--green-deep)]">Alur Mekanisme Pelayanan</a>
-          </div>
-        </div>
-        <a href="#laporan" class="flex items-center px-5 hover:bg-[var(--mist)] transition">Laporan</a>
-        <a href="#kontak" class="flex items-center px-5 hover:bg-[var(--mist)] transition">Kontak</a>
-      </nav>
-
-      <a href="#layanan" class="hidden md:inline-flex items-center bg-[var(--green-deep)] hover:bg-[var(--black)] text-white font-display font-bold text-sm px-5 py-2.5 rounded transition">
-        Ajukan Permohonan
-      </a>
-      <button class="lg:hidden text-[var(--green-deep)]" aria-label="Buka menu">
-        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
-    </div>
-  </div>
-</header>
-
-<main>
-
-<!-- ============ HERO — GRADASI HIJAU-HITAM-EMAS ============ -->
-<section class="relative grad-hero overflow-hidden">
-  <div class="absolute inset-0 opacity-[0.05]" style="background-image: repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 30px);"></div>
-
-  <div class="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10 text-center">
-    <span class="badge-dark">UU No. 14 Tahun 2008 tentang Keterbukaan Informasi Publik</span>
-    <h1 class="font-display font-extrabold text-white text-3xl sm:text-4xl lg:text-5xl leading-tight mt-6 mb-4 max-w-3xl mx-auto">
-      Layanan Informasi Publik <span class="text-[var(--gold)]">PT Food Station Tjipinang Jaya</span>
-    </h1>
-    <p class="text-white/70 max-w-2xl mx-auto mb-10">
-      Akses permohonan, keberatan, dan dokumen informasi publik secara resmi, terbuka, dan akuntabel.
-    </p>
-
-    <!-- Ikon Layanan Utama -->
-    <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-4">
-      <a href="{{ route('ppid.request') ?? '#' }}" class="bg-white rounded p-6 flex flex-col items-center gap-3 hover:-translate-y-1 hover:shadow-2xl transition duration-200 border-b-4 border-[var(--gold)]">
-        <div class="w-14 h-14 rounded bg-[var(--green-deep)] flex items-center justify-center">
-          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-        </div>
-        <span class="font-display font-bold text-[var(--green-deep)] text-sm text-center leading-snug">Permohonan<br>Informasi Publik</span>
-      </a>
-      <a href="{{ route('ppid.objection') ?? '#' }}" class="bg-white rounded p-6 flex flex-col items-center gap-3 hover:-translate-y-1 hover:shadow-2xl transition duration-200 border-b-4 border-[var(--gold)]">
-        <div class="w-14 h-14 rounded bg-[var(--black)] flex items-center justify-center">
-          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z"/></svg>
-        </div>
-        <span class="font-display font-bold text-[var(--green-deep)] text-sm text-center leading-snug">Pengajuan<br>Keberatan Informasi</span>
-      </a>
-    </div>
-    <div class="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
-      <a href="#" class="bg-white/95 rounded py-4 px-2 flex flex-col items-center gap-2 hover:bg-white transition duration-200">
-        <svg class="w-6 h-6 text-[var(--green-deep)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        <span class="font-display font-semibold text-[var(--green-deep)] text-xs text-center">Informasi Berkala</span>
-      </a>
-      <a href="#" class="bg-white/95 rounded py-4 px-2 flex flex-col items-center gap-2 hover:bg-white transition duration-200">
-        <svg class="w-6 h-6 text-[var(--green-deep)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-        <span class="font-display font-semibold text-[var(--green-deep)] text-xs text-center">Informasi Serta Merta</span>
-      </a>
-      <a href="#" class="bg-white/95 rounded py-4 px-2 flex flex-col items-center gap-2 hover:bg-white transition duration-200">
-        <svg class="w-6 h-6 text-[var(--green-deep)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span class="font-display font-semibold text-[var(--green-deep)] text-xs text-center">Informasi Setiap Saat</span>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ============ PENCARIAN + STATISTIK RINGKAS ============ -->
-<section class="bg-[var(--mist)] border-b border-[var(--line)]">
-  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="grid lg:grid-cols-12 gap-6 items-center">
-      <div class="lg:col-span-5">
-        <form class="flex items-stretch bg-white rounded border border-[var(--line)] overflow-hidden">
-          <input type="text" placeholder="Cari dokumen, regulasi, atau laporan..." class="w-full px-4 py-3 text-sm border-0 focus:ring-0">
-          <button type="submit" class="bg-[var(--green-deep)] text-white font-display font-bold text-sm px-6 hover:bg-[var(--black)] transition">Cari</button>
-        </form>
-      </div>
-      <div class="lg:col-span-7 grid grid-cols-4 gap-3 text-center">
-        <div class="bg-white border border-[var(--line)] rounded py-3">
-          <p class="font-mono font-semibold text-xl text-[var(--green-deep)]">318</p>
-          <p class="text-[10px] text-[var(--ink)]/60 mt-1 leading-tight">Permohonan<br>Diterima</p>
-        </div>
-        <div class="bg-white border border-[var(--line)] rounded py-3">
-          <p class="font-mono font-semibold text-xl text-[var(--green-bright)]">95%</p>
-          <p class="text-[10px] text-[var(--ink)]/60 mt-1 leading-tight">Selesai<br>Tepat Waktu</p>
-        </div>
-        <div class="bg-white border border-[var(--line)] rounded py-3">
-          <p class="font-mono font-semibold text-xl text-[var(--black)]">2.4</p>
-          <p class="text-[10px] text-[var(--ink)]/60 mt-1 leading-tight">Hari<br>Rata-rata</p>
-        </div>
-        <div class="bg-white border border-[var(--line)] rounded py-3">
-          <p class="font-mono font-semibold text-xl text-[var(--gold-deep)]">92.4</p>
-          <p class="text-[10px] text-[var(--ink)]/60 mt-1 leading-tight">Indeks<br>Keterbukaan</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ SAMBUTAN PPID ============ -->
-<section class="py-16 bg-white">
-  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid lg:grid-cols-12 gap-10 items-center">
-      <div class="lg:col-span-4">
-        <div class="w-full aspect-[4/5] bg-[var(--mist)] border border-[var(--line)] rounded flex items-center justify-center">
-          <svg class="w-20 h-20 text-[var(--line)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-        </div>
-      </div>
-      <div class="lg:col-span-8">
-        <span class="badge">Sambutan</span>
-        <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-[var(--green-deep)] mt-4 gold-rule">Komitmen Keterbukaan Informasi Publik</h2>
-        <p class="text-[var(--ink)]/80 leading-relaxed mt-5 max-w-2xl">
-          Sebagai Badan Usaha Milik Daerah Provinsi DKI Jakarta, PT Food Station Tjipinang Jaya (Perseroda) berkomitmen menjalankan amanat Undang-Undang Keterbukaan Informasi Publik secara konsisten. Kami memastikan setiap permohonan informasi dilayani secara profesional, tepat waktu, dan dapat dipertanggungjawabkan kepada masyarakat.
-        </p>
-        <p class="font-display font-bold text-[var(--green-deep)] mt-6">Pejabat Pengelola Informasi dan Dokumentasi</p>
-        <p class="text-sm text-[var(--ink)]/60">PT Food Station Tjipinang Jaya (Perseroda)</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ BERITA TERBARU ============ -->
-<section id="berita" class="py-16 bg-[var(--mist)] border-y border-[var(--line)]">
-  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between mb-8 pb-4" style="border-bottom: 3px solid var(--green-deep);">
-      <h2 class="font-display font-extrabold text-2xl text-[var(--green-deep)]">Berita Terbaru</h2>
-      <a href="#" class="text-sm font-display font-bold text-[var(--green-bright)] hover:text-[var(--gold-deep)] transition whitespace-nowrap">Lihat Semua Berita →</a>
-    </div>
-
-    <div class="bg-white divide-y divide-[var(--line)] border border-[var(--line)]">
-      <article class="p-5 flex gap-5 items-start">
-        <img src="https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=400&auto=format&fit=crop" alt="" class="w-32 h-24 sm:w-44 sm:h-28 object-cover rounded shrink-0">
-        <div class="min-w-0">
-          <p class="font-mono text-xs text-[var(--ink)]/50 mb-1.5">10 DESEMBER 2025 · OPERASIONAL</p>
-          <h3 class="font-display font-bold text-[var(--green-deep)] mb-1.5 leading-snug">
-            <a href="#" class="hover:text-[var(--gold-deep)] transition">Food Station Jaga Stabilitas Pasokan Beras Jelang Hari Raya</a>
-          </h3>
-          <p class="text-sm text-[var(--ink)]/60 line-clamp-2 hidden sm:block">PT Food Station Tjipinang Jaya terus berkomitmen dalam menjaga ketahanan pangan dan transparansi publik di wilayah DKI Jakarta.</p>
-        </div>
-      </article>
-      <article class="p-5 flex gap-5 items-start">
-        <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=400&auto=format&fit=crop" alt="" class="w-32 h-24 sm:w-44 sm:h-28 object-cover rounded shrink-0">
-        <div class="min-w-0">
-          <p class="font-mono text-xs text-[var(--ink)]/50 mb-1.5">05 DESEMBER 2025 · PRESTASI</p>
-          <h3 class="font-display font-bold text-[var(--green-deep)] mb-1.5 leading-snug">
-            <a href="#" class="hover:text-[var(--gold-deep)] transition">Raih Penghargaan Top BUMD 2025 Kategori Transparansi Publik</a>
-          </h3>
-          <p class="text-sm text-[var(--ink)]/60 line-clamp-2 hidden sm:block">Penghargaan ini menjadi bukti komitmen perusahaan terhadap keterbukaan informasi kepada masyarakat.</p>
-        </div>
-      </article>
-      <article class="p-5 flex gap-5 items-start">
-        <img src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?q=80&w=400&auto=format&fit=crop" alt="" class="w-32 h-24 sm:w-44 sm:h-28 object-cover rounded shrink-0">
-        <div class="min-w-0">
-          <p class="font-mono text-xs text-[var(--ink)]/50 mb-1.5">01 DESEMBER 2025 · CSR</p>
-          <h3 class="font-display font-bold text-[var(--green-deep)] mb-1.5 leading-snug">
-            <a href="#" class="hover:text-[var(--gold-deep)] transition">Program Pangan Murah Bersubsidi Kembali Digelar di 5 Wilayah</a>
-          </h3>
-          <p class="text-sm text-[var(--ink)]/60 line-clamp-2 hidden sm:block">Program ini menyasar wilayah dengan kebutuhan pangan tinggi sebagai bentuk tanggung jawab sosial perusahaan.</p>
-        </div>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ============ LAPORAN TAHUNAN — RAK BUKU ============ -->
-<section id="laporan" class="py-16 bg-white">
-  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between mb-8 pb-4" style="border-bottom: 3px solid var(--green-deep);">
-      <h2 class="font-display font-extrabold text-2xl text-[var(--green-deep)]">Laporan Tahunan Perusahaan</h2>
-      <a href="#" class="text-sm font-display font-bold text-[var(--green-bright)] hover:text-[var(--gold-deep)] transition whitespace-nowrap">Lihat Arsip Lengkap →</a>
-    </div>
-
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-      <div class="group cursor-pointer" onclick="openModal()">
-        <div class="book-cover bg-[var(--green-deep)] rounded-sm shadow-md group-hover:shadow-2xl group-hover:-translate-y-1 transition duration-200 flex flex-col justify-end p-4 border-t-4 border-[var(--gold)]">
-          <p class="font-mono text-white/50 text-[11px]">FSTJ</p>
-          <p class="font-display font-bold text-white text-sm leading-snug mt-1">Laporan Keuangan &amp; Kinerja</p>
-          <p class="font-display font-black text-[var(--gold)] text-2xl mt-2">2024</p>
-        </div>
-        <p class="text-xs text-[var(--ink)]/60 mt-2 text-center">Format PDF</p>
-      </div>
-      <div class="group cursor-pointer" onclick="openModal()">
-        <div class="book-cover bg-[var(--black)] rounded-sm shadow-md group-hover:shadow-2xl group-hover:-translate-y-1 transition duration-200 flex flex-col justify-end p-4 border-t-4 border-[var(--gold)]">
-          <p class="font-mono text-white/50 text-[11px]">FSTJ</p>
-          <p class="font-display font-bold text-white text-sm leading-snug mt-1">Laporan Tahunan Perusahaan</p>
-          <p class="font-display font-black text-[var(--gold)] text-2xl mt-2">2023</p>
-        </div>
-        <p class="text-xs text-[var(--ink)]/60 mt-2 text-center">Format PDF</p>
-      </div>
-      <div class="group cursor-pointer" onclick="openModal()">
-        <div class="book-cover bg-[var(--green-bright)] rounded-sm shadow-md group-hover:shadow-2xl group-hover:-translate-y-1 transition duration-200 flex flex-col justify-end p-4 border-t-4 border-[var(--gold)]">
-          <p class="font-mono text-white/60 text-[11px]">FSTJ</p>
-          <p class="font-display font-bold text-white text-sm leading-snug mt-1">Laporan Keberlanjutan</p>
-          <p class="font-display font-black text-white text-2xl mt-2">2021</p>
-        </div>
-        <p class="text-xs text-[var(--ink)]/60 mt-2 text-center">Format PDF</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ KLASIFIKASI INFORMASI ============ -->
-<section class="py-16 bg-[var(--mist)] border-y border-[var(--line)]">
-  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="mb-8 pb-4" style="border-bottom: 3px solid var(--green-deep);">
-      <h2 class="font-display font-extrabold text-2xl text-[var(--green-deep)]">Klasifikasi Informasi Publik</h2>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-px bg-[var(--line)] border border-[var(--line)]">
-      <div class="bg-white p-7">
-        <span class="badge">Pasal 9 UU KIP</span>
-        <h3 class="font-display font-bold text-lg text-[var(--green-deep)] mt-4 mb-2">Informasi Berkala</h3>
-        <p class="text-sm text-[var(--ink)]/70 leading-relaxed">Diumumkan secara rutin — laporan tahunan, kinerja, dan keuangan perusahaan.</p>
-      </div>
-      <div class="bg-white p-7">
-        <span class="badge">Pasal 10 UU KIP</span>
-        <h3 class="font-display font-bold text-lg text-[var(--green-deep)] mt-4 mb-2">Informasi Serta Merta</h3>
-        <p class="text-sm text-[var(--ink)]/70 leading-relaxed">Menyangkut hajat hidup orang banyak, keselamatan, dan ketertiban umum.</p>
-      </div>
-      <div class="bg-white p-7">
-        <span class="badge">Pasal 11 UU KIP</span>
-        <h3 class="font-display font-bold text-lg text-[var(--green-deep)] mt-4 mb-2">Informasi Setiap Saat</h3>
-        <p class="text-sm text-[var(--ink)]/70 leading-relaxed">Tersedia kapan pun diminta — regulasi, prosedur, dan profil layanan.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ KONTAK ============ -->
-<section id="kontak" class="py-16 bg-white">
-  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="bg-white border border-[var(--line)] flex flex-col lg:flex-row">
-      <div class="lg:w-2/5 p-8 lg:p-10">
-        <h2 class="font-display font-extrabold text-xl text-[var(--green-deep)] mb-6 pb-3" style="border-bottom:3px solid var(--green-deep);">PPID Food Station Tjipinang Jaya</h2>
-        <div class="space-y-5 text-sm">
-          <div>
-            <p class="font-display font-bold text-[var(--green-deep)] mb-1">Alamat</p>
-            <p class="text-[var(--ink)]/70 leading-relaxed">Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Selatan No. 1, Jakarta Timur 13230</p>
-          </div>
-          <div>
-            <p class="font-display font-bold text-[var(--green-deep)] mb-1">Telepon &amp; Email</p>
-            <p class="text-[var(--ink)]/70">021-471 8011 (Ext. PPID)<br><a href="mailto:ppid@foodstation.co.id" class="text-[var(--green-bright)]">ppid@foodstation.co.id</a></p>
-          </div>
-          <div>
-            <p class="font-display font-bold text-[var(--green-deep)] mb-1">Jadwal Pelayanan Informasi Publik</p>
-            <p class="text-[var(--ink)]/70">Senin s.d. Jumat, 08.00–17.00 WIB<br>(Istirahat 12.00–13.00 WIB)</p>
-          </div>
-        </div>
-      </div>
-      <div class="lg:w-3/5 min-h-[320px] bg-slate-200"></div>
-    </div>
-  </div>
-</section>
-
-</main>
-
-<!-- ============ FOOTER ============ -->
-<footer class="bg-[var(--black)] text-white/70 pt-14 pb-6">
-  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10 pb-10 border-b border-white/10">
-      <div class="col-span-2">
-        <p class="font-display font-extrabold text-white text-base mb-2">PPID FSTJ</p>
-        <p class="text-sm text-white/50 leading-relaxed max-w-xs">PT Food Station Tjipinang Jaya (Perseroda) — Badan Usaha Milik Daerah Provinsi DKI Jakarta di bidang ketahanan pangan.</p>
-      </div>
-      <div>
-        <p class="font-display font-bold text-white text-sm mb-3">Layanan</p>
-        <ul class="space-y-2 text-sm text-white/50">
-          <li><a href="#" class="hover:text-[var(--gold)] transition">Permohonan Informasi</a></li>
-          <li><a href="#" class="hover:text-[var(--gold)] transition">Pengajuan Keberatan</a></li>
-          <li><a href="#" class="hover:text-[var(--gold)] transition">Status Permohonan</a></li>
-        </ul>
-      </div>
-      <div>
-        <p class="font-display font-bold text-white text-sm mb-3">Tautan</p>
-        <ul class="space-y-2 text-sm text-white/50">
-          <li><a href="#" class="hover:text-[var(--gold)] transition">Profil PPID</a></li>
-          <li><a href="#" class="hover:text-[var(--gold)] transition">Dasar Hukum</a></li>
-          <li><a href="#" class="hover:text-[var(--gold)] transition">Laporan Tahunan</a></li>
-        </ul>
-      </div>
-    </div>
-    <p class="text-xs text-white/40 text-center mb-4">PPID FSTJ telah dikunjungi sebanyak 1.204 kali bulan ini dan 18.760 kali sejak diluncurkan.</p>
-    <div class="text-xs text-white/40 flex flex-col sm:flex-row justify-between gap-2">
-      <p>© 2025 PT Food Station Tjipinang Jaya (Perseroda). Seluruh hak cipta dilindungi.</p>
-      <p>Situs resmi Badan Usaha Milik Daerah Provinsi DKI Jakarta.</p>
-    </div>
-  </div>
-</footer>
-
-<!-- ============ MODAL UNDUH ============ -->
-<div id="downloadModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4">
-  <div id="modalBackdrop" class="fixed inset-0 bg-[var(--black)]/70"></div>
-  <div class="relative bg-white rounded shadow-2xl max-w-md w-full p-6 border-t-4 border-[var(--gold)]">
-    <div class="flex justify-between items-center mb-5 pb-3 border-b border-[var(--line)]">
-      <h3 class="font-display font-bold text-lg text-[var(--green-deep)]">Unduh Dokumen</h3>
-      <button id="closeModal" class="text-[var(--ink)]/40 hover:text-[var(--ink)]">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <p class="text-sm text-[var(--ink)]/60 mb-4">Lengkapi data diri untuk mengunduh dokumen.</p>
-    <div class="space-y-4">
-      <div><label class="block text-xs font-display font-bold text-[var(--green-deep)] uppercase tracking-wide mb-1">Nama Lengkap</label><input type="text" class="w-full rounded border-[var(--line)] focus:border-[var(--green-bright)]"></div>
-      <div><label class="block text-xs font-display font-bold text-[var(--green-deep)] uppercase tracking-wide mb-1">Email</label><input type="email" class="w-full rounded border-[var(--line)] focus:border-[var(--green-bright)]"></div>
-      <button class="w-full bg-[var(--green-deep)] hover:bg-[var(--black)] text-white font-display font-bold py-3 rounded transition">Kirim Permintaan</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  function openModal(){
-    const m = document.getElementById('downloadModal');
-    m.classList.remove('hidden'); m.classList.add('flex');
-  }
-  document.getElementById('closeModal').addEventListener('click', ()=>{
-    const m = document.getElementById('downloadModal');
-    m.classList.add('hidden'); m.classList.remove('flex');
-  });
-  document.getElementById('modalBackdrop').addEventListener('click', ()=>{
-    const m = document.getElementById('downloadModal');
-    m.classList.add('hidden'); m.classList.remove('flex');
-  });
-</script>
-
-</body>
-</html>
+@endsection
