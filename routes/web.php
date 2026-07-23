@@ -26,6 +26,14 @@ Route::get('/', function () {
     return view('ppid.home');
 });
 
+// Ganti bahasa (relatif, origin-agnostic) — simpan ke session lalu kembali
+Route::get('/set-locale/{locale}', function (string $locale) {
+    if (in_array($locale, ['id', 'en'])) {
+        session(['locale' => $locale]);
+    }
+    return redirect()->back();
+})->name('locale.set');
+
 Route::get('/profile/{slug}', [PpidController::class, 'showProfilePage'])->name('ppid.profile');
 Route::get('/informasi/{slug}', [PpidController::class, 'showPublicInformation'])->name('ppid.information');
 Route::get('/regulasi', [PpidController::class, 'showRegulationPage'])->name('ppid.regulation');

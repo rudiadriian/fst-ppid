@@ -67,8 +67,8 @@ class PpidController extends Controller
                     'Melaksanakan sosialisasi dan edukasi internal guna meningkatkan pemahaman terhadap keterbukaan informasi publik di lingkungan perusahaan.',
                 ],
                 'service_hours' => [
-                    'Senin s.d. Kamis: Pukul 08.00 – 15.00 WIB (Istirahat pukul 12.00 – 13.00 WIB)',
-                    'Jum’at: Pukul 08.00 – 15.00 WIB (Istirahat pukul 11.30 – 13.30 WIB)'
+                    ['days' => 'Senin s.d. Kamis', 'time' => '08.00 – 15.00 WIB', 'break' => '12.00 – 13.00 WIB'],
+                    ['days' => 'Jum’at', 'time' => '08.00 – 15.00 WIB', 'break' => '11.30 – 13.30 WIB'],
                 ]
             ],
             'struktur' => [
@@ -227,13 +227,13 @@ class PpidController extends Controller
                 'title' => 'Jalur & Waktu Layanan Informasi',
                 'intro' => 'Informasi mengenai jam operasional dan pilihan saluran yang dapat digunakan pemohon untuk mengakses pelayanan PPID.',
                 'channels' => [
-                    'Online: Melalui Formulir Permohonan di website resmi PPID (Direkomendasikan).',
-                    'Langsung: Datang ke meja layanan PPID pada jam operasional.',
-                    'Surat: Mengirimkan surat permohonan ke alamat kantor PPID.'
+                    ['label' => 'Online', 'desc' => 'Melalui Formulir Permohonan di website resmi PPID.', 'recommended' => true],
+                    ['label' => 'Langsung', 'desc' => 'Datang ke meja layanan PPID pada jam operasional.', 'recommended' => false],
+                    ['label' => 'Surat', 'desc' => 'Mengirimkan surat permohonan ke alamat kantor PPID.', 'recommended' => false],
                 ],
                 'hours' => [
-                    'Senin s.d. Kamis: Pukul 08.00 – 15.00 WIB (Istirahat 12.00 – 13.00 WIB)',
-                    'Jum’at: Pukul 08.00 – 15.00 WIB (Istirahat 11.30 – 13.30 WIB)'
+                    ['days' => 'Senin s.d. Kamis', 'time' => '08.00 – 15.00 WIB', 'break' => '12.00 – 13.00 WIB'],
+                    ['days' => 'Jum’at', 'time' => '08.00 – 15.00 WIB', 'break' => '11.30 – 13.30 WIB'],
                 ],
                 'note' => 'Permohonan di luar jam kerja akan diproses pada hari kerja berikutnya.'
             ]

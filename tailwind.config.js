@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+    darkMode: 'class',
     content: [
       // PENTING: Memindai semua file Blade di folder views
       "./resources/**/*.blade.php",
