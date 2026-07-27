@@ -2,34 +2,87 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InformasiDikecualikan;
+use App\Models\LaporanLayanan;
+use App\Models\Regulasi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class SearchController extends Controller
 {
+    /** Halaman hasil pencarian. */
+    public function index(Request $request)
+    {
+        $query   = trim((string) $request->input('query'));
+        $results = strlen($query) >= 3 ? $this->cari($query, 30) : [];
+
+        return view('ppid.search_results', [
+            'query'   => $query,
+            'results' => $results,
+        ]);
+    }
+
+    /** Suggestion untuk kotak pencarian (JSON). */
     public function suggestions(Request $request)
     {
-        $query = $request->input('query');
+        $query = trim((string) $request->input('query'));
 
         if (strlen($query) < 3) {
             return response()->json([]);
         }
 
-        // Logika Pencarian Sebenarnya:
-        // 1. Cari di tabel 'reports' (Laporan Keuangan)
-        $reports = \App\Models\Report::where('title', 'like', "%{$query}%")
-                                    ->select('title')
-                                    ->limit(3)->get()
-                                    ->map(fn($item) => ['title' => $item->title, 'url' => route('reports.show', $item)]);
+        return response()->json($this->cari($query, 6));
+    }
 
-        // 2. Cari di tabel 'regulations' (Regulasi)
-        $regulations = \App\Models\Regulation::where('title', 'like', "%{$query}%")
-                                            ->select('title')
-                                            ->limit(3)->get()
-                                            ->map(fn($item) => ['title' => $item->title, 'url' => route('regulations.show', $item)]);
+    /**
+     * Cari di regulasi, laporan layanan, dan informasi dikecualikan.
+     * Kegagalan DB tidak boleh menjatuhkan halaman — kembalikan hasil kosong.
+     */
+    private function cari(string $query, int $limit): array
+    {
+        $like = '%' . $query . '%';
 
-        // Gabungkan hasil dan batasi total suggestion
-        $results = $reports->merge($regulations)->take(6);
+        try {
+            $regulasi = Regulasi::where('judul', 'ilike', $like)
+                ->orderByDesc('tahun')
+                ->limit($limit)
+                ->get()
+                ->map(fn ($row) => [
+                    'title'    => $row->judul,
+                    'kategori' => $row->kategori === 'dasar_hukum_ppid' ? 'Dasar Hukum' : 'Regulasi',
+                    'url'      => $row->kategori === 'dasar_hukum_ppid'
+                        ? route('ppid.legal_basis')
+                        : route('ppid.regulation'),
+                ]);
 
-        return response()->json($results);
+            $laporan = LaporanLayanan::published()
+                ->where('judul', 'ilike', $like)
+                ->orderByDesc('tahun')
+                ->limit($limit)
+                ->get()
+                ->map(fn ($row) => [
+                    'title'    => $row->judul,
+                    'kategori' => 'Laporan',
+                    'url'      => route('ppid.report', $row->tipe_laporan === 'statistik_informasi'
+                        ? 'statistik-informasi'
+                        : 'pelayanan-informasi'),
+                ]);
+
+            $dikecualikan = InformasiDikecualikan::published()
+                ->where('judul', 'ilike', $like)
+                ->limit($limit)
+                ->get()
+                ->map(fn ($row) => [
+                    'title'    => $row->judul,
+                    'kategori' => 'Informasi Dikecualikan',
+                    'url'      => route('ppid.excluded'),
+                ]);
+
+            return $regulasi->merge($laporan)->merge($dikecualikan)->take($limit)->values()->all();
+        } catch (\Throwable $e) {
+            Log::warning('[PPID] Pencarian gagal: ' . $e->getMessage());
+
+            return [];
+        }
     }
 }

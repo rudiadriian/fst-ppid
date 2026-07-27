@@ -1,7 +1,5 @@
 import React from 'react';
 
-import AWSAuthProvider from '@auth/services/aws/AWSAuthProvider';
-import FirebaseAuthProvider from '@auth/services/firebase/FirebaseAuthProvider';
 import JwtAuthProvider from '@auth/services/jwt/JwtAuthProvider';
 import { FuseAuthProviderType } from '@fuse/core/FuseAuthProvider/types/FuseAuthTypes';
 import FuseAuthProvider from '@fuse/core/FuseAuthProvider';
@@ -10,18 +8,14 @@ import { User } from '@auth/user';
 /**
  * The Authentication providers.
  */
+/**
+ * Hanya JWT ke API PPID. Provider AWS Cognito dan Firebase bawaan template
+ * dimatikan supaya tidak ada jalur login lain yang perlu diamankan.
+ */
 const authProviders: FuseAuthProviderType[] = [
 	{
 		name: 'jwt',
 		Provider: JwtAuthProvider
-	},
-	{
-		name: 'aws',
-		Provider: AWSAuthProvider
-	},
-	{
-		name: 'firebase',
-		Provider: FirebaseAuthProvider
 	}
 ];
 

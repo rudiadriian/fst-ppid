@@ -17,9 +17,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/search', function (Request $request) {
-    return view('ppid.search_results', ['query' => $request->input('query')]);
-})->name('search');
+Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 
 Route::get('/', function () {

@@ -34,7 +34,15 @@ export default defineConfig({
 		host: '0.0.0.0',
 		open: true,
 		strictPort: false,
-		port: 3000
+		port: 3000,
+		// Endpoint asli (api-ppid / Laravel) di-proxy lewat origin dev server,
+		// jadi tidak ada CORS saat development. Path /api/mock/* tetap ditangani MSW.
+		proxy: {
+			'/api/v1': {
+				target: process.env.VITE_API_TARGET || 'http://127.0.0.1:8001',
+				changeOrigin: true
+			}
+		}
 	},
 	define: {
 		'import.meta.env.VITE_PORT': JSON.stringify(process.env.PORT || 3000),
@@ -60,7 +68,6 @@ export default defineConfig({
 			'@mui/icons-material',
 			'@mui/material',
 			'@mui/base',
-			'@mui/styles',
 			'@mui/system',
 			'@mui/utils',
 			'@emotion/cache',

@@ -1,13 +1,19 @@
 {
     "version": 2,
     "framework": null,
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
     "functions": {
         "api/index.php": { "runtime": "vercel-php@0.7.2" }
     },
     "routes": [
         {
-            "src": "/(css|js|images|build|assets)/(.*)",
+            "src": "/(css|js|images|build|assets|storage)/(.*)",
             "dest": "/public/$1/$2"
+        },
+        {
+            "src": "/(favicon.ico|robots.txt)",
+            "dest": "/public/$1"
         },
         {
             "src": "/(.*)",
@@ -16,7 +22,9 @@
     ],
     "env": {
         "APP_ENV": "production",
-        "APP_DEBUG": "true",
+        "APP_DEBUG": "false",
+        "DB_CONNECTION": "pgsql",
+        "SESSION_SECURE_COOKIE": "true",
         "APP_URL": "https://${VERCEL_URL}",
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",

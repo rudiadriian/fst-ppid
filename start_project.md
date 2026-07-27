@@ -484,4 +484,30 @@ Adapun langkah-langkah yang perlu dijalankan, jika sudah selesai dijalankan tolo
     BEFORE INSERT OR UPDATE ON informasi_publik
     FOR EACH ROW EXECUTE FUNCTION informasi_publik_search_update();
 
-2. sekarang tolong jalankan backend foldernya agar bisa login dan mengakses web adminnya. saya ingin konsepnya folder @\ppid\be-ppid menjadi pusat control halaman website PPID yang ada pada path @\ppid\fe-ppid agar semua konten pada website diatur melalui portal CMS atau Backend yang mana 2 folder tersebut saling terintergasi melalui API yang sangat aman dari serangan hacker dan dinamis jika suatu saat ada kebutuhan integrasi mudah untuk di maintenance.
+2. ⏳ [SEBAGIAN SELESAI] sekarang tolong jalankan backend foldernya agar bisa login dan mengakses web adminnya.
+   - ✅ `npm install` di `be-ppid` selesai (1091 paket). Sebelumnya `node_modules` kosong.
+   - ✅ Dev server jalan: `npm run dev` → http://localhost:3000 (Vite 6.3.5, Fuse React 16).
+   - ✅ Login admin bisa diakses di `/sign-in`. Kredensial mock bawaan: `admin@fusetheme.com` (password apa saja asal tidak kosong).
+   - ✅ DB `ppiddb` terverifikasi: 37 tabel (PostgreSQL 18).
+   - 🔧 Perbaikan: `@mui/styles` dihapus dari `optimizeDeps.include` di `vite.config.mts` (paket tidak ada di dependencies → warning saat start).
+   - ⚠️ Catatan Node: Node terpasang v20.10.0, `package.json` engines minta >= 22.12.0. Jalan normal karena `engine-strict=false`, tapi disarankan upgrade Node 22 LTS.
+   - ❌ BELUM: integrasi API. `be-ppid` masih memakai data mock MSW (`src/@mock-utils`), belum terhubung ke `ppiddb` maupun ke konten `fe-ppid`. Butuh keputusan lokasi API layer (lihat langkah 3).
+
+3. ⏳ [BERJALAN] Bangun API layer + integrasi CMS. Keputusan arsitektur (disetujui 2026-07-27):
+   - **Lokasi API**: project Laravel terpisah `api-ppid` (bukan di dalam `fe-ppid`). Alasan: endpoint admin tidak menempel di domain publik, dan kalau API mati `fe-ppid` tetap hidup karena baca `ppiddb` langsung.
+   - **Auth admin**: JWT yang diterbitkan API dari tabel `users` + `roles`, RBAC dari `role_modul_akses`. Di sisi `be-ppid` pakai `JwtAuthProvider` bawaan Fuse, tinggal ganti target dari MSW mock ke API asli.
+   - Rincian yang perlu dikerjakan: scaffold `api-ppid`, Eloquent model untuk 37 tabel, endpoint CRUD per modul CMS, hardening (rate limit, CORS whitelist, validasi, audit_log), lalu ganti hook data di `be-ppid` per modul.
+
+   Progres 3a — fondasi API + login terintegrasi (SELESAI):
+   - ✅ `api-ppid` dibuat (Laravel 10, PHP 8.1) + `tymon/jwt-auth`. Jalankan: `php artisan serve --port=8001`.
+   - ✅ `.env` diarahkan ke `ppiddb` (kredensial sama dengan `fe-ppid`), guard `api` pakai driver `jwt`.
+   - ✅ Migration `add_admin_ui_columns_to_users_table`: menambah kolom `photo_url`, `shortcuts`, `settings` di tabel `users` untuk kebutuhan panel admin. Tabel inti tetap dari DDL langkah 1.
+   - ✅ Endpoint: `GET /api/v1/health`, `POST /api/v1/auth/sign-in`, `GET /api/v1/auth/sign-in-with-token`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/sign-out`, `PUT /api/v1/auth/user/{id}`.
+   - ✅ `ModulSistemSeeder`: 19 modul CMS + role `super-admin`, `ppid-pelaksana`, `ppid-utama` beserta matrix `role_modul_akses`.
+   - ✅ Middleware `akses:{modul},{aksi}` — hak akses dibaca dari DB tiap request, bukan dari klaim token.
+   - ✅ Hardening: rate limit login 5/menit per email+IP (20/menit per IP), CORS dibatasi `ADMIN_ORIGINS`, pesan login gagal tidak membedakan email/password (anti enumerasi), semua login sukses/gagal masuk `audit_log`, token JWT TTL 60 menit + blacklist saat logout.
+   - ✅ `be-ppid` disambungkan: `authApi.ts` menunjuk `/api/v1/auth/*`, proxy `/api/v1` → `127.0.0.1:8001` di `vite.config.mts`, provider AWS Cognito & Firebase dimatikan (sisa JWT saja), prefill kredensial demo Fuse dihapus dari form login.
+   - ✅ Login admin nyata memakai akun `admin@foodstation.co.id`. Kata sandi di-set lewat `php artisan ppid:set-password admin@foodstation.co.id` (jangan simpan kata sandi di file yang masuk git). Terverifikasi via API langsung dan lewat proxy `localhost:3000`. `npx tsc --noEmit` di `be-ppid` bersih.
+   - ⚠️ Wajib sebelum production: PHP 8.1 dan Laravel 10 sudah lewat masa dukungan keamanan (mis. CVE-2026-48019 baru ditambal di Laravel ≥12.60). Upgrade PHP ke 8.3/8.4 lalu `composer require laravel/framework:^12`.
+
+   Progres 3b — modul CMS (BELUM): Eloquent model + endpoint CRUD per modul (informasi publik, informasi dikecualikan, permohonan, keberatan, laporan, berita, galeri, FAQ, banner, struktur organisasi, halaman statis, regulasi, tautan terkait, menu navigasi, pengguna, pengaturan situs), upload file, lalu ganti halaman demo di `be-ppid` dengan modul PPID. saya ingin konsepnya folder @\ppid\be-ppid menjadi pusat control halaman website PPID yang ada pada path @\ppid\fe-ppid agar semua konten pada website diatur melalui portal CMS atau Backend yang mana 2 folder tersebut saling terintergasi melalui API yang sangat aman dari serangan hacker dan dinamis jika suatu saat ada kebutuhan integrasi mudah untuk di maintenance.
