@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Regulasi | PPID FSTJ')
+@section('title', ($data['title'] ?? 'Regulasi') . ' | PPID FSTJ')
 
 @section('content')
 
@@ -19,6 +19,8 @@
     {{-- KONTEN --}}
     <section class="py-16 lg:py-20 bg-[#F8FAFC] dark:bg-[#0d1310]">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+            @include('partials.db_notice')
 
             <div class="bg-white dark:bg-[#121a17] rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
                 <div class="overflow-x-auto">

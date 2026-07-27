@@ -1,5 +1,11 @@
 Tolong jalankan langkah untuk menyesuaikan/ modifikasi halaman frontend aplikasi ppid ini, jika langkah demi langkah sudah selesai, tolong berikan checklist, berikut ini langkahnya:
-1. tambahkan widget beserta feature untuk penyandang disabelitas mudah mengakses website ini, saya sudah mendaftarkan akun EQUAL WEB, berikut codenya :
+1. Saya cek gambar kanal-nya — ada beberapa sub-menu yang belum ter-cover di skema sebelumnya:
+   1. Daftar Informasi Dikecualikan — beda struktur data dari info publik biasa (butuh alasan pengecualian, dasar hukum, jangka waktu, pejabat penetap) → belum ada tabel.
+   2. Laporan Statistik Informasi Publik & Laporan Pelayanan Informasi — laporan periodik berisi angka agregat (jumlah permohonan masuk/dikabulkan/ditolak, rata-rata waktu respon) → belum ada tabel.
+   3. Register Permohonan Informasi — rekap publik dari daftar permohonan → butuh flag consent, belum ada di permohonan_informasi.
+    Dasar Hukum (kanal Profil) vs Regulasi (kanal Layanan) — sama-sama pakai tabel regulasi, tapi belum ada pembeda kategori.
+
+2. tambahkan widget beserta feature untuk penyandang disabelitas mudah mengakses website ini, saya sudah mendaftarkan akun EQUAL WEB, berikut codenya :
 <!-- Accessibility Code for "ppid-fstj.vercel.app" -->
 <script>
 /*

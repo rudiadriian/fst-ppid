@@ -6,9 +6,32 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DownloadReportMail; // Asumsikan Anda membuat Mailable ini
 use Illuminate\Support\Facades\Log;
+use App\Models\InformasiDikecualikan;
+use App\Models\LaporanLayanan;
+use App\Models\PermohonanInformasi;
+use App\Models\Regulasi;
 
 class PpidController extends Controller
 {
+    /** true bila query terakhir ke DB gagal, dipakai view untuk memberi tahu pengunjung. */
+    private bool $dbOffline = false;
+
+    /**
+     * Bungkus query ke database ppiddb. Kalau DB/backend sedang bermasalah,
+     * halaman tetap terbuka dengan data fallback — frontend tidak ikut mati.
+     */
+    private function fromDatabase(callable $query, $fallback, string $context)
+    {
+        try {
+            return $query();
+        } catch (\Throwable $e) {
+            $this->dbOffline = true;
+            Log::warning("[PPID] Query {$context} gagal: " . $e->getMessage());
+
+            return $fallback;
+        }
+    }
+
     public function sendDownloadLink(Request $request)
     {
         // 1. Validasi Data
@@ -153,6 +176,29 @@ class PpidController extends Controller
 
     public function showRegulationPage()
     {
+        // Kanal Layanan -> hanya kategori 'regulasi' & 'pedoman'.
+        // Kanal Profil (Dasar Hukum) memakai kategori 'dasar_hukum_ppid', lihat showLegalBasisPage().
+        $fromDb = $this->fromDatabase(
+            fn () => $this->mapRegulasi(
+                Regulasi::kategori(['regulasi', 'pedoman'])
+                    ->orderByDesc('tahun')
+                    ->orderBy('judul')
+                    ->get()
+            ),
+            [],
+            'regulasi'
+        );
+
+        if (!empty($fromDb)) {
+            return view('ppid.regulation', ['data' => [
+                'title'       => 'Regulasi dan Pedoman',
+                'description' => 'Daftar peraturan internal perusahaan dan hukum terkait yang menjadi pedoman dalam penyelenggaraan Keterbukaan Informasi Publik (KIP) PPID PT Food Station Tjipinang Jaya.',
+                'regulations' => $fromDb,
+                'db_offline'  => false,
+            ]]);
+        }
+
+        // Fallback: DB kosong atau tidak dapat dihubungi.
         $regulations = [
             [
                 'no' => 1,
@@ -191,7 +237,8 @@ class PpidController extends Controller
         $data = [
             'title' => 'Regulasi dan Pedoman',
             'description' => 'Daftar peraturan internal perusahaan dan hukum terkait yang menjadi pedoman dalam penyelenggaraan Keterbukaan Informasi Publik (KIP) PPID PT Food Station Tjipinang Jaya.',
-            'regulations' => $regulations
+            'regulations' => $regulations,
+            'db_offline' => $this->dbOffline,
         ];
 
         return view('ppid.regulation', compact('data'));
@@ -349,5 +396,278 @@ class PpidController extends Controller
         ]);
     }
 
+    // =====================================================================
+    // Kanal tambahan (sumber data: PostgreSQL ppiddb)
+    // =====================================================================
 
+    /**
+     * Daftar Informasi Dikecualikan — kanal Informasi Publik.
+     * Struktur berbeda dari informasi publik biasa: wajib memuat alasan
+     * pengecualian, dasar hukum, jangka waktu, dan pejabat penetap.
+     */
+    public function showExcludedInformation()
+    {
+        $items = $this->fromDatabase(
+            fn () => InformasiDikecualikan::published()
+                ->orderByDesc('tanggal_penetapan')
+                ->orderBy('judul')
+                ->get()
+                ->values()
+                ->map(fn ($row, $i) => [
+                    'no'           => $i + 1,
+                    'judul'        => $row->judul,
+                    'ringkasan'    => $row->ringkasan,
+                    'alasan'       => $row->alasan_pengecualian,
+                    'dasar_hukum'  => $row->dasar_hukum_pengecualian,
+                    'jangka_waktu' => $row->jangka_waktu_pengecualian,
+                    'tanggal'      => optional($row->tanggal_penetapan)->translatedFormat('d F Y'),
+                    'file'         => $this->fileUrl($row->file_surat_penetapan),
+                ])
+                ->all(),
+            [],
+            'informasi_dikecualikan'
+        );
+
+        $data = [
+            'title'       => 'Daftar Informasi Dikecualikan',
+            'description' => 'Informasi yang dikecualikan dari keterbukaan informasi publik berdasarkan hasil uji konsekuensi, lengkap dengan alasan pengecualian, dasar hukum, dan jangka waktu pengecualiannya.',
+            'items'       => $items,
+            'db_offline'  => $this->dbOffline,
+        ];
+
+        return view('ppid.excluded_information', compact('data'));
+    }
+
+    /**
+     * Laporan Statistik Informasi Publik & Laporan Pelayanan Informasi.
+     */
+    public function showReportPage($slug)
+    {
+        $tipeMap = [
+            'statistik-informasi' => [
+                'tipe'        => 'statistik_informasi',
+                'title'       => 'Laporan Statistik Informasi Publik',
+                'description' => 'Rekapitulasi angka permohonan informasi publik per periode: jumlah permohonan masuk, dikabulkan, ditolak, keberatan, dan rata-rata waktu respon.',
+            ],
+            'pelayanan-informasi' => [
+                'tipe'        => 'pelayanan_informasi',
+                'title'       => 'Laporan Pelayanan Informasi',
+                'description' => 'Laporan periodik penyelenggaraan layanan informasi publik PPID PT Food Station Tjipinang Jaya (Perseroda).',
+            ],
+        ];
+
+        if (!array_key_exists($slug, $tipeMap)) {
+            abort(404, 'Halaman Laporan tidak ditemukan.');
+        }
+
+        $meta = $tipeMap[$slug];
+
+        $reports = $this->fromDatabase(
+            fn () => LaporanLayanan::published()
+                ->tipe($meta['tipe'])
+                ->orderByDesc('tahun')
+                ->orderByDesc('id')
+                ->get()
+                ->map(fn ($row) => [
+                    'judul'            => $row->judul,
+                    'tahun'            => $row->tahun,
+                    'periode'          => $row->periode ?: 'Tahunan',
+                    'masuk'            => $row->jumlah_permohonan_masuk,
+                    'dikabulkan'       => $row->jumlah_dikabulkan,
+                    'ditolak'          => $row->jumlah_ditolak,
+                    'ditolak_sebagian' => $row->jumlah_ditolak_sebagian,
+                    'keberatan'        => $row->jumlah_keberatan,
+                    'rata_rata_hari'   => $row->rata_rata_hari_respon,
+                    'ringkasan'        => $row->ringkasan,
+                    'file'             => $this->fileUrl($row->file_laporan),
+                ])
+                ->all(),
+            [],
+            'laporan_layanan'
+        );
+
+        // Kartu ringkasan memakai tahun terbaru yang tersedia.
+        $latestYear = collect($reports)->max('tahun');
+        $summary    = collect($reports)->where('tahun', $latestYear);
+
+        $data = [
+            'title'       => $meta['title'],
+            'description' => $meta['description'],
+            'slug'        => $slug,
+            'reports'     => $reports,
+            'db_offline'  => $this->dbOffline,
+            'summary'     => $summary->isEmpty() ? null : [
+                'tahun'      => $latestYear,
+                'masuk'      => $summary->sum('masuk'),
+                'dikabulkan' => $summary->sum('dikabulkan'),
+                'ditolak'    => $summary->sum('ditolak') + $summary->sum('ditolak_sebagian'),
+                'keberatan'  => $summary->sum('keberatan'),
+                'rata_rata'  => round((float) $summary->avg('rata_rata_hari'), 1),
+            ],
+        ];
+
+        return view('ppid.report', compact('data'));
+    }
+
+    /**
+     * Register Permohonan Informasi — rekap publik.
+     * Hanya menampilkan permohonan yang pemohonnya memberi persetujuan
+     * (tampil_di_register_publik); identitas pemohon tidak pernah ditampilkan.
+     */
+    public function showRequestRegister(Request $request)
+    {
+        $tahun = $request->integer('tahun') ?: null;
+
+        $rows = $this->fromDatabase(
+            fn () => PermohonanInformasi::registerPublik()
+                ->when($tahun, fn ($q) => $q->whereYear('tanggal_permohonan', $tahun))
+                ->orderByDesc('tanggal_permohonan')
+                ->limit(200)
+                ->get([
+                    'kode_permohonan',
+                    'rincian_informasi',
+                    'status',
+                    'tanggal_permohonan',
+                    'tanggal_tanggapan',
+                ])
+                ->values()
+                ->map(fn ($row, $i) => [
+                    'no'                => $i + 1,
+                    'kode'              => $row->kode_permohonan,
+                    'rincian'           => \Illuminate\Support\Str::limit($row->rincian_informasi, 140),
+                    'status'            => $row->status,
+                    'status_label'      => $this->statusLabel($row->status),
+                    'tanggal'           => optional($row->tanggal_permohonan)->translatedFormat('d F Y'),
+                    'tanggal_tanggapan' => optional($row->tanggal_tanggapan)->translatedFormat('d F Y'),
+                ])
+                ->all(),
+            [],
+            'register_permohonan'
+        );
+
+        $years = $this->fromDatabase(
+            fn () => PermohonanInformasi::registerPublik()
+                ->selectRaw('EXTRACT(YEAR FROM tanggal_permohonan)::int AS tahun')
+                ->distinct()
+                ->orderByDesc('tahun')
+                ->pluck('tahun')
+                ->all(),
+            [],
+            'register_permohonan_tahun'
+        );
+
+        $data = [
+            'title'         => 'Register Permohonan Informasi',
+            'description'   => 'Rekapitulasi publik permohonan informasi yang masuk ke PPID PT Food Station Tjipinang Jaya. Hanya permohonan yang disetujui pemohon untuk dipublikasikan yang ditampilkan, tanpa identitas pemohon.',
+            'items'         => $rows,
+            'years'         => $years,
+            'selected_year' => $tahun,
+            'db_offline'    => $this->dbOffline,
+        ];
+
+        return view('ppid.request_register', compact('data'));
+    }
+
+    /**
+     * Dasar Hukum (kanal Profil) — memakai tabel regulasi kategori 'dasar_hukum_ppid',
+     * dibedakan dari halaman Regulasi (kanal Layanan).
+     */
+    public function showLegalBasisPage()
+    {
+        $fromDb = $this->fromDatabase(
+            fn () => $this->mapRegulasi(
+                Regulasi::kategori('dasar_hukum_ppid')
+                    ->orderByDesc('tahun')
+                    ->orderBy('judul')
+                    ->get()
+            ),
+            [],
+            'dasar_hukum'
+        );
+
+        $regulations = !empty($fromDb) ? $fromDb : [
+            [
+                'no' => 1,
+                'title' => 'Undang-Undang Nomor 14 Tahun 2008 tentang Keterbukaan Informasi Publik',
+                'number' => 'UU No. 14/2008',
+                'date' => '2008-04-30',
+                'type' => 'Hukum Negara',
+                'link' => '#dasar-hukum-1',
+            ],
+            [
+                'no' => 2,
+                'title' => 'Peraturan Pemerintah Nomor 61 Tahun 2010 tentang Pelaksanaan UU Nomor 14 Tahun 2008',
+                'number' => 'PP No. 61/2010',
+                'date' => '2010-08-23',
+                'type' => 'Hukum Negara',
+                'link' => '#dasar-hukum-2',
+            ],
+            [
+                'no' => 3,
+                'title' => 'Peraturan Komisi Informasi Nomor 1 Tahun 2021 tentang Standar Layanan Informasi Publik',
+                'number' => 'Perki No. 1/2021',
+                'date' => '2021-09-01',
+                'type' => 'Peraturan KI',
+                'link' => '#dasar-hukum-3',
+            ],
+        ];
+
+        $data = [
+            'title'       => 'Dasar Hukum PPID',
+            'description' => 'Landasan hukum pembentukan dan penyelenggaraan PPID PT Food Station Tjipinang Jaya (Perseroda).',
+            'regulations' => $regulations,
+            'db_offline'  => $this->dbOffline,
+        ];
+
+        return view('ppid.regulation', compact('data'));
+    }
+
+    /** Ubah koleksi model Regulasi menjadi bentuk array yang dipakai view regulasi. */
+    private function mapRegulasi($rows): array
+    {
+        $labelKategori = [
+            'dasar_hukum_ppid' => 'Hukum Negara',
+            'regulasi'         => 'Internal PPID',
+            'pedoman'          => 'Peraturan KI',
+        ];
+
+        return $rows->values()->map(fn ($row, $i) => [
+            'no'     => $i + 1,
+            'title'  => $row->judul,
+            'number' => $row->nomor_peraturan ?: ($row->tahun ? 'Tahun ' . $row->tahun : '-'),
+            'date'   => optional($row->tanggal_berlaku)->format('Y-m-d'),
+            'type'   => $labelKategori[$row->kategori] ?? ($row->jenis_peraturan ?: 'Internal PPID'),
+            'link'   => $this->fileUrl($row->file_path) ?? '#',
+        ])->all();
+    }
+
+    /** Path file di DB -> URL yang bisa dibuka publik. Null bila belum ada file. */
+    private function fileUrl(?string $path): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://', '/'])) {
+            return $path;
+        }
+
+        return asset('storage/' . ltrim($path, '/'));
+    }
+
+    /** Label status permohonan untuk tampilan publik. */
+    private function statusLabel(?string $status): string
+    {
+        return [
+            'diajukan'          => 'Diajukan',
+            'diverifikasi'      => 'Diverifikasi',
+            'diproses'          => 'Diproses',
+            'menunggu_approval' => 'Menunggu Persetujuan',
+            'disetujui'         => 'Disetujui',
+            'ditolak'           => 'Ditolak',
+            'ditolak_sebagian'  => 'Ditolak Sebagian',
+            'selesai'           => 'Selesai',
+            'kedaluwarsa'       => 'Kedaluwarsa',
+        ][$status] ?? ucfirst((string) $status);
+    }
 }

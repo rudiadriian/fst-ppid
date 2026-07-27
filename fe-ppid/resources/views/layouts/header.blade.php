@@ -46,6 +46,10 @@
                         $isService    = request()->routeIs('ppid.service');
                         $isRequest    = request()->routeIs('ppid.request');
                         $isStatus     = request()->routeIs('ppid.status');
+                        $isLegalBasis = request()->routeIs('ppid.legal_basis');
+                        $isExcluded   = request()->routeIs('ppid.excluded');
+                        $isReport     = request()->routeIs('ppid.report');
+                        $isRegister   = request()->routeIs('ppid.register');
                         $activeSlug   = request()->route('slug');
 
                         $navLinkClass       = 'text-sm font-semibold text-gray-600 hover:text-[#008060] transition-colors duration-200 px-3.5 py-2 rounded-lg hover:bg-emerald-50 dark:text-gray-300 dark:hover:text-[#00A66C] dark:hover:bg-white/5';
@@ -59,7 +63,7 @@
                     <a href="/" class="{{ $navItem($isHome) }}" @if ($isHome) aria-current="page" @endif>{{ __('Beranda') }}</a>
 
                     <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                        <button class="{{ $navItem($isProfile) }} flex items-center gap-1">
+                        <button class="{{ $navItem($isProfile || $isLegalBasis) }} flex items-center gap-1">
                             {{ __('Profil') }}
                             <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
@@ -69,12 +73,13 @@
                                 <a href="{{ route('ppid.profile', 'singkat') }}" class="{{ $dropItem($isProfile && $activeSlug === 'singkat') }}">{{ __('Profil Singkat') }}</a>
                                 <a href="{{ route('ppid.profile', 'struktur') }}" class="{{ $dropItem($isProfile && $activeSlug === 'struktur') }}">{{ __('Struktur PPID') }}</a>
                                 <a href="{{ route('ppid.profile', 'visi-misi') }}" class="{{ $dropItem($isProfile && $activeSlug === 'visi-misi') }}">{{ __('Visi & Misi') }}</a>
+                                <a href="{{ route('ppid.legal_basis') }}" class="{{ $dropItem($isLegalBasis) }}">{{ __('Dasar Hukum') }}</a>
                             </div>
                         </div>
                     </div>
 
                     <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                        <button class="{{ $navItem($isInfo) }} flex items-center gap-1">
+                        <button class="{{ $navItem($isInfo || $isExcluded) }} flex items-center gap-1">
                             {{ __('Informasi Publik') }}
                             <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
@@ -84,6 +89,7 @@
                                 <a href="{{ route('ppid.information', 'berkala') }}" class="{{ $dropItem($isInfo && $activeSlug === 'berkala') }}">{{ __('Informasi Berkala') }}</a>
                                 <a href="{{ route('ppid.information', 'serta-merta') }}" class="{{ $dropItem($isInfo && $activeSlug === 'serta-merta') }}">{{ __('Informasi Serta Merta') }}</a>
                                 <a href="{{ route('ppid.information', 'setiap-saat') }}" class="{{ $dropItem($isInfo && $activeSlug === 'setiap-saat') }}">{{ __('Informasi Setiap Saat') }}</a>
+                                <a href="{{ route('ppid.excluded') }}" class="{{ $dropItem($isExcluded) }}">{{ __('Informasi Dikecualikan') }}</a>
                             </div>
                         </div>
                     </div>
@@ -91,16 +97,19 @@
                     <a href="{{ route('ppid.regulation') }}" class="{{ $navItem($isRegulation) }}" @if ($isRegulation) aria-current="page" @endif>{{ __('Regulasi') }}</a>
 
                     <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                        <button class="{{ $navItem($isService) }} flex items-center gap-1">
+                        <button class="{{ $navItem($isService || $isReport || $isRegister) }} flex items-center gap-1">
                             {{ __('Pelayanan') }}
                             <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                            class="absolute z-50 mt-1 w-56 rounded-xl shadow-xl bg-white ring-1 ring-black/5 overflow-hidden origin-top-left dark:bg-[#111917] dark:ring-white/10">
+                            class="absolute z-50 mt-1 w-72 rounded-xl shadow-xl bg-white ring-1 ring-black/5 overflow-hidden origin-top-left dark:bg-[#111917] dark:ring-white/10">
                             <div class="py-1.5">
                                 <a href="{{ route('ppid.service', 'maklumat-pelayanan') }}" class="{{ $dropItem($isService && $activeSlug === 'maklumat-pelayanan') }}">{{ __('Maklumat Pelayanan') }}</a>
                                 <a href="{{ route('ppid.service', 'prosedur-permohonan') }}" class="{{ $dropItem($isService && $activeSlug === 'prosedur-permohonan') }}">{{ __('Prosedur Permohonan') }}</a>
                                 <a href="{{ route('ppid.service', 'jalur-waktu-layanan') }}" class="{{ $dropItem($isService && $activeSlug === 'jalur-waktu-layanan') }}">{{ __('Jalur & Waktu Layanan') }}</a>
+                                <a href="{{ route('ppid.register') }}" class="{{ $dropItem($isRegister) }}">{{ __('Register Permohonan Informasi') }}</a>
+                                <a href="{{ route('ppid.report', 'statistik-informasi') }}" class="{{ $dropItem($isReport && $activeSlug === 'statistik-informasi') }}">{{ __('Laporan Statistik Informasi Publik') }}</a>
+                                <a href="{{ route('ppid.report', 'pelayanan-informasi') }}" class="{{ $dropItem($isReport && $activeSlug === 'pelayanan-informasi') }}">{{ __('Laporan Pelayanan Informasi') }}</a>
                             </div>
                         </div>
                     </div>
@@ -156,41 +165,52 @@
 
             <a href="/" class="{{ $mobileItem($isHome) }}" @if ($isHome) aria-current="page" @endif>{{ __('Beranda') }}</a>
 
-            <div x-data="{ open: {{ $isProfile ? 'true' : 'false' }} }">
-                <button @click="open = !open" class="{{ $mobileItem($isProfile) }} w-full flex justify-between items-center">
+            @php
+                $openProfile = $isProfile || $isLegalBasis;
+                $openInfo    = $isInfo || $isExcluded;
+                $openService = $isService || $isReport || $isRegister;
+            @endphp
+
+            <div x-data="{ open: {{ $openProfile ? 'true' : 'false' }} }">
+                <button @click="open = !open" class="{{ $mobileItem($openProfile) }} w-full flex justify-between items-center">
                     {{ __('Profil') }}
                     <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
-                <div x-show="open" x-collapse @if (!$isProfile) style="display:none" @endif>
+                <div x-show="open" x-collapse @if (!$openProfile) style="display:none" @endif>
                     <a href="{{ route('ppid.profile', 'singkat') }}" class="{{ $mobileSub($isProfile && $activeSlug === 'singkat') }}">{{ __('Profil Singkat') }}</a>
                     <a href="{{ route('ppid.profile', 'struktur') }}" class="{{ $mobileSub($isProfile && $activeSlug === 'struktur') }}">{{ __('Struktur PPID') }}</a>
                     <a href="{{ route('ppid.profile', 'visi-misi') }}" class="{{ $mobileSub($isProfile && $activeSlug === 'visi-misi') }}">{{ __('Visi & Misi') }}</a>
+                    <a href="{{ route('ppid.legal_basis') }}" class="{{ $mobileSub($isLegalBasis) }}">{{ __('Dasar Hukum') }}</a>
                 </div>
             </div>
 
-            <div x-data="{ open: {{ $isInfo ? 'true' : 'false' }} }">
-                <button @click="open = !open" class="{{ $mobileItem($isInfo) }} w-full flex justify-between items-center">
+            <div x-data="{ open: {{ $openInfo ? 'true' : 'false' }} }">
+                <button @click="open = !open" class="{{ $mobileItem($openInfo) }} w-full flex justify-between items-center">
                     {{ __('Informasi Publik') }}
                     <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
-                <div x-show="open" x-collapse @if (!$isInfo) style="display:none" @endif>
+                <div x-show="open" x-collapse @if (!$openInfo) style="display:none" @endif>
                     <a href="{{ route('ppid.information', 'berkala') }}" class="{{ $mobileSub($isInfo && $activeSlug === 'berkala') }}">{{ __('Informasi Berkala') }}</a>
                     <a href="{{ route('ppid.information', 'serta-merta') }}" class="{{ $mobileSub($isInfo && $activeSlug === 'serta-merta') }}">{{ __('Informasi Serta Merta') }}</a>
                     <a href="{{ route('ppid.information', 'setiap-saat') }}" class="{{ $mobileSub($isInfo && $activeSlug === 'setiap-saat') }}">{{ __('Informasi Setiap Saat') }}</a>
+                    <a href="{{ route('ppid.excluded') }}" class="{{ $mobileSub($isExcluded) }}">{{ __('Informasi Dikecualikan') }}</a>
                 </div>
             </div>
 
             <a href="{{ route('ppid.regulation') }}" class="{{ $mobileItem($isRegulation) }}" @if ($isRegulation) aria-current="page" @endif>{{ __('Regulasi') }}</a>
 
-            <div x-data="{ open: {{ $isService ? 'true' : 'false' }} }">
-                <button @click="open = !open" class="{{ $mobileItem($isService) }} w-full flex justify-between items-center">
+            <div x-data="{ open: {{ $openService ? 'true' : 'false' }} }">
+                <button @click="open = !open" class="{{ $mobileItem($openService) }} w-full flex justify-between items-center">
                     {{ __('Standar Pelayanan') }}
                     <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
-                <div x-show="open" x-collapse @if (!$isService) style="display:none" @endif>
+                <div x-show="open" x-collapse @if (!$openService) style="display:none" @endif>
                     <a href="{{ route('ppid.service', 'maklumat-pelayanan') }}" class="{{ $mobileSub($isService && $activeSlug === 'maklumat-pelayanan') }}">{{ __('Maklumat Pelayanan') }}</a>
                     <a href="{{ route('ppid.service', 'prosedur-permohonan') }}" class="{{ $mobileSub($isService && $activeSlug === 'prosedur-permohonan') }}">{{ __('Prosedur Permohonan') }}</a>
                     <a href="{{ route('ppid.service', 'jalur-waktu-layanan') }}" class="{{ $mobileSub($isService && $activeSlug === 'jalur-waktu-layanan') }}">{{ __('Jalur & Waktu Layanan') }}</a>
+                    <a href="{{ route('ppid.register') }}" class="{{ $mobileSub($isRegister) }}">{{ __('Register Permohonan Informasi') }}</a>
+                    <a href="{{ route('ppid.report', 'statistik-informasi') }}" class="{{ $mobileSub($isReport && $activeSlug === 'statistik-informasi') }}">{{ __('Laporan Statistik Informasi Publik') }}</a>
+                    <a href="{{ route('ppid.report', 'pelayanan-informasi') }}" class="{{ $mobileSub($isReport && $activeSlug === 'pelayanan-informasi') }}">{{ __('Laporan Pelayanan Informasi') }}</a>
                 </div>
             </div>
 

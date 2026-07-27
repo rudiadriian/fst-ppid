@@ -4,7 +4,8 @@ Dan saya sudah membuatkan folder Front-end @\ppid\fe-ppid dan Back end @\ppid\be
 Untuk Front-end @\ppid\fe-ppid sudah selesai saya kerjakan mockup desainnya, sekarang tolong bantu saya membuat Back end @\ppid\be-ppid agar dapat berfungsi maksimal, memiliki keamanan yang tinggi dan ringan ketika diakses. 
 Adapun langkah-langkah yang perlu dijalankan, jika sudah selesai dijalankan tolong beri tanda checklist. berikut langkahnya dibawah ini :
 1. ✅ [SELESAI] tolong jalankan query SQL sesuai dengan schema database (nama database) ppiddb dibawah ini :
-   - PostgreSQL 18, DB `ppiddb` dibuat, 37 tabel + 4 partisi + trigger `search_vector` (config `indonesian` jalan). Backend = folder `fe-ppid` (Laravel 10).
+   - PostgreSQL 18, DB `ppiddb` dibuat, 37 tabel + 4 partisi + trigger `search_vector` (config `indonesian` jalan).
+   - Arsitektur: `fe-ppid` = frontend publik (Laravel/Blade), `be-ppid` = backend/web admin (React fuse + Vite).
     -- =========================================================
     -- Rancangan Database PPID - PT Food Station Tjipinang Jaya
     -- PostgreSQL DDL
@@ -483,4 +484,4 @@ Adapun langkah-langkah yang perlu dijalankan, jika sudah selesai dijalankan tolo
     BEFORE INSERT OR UPDATE ON informasi_publik
     FOR EACH ROW EXECUTE FUNCTION informasi_publik_search_update();
 
-2. sekarang tolong jalankan backend foldernya ada di path ini @ppid\be-ppid agar bisa login dan mengakses web adminnya.
+2. sekarang tolong jalankan backend foldernya agar bisa login dan mengakses web adminnya. saya ingin konsepnya folder @\ppid\be-ppid menjadi pusat control halaman website PPID yang ada pada path @\ppid\fe-ppid agar semua konten pada website diatur melalui portal CMS atau Backend yang mana 2 folder tersebut saling terintergasi melalui API yang sangat aman dari serangan hacker dan dinamis jika suatu saat ada kebutuhan integrasi mudah untuk di maintenance.
