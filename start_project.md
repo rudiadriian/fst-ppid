@@ -3,7 +3,8 @@ Dan saya sudah membuatkan folder Front-end @\ppid\fe-ppid dan Back end @\ppid\be
 
 Untuk Front-end @\ppid\fe-ppid sudah selesai saya kerjakan mockup desainnya, sekarang tolong bantu saya membuat Back end @\ppid\be-ppid agar dapat berfungsi maksimal, memiliki keamanan yang tinggi dan ringan ketika diakses. 
 Adapun langkah-langkah yang perlu dijalankan, jika sudah selesai dijalankan tolong beri tanda checklist. berikut langkahnya dibawah ini :
-1. tolong jalankan query SQL sesuai dengan schema database (nama database) ppiddb dibawah ini :
+1. ✅ [SELESAI] tolong jalankan query SQL sesuai dengan schema database (nama database) ppiddb dibawah ini :
+   - PostgreSQL 18, DB `ppiddb` dibuat, 37 tabel + 4 partisi + trigger `search_vector` (config `indonesian` jalan). Backend = folder `fe-ppid` (Laravel 10).
     -- =========================================================
     -- Rancangan Database PPID - PT Food Station Tjipinang Jaya
     -- PostgreSQL DDL
@@ -481,3 +482,5 @@ Adapun langkah-langkah yang perlu dijalankan, jika sudah selesai dijalankan tolo
     CREATE TRIGGER trg_infopublik_search
     BEFORE INSERT OR UPDATE ON informasi_publik
     FOR EACH ROW EXECUTE FUNCTION informasi_publik_search_update();
+
+2. sekarang tolong jalankan backend foldernya ada di path ini @ppid\be-ppid agar bisa login dan mengakses web adminnya.

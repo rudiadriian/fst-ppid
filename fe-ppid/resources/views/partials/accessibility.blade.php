@@ -19,7 +19,7 @@ window.interdeal = {
     "draggable": true,
     "btnStyle": {
         "vPosition": [
-            "80%",
+            "50%",
             "80%"
         ],
         "margin": [

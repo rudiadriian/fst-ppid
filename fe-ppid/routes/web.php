@@ -51,3 +51,11 @@ Route::post('/check-status', [PpidController::class, 'checkRequestStatus'])->nam
 
 Route::get('/search-suggest', [SearchController::class, 'suggestions']);
 Route::post('/download-report', [PpidController::class, 'sendDownloadLink'])->name('report.download');
+
+// --- Backend / Web Admin (auth) ---
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+// Route autentikasi Breeze (login/register/logout/reset password)
+require __DIR__ . '/auth.php';

@@ -19,7 +19,7 @@ window.interdeal = {
     "draggable": true,
     "btnStyle": {
         "vPosition": [
-            "80%",
+            "50%",
             "80%"
         ],
         "margin": [
@@ -54,4 +54,4 @@ window.interdeal = {
     coreCall.setAttribute('data-cfasync', true );
     body? body.appendChild(coreCall) : head.appendChild(coreCall);
 })(document, document.head, document.body);
-</script> 
+</script>
