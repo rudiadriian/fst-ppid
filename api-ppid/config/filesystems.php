@@ -44,6 +44,22 @@ return [
             'throw' => false,
         ],
 
+        /*
+         * Disk berkas publik PPID.
+         *
+         * Root-nya sengaja diarahkan ke folder storage milik `fe-ppid` supaya
+         * berkas yang diunggah lewat CMS langsung bisa disajikan situs publik
+         * tanpa proses sinkronisasi. Kalau nanti dipisah ke server berbeda,
+         * cukup ganti MEDIA_ROOT/MEDIA_URL (atau tukar ke driver s3).
+         */
+        'media' => [
+            'driver' => 'local',
+            'root' => env('MEDIA_ROOT', base_path('../fe-ppid/storage/app/public')),
+            'url' => env('MEDIA_URL', 'http://localhost:8000/storage'),
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

@@ -58,6 +58,33 @@ Route::post('/check-status', [PpidController::class, 'checkRequestStatus'])->nam
 Route::get('/search-suggest', [SearchController::class, 'suggestions']);
 Route::post('/download-report', [PpidController::class, 'sendDownloadLink'])->name('report.download');
 
+/*
+ * Penyaji berkas media CMS.
+ *
+ * Berkas yang diunggah lewat `be-ppid` ditulis ke `storage/app/public` milik
+ * project ini, bukan ke document root, jadi tidak pernah dieksekusi web server.
+ * Route ini yang membacanya. Kalau `php artisan storage:link` dijalankan,
+ * symlink di `public/storage` akan dilayani lebih dulu dan route ini menganggur.
+ */
+Route::get('/storage/{path}', function (string $path) {
+    // Hanya folder unggahan CMS yang boleh dibaca, dan tidak boleh keluar darinya.
+    if (!\Illuminate\Support\Str::startsWith($path, 'uploads/') || str_contains($path, '..')) {
+        abort(404);
+    }
+
+    $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+    if (!$disk->exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($disk->path($path), [
+        'Cache-Control' => 'public, max-age=86400',
+        // Berkas tidak boleh ditafsirkan ulang tipenya oleh browser.
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
+})->where('path', '.*')->name('media.show');
+
 // --- Backend / Web Admin (auth) ---
 Route::get('/dashboard', function () {
     return view('dashboard');

@@ -24,8 +24,19 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Panel admin memuat beberapa daftar sekaligus per halaman, jadi kuota
+        // untuk sesi yang sudah login lebih longgar daripada untuk anonim.
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+            $userId = $this->idPengguna($request);
+
+            return $userId
+                ? Limit::perMinute(300)->by('user:'.$userId)
+                : Limit::perMinute(60)->by('ip:'.$request->ip());
+        });
+
+        // Unggahan berkas jauh lebih mahal daripada request biasa.
+        RateLimiter::for('uploads', function (Request $request) {
+            return Limit::perMinute(30)->by('upload:'.($this->idPengguna($request) ?: $request->ip()));
         });
 
         // Rem brute force login: per kombinasi email + IP, dan per IP saja.
@@ -44,5 +55,21 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });
+    }
+
+    /**
+     * ID pengguna dari token JWT, atau null bila token tidak ada/tidak sah.
+     *
+     * Throttle berjalan sebelum middleware auth, jadi token harus dibaca
+     * sendiri di sini. Token rusak tidak boleh melempar error — cukup
+     * diperlakukan sebagai anonim dan biarkan auth yang menolak.
+     */
+    private function idPengguna(Request $request): ?int
+    {
+        try {
+            return auth('api')->id();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }
