@@ -57,9 +57,12 @@ class KategoriInformasiController extends CrudController
 
     protected function beforeDelete(Model $record): void
     {
-        if ($record->informasiPublik()->exists()) {
+        // Termasuk baris yang sudah di-soft delete: foreign key di PostgreSQL
+        // memakai RESTRICT dan tetap menahan penghapusan walau baris perujuknya
+        // sudah "terhapus" di level aplikasi.
+        if ($record->informasiPublik()->withTrashed()->exists()) {
             throw ValidationException::withMessages([
-                'id' => 'Kategori masih dipakai informasi publik. Pindahkan datanya lebih dulu.',
+                'id' => 'Kategori masih dipakai informasi publik (termasuk yang diarsipkan). Pindahkan datanya lebih dulu.',
             ]);
         }
 

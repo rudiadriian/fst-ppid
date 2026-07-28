@@ -19,6 +19,7 @@ import { NavbarContextProvider } from '@/components/theme-layouts/components/nav
 import { QuickPanelProvider } from '@/components/theme-layouts/components/quickPanel/contexts/QuickPanelContext/QuickPanelContextProvider';
 import RootThemeProvider from '@/contexts/RootThemeProvider';
 import { NavigationContextProvider } from '@/components/theme-layouts/components/navigation/contexts/NavigationContextProvider';
+import PpidNavigationSync from '@/app/(control-panel)/ppid/components/PpidNavigationSync';
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -69,7 +70,9 @@ function App() {
 														>
 															<NotificationPanelContextProvider>
 																<QuickPanelProvider>
-																	<FuseLayout layouts={themeLayouts} />
+																	{/* Menyaring menu samping sesuai hak akses role */}
+																		<PpidNavigationSync />
+																		<FuseLayout layouts={themeLayouts} />
 																</QuickPanelProvider>
 															</NotificationPanelContextProvider>
 														</SnackbarProvider>

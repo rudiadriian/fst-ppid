@@ -325,10 +325,38 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 					}}
 					enableRowSelection={bolehTulis && akses.delete}
 					enableRowActions={bolehTulis && (akses.edit || akses.delete)}
-					renderTopToolbarCustomActions={() =>
-						config.filters && config.filters.length > 0 ? (
-							<div className="flex flex-wrap items-center gap-2">
-								{config.filters.map((filter) =>
+					renderTopToolbarCustomActions={({ table }) => (
+						<div className="flex flex-wrap items-center gap-2">
+							{akses.delete && table.getSelectedRowModel().rows.length > 0 && (
+								<Button
+									variant="contained"
+									color="error"
+									size="small"
+									onClick={async () => {
+										const terpilih = table.getSelectedRowModel().rows;
+
+										// eslint-disable-next-line no-alert
+										if (!window.confirm(`Hapus ${terpilih.length} data terpilih?`)) {
+											return;
+										}
+
+										try {
+											await hapusBanyak.mutateAsync(terpilih.map((r) => Number(r.original.id)));
+											table.resetRowSelection();
+											enqueueSnackbar('Data terpilih dihapus', { variant: 'success' });
+										} catch (err) {
+											enqueueSnackbar(
+												err instanceof PpidApiError ? err.message : 'Gagal menghapus data',
+												{ variant: 'error' }
+											);
+										}
+									}}
+								>
+									Hapus {table.getSelectedRowModel().rows.length} data
+								</Button>
+							)}
+
+							{(config.filters ?? []).map((filter) =>
 									filter.type === 'relation' ? (
 										<FilterRelasi
 											key={filter.name}
@@ -377,12 +405,11 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 													{opsi.label}
 												</MenuItem>
 											))}
-										</TextField>
-									)
-								)}
-							</div>
-						) : null
-					}
+									</TextField>
+								)
+							)}
+						</div>
+					)}
 					renderRowActionMenuItems={({ row, closeMenu }: { row: MRT_Row<ApiRecord>; closeMenu: () => void }) =>
 						[
 							...(aksiBaris?.(row.original, closeMenu) ?? []),
@@ -422,40 +449,6 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 							) : null
 						].filter(Boolean)
 					}
-					renderTopToolbarBulkActions={({ table }) => {
-						const terpilih = table.getSelectedRowModel().rows;
-
-						if (terpilih.length === 0 || !akses.delete) {
-							return null;
-						}
-
-						return (
-							<Button
-								variant="contained"
-								color="error"
-								size="small"
-								onClick={async () => {
-									// eslint-disable-next-line no-alert
-									if (!window.confirm(`Hapus ${terpilih.length} data terpilih?`)) {
-										return;
-									}
-
-									try {
-										await hapusBanyak.mutateAsync(terpilih.map((r) => Number(r.original.id)));
-										table.resetRowSelection();
-										enqueueSnackbar('Data terpilih dihapus', { variant: 'success' });
-									} catch (err) {
-										enqueueSnackbar(
-											err instanceof PpidApiError ? err.message : 'Gagal menghapus data',
-											{ variant: 'error' }
-										);
-									}
-								}}
-							>
-								Hapus {terpilih.length} data
-							</Button>
-						);
-					}}
 				/>
 			</Paper>
 

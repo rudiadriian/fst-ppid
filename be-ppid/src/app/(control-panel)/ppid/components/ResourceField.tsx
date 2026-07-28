@@ -79,7 +79,8 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 							<SimpleEditor
 								value={(rhf.value as string) ?? ''}
 								onChange={rhf.onChange}
-								error={Boolean(pesanError)}
+								error={pesanError}
+								required={field.required}
 								className=""
 							/>
 							{(pesanError || field.help) && (

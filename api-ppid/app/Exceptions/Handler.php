@@ -59,7 +59,9 @@ class Handler extends ExceptionHandler
                 return null;
             }
 
-            $kodeConstraint = ['23503', '23505', '23514'];
+            // 23001 restrict_violation, 23503 foreign_key_violation,
+            // 23505 unique_violation, 23514 check_violation.
+            $kodeConstraint = ['23001', '23503', '23505', '23514'];
 
             if (in_array((string) ($e->errorInfo[0] ?? ''), $kodeConstraint, true)) {
                 return response()->json([
