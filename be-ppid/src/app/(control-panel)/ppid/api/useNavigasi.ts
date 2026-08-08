@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import useAuth from '@fuse/core/FuseAuthProvider/useAuth';
 import api from '@/utils/api';
 
 /**
@@ -38,9 +39,14 @@ export type NavigasiResponse = {
 export const navigasiQueryKey = ['ppid', 'navigasi'];
 
 export function useNavigasi() {
+	const { authState } = useAuth();
+
 	return useQuery({
 		queryKey: navigasiQueryKey,
 		queryFn: () => api.get('v1/me/navigation').json<NavigasiResponse>(),
+		// Jangan pernah dipanggil sebelum login: request tanpa token dijawab 401,
+		// dan interceptor auth memperlakukan 401 apa pun sebagai perintah sign out.
+		enabled: Boolean(authState?.isAuthenticated),
 		staleTime: 5 * 60 * 1000
 	});
 }

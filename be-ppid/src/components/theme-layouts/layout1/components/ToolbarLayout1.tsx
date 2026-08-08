@@ -12,7 +12,6 @@ import FullScreenToggle from '../../components/FullScreenToggle';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import NavigationShortcuts from '../../components/navigation/NavigationShortcuts';
 import NavigationSearch from '../../components/navigation/NavigationSearch';
-import QuickPanelToggleButton from '../../components/quickPanel/QuickPanelToggleButton';
 import { Layout1ConfigDefaultsType } from '@/components/theme-layouts/layout1/Layout1Config';
 import useThemeMediaQuery from '../../../../@fuse/hooks/useThemeMediaQuery';
 import { AppBar, Divider } from '@mui/material';
@@ -68,7 +67,6 @@ function ToolbarLayout1(props: ToolbarLayout1Props) {
 							darkTheme={_.find(themeOptions, { id: 'Default Dark' })}
 						/>
 						<NavigationSearch />
-						<QuickPanelToggleButton />
 						<NotificationPanelToggleButton />
 					</div>
 

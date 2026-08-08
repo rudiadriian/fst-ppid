@@ -493,7 +493,7 @@ Adapun langkah-langkah yang perlu dijalankan, jika sudah selesai dijalankan tolo
     - ⚠️ Catatan Node: Node terpasang v20.10.0, `package.json` engines minta >= 22.12.0. Jalan normal karena `engine-strict=false`, tapi disarankan upgrade Node 22 LTS.
     - ✅ Integrasi API selesai (rincian di 3b). Seluruh modul CMS membaca/menulis `ppiddb` lewat `api-ppid`; menu demo Fuse sudah diganti menu PPID. Halaman awal panel: `/ppid/dashboard`.
 
-    3. ⏳ [BERJALAN] Bangun API layer + integrasi CMS. Keputusan arsitektur (disetujui 2026-07-27):
+3. ✅ [SELESAI] Bangun API layer + integrasi CMS. Keputusan arsitektur (disetujui 2026-07-27):
     - **Lokasi API**: project Laravel terpisah `api-ppid` (bukan di dalam `fe-ppid`). Alasan: endpoint admin tidak menempel di domain publik, dan kalau API mati `fe-ppid` tetap hidup karena baca `ppiddb` langsung.
     - **Auth admin**: JWT yang diterbitkan API dari tabel `users` + `roles`, RBAC dari `role_modul_akses`. Di sisi `be-ppid` pakai `JwtAuthProvider` bawaan Fuse, tinggal ganti target dari MSW mock ke API asli.
     - Rincian yang perlu dikerjakan: scaffold `api-ppid`, Eloquent model untuk 37 tabel, endpoint CRUD per modul CMS, hardening (rate limit, CORS whitelist, validasi, audit_log), lalu ganti hook data di `be-ppid` per modul.
@@ -541,8 +541,69 @@ Adapun langkah-langkah yang perlu dijalankan, jika sudah selesai dijalankan tolo
     - GET semua modul 200; create kategori + informasi publik berhasil; unggah dokumen sah berhasil sementara berkas `.php` ditolak 422; transisi status ilegal ditolak dengan pesan jelas; endpoint tanpa token 401; tulis ke audit log 405; rekap laporan dan simpan pengaturan massal berjalan.
     - Data uji sudah dibersihkan kembali dari `ppiddb`.
 
+    Progres 3c — perbaikan login + integrasi situs publik (SELESAI 2026-07-28):
+
+    Perbaikan login "masih loading":
+    - ✅ Penyebab: `settingsConfig.defaultAuth` masih `['admin']` bawaan Fuse, sedangkan role PPID berasal dari tabel `roles` (`super-admin`, `ppid-utama`, `ppid-pelaksana`). Setelah login, `FuseAuthorization` menilai role tidak cocok → mengalihkan ke `/401` → halaman itu ikut ditolak → berputar terus dan yang tampil hanya `FuseLoading`.
+    - ✅ Perbaikan: `defaultAuth` disetel `null` (daftar role statis di frontend tidak dipakai lagi karena role bisa ditambah dari CMS). Halaman panel dijaga komponen baru `PpidAuthGuard` — cukup "harus sudah login"; hak per modul tetap ditegakkan middleware `akses:` di API.
+    - ✅ `loginRedirectUrl` diarahkan ke `/ppid/dashboard`.
+    - ✅ `useNavigasi` tidak lagi dipanggil sebelum login. Sebelumnya request tanpa token dijawab 401 dan interceptor auth memperlakukan 401 apa pun sebagai perintah sign out.
+    - ✅ 35 berkas route demo Fuse dihapus (`apps/*`, `dashboards/*`, `pages/*`, `auth-role-examples`, `documentation`) sehingga halaman demo tidak lagi bisa dibuka lewat URL langsung. Komponennya dibiarkan karena sebagian dipakai panel (messenger, notifikasi). Menu profil/inbox di `UserMenu` diganti tautan Dashboard.
+    - ✅ Terverifikasi lewat proxy `localhost:3000` memakai akun uji berrole `ppid-pelaksana`: login mengembalikan token + user, `/me/navigation` mengembalikan modul sesuai role, dan modul `pengguna` yang tidak diizinkan dijawab 403. Akun uji sudah dihapus kembali.
+
+    Situs publik `fe-ppid` kini membaca konten dari CMS:
+    - ✅ 13 model baru di `fe-ppid` (berita, kategori berita, galeri, FAQ, banner, menu, struktur organisasi, tautan, pengaturan situs, halaman statis, kategori & informasi publik beserta lampiran).
+    - ✅ Helper `App\Support\Cms`: setiap pembacaan dibungkus penanganan galat dengan data cadangan, ditambah pembentuk URL media, pembaca pengaturan situs, dan format tanggal Indonesia. Kalau DB bermasalah, halaman tetap terbuka dan menampilkan pemberitahuan.
+    - ✅ `HomeController` baru: slider hero (Banner Slider), kartu klasifikasi + jumlah dokumen (Kategori Informasi), empat angka ringkas (permohonan, dokumen, regulasi, indeks kepuasan dari survei), berita terbaru, slider arsip (Galeri), laporan terbaru, FAQ, dan blok kontak (Pengaturan Situs). Blok data statis di `home.blade.php` dihapus; sisanya hanya ikon dan tautan menu.
+    - ✅ `KontenController` + halaman baru: `/berita`, `/berita/{slug}`, `/galeri`, `/faq`, `/struktur-ppid`. Semuanya masuk menu header, menu mobile, dan footer.
+    - ✅ `showPublicInformation` membaca kategori dan dokumen dari CMS (dengan tautan unduh berkas). Tiga klasifikasi wajib UU No. 14/2008 selalu punya halaman walau kategorinya belum dibuat — tabelnya tampil kosong, bukan 404.
+    - ✅ `showProfilePage` memakai isi dari modul Halaman Statis bila slug-nya sudah dibuat (menerima `{slug}` atau `profil-{slug}`); kalau belum, tata letak profil bawaan tetap tampil. Halaman Struktur PPID menampilkan pejabat dari modul Struktur Organisasi.
+    - ✅ `CmsLayoutComposer` mengisi header dan footer di semua halaman: daftar kategori informasi, tautan terkait, dan kontak. Tautan profil di footer yang sebelumnya menunjuk slug tidak dikenal (404) sudah dibetulkan.
+    - ✅ Konten berbasis HTML dari editor CMS dirender hanya dengan tag aman (tanpa `<script>`), baik di berita maupun halaman statis.
+    - ✅ `KontenAwalSeeder` di `api-ppid`: 3 kategori informasi, 4 kategori berita, 5 FAQ, dan 5 pengaturan kontak. Sengaja tidak membuat berita/laporan/pejabat karangan — itu harus diisi perusahaan lewat CMS.
+
+    Verifikasi 3c (2026-07-28):
+    - 20 halaman publik dijawab 200: beranda, berita, galeri, FAQ, struktur, 3 kanal informasi + dikecualikan, 4 halaman profil, regulasi, permohonan, keberatan, cek status, register, laporan, standar layanan.
+    - Rantai penuh CMS → situs publik diuji: berita dibuat lewat `POST /api/v1/berita` langsung muncul di `/berita`, di beranda, dan halaman detailnya 200. Berkas yang diunggah lewat `POST /api/v1/uploads` tersaji di `http://localhost:8000/storage/uploads/...` dengan `Content-Type: image/png`, sedangkan path di luar folder `uploads` dijawab 404. Data uji sudah dihapus.
+    - `npx tsc --noEmit` di `be-ppid` bersih; `php -l` bersih pada seluruh berkas PHP yang disentuh.
+
     Yang belum / catatan lanjutan:
-    - ⚠️ Belum diuji lewat antarmuka browser (perlu login manual dengan kata sandi admin). Uji manual: buka `http://localhost:3000`, login, lalu telusuri menu PPID.
-    - ⚠️ Halaman demo Fuse (apps/dashboards/pages) masih ada di repo dan tetap bisa dibuka lewat URL langsung meski tidak ada di menu; hapus foldernya bila ingin bundel lebih ramping.
-    - ⚠️ `fe-ppid` masih membaca sebagian konten dari data statis di controller. Menyambungkan halaman publik ke tabel CMS (berita, galeri, FAQ, banner, menu, halaman statis) adalah pekerjaan berikutnya.
-    - ⚠️ Sebelum production: jalankan `php artisan storage:link` di `fe-ppid`, set `APP_DEBUG=false` di `api-ppid`, dan lakukan upgrade PHP/Laravel yang disebut di 3a.
+    - ⚠️ Belum diuji lewat antarmuka browser sungguhan (tidak ada akses browser di sesi ini). Uji manual: `http://localhost:3000` untuk panel dan `http://localhost:8000` untuk situs publik.
+    - ⚠️ Isi situs masih menunggu data asli: berita, galeri, banner, laporan, regulasi, struktur pejabat, dan halaman profil. Semua sudah bisa diisi dari CMS.
+    - ⚠️ Menu header masih memakai struktur kanal tetap; modul Menu Navigasi tersedia di CMS tapi belum dipakai untuk menyusun ulang menu utama.
+    - ✅ Sebelum production: jalankan `php artisan storage:link` di `fe-ppid`, set `APP_DEBUG=false` di `api-ppid`, dan lakukan upgrade PHP/Laravel yang disebut di 3a.
+4. ✅ [SELESAI] percobaan login masih belum berhasil, tampilan cms dashboard (be-ppid) tidak tampil
+
+    Ada empat penyebab berbeda yang menumpuk. Semuanya sudah ditambal dan diverifikasi lewat peramban sungguhan (Chrome headless dikendalikan protokol CDP), bukan hanya lewat curl.
+
+    Penyebab 1 — sesi hilang tiap kali halaman dimuat ulang (paling menentukan):
+    - `JwtAuthProvider` melakukan auto-login memakai token tersimpan, tapi tidak pernah memasang kembali header `Authorization` pada klien HTTP. Akibatnya setiap permintaan setelah reload dikirim tanpa token → API menjawab 401 → interceptor auth menganggapnya perintah sign out → pengguna terlempar ke `/sign-in` dan panel tampak "tidak muncul".
+    - Perbaikan: header dipasang ulang tepat setelah auto-login berhasil, termasuk memakai token baru bila server mengirim `New-Access-Token`.
+
+    Penyebab 2 — token dibatalkan sendiri oleh server:
+    - `GET /auth/sign-in-with-token` memanggil `Auth::refresh()` yang langsung memasukkan token lama ke blacklist. Panel menembakkan beberapa permintaan bersamaan saat halaman dimuat, sehingga permintaan yang masih membawa token lama ditolak 401.
+    - Perbaikan: endpoint itu tidak lagi memutar token; pembaruan token tetap tersedia lewat `POST /auth/refresh`.
+
+    Penyebab 3 — service worker mock (MSW) mencegat API asli:
+    - Template Fuse mendaftarkan service worker MSW di `src/index.tsx`. Service worker yang terlanjur terpasang di peramban ikut mencegat `/api/v1/*`; terpantau `GET /api/v1/me/navigation` dijawab 500 oleh service worker, dan pernah membuat React gagal dipasang sama sekali (halaman berhenti di splash screen).
+    - Perbaikan: MSW tidak lagi dijalankan (semua data sudah dari API asli), dan saat aplikasi mulai, seluruh registrasi service worker lama dicabut supaya peramban yang pernah membuka versi lama pulih sendiri.
+
+    Penyebab 4 — panel notifikasi menembak API sebelum login:
+    - Panel notifikasi terpasang di layout sejak halaman pertama dan memanggil endpoint mock `/api/mock/notifications` (404 setelah MSW dilepas) lalu API asli tanpa token (401) — 401 itu memicu sign out otomatis tepat setelah pengguna berhasil masuk.
+    - Perbaikan: dibuat endpoint asli `GET|DELETE /api/v1/notifikasi` yang membaca tabel `notifikasi` milik pengguna login, service di frontend diarahkan ke sana, dan query-nya baru berjalan setelah status login pasti.
+
+    Perbaikan pendukung:
+    - `FuseAuthorization` mengabaikan nilai `fuseRedirectUrl` berisi `401`/`404` yang tersimpan dari percobaan gagal sebelumnya, supaya sesi peramban lama tidak selalu mendarat di halaman "tidak berwenang".
+    - `Authenticate` middleware di API mengembalikan 401 JSON, bukan mencoba redirect ke route `login` yang tidak ada (sebelumnya menghasilkan 500 "Route [login] not defined").
+    - Panel Messenger demo dilepas dari layout kanan (layout1/2/3) karena endpoint mock-nya sudah tidak ada dan hanya menghasilkan 404 beruntun.
+
+    Verifikasi lewat peramban (Chrome headless, 2026-07-28):
+    - Login dengan akun uji berrole `ppid-pelaksana`: berhasil dan mendarat di `/ppid/dashboard`, judul "Dashboard PPID" tampil dengan angka nyata dari database, 18 tautan menu PPID terbentuk sesuai hak akses role.
+    - Muat ulang langsung ke `/ppid/faq` (bukan navigasi dalam aplikasi): sesi bertahan, `GET /api/v1/me/navigation` menjawab 200, tabel FAQ menampilkan 5 baris dari CMS.
+    - Seluruh 18 modul CMS ditelusuri satu per satu: semuanya membuka halaman yang benar dengan judul modul masing-masing, tidak ada "Akses ditolak" maupun "modul tidak dikenal", dan **tidak ada satu pun respons HTTP ≥ 400**.
+    - Formulir diuji: tombol "Tambah FAQ" membuka dialog, data tersimpan (notifikasi "FAQ ditambahkan"), dan baris baru langsung muncul di tabel. Data uji beserta akun uji sudah dihapus kembali.
+    - `npx tsc --noEmit` bersih; situs publik (`/`, `/berita`, `/faq`, `/galeri`), API (`/api/v1/health`), dan panel (`localhost:3000`) semuanya menjawab 200.
+
+    Catatan pemakaian:
+    - Jalankan tiga proses: `php artisan serve --port=8001` di `api-ppid`, `php artisan serve --port=8000` di `fe-ppid`, dan `npm run dev` di `be-ppid` (port 3000).
+    - Bila panel pernah dibuka sebelum perbaikan ini, muat ulang sekali; pencabutan service worker lama berjalan otomatis saat aplikasi dimulai.

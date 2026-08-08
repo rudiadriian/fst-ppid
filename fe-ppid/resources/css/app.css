@@ -11,10 +11,29 @@
   }
 
 
+/* -------------------------------------------------------------------
+   1. TOKEN WARNA
+   Mengikuti referensi desain theme-color.jpeg & theme-color1.jpeg:
+   hijau hutan pekat (struktur) + oranye (aksen/CTA) + krem (latar sesi).
+   ------------------------------------------------------------------- */
 :root {
-    --color-fs-primary: #008060; /* Forest Green/Teal untuk Branding */
-    --color-fs-accent: #A0C3A7; /* Mint Green Muted untuk Aksen */
-    --color-fs-hover: #00664e;  /* Hijau sedikit lebih gelap untuk Hover */
+    /* Hijau — warna utama/branding */
+    --color-fs-primary: #10462F;      /* Deep Forest Green untuk Branding */
+    --color-fs-primary-soft: #26704E; /* Hijau medium untuk teks sekunder */
+    --color-fs-accent: #3E9C6C;       /* Hijau terang untuk aksen & mode gelap */
+    --color-fs-hover: #0B3524;        /* Hijau lebih gelap untuk Hover */
+
+    /* Oranye — aksen & tombol aksi */
+    --color-fs-cta: #E87317;          /* Oranye utama (CTA) */
+    --color-fs-cta-hover: #C85C10;    /* Oranye gelap untuk Hover */
+    --color-fs-cta-soft: #F5A94C;     /* Oranye muda untuk highlight */
+
+    /* Krem — latar sesi terang */
+    --color-fs-cream: #FAF6EC;
+    --color-fs-cream-dark: #F3ECDD;
+
+    /* Netral gelap (bernuansa hijau) */
+    --color-fs-ink: #071A12;
 }
 
 /* -------------------------------------------------------------------
@@ -34,9 +53,17 @@
     @apply bg-[var(--color-fs-hover)];
 }
 
+/* Kelas untuk Tombol Aksi Utama (CTA oranye) */
+.fs-btn-cta {
+    @apply bg-[var(--color-fs-cta)] text-white p-3 text-sm font-semibold transition duration-200;
+}
+.fs-btn-cta:hover {
+    @apply bg-[var(--color-fs-cta-hover)];
+}
+
 /* Kelas untuk Tautan Navigasi Aktif (Beranda) */
 .fs-nav-active {
-    @apply text-[var(--color-fs-primary)] border-b-2 border-[var(--color-fs-accent)] pb-1 font-semibold transition duration-200;
+    @apply text-[var(--color-fs-primary)] border-b-2 border-[var(--color-fs-cta)] pb-1 font-semibold transition duration-200;
 }
 
 /* Kelas untuk Tautan Navigasi Normal */
@@ -49,5 +76,5 @@
     @apply border border-gray-300 rounded-full overflow-hidden transition duration-300;
 }
 .fs-search-focus:focus-within {
-    border-color: var(--color-fs-primary);
+    border-color: var(--color-fs-cta);
 }

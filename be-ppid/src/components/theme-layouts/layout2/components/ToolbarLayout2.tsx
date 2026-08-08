@@ -11,7 +11,6 @@ import LanguageSwitcher from '../../components/LanguageSwitcher';
 import NavigationShortcuts from '../../components/navigation/NavigationShortcuts';
 import NavigationSearch from '../../components/navigation/NavigationSearch';
 import UserMenu from '../../components/UserMenu';
-import QuickPanelToggleButton from '../../components/quickPanel/QuickPanelToggleButton';
 import useThemeMediaQuery from '../../../../@fuse/hooks/useThemeMediaQuery';
 import ToolbarTheme from '@/contexts/ToolbarTheme';
 
@@ -49,7 +48,6 @@ function ToolbarLayout2(props: ToolbarLayout2Props) {
 						<AdjustFontSize />
 						<FullScreenToggle />
 						<NavigationSearch />
-						<QuickPanelToggleButton />
 						<NotificationPanelToggleButton />
 					</div>
 					{!isMobile && (

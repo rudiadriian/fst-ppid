@@ -82,9 +82,14 @@ class AuthController extends Controller
 
         $user->loadMissing('role');
 
-        return response()->json($user->toFuseUser(), 200, [
-            'New-Access-Token' => Auth::guard('api')->refresh(),
-        ]);
+        /*
+        Token sengaja tidak diputar di sini. `refresh()` langsung memasukkan
+        token lama ke blacklist, sedangkan panel admin biasanya menembakkan
+        beberapa permintaan sekaligus saat halaman dimuat; permintaan yang
+        masih membawa token lama akan ditolak 401 dan pengguna ikut terlempar
+        keluar. Pembaruan token dilakukan lewat endpoint `auth/refresh`.
+        */
+        return response()->json($user->toFuseUser());
     }
 
     public function refresh(): JsonResponse

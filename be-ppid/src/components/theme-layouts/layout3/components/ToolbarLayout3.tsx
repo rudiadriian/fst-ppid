@@ -10,7 +10,6 @@ import FullScreenToggle from '../../components/FullScreenToggle';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import NavigationSearch from '../../components/navigation/NavigationSearch';
 import UserMenu from '../../components/UserMenu';
-import QuickPanelToggleButton from '../../components/quickPanel/QuickPanelToggleButton';
 import Logo from '../../components/Logo';
 import useThemeMediaQuery from '../../../../@fuse/hooks/useThemeMediaQuery';
 import ToolbarTheme from '@/contexts/ToolbarTheme';
@@ -48,7 +47,6 @@ function ToolbarLayout3(props: ToolbarLayout3Props) {
 						<LanguageSwitcher />
 						<AdjustFontSize />
 						<FullScreenToggle />
-						<QuickPanelToggleButton />
 						<NotificationPanelToggleButton />
 					</div>
 					{!isMobile && (

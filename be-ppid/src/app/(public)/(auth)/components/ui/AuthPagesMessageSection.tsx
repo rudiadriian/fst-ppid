@@ -1,5 +1,3 @@
-import AvatarGroup from '@mui/material/AvatarGroup';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 
 function AuthPagesMessageSection() {
@@ -74,30 +72,12 @@ function AuthPagesMessageSection() {
 
 			<div className="relative z-10 w-full max-w-4xl">
 				<div className="text-7xl leading-none font-bold text-gray-100">
-					<div>Welcome to</div>
-					<div>our community</div>
+					<div>Selamat datang di</div>
+					<div>PPID Admin</div>
 				</div>
 				<div className="mt-6 text-lg leading-6 tracking-tight text-gray-400">
-					Fuse helps developers to build organized and well coded dashboards full of beautiful and rich
-					modules. Join us and start building your application today.
-				</div>
-				<div className="mt-8 flex items-center">
-					<AvatarGroup
-						sx={{
-							'& .MuiAvatar-root': {
-								borderColor: 'primary.main'
-							}
-						}}
-					>
-						<Avatar src="/assets/images/avatars/female-18.jpg" />
-						<Avatar src="/assets/images/avatars/female-11.jpg" />
-						<Avatar src="/assets/images/avatars/male-09.jpg" />
-						<Avatar src="/assets/images/avatars/male-16.jpg" />
-					</AvatarGroup>
-
-					<div className="ml-4 font-medium tracking-tight text-gray-400">
-						More than 17k people joined us, it's your turn
-					</div>
+					Panel pengelolaan konten dan layanan informasi publik PPID. Masuk dengan akun Anda untuk mengelola
+					informasi, permohonan, dan publikasi.
 				</div>
 			</div>
 		</Box>

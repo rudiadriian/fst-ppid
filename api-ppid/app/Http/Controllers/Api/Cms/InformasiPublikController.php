@@ -42,6 +42,8 @@ class InformasiPublikController extends CrudController
             'slug' => ['nullable', 'string', 'max:255'],
             'ringkasan' => ['nullable', 'string'],
             'konten' => ['nullable', 'string'],
+            // Entri bisa menunjuk ke halaman lain, bukan berkas unggahan.
+            'tautan' => ['nullable', 'url', 'max:500'],
             'nomor_klasifikasi' => ['nullable', 'string', 'max:50'],
             'tanggal_publikasi' => ['nullable', 'date'],
             'status' => ['sometimes', Rule::in(['draft', 'menunggu_review', 'published', 'archived'])],

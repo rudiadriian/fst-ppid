@@ -159,27 +159,18 @@ function UserMenu(props: UserMenuProps) {
 					</>
 				) : (
 					<>
+						{/* Menu profil & inbox bawaan Fuse dilepas: halaman demonya sudah
+						    dihapus dari router PPID. */}
 						<MenuItem
 							component={Link}
-							to="/apps/profile"
+							to="/ppid/dashboard"
 							onClick={userMenuClose}
 							role="button"
 						>
 							<ListItemIcon>
-								<FuseSvgIcon>lucide:circle-user</FuseSvgIcon>
+								<FuseSvgIcon>lucide:layout-dashboard</FuseSvgIcon>
 							</ListItemIcon>
-							<ListItemText primary="My Profile" />
-						</MenuItem>
-						<MenuItem
-							component={Link}
-							to="/apps/mailbox"
-							onClick={userMenuClose}
-							role="button"
-						>
-							<ListItemIcon>
-								<FuseSvgIcon>lucide:mail</FuseSvgIcon>
-							</ListItemIcon>
-							<ListItemText primary="Inbox" />
+							<ListItemText primary="Dashboard" />
 						</MenuItem>
 						<MenuItem
 							onClick={() => {

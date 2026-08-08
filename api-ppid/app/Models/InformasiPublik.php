@@ -23,6 +23,7 @@ class InformasiPublik extends Model
         'slug',
         'ringkasan',
         'konten',
+        'tautan',
         'nomor_klasifikasi',
         'tanggal_publikasi',
         'status',

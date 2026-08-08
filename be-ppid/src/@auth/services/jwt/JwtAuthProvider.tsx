@@ -59,6 +59,22 @@ function JwtAuthProvider(props: FuseAuthProviderComponentProps) {
 				try {
 					const response = await authSignInWithToken(accessToken);
 					const userData = (await response.json()) as User;
+
+					/*
+					Pasang kembali header Authorization untuk seluruh permintaan
+					berikutnya. Tanpa baris ini, setiap kali halaman dimuat ulang
+					aplikasi mengira dirinya sudah login tapi mengirim permintaan
+					tanpa token — API menjawab 401 dan interceptor langsung
+					mengeluarkan pengguna, sehingga panel tampak "tidak muncul".
+					*/
+					const tokenBaru = response.headers.get('New-Access-Token');
+
+					if (tokenBaru) {
+						setTokenStorageValue(tokenBaru);
+					}
+
+					setGlobalHeaders({ Authorization: `Bearer ${tokenBaru || accessToken}` });
+
 					return userData;
 				} catch (error) {
 					if (error instanceof HTTPError) {

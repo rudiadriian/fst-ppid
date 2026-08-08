@@ -46,17 +46,18 @@ const settingsConfig: FuseSettingsConfigType = {
 	},
 
 	/**
-	 * The defaultAuth property defines the default authorization roles for the application.
-	 * To make the whole app auth protected by default set defaultAuth:['admin','staff','user']
-	 * To make the whole app accessible without authorization by default set defaultAuth: null
-	 * The individual route configs which have auth option won't be overridden.
+	 * Gerbang akses bawaan dimatikan (null) karena role PPID berasal dari tabel
+	 * `roles` di database dan bisa ditambah lewat CMS — daftar role statis di
+	 * frontend pasti ketinggalan. Halaman panel dijaga `PpidAuthGuard` (harus
+	 * sudah login) sedangkan hak per modul ditegakkan API lewat middleware
+	 * `akses:{modul},{aksi}`.
 	 */
-	defaultAuth: ['admin'],
+	defaultAuth: null,
 
 	/**
 	 * The loginRedirectUrl property defines the default redirect URL for the logged-in user.
 	 */
-	loginRedirectUrl: '/'
+	loginRedirectUrl: '/ppid/dashboard'
 };
 
 export default settingsConfig;

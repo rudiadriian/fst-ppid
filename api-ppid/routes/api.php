@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\Cms\StrukturOrganisasiController;
 use App\Http\Controllers\Api\Cms\TautanTerkaitController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\NavigationController;
+use App\Http\Controllers\Api\NotifikasiController;
 use App\Http\Controllers\Api\UploadController;
 use App\Support\CrudRoute;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +65,12 @@ Route::prefix('v1')->group(function () {
         Route::get('me/navigation', [NavigationController::class, 'index']);
         Route::get('dashboard/ringkasan', [DashboardController::class, 'ringkasan'])
             ->middleware('akses:dashboard,view');
+
+        // Notifikasi pribadi pengguna; tidak terikat modul mana pun.
+        Route::get('notifikasi', [NotifikasiController::class, 'index']);
+        Route::get('notifikasi/{id}', [NotifikasiController::class, 'show'])->whereNumber('id');
+        Route::delete('notifikasi/{id}', [NotifikasiController::class, 'destroy'])->whereNumber('id');
+        Route::delete('notifikasi', [NotifikasiController::class, 'destroyMany']);
 
         Route::post('uploads', [UploadController::class, 'store'])->middleware('throttle:uploads');
         Route::delete('uploads', [UploadController::class, 'destroy'])->middleware('throttle:uploads');

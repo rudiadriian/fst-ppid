@@ -1,21 +1,7 @@
-{{-- CTA strip --}}
-<section class="bg-white dark:bg-[#0A0E0D]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mb-16 relative z-20">
-        <div class="bg-[#004d3a] rounded-3xl px-8 py-10 lg:px-14 lg:py-12 shadow-2xl shadow-emerald-950/40 flex flex-col lg:flex-row items-center justify-between gap-6 overflow-hidden relative">
-            <div class="absolute inset-0 fs-dot-pattern opacity-50"></div>
-            <div class="relative z-10 text-center lg:text-left">
-                <h3 class="text-2xl lg:text-3xl font-extrabold text-white">{{ __('Butuh Informasi Publik?') }}</h3>
-                <p class="text-white/85 mt-1.5">{{ __('Ajukan permohonan Anda secara resmi, transparan, dan gratis.') }}</p>
-            </div>
-            <div class="relative z-10 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <a href="{{ route('ppid.request') }}" class="inline-flex items-center justify-center px-6 py-3.5 bg-white text-[#00664e] text-sm font-bold rounded-xl hover:bg-emerald-50 transition-colors duration-200">{{ __('Ajukan Permohonan') }}</a>
-                <a href="{{ route('ppid.status') }}" class="inline-flex items-center justify-center px-6 py-3.5 bg-white/10 border border-white/30 text-white text-sm font-bold rounded-xl hover:bg-white/20 transition-colors duration-200">{{ __('Cek Status Tiket') }}</a>
-            </div>
-        </div>
-    </div>
-</section>
+{{-- CTA strip dihapus; footer langsung menempel ke konten halaman.
+     Tautan Ajukan Permohonan & Cek Status tetap ada di kolom "Layanan" footer. --}}
 
-<footer id="kontak" class="fs-gradient pt-32 relative overflow-hidden">
+<footer id="kontak" class="fs-gradient pt-16 relative overflow-hidden">
     {{-- Pola titik putih agar tidak polos --}}
     <div class="absolute inset-0 fs-dot-pattern opacity-50"></div>
     <div class="absolute -top-20 -right-16 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
@@ -54,15 +40,15 @@
                 <div class="space-y-3 text-sm text-white/80">
                     <div class="flex items-start gap-3">
                         <svg class="w-5 h-5 text-white mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m-4.243 0a8 8 0 1111.314 0z"></path></svg>
-                        <p>Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Selatan No. 1, Jakarta Timur 13230</p>
+                        <p>{{ $cmsKontak['alamat'] }}</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                        <p>(021) 4718011 (Ext. PPID)</p>
+                        <p>{{ $cmsKontak['telepon'] }}</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-2 4v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7"></path></svg>
-                        <p>ppid@foodstation.co.id</p>
+                        <p>{{ $cmsKontak['email'] }}</p>
                     </div>
                 </div>
                 <div class="flex gap-3 pt-1">
@@ -86,18 +72,21 @@
                 <div class="space-y-4">
                     <h5 class="text-sm font-bold text-white uppercase tracking-wide">{{ __('Profil') }}</h5>
                     <ul class="space-y-2.5">
-                        <li><a href="{{ route('ppid.profile', 'profil-singkat') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Profil Singkat') }}</a></li>
-                        <li><a href="{{ route('ppid.profile', 'tugas-dan-wewenang') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Tugas & Wewenang') }}</a></li>
-                        <li><a href="{{ route('ppid.profile', 'struktur-organisasi') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Struktur PPID') }}</a></li>
+                        {{-- Slug harus sama dengan kunci di PpidController@showProfilePage
+                             maupun slug halaman di modul Halaman Statis. --}}
+                        <li><a href="{{ route('ppid.profile', 'singkat') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Profil Singkat') }}</a></li>
+                        <li><a href="{{ route('ppid.profile', 'struktur') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Struktur PPID') }}</a></li>
+                        <li><a href="{{ route('ppid.legal_basis') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Dasar Hukum') }}</a></li>
                         <li><a href="{{ route('ppid.profile', 'visi-misi') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Visi & Misi') }}</a></li>
                     </ul>
                 </div>
                 <div class="space-y-4">
                     <h5 class="text-sm font-bold text-white uppercase tracking-wide">{{ __('Informasi Publik') }}</h5>
                     <ul class="space-y-2.5">
-                        <li><a href="{{ route('ppid.information', 'berkala') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Informasi Berkala') }}</a></li>
-                        <li><a href="{{ route('ppid.information', 'serta-merta') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Informasi Serta Merta') }}</a></li>
-                        <li><a href="{{ route('ppid.information', 'setiap-saat') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Informasi Setiap Saat') }}</a></li>
+                        @foreach ($cmsKategoriInformasi as $kat)
+                            <li><a href="{{ route('ppid.information', $kat['slug']) }}" class="text-sm text-white/70 hover:text-white transition">{{ $kat['nama'] }}</a></li>
+                        @endforeach
+                        <li><a href="{{ route('ppid.news.index') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Berita') }}</a></li>
                     </ul>
                 </div>
                 <div class="space-y-4">
@@ -119,6 +108,24 @@
                 </div>
             </div>
         </div>
+
+        {{-- Tautan mitra, dikelola lewat modul Tautan Terkait di CMS. --}}
+        @if (!empty($cmsTautan))
+            <div class="mt-12 border-t border-white/15 pt-8">
+                <h5 class="mb-4 text-sm font-bold uppercase tracking-wide text-white">{{ __('Tautan Terkait') }}</h5>
+                <div class="flex flex-wrap gap-3">
+                    @foreach ($cmsTautan as $tautan)
+                        <a href="{{ $tautan['url'] }}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm text-white/80 transition hover:bg-white/20 hover:text-white">
+                            @if ($tautan['logo'])
+                                <img src="{{ $tautan['logo'] }}" alt="{{ $tautan['nama'] }}" class="h-5 w-auto">
+                            @endif
+                            {{ $tautan['nama'] }}
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @endif
 
         <div class="mt-14 py-6 border-t border-white/15 text-center md:flex md:justify-between md:text-left">
             <p class="text-xs text-white/70">&copy; {{ date('Y') }} PT FOOD STATION TJIPINANG JAYA (PERSERODA). {{ __('Hak cipta dilindungi.') }}</p>

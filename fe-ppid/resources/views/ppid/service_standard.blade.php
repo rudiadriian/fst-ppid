@@ -9,7 +9,7 @@
         <div class="absolute inset-0 opacity-[0.07]" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 28px 28px;"></div>
         <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20 text-center">
             <p class="text-sm font-semibold tracking-widest uppercase text-white/70 mb-4">{{ __('Standar Pelayanan') }}</p>
-            <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight">{{ __($data['title']) }}</h1>
+            <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight">{!! $judulDua(__($data['title']), 1, 'fs-title-accent-soft') !!}</h1>
             <p class="mt-4 text-lg font-normal text-white/80 max-w-2xl mx-auto leading-relaxed">
                 {{ __('Komitmen pelayanan informasi publik PPID Food Station yang cepat, mudah, dan transparan.') }}
             </p>
@@ -17,11 +17,11 @@
     </section>
 
     {{-- KONTEN --}}
-    <section class="py-16 lg:py-20 bg-[#F8FAFC] dark:bg-[#0d1310]">
+    <section class="py-16 lg:py-20 bg-[#FAF6EC] dark:bg-[#082217]">
         <div class="{{ $slug === 'jalur-waktu-layanan' ? 'max-w-6xl' : 'max-w-4xl' }} mx-auto px-6 lg:px-8">
-            <div class="bg-white dark:bg-[#121a17] p-6 sm:p-10 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10">
+            <div class="bg-white dark:bg-[#0B2A1D] p-6 sm:p-10 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10">
 
-                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">{{ __('Detail') }} {{ __($data['title']) }}</h2>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">{!! $judulDua(__('Detail').' '.__($data['title'])) !!}</h2>
 
                 @if ($slug === 'maklumat-pelayanan')
                     <div class="p-8 rounded-2xl fs-gradient text-white relative overflow-hidden">
@@ -45,8 +45,8 @@
                         <div class="space-y-8">
                             @foreach ($data['steps'] as $index => $step)
                                 <div class="relative flex items-start gap-5">
-                                    <span class="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-[#008060] text-white text-base font-semibold rounded-full relative z-10 -ml-6 ring-4 ring-white">{{ $index + 1 }}</span>
-                                    <div class="flex-1 p-6 bg-[#F8FAFC] dark:bg-[#0d1310] rounded-2xl border border-gray-100 dark:border-white/10">
+                                    <span class="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-[#10462F] text-white text-base font-semibold rounded-full relative z-10 -ml-6 ring-4 ring-white">{{ $index + 1 }}</span>
+                                    <div class="flex-1 p-6 bg-[#FAF6EC] dark:bg-[#082217] rounded-2xl border border-gray-100 dark:border-white/10">
                                         <p class="text-base font-normal text-gray-700 dark:text-gray-300 leading-relaxed">{{ __($step) }}</p>
                                     </div>
                                 </div>
@@ -55,7 +55,7 @@
                     </div>
 
                     <div class="mt-12 text-center">
-                        <a href="{{ route('ppid.request') }}" class="inline-flex items-center justify-center px-8 py-3.5 bg-[#008060] hover:bg-[#00664e] text-white text-base font-semibold rounded-xl transition-colors duration-300">
+                        <a href="{{ route('ppid.request') }}" class="inline-flex items-center justify-center px-8 py-3.5 bg-[#10462F] hover:bg-[#0B3524] text-white text-base font-semibold rounded-xl transition-colors duration-300">
                             {{ __('Mulai Ajukan Permohonan') }}
                         </a>
                     </div>
@@ -64,9 +64,9 @@
                     <p class="text-base font-normal text-gray-600 dark:text-gray-300 leading-relaxed mb-10">{{ __($data['intro']) }}</p>
                     <div class="space-y-6">
                         {{-- Jalur Pelayanan --}}
-                        <div class="p-6 sm:p-8 rounded-2xl bg-[#F8FAFC] dark:bg-[#0d1310] border border-gray-100 dark:border-white/10">
+                        <div class="p-6 sm:p-8 rounded-2xl bg-[#FAF6EC] dark:bg-[#082217] border border-gray-100 dark:border-white/10">
                             <div class="flex items-center gap-4 mb-6">
-                                <span class="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 text-[#008060] rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <span class="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 text-[#10462F] rounded-2xl flex items-center justify-center flex-shrink-0">
                                     <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-2 4v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7"></path></svg>
                                 </span>
                                 <h3 class="text-xl sm:text-[22px] font-semibold text-gray-900 dark:text-white min-w-0">{{ __('Jalur Pelayanan') }}</h3>
@@ -79,35 +79,35 @@
                                 ];
                             @endphp
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                @foreach ($data['channels'] as $channel)
-                                    <div class="h-full flex flex-col rounded-xl bg-white dark:bg-[#121a17] border border-gray-100 dark:border-white/10 p-5 shadow-sm">
-                                        <span class="w-10 h-10 mb-4 bg-emerald-50 text-[#008060] rounded-xl flex items-center justify-center flex-shrink-0 dark:bg-[#00A66C]/15 dark:text-[#00A66C]">
+                                @foreach ($data['channels'] as $i => $channel)
+                                    <div class="h-full flex flex-col rounded-xl {{ $cardTier($i) }} p-5 shadow-lg shadow-accent-200/60 dark:shadow-black/30">
+                                        <span class="w-10 h-10 mb-4 bg-white text-[#E87317] rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $channelIcons[$channel['label']] ?? $channelIcons['Surat'] }}"></path></svg>
                                         </span>
                                         <div class="flex flex-wrap items-center gap-2 mb-2">
-                                            <span class="text-[11px] font-bold uppercase tracking-[0.14em] text-[#008060] dark:text-[#00A66C]">{{ __($channel['label']) }}</span>
+                                            <span class="text-[11px] font-bold uppercase tracking-[0.14em] text-white">{{ __($channel['label']) }}</span>
                                             @if ($channel['recommended'])
-                                                <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-[#00664e] dark:bg-[#00A66C]/15 dark:text-[#00A66C]">{{ __('Direkomendasikan') }}</span>
+                                                <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white text-[#9E470D]">{{ __('Direkomendasikan') }}</span>
                                             @endif
                                         </div>
-                                        <p class="text-sm font-normal text-gray-600 dark:text-gray-300 leading-relaxed">{{ __($channel['desc']) }}</p>
+                                        <p class="text-sm font-normal text-white/90 leading-relaxed">{{ __($channel['desc']) }}</p>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
 
                         {{-- Waktu Layanan --}}
-                        <div class="p-6 sm:p-8 rounded-2xl bg-[#F8FAFC] dark:bg-[#0d1310] border border-gray-100 dark:border-white/10">
+                        <div class="p-6 sm:p-8 rounded-2xl bg-[#FAF6EC] dark:bg-[#082217] border border-gray-100 dark:border-white/10">
                             <div class="flex items-center gap-4 mb-6">
-                                <span class="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 text-[#008060] rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <span class="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 text-[#10462F] rounded-2xl flex items-center justify-center flex-shrink-0">
                                     <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 </span>
                                 <h3 class="text-xl sm:text-[22px] font-semibold text-gray-900 dark:text-white min-w-0">{{ __('Waktu Layanan') }}</h3>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 @foreach ($data['hours'] as $schedule)
-                                    <div class="rounded-xl bg-white dark:bg-[#121a17] border border-gray-100 dark:border-white/10 p-5 shadow-sm">
-                                        <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-[#008060] dark:text-[#00A66C]">{{ __($schedule['days']) }}</p>
+                                    <div class="rounded-xl bg-white dark:bg-[#0B2A1D] border border-gray-100 dark:border-white/10 p-5 shadow-sm">
+                                        <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-[#10462F] dark:text-[#3E9C6C]">{{ __($schedule['days']) }}</p>
                                         <p class="mt-2 text-lg sm:text-xl font-bold text-gray-900 dark:text-white tabular-nums break-words">{{ $schedule['time'] }}</p>
                                         <p class="mt-2 flex items-start gap-1.5 text-xs font-normal text-gray-500 dark:text-gray-400">
                                             <svg class="w-4 h-4 mt-px flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8h2a2 2 0 012 2v2a2 2 0 01-2 2h-2M5 8h12v7a4 4 0 01-4 4H9a4 4 0 01-4-4V8zM3 21h18"></path></svg>

@@ -2,7 +2,7 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import clsx from 'clsx';
 import { memo } from 'react';
-import DemoLayoutFooterContent from 'src/components/theme-layouts/components/DemoLayoutFooterContent';
+import AppFooterContent from 'src/components/theme-layouts/components/AppFooterContent';
 import FooterTheme from '@/contexts/FooterTheme';
 
 type FooterLayout2Props = {
@@ -24,7 +24,7 @@ function FooterLayout2(props: FooterLayout2Props) {
 				sx={{ backgroundColor: (theme) => theme.vars.palette.background.paper }}
 			>
 				<Toolbar className="container flex min-h-12 items-center overflow-x-auto px-2 py-0 sm:px-8 md:min-h-16">
-					<DemoLayoutFooterContent />
+					<AppFooterContent />
 				</Toolbar>
 			</AppBar>
 		</FooterTheme>

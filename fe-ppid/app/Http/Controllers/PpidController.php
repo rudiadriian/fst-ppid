@@ -113,62 +113,140 @@ class PpidController extends Controller
 
         $key = strtolower($slug);
 
-        if (!array_key_exists($key, $profileData)) {
+        // Halaman yang sudah dibuat di modul Halaman Statis boleh tidak ada di
+        // daftar bawaan — CMS bisa menambah halaman profil baru tanpa deploy.
+        $halaman = $this->fromDatabase(
+            fn () => \App\Models\HalamanStatis::where('is_active', true)
+                ->whereIn('slug', [$key, 'profil-'.$key])
+                ->first(),
+            null,
+            'halaman_statis'
+        );
+
+        if (!$halaman && !array_key_exists($key, $profileData)) {
             abort(404, 'Halaman profil tidak ditemukan.');
         }
 
-        $data = $profileData[$key];
+        $data = $profileData[$key] ?? ['title' => $halaman->judul];
+
+        if ($halaman) {
+            $data['title'] = $halaman->judul;
+            $data['html'] = $halaman->konten;
+        }
+
+        // Struktur PPID selalu memakai data pejabat dari CMS bila sudah diisi.
+        if ($key === 'struktur') {
+            $anggota = $this->fromDatabase(
+                fn () => \App\Models\StrukturOrganisasi::aktif()->get(),
+                collect(),
+                'struktur_organisasi'
+            );
+
+            $data['anggota'] = $anggota->map(fn ($a) => [
+                'nama' => $a->nama,
+                'jabatan' => $a->jabatan,
+                'foto' => $this->fileUrl($a->foto),
+            ])->all();
+        }
+
+        $data['db_offline'] = $this->dbOffline;
 
         return view('ppid.profile', compact('data', 'slug'));
     }
 
     public function showPublicInformation($slug)
     {
-        $informationData = [
-            'berkala' => [
-                'title' => 'Informasi Berkala',
-                'description' => 'Informasi yang wajib diumumkan secara rutin dan teratur, sekurang-kurangnya setiap 6 (enam) bulan sekali.',
-                'items' => [
-                    ['no' => 1, 'name' => 'INFORMASI UMUM FS'],
-                    ['no' => 2, 'name' => 'PROFIL DEWAN KOMISARIS & DIREKSI'],
-                    ['no' => 3, 'name' => 'STRUKTUR ORGANISASI'],
-                    ['no' => 4, 'name' => 'SIARAN MEDIA'],
-                    ['no' => 5, 'name' => 'COMPANY PROFILE VIDEO'],
-                    ['no' => 6, 'name' => 'COMPANY PROFILE CETAK'],
-                    ['no' => 7, 'name' => 'ANNUAL REPORT'],
-                ]
-            ],
-            'serta-merta' => [
-                'title' => 'Informasi Serta Merta',
-                'description' => 'Informasi yang wajib diumumkan tanpa penundaan dan wajib tersedia segera setelah diketahui, karena menyangkut hajat hidup orang banyak dan/atau ketertiban umum.',
-                'items' => [
-                    ['no' => 1, 'name' => 'DATA KEGIATAN KORPORASI'],
-                    ['no' => 2, 'name' => 'KEGIATAN TANGGUNG JAWAB PERUSAHAAN (CSR)'],
-                    ['no' => 3, 'name' => 'TUGAS DAN WEWENANG PPID'],
-                    ['no' => 4, 'name' => 'FOTO ASET (GEDUNG)'],
-                    ['no' => 5, 'name' => 'RINGKASAN LAPORAN KSD PERUSAHAAN TRIWULANAN'],
-                ]
-            ],
-            'setiap-saat' => [
-                'title' => 'Informasi Setiap Saat',
-                'description' => 'Informasi yang dapat diakses oleh pemohon informasi publik setiap saat, baik secara langsung maupun tidak langsung.',
-                'items' => [
-                    ['no' => 1, 'name' => 'MEMORANDUM OF UNDERSTANDING (MOU)'],
-                    ['no' => 2, 'name' => 'PERJANJIAN KERJASAMA DAN ADDENDUM'],
-                    ['no' => 3, 'name' => 'NON DISCLOSURE AGREEMENT (NDA)'],
-                    ['no' => 4, 'name' => 'HARGA PROMO PENJUALAN'],
-                    ['no' => 5, 'name' => 'AGENDA PASAR MURAH'],
-                ]
-            ],
-        ];
-
         $key = \Illuminate\Support\Str::slug($slug);
 
-        if (!array_key_exists($key, $informationData)) {
+        // Kategori dan daftar dokumennya dikelola lewat CMS (`be-ppid`).
+        $kategori = $this->fromDatabase(
+            fn () => \App\Models\KategoriInformasi::where('slug', $key)->where('is_active', true)->first(),
+            null,
+            'kategori_informasi'
+        );
+
+        // Tiga klasifikasi wajib menurut UU No. 14 Tahun 2008 selalu punya
+        // halaman, walau kategorinya belum dibuat di CMS — tabelnya tampil
+        // kosong, bukan 404.
+        $bawaan = [
+            'berkala' => ['Informasi Berkala', 'Informasi yang wajib diumumkan secara rutin dan teratur, sekurang-kurangnya setiap 6 (enam) bulan sekali.'],
+            'serta-merta' => ['Informasi Serta Merta', 'Informasi yang wajib diumumkan tanpa penundaan karena menyangkut hajat hidup orang banyak dan/atau ketertiban umum.'],
+            'setiap-saat' => ['Informasi Setiap Saat', 'Informasi yang dapat diakses oleh pemohon informasi publik setiap saat.'],
+        ];
+
+        if (!$kategori && !array_key_exists($key, $bawaan)) {
             abort(404, 'Halaman Informasi Publik tidak ditemukan.');
         }
 
-        $data = $informationData[$key];
+        $rows = $kategori
+            ? $this->fromDatabase(
+                fn () => \App\Models\InformasiPublik::published()
+                    ->with('files')
+                    ->where('kategori_id', $kategori->id)
+                    ->orderByDesc('tanggal_publikasi')
+                    ->orderBy('judul')
+                    ->get(),
+                collect(),
+                'informasi_publik'
+            )
+            : collect();
+
+        $items = $rows->values()->map(function ($row, $i) {
+            $berkas = $row->files->first();
+
+            // Entri boleh berupa berkas unggahan atau tautan ke halaman lain.
+            // Berkas didahulukan; kalau tidak ada, dipakai kolom `tautan`.
+            $url = $berkas ? $this->fileUrl($berkas->path_file) : ($row->tautan ?: null);
+
+            return [
+                'no' => $i + 1,
+                'name' => $row->judul,
+                'ringkasan' => $row->ringkasan,
+                'file' => $url,
+                'jenis' => $berkas ? 'berkas' : ($row->tautan ? 'tautan' : null),
+            ];
+        })->all();
+
+        // Sub-kategori (anak dari kategori ini) ditampilkan sebagai kartu
+        // dengan tombol "Selengkapnya" yang menuju halamannya sendiri.
+        // Kedalamannya bebas: sub-kategori boleh punya sub-kategori lagi.
+        $subkategori = $kategori
+            ? $this->fromDatabase(
+                fn () => \App\Models\KategoriInformasi::where('parent_id', $kategori->id)
+                    ->where('is_active', true)
+                    ->withCount([
+                        'informasiPublik as jumlah_dokumen' => fn ($q) => $q->where('status', 'published')->whereNull('deleted_at'),
+                    ])
+                    ->orderBy('urutan')
+                    ->orderBy('nama')
+                    ->get(),
+                collect(),
+                'subkategori_informasi'
+            )
+            : collect();
+
+        // Kategori induk dipakai untuk breadcrumb dan tombol kembali.
+        $induk = $kategori?->parent_id
+            ? $this->fromDatabase(
+                fn () => \App\Models\KategoriInformasi::where('id', $kategori->parent_id)->first(),
+                null,
+                'induk_kategori_informasi'
+            )
+            : null;
+
+        $data = [
+            'title' => $kategori->nama ?? $bawaan[$key][0],
+            'description' => $kategori?->deskripsi ?: ($bawaan[$key][1] ?? 'Daftar informasi publik pada kategori ini.'),
+            'items' => $items,
+            'subkategori' => $subkategori->map(fn ($k) => [
+                'nama' => $k->nama,
+                'slug' => $k->slug,
+                'deskripsi' => $k->deskripsi,
+                'jumlah' => (int) ($k->jumlah_dokumen ?? 0),
+            ])->all(),
+            'induk' => $induk ? ['nama' => $induk->nama, 'slug' => $induk->slug] : null,
+            'db_offline' => $this->dbOffline,
+        ];
 
         return view('ppid.information', compact('data', 'slug'));
     }

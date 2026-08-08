@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KontenController;
 use App\Http\Controllers\PpidController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
@@ -20,9 +22,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 
-Route::get('/', function () {
-    return view('ppid.home');
-});
+Route::get('/', [HomeController::class, 'index'])->name('ppid.home');
+
+// Kanal konten yang seluruhnya dikelola dari CMS `be-ppid`.
+Route::get('/berita', [KontenController::class, 'beritaIndex'])->name('ppid.news.index');
+Route::get('/berita/{slug}', [KontenController::class, 'beritaShow'])->name('ppid.news.show');
+Route::get('/faq', [KontenController::class, 'faq'])->name('ppid.faq');
+Route::get('/struktur-ppid', [KontenController::class, 'struktur'])->name('ppid.structure');
 
 // Ganti bahasa (relatif, origin-agnostic) — simpan ke session lalu kembali
 Route::get('/set-locale/{locale}', function (string $locale) {

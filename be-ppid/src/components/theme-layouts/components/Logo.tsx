@@ -1,6 +1,5 @@
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import MainProjectSelection from '@/components/MainProjectSelection';
 import clsx from 'clsx';
 
 const Root = styled('div')(({ theme }) => ({
@@ -36,16 +35,15 @@ function Logo(props: LogoProps) {
 					alt="logo"
 				/>
 				<div className="logo-text flex flex-auto flex-col gap-0.5">
-					<Typography className="tracking-light text-lg leading-none font-semibold">FUSE</Typography>
+					<Typography className="tracking-light text-lg leading-none font-semibold">PPID</Typography>
 					<Typography
 						className="tracking-light text-[12px] leading-none font-semibold"
 						color="text.secondary"
 					>
-						React
+						Admin
 					</Typography>
 				</div>
 			</div>
-			<MainProjectSelection />
 		</Root>
 	);
 }

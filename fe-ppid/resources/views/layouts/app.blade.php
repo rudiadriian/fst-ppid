@@ -47,30 +47,58 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
+        /* Palet mengikuti referensi desain: hijau hutan + oranye + krem. */
         :root {
-            --fs-green-light: #00A66C;
-            --fs-green: #008060;
-            --fs-green-dark: #00664e;
-            --fs-ink: #0A0E0D;
+            --fs-green-light: #3E9C6C;
+            --fs-green: #10462F;
+            --fs-green-dark: #0B3524;
+            --fs-orange: #E87317;
+            --fs-orange-dark: #C85C10;
+            --fs-orange-light: #F5A94C;
+            --fs-cream: #FAF6EC;
+            --fs-cream-dark: #F3ECDD;
+            --fs-ink: #071A12;
         }
         body { font-family: 'Plus Jakarta Sans', 'Poppins', system-ui, sans-serif; }
-        .fs-gradient { background-image: linear-gradient(135deg, #00A66C 0%, #008060 45%, #00664e 100%); }
+
+        /* Blok/banner struktural: hijau hutan pekat. */
+        .fs-gradient { background-image: linear-gradient(135deg, #175A3C 0%, #10462F 45%, #08281B 100%); }
+
+        /* Tombol aksi utama: oranye (aksen desain). */
+        .fs-gradient-accent { background-image: linear-gradient(135deg, #F08C2A 0%, #E87317 55%, #C85C10 100%); }
+
         .fs-gradient-text {
-            background-image: linear-gradient(135deg, #00A66C, #00664e);
+            background-image: linear-gradient(135deg, #E87317, #10462F);
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
         .dark .fs-gradient-text {
-            background-image: linear-gradient(135deg, #34d399, #00A66C);
+            background-image: linear-gradient(135deg, #F5A94C, #3E9C6C);
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
         .fs-dot-pattern { background-image: radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px); background-size: 26px 26px; }
+
+        /* Judul section dua warna (acuan: theme-color.jpeg) — sebagian kata
+           memakai warna aksen oranye. Dipasang lewat helper $judulDua. */
+        .fs-title-accent { color: #E87317; }
+        .dark .fs-title-accent { color: #F5A94C; }
+        .fs-title-accent-soft { color: #F5A94C; }
+
+        /* Tiga tingkat oranye untuk latar kartu (acuan: theme-color-card.png).
+           Dipakai bergantian lewat helper $cardTier di Blade agar kartu
+           berurutan tidak memakai nada yang sama. */
+        .fs-card-1 { background-color: #FE6B17; }
+        .fs-card-2 { background-color: #FD8B02; }
+        .fs-card-3 { background-color: #FFA849; }
+        .dark .fs-card-1 { background-color: #E85F0E; }
+        .dark .fs-card-2 { background-color: #E67D02; }
+        .dark .fs-card-3 { background-color: #E8963C; }
     </style>
 </head>
-<body class="bg-white text-gray-800 antialiased min-h-screen flex flex-col transition-colors duration-300 dark:bg-[#0A0E0D] dark:text-gray-200">
+<body class="bg-cream-100 text-gray-800 antialiased min-h-screen flex flex-col transition-colors duration-300 dark:bg-[#071A12] dark:text-gray-200">
 
     {{-- Lewati navigasi: bantu pengguna keyboard & screen reader --}}
     <a href="#main-content"
-       class="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-3 focus:left-3 focus:rounded-lg focus:bg-[#008060] focus:px-4 focus:py-2 focus:text-white focus:shadow-lg">
+       class="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-3 focus:left-3 focus:rounded-lg focus:bg-[#E87317] focus:px-4 focus:py-2 focus:text-white focus:shadow-lg">
         {{ __('Lewati ke konten utama') }}
     </a>
 

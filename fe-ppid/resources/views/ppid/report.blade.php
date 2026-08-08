@@ -9,12 +9,12 @@
         <div class="absolute inset-0 opacity-[0.07]" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 28px 28px;"></div>
         <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20 text-center">
             <p class="text-sm font-semibold tracking-widest uppercase text-white/70 mb-4">{{ __('Laporan') }}</p>
-            <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight">{{ __($data['title']) }}</h1>
+            <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight">{!! $judulDua(__($data['title']), 1, 'fs-title-accent-soft') !!}</h1>
             <p class="mt-4 text-lg font-normal text-white/80 max-w-3xl mx-auto leading-relaxed">{{ __($data['description']) }}</p>
         </div>
     </section>
 
-    <section class="py-16 lg:py-20 bg-[#F8FAFC] dark:bg-[#0d1310]">
+    <section class="py-16 lg:py-20 bg-[#FAF6EC] dark:bg-[#082217]">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
 
             @include('partials.db_notice')
@@ -30,10 +30,10 @@
                             ['label' => 'Ditolak', 'value' => $data['summary']['ditolak']],
                             ['label' => 'Keberatan', 'value' => $data['summary']['keberatan']],
                             ['label' => 'Rata-rata Respon (hari)', 'value' => $data['summary']['rata_rata']],
-                        ] as $stat)
-                            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#121a17]">
-                                <p class="text-3xl font-bold fs-gradient-text">{{ $stat['value'] }}</p>
-                                <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">{{ __($stat['label']) }}</p>
+                        ] as $i => $stat)
+                            <div class="rounded-2xl {{ $cardTier($i) }} p-5 shadow-lg shadow-accent-200/60 dark:shadow-black/30">
+                                <p class="text-3xl font-bold text-white">{{ $stat['value'] }}</p>
+                                <p class="mt-1 text-sm font-normal text-white/90">{{ __($stat['label']) }}</p>
                             </div>
                         @endforeach
                     </div>
@@ -41,11 +41,11 @@
             @endif
 
             {{-- Tabel laporan per periode --}}
-            <div class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-white/10 dark:bg-[#121a17]">
+            <div class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-white/10 dark:bg-[#0B2A1D]">
                 <div class="overflow-x-auto">
                     <table class="min-w-full">
                         <thead>
-                            <tr class="border-b border-gray-100 bg-[#F8FAFC] dark:border-white/10 dark:bg-[#0d1310]">
+                            <tr class="border-b border-gray-100 bg-[#FAF6EC] dark:border-white/10 dark:bg-[#082217]">
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 min-w-[260px]">{{ __('Judul Laporan') }}</th>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 w-40">{{ __('Periode') }}</th>
                                 <th scope="col" class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 w-24">{{ __('Masuk') }}</th>
@@ -58,7 +58,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-white/10">
                             @forelse ($data['reports'] as $report)
-                                <tr class="transition-colors duration-150 hover:bg-[#F8FAFC] dark:hover:bg-white/5">
+                                <tr class="transition-colors duration-150 hover:bg-[#FAF6EC] dark:hover:bg-white/5">
                                     <td class="px-6 py-4 text-base font-medium text-gray-900 dark:text-white">
                                         {{ $report['judul'] }}
                                         @if ($report['ringkasan'])
@@ -74,7 +74,7 @@
                                     <td class="whitespace-nowrap px-6 py-4 text-center">
                                         @if ($report['file'])
                                             <a href="{{ $report['file'] }}" target="_blank" rel="noopener"
-                                               class="inline-flex items-center gap-1.5 rounded-lg bg-[#008060] px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#00664e]">
+                                               class="inline-flex items-center gap-1.5 rounded-lg bg-[#10462F] px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#0B3524]">
                                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                                 {{ __('Unduh') }}
                                             </a>

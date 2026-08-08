@@ -59,10 +59,18 @@ export const resources: ResourceConfig[] = [
 				name: 'parent_id',
 				label: 'Kategori induk',
 				type: 'relation',
-				relation: { resource: 'kategori-informasi', labelKey: 'nama' }
+				relation: { resource: 'kategori-informasi', labelKey: 'nama' },
+				help: 'Isi bila kategori ini adalah kelompok di dalam kategori lain. Di situs, kategori anak tampil sebagai kartu dengan tombol "Selengkapnya" pada halaman induknya.'
 			},
 			{ name: 'urutan', label: 'Urutan tampil', type: 'number', min: 0, defaultValue: 0 },
-			{ name: 'deskripsi', label: 'Deskripsi', type: 'textarea', span: 2, rows: 3 },
+			{
+				name: 'deskripsi',
+				label: 'Deskripsi',
+				type: 'textarea',
+				span: 2,
+				rows: 3,
+				help: 'Tampil sebagai teks pengantar di halaman kategori dan ringkasan pada kartunya (dipotong ~120 karakter).'
+			},
 			{ name: 'is_active', label: 'Aktif', type: 'boolean', defaultValue: true }
 		],
 		filters: [
@@ -113,11 +121,20 @@ export const resources: ResourceConfig[] = [
 					{ value: 'published', label: 'Terbit' },
 					{ value: 'archived', label: 'Arsip' }
 				],
-				defaultValue: 'draft'
+				defaultValue: 'draft',
+				help: 'Situs publik hanya menampilkan entri berstatus "Terbit".'
 			},
 			{ name: 'tanggal_publikasi', label: 'Tanggal publikasi', type: 'date' },
 			{ name: 'slug', label: 'Slug', type: 'text', help: 'Kosongkan agar dibuat otomatis. Mengubahnya memutus tautan lama.' },
 			{ name: 'ringkasan', label: 'Ringkasan', type: 'textarea', span: 2, rows: 3 },
+			{
+				name: 'tautan',
+				label: 'Tautan halaman',
+				type: 'text',
+				span: 2,
+				maxLength: 500,
+				help: 'Isi bila informasi ini ada di halaman lain (mis. https://foodstation.id/sejarah-perusahaan/). Tombol "Selengkapnya" di situs akan menuju alamat ini. Kosongkan bila memakai lampiran dokumen.'
+			},
 			{ name: 'konten', label: 'Isi informasi', type: 'richtext', span: 2 },
 			{
 				name: 'files',
@@ -125,7 +142,7 @@ export const resources: ResourceConfig[] = [
 				type: 'files',
 				span: 2,
 				upload: { folder: 'informasi-publik', jenis: 'dokumen' },
-				help: 'PDF/Office, maksimal 20 MB per berkas.'
+				help: 'PDF/Office, maksimal 20 MB per berkas. Dipakai bila entri ini berupa berkas, bukan tautan.'
 			}
 		],
 		filters: [

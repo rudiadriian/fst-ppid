@@ -31,7 +31,7 @@ window.interdeal = {
             "0.5"
         ],
         "color": {
-            "main": "#2e850f",
+            "main": "#E87317",
             "second": "#ffffff"
         },
         "icon": {

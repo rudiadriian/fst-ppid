@@ -96,7 +96,20 @@ class FuseAuthorization extends Component<FuseAuthorizationProps, State> {
 
 	redirectRoute() {
 		const { userRole, navigate, loginRedirectUrl = '/' } = this.props;
-		const redirectUrl = getSessionRedirectUrl() || loginRedirectUrl;
+
+		/*
+		Nilai '401' pernah tersimpan di sessionStorage saat konfigurasi role
+		belum cocok. Nilai itu bukan tujuan yang masuk akal setelah login —
+		kalau dipakai, pengguna mendarat di halaman "tidak berwenang" alih-alih
+		dashboard. Diabaikan di sini supaya sesi lama ikut pulih sendiri.
+		*/
+		const storedRedirectUrl = getSessionRedirectUrl();
+		const isBadRedirect = !storedRedirectUrl || ['401', '/401', '404', '/404'].includes(storedRedirectUrl);
+		const redirectUrl = isBadRedirect ? loginRedirectUrl : storedRedirectUrl;
+
+		if (isBadRedirect) {
+			resetSessionRedirectUrl();
+		}
 
 		/*
 		User is guest

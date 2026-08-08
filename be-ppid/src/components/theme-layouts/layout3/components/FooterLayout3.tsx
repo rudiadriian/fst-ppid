@@ -3,7 +3,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import clsx from 'clsx';
 import { memo } from 'react';
-import DemoLayoutFooterContent from 'src/components/theme-layouts/components/DemoLayoutFooterContent';
+import AppFooterContent from 'src/components/theme-layouts/components/AppFooterContent';
 import { useFooterTheme } from '@fuse/core/FuseSettings/hooks/fuseThemeHooks';
 
 type FooterLayout3Props = {
@@ -27,7 +27,7 @@ function FooterLayout3(props: FooterLayout3Props) {
 				style={{ backgroundColor: footerTheme.palette.background.paper }}
 			>
 				<Toolbar className="container flex min-h-12 items-center overflow-x-auto px-2 py-0 sm:px-8 md:min-h-16">
-					<DemoLayoutFooterContent />
+					<AppFooterContent />
 				</Toolbar>
 			</AppBar>
 		</ThemeProvider>

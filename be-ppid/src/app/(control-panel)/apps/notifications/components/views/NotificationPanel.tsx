@@ -3,19 +3,14 @@ import { styled } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import Typography from '@mui/material/Typography';
-import { useSnackbar } from 'notistack';
 import { useEffect } from 'react';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import Button from '@mui/material/Button';
 import _ from 'lodash';
 import usePathname from '@fuse/hooks/usePathname';
 import NotificationCard from '../ui/NotificationCard';
 import { useGetAllNotifications } from '../../api/hooks/useGetAllNotifications';
 import { useDeleteNotification } from '../../api/hooks/useDeleteNotification';
 import { useDeleteNotifications } from '../../api/hooks/useDeleteNotifications';
-import { useCreateNotification } from '../../api/hooks/useCreateNotification';
-import NotificationModel from '../../api/models/NotificationModel';
-import NotificationTemplate from '../ui/NotificationTemplate';
 import { useNotificationPanelContext } from '../../contexts/NotificationPanelContext/useNotificationPanelContext';
 
 const StyledSwipeableDrawer = styled(SwipeableDrawer)(({ theme }) => ({
@@ -33,8 +28,6 @@ function NotificationPanel() {
 	const { data: notifications } = useGetAllNotifications();
 	const { mutate: deleteNotification } = useDeleteNotification();
 	const { mutate: deleteNotifications } = useDeleteNotifications();
-	const { mutate: addNotification } = useCreateNotification();
-	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 	const { isOpen, close, toggle } = useNotificationPanelContext();
 
 	useEffect(() => {
@@ -43,33 +36,6 @@ function NotificationPanel() {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [pathname]);
-
-	useEffect(() => {
-		const item = NotificationModel({
-			title: 'New Fuse React version is released! ',
-			description: ' Checkout the release notes for more information. 🚀 ',
-			link: '/documentation/changelog',
-			icon: 'lucide:flame',
-			variant: 'secondary'
-		});
-
-		setTimeout(() => {
-			addNotification(item);
-
-			enqueueSnackbar(item.title, {
-				key: item.id,
-				autoHideDuration: 6000,
-				content: (
-					<NotificationTemplate
-						item={item}
-						onClose={() => {
-							closeSnackbar(item.id);
-						}}
-					/>
-				)
-			});
-		}, 2000);
-	}, [addNotification, closeSnackbar, enqueueSnackbar]);
 
 	function handleClose() {
 		close();
@@ -81,24 +47,6 @@ function NotificationPanel() {
 
 	function handleDismissAll() {
 		deleteNotifications(notifications.map((notification) => notification.id));
-	}
-
-	function demoNotification() {
-		const item = NotificationModel({ title: 'Great Job! this is awesome.' });
-
-		addNotification(item);
-
-		enqueueSnackbar(item.title, {
-			key: item.id,
-			content: (
-				<NotificationTemplate
-					item={item}
-					onClose={() => {
-						closeSnackbar(item.id);
-					}}
-				/>
-			)
-		});
 	}
 
 	return (
@@ -149,15 +97,6 @@ function NotificationPanel() {
 						</Typography>
 					</div>
 				)}
-				<div className="flex items-center justify-center py-4">
-					<Button
-						size="small"
-						variant="outlined"
-						onClick={demoNotification}
-					>
-						Create a notification example
-					</Button>
-				</div>
 			</FuseScrollbars>
 		</StyledSwipeableDrawer>
 	);

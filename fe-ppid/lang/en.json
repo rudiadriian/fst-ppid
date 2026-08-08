@@ -1,5 +1,4 @@
 {
-    "Senin–Jumat, 08.00–17.00 WIB": "Mon–Fri, 08:00–17:00 WIB",
     "Beranda": "Home",
     "Profil": "Profile",
     "Profil Singkat": "Brief Profile",
@@ -20,8 +19,6 @@
     "Cek Status Tiket": "Check Ticket Status",
     "Indonesia": "Indonesia",
     "English": "English",
-    "Butuh Informasi Publik?": "Need Public Information?",
-    "Ajukan permohonan Anda secara resmi, transparan, dan gratis.": "Submit your request officially, transparently, and free of charge.",
     "Ajukan Permohonan": "Submit Request",
     "Permohonan Diproses": "Requests Processed",
     "Pengunjung Hari Ini": "Visitors Today",
@@ -316,6 +313,6 @@
     "Mengirimkan surat permohonan ke alamat kantor PPID.": "Send a written request to the PPID office address.",
     "Layanan Cepat": "Quick Services",
     "Mulai Layanan dari Sini": "Start Your Service Here",
-    "Empat layanan utama PPID dalam satu klik.": "Four core PPID services in one click.",
+    "Tiga layanan utama PPID dalam satu klik.": "Three core PPID services in one click.",
     "Kepuasan": "Satisfaction"
 }
