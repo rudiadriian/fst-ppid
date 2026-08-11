@@ -136,6 +136,16 @@ export const ppidApi = {
 		}
 	},
 
+	/** Baca endpoint non-CRUD ber-GET (mis. `laporan-layanan/rekap?tahun=2026`). */
+	async ambil<T = unknown>(path: string, params: ListParams = {}): Promise<T> {
+		try {
+			const hasil = await api.get(`v1/${path}`, { searchParams: bersihkanParams(params) }).json<{ data: T }>();
+			return hasil.data;
+		} catch (error) {
+			return toPpidError(error);
+		}
+	},
+
 	/** Aksi non-CRUD (transisi status, approval, rekap, simpan massal). */
 	async action<T = unknown>(path: string, payload?: unknown): Promise<T> {
 		try {

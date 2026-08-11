@@ -91,6 +91,21 @@ export type ResourceConfig = {
 	searchPlaceholder?: string;
 	/** Modul yang hanya bisa dibaca (mis. audit log). */
 	readOnly?: boolean;
+	/**
+	 * Tombol bantu di formulir: mengambil angka dari endpoint hitung otomatis
+	 * lalu mengisikannya ke field. Dipakai Laporan Layanan supaya rekap tidak
+	 * diketik manual.
+	 */
+	aksiIsiOtomatis?: {
+		label: string;
+		/** Path API relatif terhadap `v1/`, mis. `laporan-layanan/rekap`. */
+		endpoint: string;
+		/** Field formulir yang dikirim sebagai query string; wajib terisi dulu. */
+		params: string[];
+		/** Field formulir yang diisi ulang dari respons. */
+		isi: string[];
+		help?: string;
+	};
 	/** Formulir dibuka sebagai halaman penuh, bukan dialog. */
 	formPenuh?: boolean;
 };

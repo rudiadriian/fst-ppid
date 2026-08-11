@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\Cms\PermohonanController;
 use App\Http\Controllers\Api\Cms\RegulasiController;
 use App\Http\Controllers\Api\Cms\RoleController;
 use App\Http\Controllers\Api\Cms\StrukturOrganisasiController;
+use App\Http\Controllers\Api\Cms\SurveyKepuasanController;
 use App\Http\Controllers\Api\Cms\TautanTerkaitController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\NavigationController;
@@ -93,6 +94,8 @@ Route::prefix('v1')->group(function () {
         CrudRoute::register('permohonan', PermohonanController::class, 'permohonan');
         CrudRoute::register('pemohon', PemohonController::class, 'permohonan');
         CrudRoute::register('keberatan', KeberatanController::class, 'keberatan');
+        // Sumber angka "Kepuasan" pada Laporan Statistik Informasi Publik.
+        CrudRoute::register('survey-kepuasan', SurveyKepuasanController::class, 'permohonan');
 
         // --- Laporan ---
         Route::get('laporan-layanan/rekap', [LaporanLayananController::class, 'rekap'])

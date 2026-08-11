@@ -54,16 +54,16 @@ class Kernel extends HttpKernel
      * @var array<string, class-string|string>
      */
     protected $middlewareAliases = [
-        'auth' => \App\Http\Middleware\Authenticate::class,
-        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
+        /*
+         * Situs publik ini hanya mengenal akun pengunjung (guard `pemohon`).
+         * Login petugas/admin ada di aplikasi `be-ppid`, bukan di sini, jadi
+         * middleware `auth`/`guest` bawaan Breeze sudah dihapus.
+         */
+        'auth.pemohon' => \App\Http\Middleware\AuthenticatePemohon::class,
+        'guest.pemohon' => \App\Http\Middleware\RedirectIfPemohonAuthenticated::class,
+        'verified.pemohon' => \App\Http\Middleware\EnsurePemohonEmailIsVerified::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-        'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     ];
 }

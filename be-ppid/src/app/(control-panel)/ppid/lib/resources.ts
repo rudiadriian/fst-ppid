@@ -423,6 +423,20 @@ export const resources: ResourceConfig[] = [
 		description: 'Laporan statistik informasi dan laporan pelayanan informasi.',
 		icon: 'lucide:chart-bar',
 		defaultSort: '-tahun',
+		aksiIsiOtomatis: {
+			label: 'Hitung otomatis',
+			endpoint: 'laporan-layanan/rekap',
+			params: ['tahun'],
+			isi: [
+				'jumlah_permohonan_masuk',
+				'jumlah_dikabulkan',
+				'jumlah_ditolak',
+				'jumlah_ditolak_sebagian',
+				'jumlah_keberatan',
+				'rata_rata_hari_respon'
+			],
+			help: 'Isi Tahun lalu tekan "Hitung otomatis" untuk mengambil angka rekap langsung dari data permohonan & keberatan. Angka tetap bisa disunting sebelum disimpan.'
+		},
 		columns: [
 			{ key: 'judul', label: 'Judul', size: 280 },
 			{ key: 'tipe_laporan', label: 'Tipe', size: 180 },
@@ -445,7 +459,14 @@ export const resources: ResourceConfig[] = [
 			},
 			{ name: 'tahun', label: 'Tahun', type: 'number', required: true, min: 2000, max: 2100 },
 			{ name: 'periode', label: 'Periode', type: 'text', maxLength: 30, help: 'Contoh: Triwulan I, Semester II, Tahunan.' },
-			{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN, defaultValue: 'draft' },
+			{
+				name: 'status',
+				label: 'Status',
+				type: 'select',
+				options: STATUS_KONTEN,
+				defaultValue: 'draft',
+				help: 'Halaman Laporan Statistik Informasi Publik di situs publik hanya menampilkan laporan berstatus Terbit.'
+			},
 			{ name: 'jumlah_permohonan_masuk', label: 'Permohonan masuk', type: 'number', min: 0, defaultValue: 0 },
 			{ name: 'jumlah_dikabulkan', label: 'Dikabulkan', type: 'number', min: 0, defaultValue: 0 },
 			{ name: 'jumlah_ditolak', label: 'Ditolak', type: 'number', min: 0, defaultValue: 0 },
@@ -472,6 +493,58 @@ export const resources: ResourceConfig[] = [
 				]
 			},
 			{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN }
+		]
+	},
+	{
+		slug: 'survey-kepuasan',
+		// Hak aksesnya menumpang modul Permohonan: survei melekat pada
+		// permohonan yang sudah dilayani.
+		modul: 'permohonan',
+		title: 'Survei Kepuasan',
+		singular: 'Survei Kepuasan',
+		description:
+			'Penilaian pemohon atas layanan informasi. Rata-ratanya menjadi angka "Kepuasan" pada halaman Laporan Statistik Informasi Publik di situs publik.',
+		icon: 'lucide:smile',
+		defaultSort: '-id',
+		searchPlaceholder: 'Cari komentar…',
+		columns: [
+			{ key: 'permohonan', label: 'Permohonan', type: 'relation', relationKey: 'kode_permohonan', size: 180 },
+			{ key: 'rating', label: 'Rating', type: 'number', size: 90 },
+			{ key: 'komentar', label: 'Komentar', size: 380 },
+			{ key: 'created_at', label: 'Tanggal', type: 'datetime', size: 160 }
+		],
+		fields: [
+			{
+				name: 'permohonan_id',
+				label: 'Permohonan',
+				type: 'relation',
+				relation: { resource: 'permohonan', labelKey: 'kode_permohonan' },
+				help: 'Boleh dikosongkan bila survei tidak terkait satu permohonan tertentu.'
+			},
+			{
+				name: 'rating',
+				label: 'Rating (1–5)',
+				type: 'number',
+				required: true,
+				min: 1,
+				max: 5,
+				help: 'Rata-rata rating dibagi 5 menjadi persentase kepuasan di situs publik.'
+			},
+			{ name: 'komentar', label: 'Komentar', type: 'textarea', span: 2, rows: 3 }
+		],
+		filters: [
+			{
+				name: 'rating',
+				label: 'Rating',
+				type: 'select',
+				options: [
+					{ value: 1, label: '1' },
+					{ value: 2, label: '2' },
+					{ value: 3, label: '3' },
+					{ value: 4, label: '4' },
+					{ value: 5, label: '5' }
+				]
+			}
 		]
 	},
 
@@ -647,7 +720,8 @@ export const resources: ResourceConfig[] = [
 		columns: [
 			{ key: 'nama', label: 'Nama' },
 			{ key: 'jabatan', label: 'Jabatan' },
-			{ key: 'foto', label: 'Foto', type: 'file', size: 100, noSort: true },
+			{ key: 'parent', label: 'Induk', type: 'relation', relationKey: 'jabatan', noSort: true },
+			{ key: 'tipe_node', label: 'Tipe kotak', size: 120 },
 			{ key: 'urutan', label: 'Urutan', type: 'number', size: 90 },
 			{ key: 'is_active', label: 'Status', type: 'boolean', size: 110 }
 		],
@@ -660,6 +734,33 @@ export const resources: ResourceConfig[] = [
 				type: 'image',
 				span: 2,
 				upload: { folder: 'struktur-organisasi', jenis: 'gambar' }
+			},
+			{
+				name: 'parent_id',
+				label: 'Kotak induk',
+				type: 'relation',
+				relation: { resource: 'struktur-organisasi', labelKey: 'jabatan' },
+				help: 'Kosongkan untuk kotak paling atas pada bagan. Isi untuk menempatkan kotak ini di bawah kotak lain.'
+			},
+			{
+				name: 'tipe_node',
+				label: 'Tipe kotak pada bagan',
+				type: 'select',
+				defaultValue: 'utama',
+				options: [
+					{ value: 'utama', label: 'Utama — kotak pada alur, terhubung panah ke induknya' },
+					{ value: 'samping', label: 'Samping — di sisi induk, garis putus-putus' },
+					{ value: 'grup', label: 'Grup — bingkai berjudul yang membungkus anak-anaknya' }
+				],
+				help: 'Menentukan cara kotak digambar pada Bagan Struktur Organisasi di situs publik.'
+			},
+			{
+				name: 'poin',
+				label: 'Butir isi kotak',
+				type: 'textarea',
+				span: 2,
+				rows: 3,
+				help: 'Satu butir per baris. Diisi bila isi kotak berupa daftar (mis. Tim Pertimbangan PPID); kalau kosong, yang tampil adalah kolom Nama.'
 			},
 			{ name: 'urutan', label: 'Urutan', type: 'number', min: 0, defaultValue: 0 },
 			{ name: 'is_active', label: 'Aktif', type: 'boolean', defaultValue: true },

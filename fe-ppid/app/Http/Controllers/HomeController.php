@@ -5,14 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\BannerSlider;
 use App\Models\Berita;
 use App\Models\Faq;
-use App\Models\Galeri;
-use App\Models\InformasiPublik;
 use App\Models\KategoriInformasi;
-use App\Models\LaporanLayanan;
-use App\Models\PermohonanInformasi;
-use App\Models\Regulasi;
 use App\Support\Cms;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Beranda situs publik.
@@ -28,10 +22,7 @@ class HomeController extends Controller
         return view('ppid.home', [
             'heroSlides' => $this->heroSlides(),
             'infoPublik' => $this->kategoriInformasi(),
-            'stats' => $this->statistik(),
             'news' => $this->beritaTerbaru(),
-            'arsipSlides' => $this->arsipSlides(),
-            'reports' => $this->laporanTerbaru(),
             'faqs' => $this->faq(),
             'contacts' => $this->kontak(),
             'db_offline' => Cms::offline(),
@@ -88,36 +79,8 @@ class HomeController extends Controller
         ])->all();
     }
 
-    /** Empat angka ringkas: permohonan, dokumen, regulasi, kepuasan. */
-    private function statistik(): array
-    {
-        $angka = Cms::ambil(function () {
-            $rating = DB::table('survey_kepuasan')->avg('rating');
-
-            return [
-                'permohonan' => PermohonanInformasi::count(),
-                'dokumen' => InformasiPublik::published()->count(),
-                'regulasi' => Regulasi::count(),
-                'kepuasan' => $rating ? round(((float) $rating / 5) * 100).'%' : '—',
-            ];
-        }, null, 'statistik_beranda');
-
-        if ($angka === null) {
-            return [
-                ['value' => '—', 'label' => 'Permohonan'],
-                ['value' => '—', 'label' => 'Dokumen'],
-                ['value' => '—', 'label' => 'Regulasi'],
-                ['value' => '—', 'label' => 'Kepuasan'],
-            ];
-        }
-
-        return [
-            ['value' => number_format($angka['permohonan'], 0, ',', '.'), 'label' => 'Permohonan'],
-            ['value' => number_format($angka['dokumen'], 0, ',', '.'), 'label' => 'Dokumen'],
-            ['value' => number_format($angka['regulasi'], 0, ',', '.'), 'label' => 'Regulasi'],
-            ['value' => $angka['kepuasan'], 'label' => 'Kepuasan'],
-        ];
-    }
+    // Statistik ringkas (Pemohon/Dokumen/Regulasi/Kepuasan) pindah ke halaman
+    // Laporan Statistik Informasi Publik — lihat PpidController@statistikRingkas.
 
     /** Tiga berita terbaru yang sudah diterbitkan. */
     private function beritaTerbaru(): array
@@ -140,49 +103,6 @@ class HomeController extends Controller
             'excerpt' => $b->ringkasan ?: str($b->konten ?? '')->stripTags()->limit(160)->toString(),
             'image' => Cms::url($b->thumbnail) ?: asset('assets/images/logo/logo_fs.png'),
             'url' => route('ppid.news.show', $b->slug),
-        ])->all();
-    }
-
-    /** Slider arsip — memakai galeri foto terbaru. */
-    private function arsipSlides(): array
-    {
-        $baris = Cms::ambil(
-            fn () => Galeri::where('tipe', 'foto')->orderByDesc('tanggal')->orderByDesc('id')->limit(3)->get(),
-            collect(),
-            'galeri'
-        );
-
-        if ($baris->isEmpty()) {
-            return [
-                [
-                    'image' => asset('assets/images/logo/logo_fs.png'),
-                    'title' => 'Arsip Resmi',
-                    'subtitle' => 'Dokumen dan laporan resmi perusahaan',
-                ],
-            ];
-        }
-
-        return $baris->map(fn ($g) => [
-            'image' => Cms::url($g->path_file),
-            'title' => $g->judul ?: 'Dokumentasi',
-            'subtitle' => $g->deskripsi ?: '',
-        ])->all();
-    }
-
-    /** Tiga laporan terbaru yang berkasnya sudah diterbitkan. */
-    private function laporanTerbaru(): array
-    {
-        $baris = Cms::ambil(
-            fn () => LaporanLayanan::published()->orderByDesc('tahun')->orderByDesc('id')->limit(3)->get(),
-            collect(),
-            'laporan_layanan'
-        );
-
-        return $baris->map(fn ($l) => [
-            'title' => $l->judul,
-            'year' => $l->tahun,
-            'size' => $this->ukuranBerkas($l->file_laporan),
-            'url' => Cms::url($l->file_laporan),
         ])->all();
     }
 
@@ -226,23 +146,4 @@ class HomeController extends Controller
         ];
     }
 
-    /**
-     * Ukuran berkas dibaca dari disk publik; berkas yang belum ada tidak
-     * boleh membuat beranda gagal dimuat.
-     */
-    private function ukuranBerkas(?string $path): string
-    {
-        if (blank($path)) {
-            return '—';
-        }
-
-        try {
-            $disk = \Illuminate\Support\Facades\Storage::disk('public');
-            $relatif = ltrim($path, '/');
-
-            return $disk->exists($relatif) ? Cms::ukuran($disk->size($relatif)) : '—';
-        } catch (\Throwable $e) {
-            return '—';
-        }
-    }
 }

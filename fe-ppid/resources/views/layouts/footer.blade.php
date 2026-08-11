@@ -7,25 +7,14 @@
     <div class="absolute -top-20 -right-16 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
     <div class="absolute -bottom-24 -left-20 w-96 h-96 bg-black/10 rounded-full blur-3xl"></div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {{-- Stats --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center pb-12 border-b border-white/15">
-            <div class="p-4">
-                <p class="text-4xl font-extrabold text-white mb-1" x-data="{ count: 0 }" x-init="setInterval(() => { count = Math.floor(Math.random() * 500) + 1200 }, 2000)"><span x-text="count"></span>+</p>
-                <p class="text-sm font-semibold text-white/70 uppercase tracking-wide">{{ __('Permohonan Diproses') }}</p>
-            </div>
-            <div class="p-4">
-                <p class="text-4xl font-extrabold text-white mb-1" x-data="{ count: 0 }" x-init="setInterval(() => { count = Math.floor(Math.random() * 100) + 200 }, 2000)"><span x-text="count"></span></p>
-                <p class="text-sm font-semibold text-white/70 uppercase tracking-wide">{{ __('Pengunjung Hari Ini') }}</p>
-            </div>
-            <div class="p-4">
-                <p class="text-4xl font-extrabold text-white mb-1">98.5%</p>
-                <p class="text-sm font-semibold text-white/70 uppercase tracking-wide">{{ __('Kepuasan Pemohon') }}</p>
-            </div>
-        </div>
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {{-- Blok angka footer (Permohonan Diproses / Pengunjung Hari Ini /
+             Kepuasan Pemohon) dihapus — angkanya tidak bersumber dari data
+             nyata. Statistik resmi ada di halaman Laporan Statistik Informasi
+             Publik. --}}
 
         {{-- Main --}}
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 pt-14">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16">
             <div class="md:col-span-4 space-y-7">
                 <a href="/" class="flex items-center gap-3 group">
                     <img src="{{ asset('assets/images/logo/logo_fs.png') }}" alt="PT Food Station Tjipinang Jaya (Perseroda)"

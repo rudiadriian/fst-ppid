@@ -15,6 +15,11 @@ export const useGetAllNotifications = () => {
 		// interceptor auth memperlakukan 401 apa pun sebagai perintah sign out —
 		// pengguna terlempar kembali ke halaman login tepat setelah masuk.
 		enabled: Boolean(authState?.isAuthenticated),
-		retry: false
+		retry: false,
+		// Permohonan & keberatan masuk dari situs publik, bukan dari panel ini,
+		// jadi daftarnya disegarkan berkala supaya lonceng tidak perlu menunggu
+		// admin memuat ulang halaman.
+		refetchInterval: 60_000,
+		refetchIntervalInBackground: false
 	});
 };

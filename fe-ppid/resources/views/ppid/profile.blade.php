@@ -5,7 +5,7 @@
     {{-- HERO --}}
     <section class="relative fs-gradient overflow-hidden">
         <div class="absolute inset-0 opacity-[0.07]" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 28px 28px;"></div>
-        <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20 text-center">
+        <div class="relative z-10 max-w-screen-2xl mx-auto px-6 lg:px-8 py-16 lg:py-20 text-center">
             <p class="text-sm font-semibold tracking-widest uppercase text-white/70 mb-4">{{ __('Profil PPID') }}</p>
             <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight">{!! $judulDua(__($data['title']), 1, 'fs-title-accent-soft') !!}</h1>
             <p class="mt-4 text-lg font-normal text-white/80 max-w-2xl mx-auto leading-relaxed">
@@ -16,7 +16,7 @@
 
     {{-- KONTEN --}}
     <section class="py-16 lg:py-20 bg-[#FAF6EC] dark:bg-[#082217]">
-        <div class="max-w-5xl mx-auto px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
             <div class="bg-white dark:bg-[#0B2A1D] p-6 sm:p-10 lg:p-12 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10">
                 @include('partials.db_notice')
 
@@ -98,26 +98,18 @@
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">{!! $judulDua(__('Struktur Organisasi PPID')) !!}</h2>
                     <p class="text-base font-normal text-gray-600 dark:text-gray-300 leading-relaxed mb-10">{{ __($data['content']) }}</p>
 
-                    <div class="bg-[#FAF6EC] dark:bg-[#082217] border border-gray-100 dark:border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center min-h-[400px]">
-                        <p class="text-gray-400 dark:text-gray-500 text-sm text-center mb-8">{{ __('[ Diagram Struktur Organisasi ]') }}</p>
-                        <div class="flex flex-col items-center space-y-4">
-                            <div class="bg-[#10462F] text-white py-2.5 px-7 rounded-xl font-semibold shadow-sm">{{ __('Atasan PPID') }}</div>
-                            <span class="w-px h-5 bg-gray-300"></span>
-                            <div class="bg-[#0B3524] text-white py-2.5 px-7 rounded-xl font-semibold shadow-sm">{{ __('PPID Utama') }}</div>
-                            <span class="w-px h-5 bg-gray-300"></span>
-                            <div class="flex flex-wrap justify-center gap-4">
-                                <div class="bg-white dark:bg-[#0B2A1D] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 py-2 px-5 rounded-xl text-sm font-medium shadow-sm">{{ __('PPID Pembantu 1') }}</div>
-                                <div class="bg-white dark:bg-[#0B2A1D] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 py-2 px-5 rounded-xl text-sm font-medium shadow-sm">{{ __('PPID Pembantu 2') }}</div>
-                            </div>
+                    {{-- Bagan digambar dari modul Struktur Organisasi (CMS),
+                         bukan kotak contoh yang dipaku seperti sebelumnya. --}}
+                    @if (!empty($data['bagan']))
+                        @include('partials.bagan_struktur', [
+                            'bagan' => $data['bagan'],
+                            'judulBagan' => __('Bagan Struktur Organisasi PPID Food Station'),
+                        ])
+                    @else
+                        <div class="bg-[#FAF6EC] dark:bg-[#082217] border border-gray-100 dark:border-white/10 rounded-2xl p-8 text-center">
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">{{ __('Bagan struktur belum diisi pada modul Struktur Organisasi.') }}</p>
                         </div>
-                    </div>
-
-                    <div class="mt-8 text-center">
-                        <a href="#" class="inline-flex items-center gap-2 px-6 py-3.5 bg-[#10462F] hover:bg-[#0B3524] text-white text-base font-semibold rounded-xl transition-colors duration-300">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            {{ __('Unduh Dokumen Struktur (PDF)') }}
-                        </a>
-                    </div>
+                    @endif
 
                 @elseif ($slug === 'visi-misi')
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-10">{!! $judulDua(__('Visi dan Misi PPID'), 2) !!}</h2>

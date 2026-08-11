@@ -16,6 +16,9 @@ class StrukturOrganisasiController extends CrudController
 
     protected array $sortable = ['id', 'nama', 'jabatan', 'urutan'];
 
+    /** Kolom "Induk" pada tabel CMS memakai relasi ini. */
+    protected array $withList = ['parent'];
+
     protected string $defaultSort = 'urutan';
 
     protected array $filterable = [
@@ -33,6 +36,10 @@ class StrukturOrganisasiController extends CrudController
             'urutan' => ['nullable', 'integer', 'min:0'],
             'deskripsi' => ['nullable', 'string'],
             'is_active' => ['boolean'],
+            // Pembentuk Bagan Struktur Organisasi di situs publik.
+            'parent_id' => ['nullable', 'integer', 'exists:struktur_organisasi,id'],
+            'tipe_node' => ['nullable', 'in:utama,samping,grup'],
+            'poin' => ['nullable', 'string'],
         ];
     }
 }

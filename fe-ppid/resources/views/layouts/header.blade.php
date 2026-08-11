@@ -7,7 +7,7 @@
         @scroll.window="scrolled = (window.pageYOffset > 10)"
         class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 transition-all duration-300 dark:bg-[#071A12]/95 dark:border-white/10"
         :class="scrolled ? 'shadow-md shadow-gray-200/60 dark:shadow-black/40' : ''">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-[72px]">
             {{-- Logo --}}
             <a href="/" class="flex items-center gap-3 group">
@@ -85,7 +85,7 @@
 
                     <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
                         <button class="{{ $navItem($isService || $isReport || $isRegister) }} flex items-center gap-1">
-                            {{ __('Pelayanan') }}
+                            {{ __('Layanan') }}
                             <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
@@ -121,6 +121,34 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- Akun pengunjung (guard `pemohon`) — terpisah dari akun petugas. --}}
+                @php $akun = auth('pemohon')->user(); @endphp
+                @if ($akun)
+                    <div class="relative hidden sm:block" x-data="{ open_akun: false }" @click.outside="open_akun = false">
+                        <button @click="open_akun = !open_akun" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#10462F] hover:bg-emerald-50 transition duration-200 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5">
+                            <span class="w-7 h-7 rounded-full fs-gradient-accent text-white text-xs font-bold flex items-center justify-center">
+                                {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($akun->nama, 0, 1)) }}
+                            </span>
+                            <span class="text-sm font-semibold max-w-[110px] truncate">{{ $akun->nama }}</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div x-show="open_akun" x-transition class="absolute z-50 mt-1 w-56 rounded-xl shadow-xl bg-white ring-1 ring-black/5 right-0 overflow-hidden origin-top-right dark:bg-[#0A2619] dark:ring-white/10" style="display:none">
+                            <div class="py-1.5">
+                                <a href="{{ route('akun.dashboard') }}" class="{{ $dropdownItemClass }}">{{ __('Akun Saya') }}</a>
+                                <a href="{{ route('akun.profil') }}" class="{{ $dropdownItemClass }}">{{ __('Data Diri Saya') }}</a>
+                                <form method="POST" action="{{ route('akun.logout') }}">
+                                    @csrf
+                                    <button type="submit" class="{{ $dropdownItemClass }} w-full text-left">{{ __('Keluar') }}</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <a href="{{ route('akun.login') }}" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5">
+                        {{ __('Masuk') }}
+                    </a>
+                @endif
 
                 {{-- CTA --}}
                 <a href="{{ route('ppid.request') }}" class="hidden sm:inline-flex items-center gap-1.5 fs-gradient-accent text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-900/20 hover:shadow-emerald-900/40 hover:-translate-y-0.5 transition-all duration-200 {{ $isRequest ? 'ring-2 ring-[#10462F] ring-offset-2 ring-offset-white dark:ring-[#3E9C6C] dark:ring-offset-[#071A12]' : '' }}">
@@ -189,7 +217,7 @@
 
             <div x-data="{ open: {{ $openService ? 'true' : 'false' }} }">
                 <button @click="open = !open" class="{{ $mobileItem($openService) }} w-full flex justify-between items-center">
-                    {{ __('Standar Pelayanan') }}
+                    {{ __('Layanan') }}
                     <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div x-show="open" x-collapse @if (!$openService) style="display:none" @endif>
@@ -211,6 +239,16 @@
             <div class="pt-3 space-y-2">
                 <a href="{{ route('ppid.request') }}" class="block w-full text-center py-3 fs-gradient-accent text-white font-semibold rounded-xl shadow-lg {{ $isRequest ? 'ring-2 ring-[#10462F] ring-offset-2 ring-offset-white dark:ring-[#3E9C6C] dark:ring-offset-[#071A12]' : '' }}">{{ __('Permohonan Informasi') }}</a>
                 <a href="{{ route('ppid.status') }}" class="block w-full text-center py-3 font-semibold rounded-xl transition {{ $isStatus ? 'bg-emerald-50 text-[#10462F] border border-[#10462F] dark:bg-white/5 dark:text-[#3E9C6C] dark:border-[#3E9C6C]' : 'border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5' }}">{{ __('Cek Status Tiket') }}</a>
+
+                @if ($akun)
+                    <a href="{{ route('akun.dashboard') }}" class="block w-full text-center py-3 font-semibold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5">{{ __('Akun Saya') }}</a>
+                    <form method="POST" action="{{ route('akun.logout') }}">
+                        @csrf
+                        <button type="submit" class="block w-full text-center py-3 font-semibold rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-white/5">{{ __('Keluar') }}</button>
+                    </form>
+                @else
+                    <a href="{{ route('akun.login') }}" class="block w-full text-center py-3 font-semibold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5">{{ __('Masuk / Daftar Akun') }}</a>
+                @endif
             </div>
         </nav>
     </div>

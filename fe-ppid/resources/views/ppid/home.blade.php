@@ -4,9 +4,9 @@
 
 @section('content')
 
-    {{-- Data beranda ($stats, $infoPublik, $news, $reports, $faqs, $heroSlides,
-         $arsipSlides, $contacts) dikirim HomeController dari CMS. Yang tersisa di
-         bawah ini murni elemen tampilan: ikon dan tautan menu layanan. --}}
+    {{-- Data beranda ($infoPublik, $news, $faqs, $heroSlides, $contacts)
+         dikirim HomeController dari CMS. Yang tersisa di bawah ini murni elemen
+         tampilan: ikon dan tautan menu layanan. --}}
     @php
         $quickServices = [
             ['title' => 'Permohonan Informasi', 'desc' => 'Ajukan permohonan resmi', 'route' => route('ppid.request'), 'icon' => 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'],
@@ -201,16 +201,7 @@
          ===================================================================== --}}
     <section class="py-16 lg:py-24 bg-white dark:bg-[#0B2A1D]">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            {{-- Ringkasan angka (dipindah dari section STATISTIK) --}}
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
-                @foreach ($stats as $i => $s)
-                    <div class="text-center py-8 rounded-3xl {{ $cardTier($i) }} shadow-lg shadow-accent-200/60 dark:shadow-black/30">
-                        <p class="text-4xl lg:text-5xl font-extrabold text-white mb-1">{{ $s['value'] }}</p>
-                        <p class="text-sm font-medium text-white/90">{{ __($s['label']) }}</p>
-                    </div>
-                @endforeach
-            </div>
-
+            {{-- Ringkasan angka pindah ke halaman Laporan Statistik Informasi Publik. --}}
             <div class="text-center max-w-2xl mx-auto mb-16">
                 <span class="text-sm font-bold text-[#10462F] uppercase tracking-widest">{{ __('Prosedur') }}</span>
                 <h2 class="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white mt-3">{!! $judulDua(__('Alur Permohonan Informasi')) !!}</h2>
@@ -274,7 +265,7 @@
     {{-- =====================================================================
          6. BERITA
          ===================================================================== --}}
-    <section id="berita" class="py-16 lg:py-24 bg-[#F3ECDD] dark:bg-[#082217]">
+    <section id="berita" class="py-16 lg:py-24 bg-white dark:bg-[#0B2A1D]">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
                 <div>
@@ -313,91 +304,7 @@
     </section>
 
     {{-- =====================================================================
-         7. DOKUMEN / LAPORAN
-         ===================================================================== --}}
-    <section id="dokumen" class="py-16 lg:py-24 bg-white dark:bg-[#0B2A1D]">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center max-w-2xl mx-auto mb-14">
-                <span class="text-sm font-bold text-[#10462F] uppercase tracking-widest">{{ __('Arsip Resmi') }}</span>
-                <h2 class="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white mt-3">{!! $judulDua(__('Laporan & Dokumen'), 2) !!}</h2>
-            </div>
-
-            {{-- Slider gambar arsip --}}
-            <div class="relative mb-12"
-                 x-data="{ active: 0, total: {{ count($arsipSlides) }}, timer: null,
-                           start() { this.timer = setInterval(() => this.next(), 5000) },
-                           next() { this.active = (this.active + 1) % this.total },
-                           go(i) { this.active = i; clearInterval(this.timer); this.start() } }"
-                 x-init="start()">
-                <div class="relative rounded-3xl overflow-hidden shadow-xl shadow-gray-300/50 aspect-[16/7] sm:aspect-[16/6]">
-                    @foreach ($arsipSlides as $i => $slide)
-                        <div x-show="active === {{ $i }}"
-                             x-transition:enter="transition ease-out duration-700"
-                             x-transition:enter-start="opacity-0"
-                             x-transition:enter-end="opacity-100"
-                             x-transition:leave="transition ease-in duration-500 absolute inset-0"
-                             x-transition:leave-start="opacity-100"
-                             x-transition:leave-end="opacity-0"
-                             class="absolute inset-0">
-                            <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] }}" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-r from-[#0B3524]/90 via-[#10462F]/60 to-transparent"></div>
-                            <div class="absolute inset-0 flex flex-col justify-center px-8 sm:px-14 max-w-xl">
-                                <span class="inline-flex w-fit items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold uppercase tracking-wide mb-3">{{ __('PDF · Dokumen Resmi') }}</span>
-                                <h3 class="text-2xl sm:text-4xl font-extrabold text-white leading-tight mb-2">{{ __($slide['title']) }}</h3>
-                                <p class="text-white/85 text-sm sm:text-base mb-5">{{ __($slide['subtitle']) }}</p>
-                                <a href="#dokumen-list" class="inline-flex w-fit items-center gap-2 px-6 py-3 bg-white text-[#0B3524] text-sm font-bold rounded-xl hover:bg-emerald-50 transition-colors duration-200">
-                                    {{ __('Lihat Dokumen') }}
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                                </a>
-                            </div>
-                        </div>
-                    @endforeach
-
-                    {{-- Prev / Next --}}
-                    <button @click="go((active - 1 + total) % total)" class="absolute top-1/2 -translate-y-1/2 left-4 w-10 h-10 rounded-full bg-white/90 text-[#10462F] shadow-lg flex items-center justify-center hover:bg-white dark:bg-[#0B2A1D] transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
-                    </button>
-                    <button @click="go((active + 1) % total)" class="absolute top-1/2 -translate-y-1/2 right-4 w-10 h-10 rounded-full bg-white/90 text-[#10462F] shadow-lg flex items-center justify-center hover:bg-white dark:bg-[#0B2A1D] transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-                    </button>
-
-                    {{-- Dots --}}
-                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                        @foreach ($arsipSlides as $i => $slide)
-                            <button @click="go({{ $i }})" class="h-2 rounded-full transition-all duration-300"
-                                    :class="active === {{ $i }} ? 'w-7 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'"></button>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
-            <div id="dokumen-list" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-                @forelse ($reports as $i => $report)
-                    <div class="group h-full flex flex-col bg-[#F3ECDD] dark:bg-[#082217] rounded-2xl overflow-hidden border border-gray-100 dark:border-white/10 hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-300">
-                        <div class="relative h-40 flex-shrink-0 {{ $cardTier($i) }} flex items-center justify-center overflow-hidden">
-                            <div class="absolute inset-0 fs-dot-pattern opacity-30"></div>
-                            <span class="text-white text-5xl font-extrabold tracking-tight relative z-10">{{ $report['year'] }}</span>
-                            <span class="absolute top-4 right-4 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full bg-white/20 text-white z-10">PDF</span>
-                        </div>
-                        <div class="p-7 flex flex-col flex-1">
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-snug">{{ $report['title'] }}</h3>
-                            <p class="text-xs text-gray-400 dark:text-gray-500 mb-6 uppercase tracking-wide">{{ $report['year'] }} · PDF · {{ $report['size'] }}</p>
-                            <button @click="$dispatch('open-download-modal', { title: '{{ $report['title'] }} {{ $report['year'] }}' })"
-                                    class="mt-auto w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 fs-gradient-accent text-white text-base font-semibold rounded-xl hover:-translate-y-0.5 transition-all duration-200 shadow-lg shadow-emerald-900/20">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                {{ __('Unduh Dokumen') }}
-                            </button>
-                        </div>
-                    </div>
-                @empty
-                    <p class="md:col-span-3 rounded-2xl border border-gray-100 bg-white p-8 text-center text-base text-gray-500 dark:border-white/10 dark:bg-[#0B2A1D] dark:text-gray-400">{{ __('Belum ada laporan yang diterbitkan.') }}</p>
-                @endforelse
-            </div>
-        </div>
-    </section>
-
-    {{-- =====================================================================
-         8. BANTUAN + KONTAK (1 section, 2 kolom 6/6)
+         7. BANTUAN + KONTAK (1 section, 2 kolom 6/6)
          ===================================================================== --}}
     <section id="kontak-section" class="py-16 lg:py-24 bg-[#F3ECDD] dark:bg-[#082217]">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
@@ -464,28 +371,57 @@
         </div>
     </section>
 
-    {{-- MODAL DOWNLOAD (logika Alpine tetap sama) --}}
+    {{-- MODAL DOWNLOAD — wajib masuk sebagai pengunjung; identitas dari akun. --}}
+    @php $akunUnduh = auth('pemohon')->user(); @endphp
     <div x-data="{
         showModal: false,
         isSubmitting: false,
         formSuccess: false,
         reportTitle: '',
-        user: { name: '', phone: '', email: '', purpose: 'Pribadi', institution: '' },
+        reportId: null,
+        sudahMasuk: {{ $akunUnduh ? 'true' : 'false' }},
+        user: @js([
+            'name' => $akunUnduh?->nama,
+            'phone' => $akunUnduh?->no_hp,
+            'email' => $akunUnduh?->email,
+        ]),
         successEmail: '',
         submitDownloadForm: async function() {
             this.isSubmitting = true;
-            setTimeout(() => {
-                this.formSuccess = true;
-                this.successEmail = this.user.email;
+
+            try {
+                const res = await fetch('{{ route('report.download') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ laporan_id: this.reportId })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    this.successEmail = data.email;
+                    this.formSuccess = true;
+                } else if (res.status === 401) {
+                    window.location = data.login_url || '{{ route('akun.login') }}';
+                } else {
+                    alert(data.message || '{{ __('Tautan gagal dikirim. Coba lagi beberapa saat lagi.') }}');
+                }
+            } catch (e) {
+                alert('{{ __('Terjadi kesalahan jaringan atau server.') }}');
+            } finally {
                 this.isSubmitting = false;
-            }, 1000);
+            }
         }
     }"
     @open-download-modal.window="
         showModal = true;
         reportTitle = $event.detail.title;
+        reportId = $event.detail.id;
         formSuccess = false;
-        user = { name: '', phone: '', email: '', purpose: 'Pribadi', institution: '' };
     "
     x-show="showModal"
     style="display: none"
@@ -515,21 +451,32 @@
                 </div>
 
                 <div class="px-8 pt-7 pb-8">
-                    <div x-show="!formSuccess">
-                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-6">{{ __('Lengkapi data diri untuk mengunduh') }} <span class="font-semibold text-gray-900 dark:text-white" x-text="reportTitle"></span>.</p>
+                    {{-- Belum masuk: tidak ada formulir, langsung diarahkan ke login. --}}
+                    <div x-show="!sudahMasuk" class="py-4 text-center">
+                        <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                            {{ __('Tautan unduh dikirim ke email akun Anda. Masuk dulu untuk meminta') }}
+                            <span class="font-semibold text-gray-900 dark:text-white" x-text="reportTitle"></span>.
+                        </p>
+                        <a href="{{ route('akun.login') }}" class="mt-6 inline-flex items-center justify-center px-6 py-3.5 fs-gradient-accent text-white text-base font-semibold rounded-xl shadow-lg shadow-emerald-900/20 hover:-translate-y-0.5 transition-all duration-300">
+                            {{ __('Masuk / Daftar Akun') }}
+                        </a>
+                    </div>
+
+                    <div x-show="sudahMasuk && !formSuccess">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-6">{{ __('Tautan unduh') }} <span class="font-semibold text-gray-900 dark:text-white" x-text="reportTitle"></span> {{ __('akan dikirim ke email akun Anda.') }}</p>
                         <form @submit.prevent="submitDownloadForm()" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ __('Nama Lengkap') }}</label>
-                                <input x-model="user.name" type="text" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 dark:border-white/10 rounded-xl focus:bg-white dark:bg-[#0B2A1D] focus:border-[#10462F] focus:ring-2 focus:ring-[#10462F]/15 outline-none transition-all text-base">
+                                <input x-model="user.name" type="text" disabled class="w-full px-4 py-3 bg-gray-50 border border-gray-200 dark:border-white/10 rounded-xl dark:bg-[#0B2A1D] outline-none text-base opacity-70 cursor-not-allowed">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ __('Surat Elektronik (Email)') }}</label>
-                                <input x-model="user.email" type="email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 dark:border-white/10 rounded-xl focus:bg-white dark:bg-[#0B2A1D] focus:border-[#10462F] focus:ring-2 focus:ring-[#10462F]/15 outline-none transition-all text-base">
+                                <input x-model="user.email" type="email" disabled class="w-full px-4 py-3 bg-gray-50 border border-gray-200 dark:border-white/10 rounded-xl dark:bg-[#0B2A1D] outline-none text-base opacity-70 cursor-not-allowed">
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ __('Telepon') }}</label>
-                                <input x-model="user.phone" type="tel" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 dark:border-white/10 rounded-xl focus:bg-white dark:bg-[#0B2A1D] focus:border-[#10462F] focus:ring-2 focus:ring-[#10462F]/15 outline-none transition-all text-base">
-                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ __('Data belum lengkap?') }}
+                                <a href="{{ route('akun.profil') }}" class="font-semibold text-[#E87317] hover:underline">{{ __('Perbarui di Data Diri Saya') }}</a>.
+                            </p>
                             <div class="pt-2">
                                 <button type="submit" :disabled="isSubmitting" class="w-full flex items-center justify-center px-6 py-3.5 fs-gradient-accent text-white text-base font-semibold rounded-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-emerald-900/20">
                                     <span x-show="!isSubmitting">{{ __('Kirim Tautan Unduhan') }}</span>
@@ -542,7 +489,7 @@
                         </form>
                     </div>
 
-                    <div x-show="formSuccess" class="py-6 text-center">
+                    <div x-show="sudahMasuk && formSuccess" class="py-6 text-center">
                         <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-5">
                             <svg class="w-8 h-8 text-[#10462F]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                         </div>

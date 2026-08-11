@@ -102,12 +102,14 @@ class KontenController extends Controller
         ]);
     }
 
-    /** Susunan pejabat PPID. */
+    /** Bagan dan susunan pejabat PPID. */
     public function struktur()
     {
         $anggota = Cms::ambil(fn () => StrukturOrganisasi::aktif()->get(), collect(), 'struktur_organisasi');
 
         return view('ppid.structure', [
+            // Bagan disusun dari kolom parent_id/tipe_node yang diisi lewat CMS.
+            'bagan' => StrukturOrganisasi::pohon($anggota),
             'anggota' => $anggota->map(fn ($a) => [
                 'nama' => $a->nama,
                 'jabatan' => $a->jabatan,

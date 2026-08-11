@@ -18,7 +18,7 @@ const GRUP: { id: string; title: string; icon: string; slugs: string[] }[] = [
 		id: 'ppid.layanan',
 		title: 'Layanan Informasi',
 		icon: 'lucide:inbox',
-		slugs: ['permohonan', 'pemohon', 'keberatan', 'laporan-layanan']
+		slugs: ['permohonan', 'pemohon', 'keberatan', 'survey-kepuasan', 'laporan-layanan']
 	},
 	{
 		id: 'ppid.konten',
