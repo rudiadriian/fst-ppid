@@ -7,7 +7,7 @@
     {{-- HERO --}}
     <section class="relative fs-gradient overflow-hidden">
         <div class="absolute inset-0 fs-dot-pattern opacity-40"></div>
-        <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20 text-center">
+        <div class="relative z-10 max-w-screen-2xl mx-auto px-6 lg:px-8 py-16 lg:py-20 text-center">
             <p class="text-sm font-semibold tracking-widest uppercase text-white/70 mb-4">{{ __('Layanan Informasi') }}</p>
             <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight">{!! $judulDua(__('Cek Status Permohonan Informasi'), 1, 'fs-title-accent-soft') !!}</h1>
             <p class="mt-4 text-lg font-normal text-white/80 max-w-2xl mx-auto leading-relaxed">
@@ -18,7 +18,7 @@
 
     {{-- KONTEN --}}
     <section class="py-16 lg:py-20 bg-[#F3ECDD] dark:bg-[#082217]">
-        <div class="max-w-3xl mx-auto px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto px-6 lg:px-8">
             <div x-data="{
                 form: {
                     registration_number: '',
@@ -35,25 +35,37 @@
                     this.notFound = false;
                     this.result = {};
 
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    let statusMap = {
-                        'PPID-FSTJ/20251010/1234': {status: 'DITERIMA', number: 'PPID-FSTJ/20251010/1234', info_requested: 'Laporan Tahunan 2023', response_date: '15/10/2025'},
-                        'PPID-FSTJ/20251101/5678': {status: 'DALAM PROSES', number: 'PPID-FSTJ/20251101/5678', info_requested: 'Data Distribusi Pangan', response_date: 'Perkiraan 20/12/2025'},
-                        'PPID-FSTJ/20250920/9012': {status: 'DITOLAK', number: 'PPID-FSTJ/20250920/9012', info_requested: 'Data Rapat Direksi', response_date: '25/09/2025'},
-                    };
-                    let key = this.form.registration_number.toUpperCase().trim();
-                    let data = statusMap[key];
+                    try {
+                        const res = await fetch('{{ route('ppid.status.check') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': this.form._token
+                            },
+                            body: JSON.stringify({ registration_number: this.form.registration_number })
+                        });
 
-                    if (data) {
-                         this.result = data;
-                         this.hasResult = true;
-                    } else {
-                         this.notFound = true;
-                         this.hasResult = true;
-                         this.result = {status: 'DATA TIDAK DITEMUKAN', number: key};
+                        const data = await res.json();
+
+                        if (res.status === 401) {
+                            window.location = data.login_url || '{{ route('akun.login') }}';
+                            return;
+                        }
+
+                        if (!res.ok || !data.success) {
+                            alert(data.message || '{{ __('Terjadi kesalahan jaringan atau server.') }}');
+                            return;
+                        }
+
+                        this.result = data;
+                        this.notFound = (data.status === 'TIDAK DITEMUKAN');
+                        this.hasResult = true;
+                    } catch (e) {
+                        alert('{{ __('Terjadi kesalahan jaringan atau server.') }}');
+                    } finally {
+                        this.isSearching = false;
                     }
-
-                    this.isSearching = false;
                 }
             }"
             class="bg-white dark:bg-[#0B2A1D] p-6 sm:p-10 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10">
@@ -74,24 +86,29 @@
                             <span x-show="isSearching">{{ __('Mencari...') }}</span>
                         </button>
                     </div>
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-2.5">{{ __('Pastikan nomor registrasi yang Anda masukkan benar.') }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-2.5">{{ __('Pastikan nomor registrasi yang Anda masukkan benar. Hanya permohonan milik akun Anda yang bisa dilacak.') }}</p>
                 </form>
 
                 {{-- Hasil --}}
                 <div x-show="hasResult" x-transition.opacity class="mt-10 pt-8 border-t border-gray-100 dark:border-white/10">
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-5">{{ __('Status Permohonan') }}</h3>
 
+                    @php
+                        /* Label status berasal dari server (PpidController@checkRequestStatus). */
+                        $statusBaik  = "['DITERIMA', 'SELESAI', 'DISETUJUI']";
+                        $statusBuruk = "['DITOLAK', 'DITOLAK SEBAGIAN', 'KEDALUWARSA', 'TIDAK DITEMUKAN']";
+                    @endphp
                     <div :class="{
-                        'bg-emerald-50 border-[#10462F]': result.status === 'DITERIMA',
-                        'bg-blue-50 border-blue-500': result.status === 'DALAM PROSES',
-                        'bg-red-50 border-red-500': result.status === 'DITOLAK' || result.status === 'DATA TIDAK DITEMUKAN'
+                        'bg-emerald-50 border-[#10462F]': {{ $statusBaik }}.includes(result.status),
+                        'bg-red-50 border-red-500': {{ $statusBuruk }}.includes(result.status),
+                        'bg-blue-50 border-blue-500': !{{ $statusBaik }}.includes(result.status) && !{{ $statusBuruk }}.includes(result.status)
                     }" class="border-l-4 p-6 mb-8 rounded-r-2xl">
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ __('Status Permohonan') }}</p>
                         <p class="text-3xl font-extrabold mt-1"
                            :class="{
-                                'text-[#10462F]': result.status === 'DITERIMA',
-                                'text-blue-600': result.status === 'DALAM PROSES',
-                                'text-red-600': result.status === 'DITOLAK' || result.status === 'DATA TIDAK DITEMUKAN'
+                                'text-[#10462F]': {{ $statusBaik }}.includes(result.status),
+                                'text-red-600': {{ $statusBuruk }}.includes(result.status),
+                                'text-blue-600': !{{ $statusBaik }}.includes(result.status) && !{{ $statusBuruk }}.includes(result.status)
                            }" x-text="result.status"></p>
                     </div>
 
@@ -112,10 +129,11 @@
                     </dl>
 
                     <div x-show="notFound" class="p-5 bg-red-50 border border-red-100 rounded-2xl text-sm text-red-700 leading-relaxed">
-                        {{ __('Nomor registrasi') }} <span class="font-bold" x-text="result.number"></span> {{ __('tidak ditemukan. Mohon periksa kembali nomor yang Anda masukkan atau hubungi PPID.') }}
+                        {{ __('Nomor registrasi') }} <span class="font-bold" x-text="result.number"></span> {{ __('tidak ditemukan pada akun ini. Pelacakan hanya berlaku untuk permohonan yang Anda ajukan sendiri.') }}
+                        <a href="{{ route('akun.dashboard') }}" class="font-semibold underline">{{ __('Lihat riwayat di Akun Saya') }}</a>.
                     </div>
 
-                    <div x-show="result.status === 'DITOLAK'" class="mt-8 p-6 bg-[#F3ECDD] dark:bg-[#082217] rounded-2xl border border-gray-100 dark:border-white/10 text-center">
+                    <div x-show="['DITOLAK', 'DITOLAK SEBAGIAN'].includes(result.status)" class="mt-8 p-6 bg-[#F3ECDD] dark:bg-[#082217] rounded-2xl border border-gray-100 dark:border-white/10 text-center">
                         <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">{{ __('Jika Anda tidak puas dengan penolakan ini, Anda berhak mengajukan keberatan:') }}</p>
                         <a href="{{ route('ppid.objection') }}" class="inline-flex items-center gap-2 px-6 py-3 fs-gradient-accent text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-900/20 hover:-translate-y-0.5 transition-all duration-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z"></path></svg>

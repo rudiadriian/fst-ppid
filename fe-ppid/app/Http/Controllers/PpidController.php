@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use App\Mail\DownloadReportMail; // Asumsikan Anda membuat Mailable ini
 use Illuminate\Support\Facades\Log;
 use App\Models\InformasiDikecualikan;
@@ -32,42 +37,82 @@ class PpidController extends Controller
         }
     }
 
+    /**
+     * Permintaan tautan unduh laporan. Wajib masuk sebagai pengunjung —
+     * identitas diambil dari akun, tidak diketik ulang di formulir.
+     *
+     * Tautan yang dikirim adalah URL bertanda tangan yang kedaluwarsa dalam
+     * 72 jam, menunjuk berkas laporan asli di penyimpanan CMS.
+     */
     public function sendDownloadLink(Request $request)
     {
-        // 1. Validasi Data
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:15',
-            'email' => 'required|email|max:255',
-            'purpose' => 'required|in:Pribadi,Instansi',
-            'institution' => 'nullable|required_if:purpose,Instansi|string|max:255',
-            'reportTitle' => 'required|string|max:255',
+        $pemohon = Auth::guard('pemohon')->user();
+
+        $data = $request->validate([
+            'laporan_id' => 'required|integer',
         ]);
 
-        // 2. Kirim Email
-        try {
-            $downloadUrl = 'https://link-download-laporan-fstj.com/file/' . \Illuminate\Support\Str::slug($request->reportTitle);
+        $laporan = LaporanLayanan::published()->find($data['laporan_id']);
 
-            Mail::to($request->email)->send(new DownloadReportMail($request->name, $downloadUrl, $request->reportTitle));
-
-            // 3. Respon Sukses
-            return response()->json([
-                'success' => true,
-                'message' => 'Tautan unduh berhasil dikirim.',
-                'email' => $request->email,
-                'title' => $request->reportTitle,
-            ]);
-
-        } catch (\Exception $e) {
-            // Log error
-            Log::error('Gagal mengirim email download: ' . $e->getMessage());
-
-            // 4. Respon Gagal
+        if (!$laporan || blank($laporan->file_laporan)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat mengirim tautan unduh.',
+                'message' => __('Berkas laporan tidak ditemukan.'),
+            ], 404);
+        }
+
+        $tautan = URL::temporarySignedRoute('report.download.file', now()->addHours(72), [
+            'laporan' => $laporan->id,
+        ]);
+
+        $judul = trim($laporan->judul.' '.$laporan->tahun);
+
+        try {
+            Mail::to($pemohon->email)->send(new DownloadReportMail($pemohon->nama, $tautan, $judul));
+        } catch (\Throwable $e) {
+            Log::error('[PPID] Gagal mengirim email tautan unduh: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => __('Tautan gagal dikirim. Coba lagi beberapa saat lagi.'),
             ], 500);
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Tautan unduh berhasil dikirim.'),
+            'email' => $pemohon->email,
+            'title' => $judul,
+        ]);
+    }
+
+    /**
+     * Penyaji berkas laporan dari tautan email.
+     *
+     * Route-nya memakai middleware `signed`, jadi tautan tidak bisa ditebak
+     * maupun dipakai lagi setelah 72 jam. Sengaja tidak butuh sesi login —
+     * tanda tangan URL-nya sendiri yang jadi kunci.
+     */
+    public function downloadReportFile(int $laporan)
+    {
+        $baris = LaporanLayanan::published()->find($laporan);
+
+        abort_if(!$baris || blank($baris->file_laporan), 404);
+
+        // Sebagian entri CMS menyimpan URL penuh, sebagian lagi path relatif
+        // di dalam disk `public` (mis. `uploads/laporan/…`).
+        if (Str::startsWith($baris->file_laporan, ['http://', 'https://'])) {
+            return redirect()->away($baris->file_laporan);
+        }
+
+        $disk = Storage::disk('public');
+        $path = ltrim(Str::after($baris->file_laporan, 'storage/'), '/');
+
+        abort_unless($disk->exists($path), 404);
+
+        $nama = Str::slug($baris->judul.' '.$baris->tahun).'.'.pathinfo($path, PATHINFO_EXTENSION);
+
+        return $disk->download($path, $nama);
     }
 
 
@@ -142,6 +187,8 @@ class PpidController extends Controller
                 'struktur_organisasi'
             );
 
+            $data['bagan'] = \App\Models\StrukturOrganisasi::pohon($anggota);
+
             $data['anggota'] = $anggota->map(fn ($a) => [
                 'nama' => $a->nama,
                 'jabatan' => $a->jabatan,
@@ -168,10 +215,11 @@ class PpidController extends Controller
         // Tiga klasifikasi wajib menurut UU No. 14 Tahun 2008 selalu punya
         // halaman, walau kategorinya belum dibuat di CMS — tabelnya tampil
         // kosong, bukan 404.
+        // [nama halaman, judul tabel dokumen menurut UU No. 14 Tahun 2008]
         $bawaan = [
-            'berkala' => ['Informasi Berkala', 'Informasi yang wajib diumumkan secara rutin dan teratur, sekurang-kurangnya setiap 6 (enam) bulan sekali.'],
-            'serta-merta' => ['Informasi Serta Merta', 'Informasi yang wajib diumumkan tanpa penundaan karena menyangkut hajat hidup orang banyak dan/atau ketertiban umum.'],
-            'setiap-saat' => ['Informasi Setiap Saat', 'Informasi yang dapat diakses oleh pemohon informasi publik setiap saat.'],
+            'berkala' => ['Informasi Berkala', 'Informasi Wajib Disediakan dan Diumumkan Secara Berkala'],
+            'serta-merta' => ['Informasi Serta Merta', 'Informasi Wajib Diumumkan Secara Serta Merta'],
+            'setiap-saat' => ['Informasi Setiap Saat', 'Informasi Wajib Tersedia Setiap Saat'],
         ];
 
         if (!$kategori && !array_key_exists($key, $bawaan)) {
@@ -225,18 +273,13 @@ class PpidController extends Controller
             )
             : collect();
 
-        // Kategori induk dipakai untuk breadcrumb dan tombol kembali.
-        $induk = $kategori?->parent_id
-            ? $this->fromDatabase(
-                fn () => \App\Models\KategoriInformasi::where('id', $kategori->parent_id)->first(),
-                null,
-                'induk_kategori_informasi'
-            )
-            : null;
+        $nama = $kategori->nama ?? $bawaan[$key][0];
 
         $data = [
-            'title' => $kategori->nama ?? $bawaan[$key][0],
-            'description' => $kategori?->deskripsi ?: ($bawaan[$key][1] ?? 'Daftar informasi publik pada kategori ini.'),
+            'title' => $nama,
+            // Judul tabel: klasifikasi wajib memakai frasa UU; kategori lain
+            // (termasuk sub-kategori dari CMS) memakai namanya sendiri.
+            'heading_dokumen' => $bawaan[$key][1] ?? $nama,
             'items' => $items,
             'subkategori' => $subkategori->map(fn ($k) => [
                 'nama' => $k->nama,
@@ -244,7 +287,6 @@ class PpidController extends Controller
                 'deskripsi' => $k->deskripsi,
                 'jumlah' => (int) ($k->jumlah_dokumen ?? 0),
             ])->all(),
-            'induk' => $induk ? ['nama' => $induk->nama, 'slug' => $induk->slug] : null,
             'db_offline' => $this->dbOffline,
         ];
 
@@ -376,63 +418,6 @@ class PpidController extends Controller
     }
 
 
-    public function showRequestForm()
-    {
-        return view('ppid.request_form');
-    }
-
-    public function submitRequest(Request $request)
-    {
-        $request->validate([
-            'full_name' => 'required|string|max:255',
-            'id_number' => 'required|string|max:30',
-            'address' => 'required|string|max:500',
-            'phone' => 'required|string|max:15',
-            'email' => 'required|email|max:255',
-            'applicant_type' => 'required|in:Pribadi,Instansi,Kelompok',
-            'institution_name' => 'nullable|required_if:applicant_type,Instansi,Kelompok|string|max:255',
-            'info_needed' => 'required|string|max:1000',
-            'purpose' => 'required|string|max:1000',
-            'format' => 'required|in:softcopy,hardcopy',
-            'way_to_get' => 'required|in:ambil_langsung,email,pos',
-        ]);
-
-        $registrationNumber = 'PPID-FSTJ/' . date('Ymd') . '/' . rand(1000, 9999);
-
-        return response()->json([
-            'success' => true,
-            'registration_number' => $registrationNumber,
-            'applicant_name' => $request->full_name,
-            'submission_date' => now()->translatedFormat('d F Y'),
-        ]);
-    }
-
-    public function showObjectionForm()
-    {
-        return view('ppid.objection_form');
-    }
-
-    public function submitObjection(Request $request)
-    {
-        $request->validate([
-            'registration_number' => 'required|string|max:255',
-            'objection_reason' => 'required|string',
-            'objection_purpose' => 'required|string|max:1000',
-            'full_name' => 'required|string|max:255',
-            'phone' => 'required|string|max:15',
-            'email' => 'required|email|max:255',
-        ]);
-
-        $objectionNumber = 'KBRT-FSTJ/' . date('Ymd') . '/' . rand(100, 999);
-
-        return response()->json([
-            'success' => true,
-            'objection_number' => $objectionNumber,
-            'applicant_name' => $request->full_name,
-            'submission_date' => now()->translatedFormat('d F Y'),
-        ]);
-    }
-
     public function showStatusCheck()
     {
         return view('ppid.status_check');
@@ -444,33 +429,48 @@ class PpidController extends Controller
             'registration_number' => 'required|string|max:255',
         ]);
 
-        $regNumber = strtoupper($request->registration_number);
+        $regNumber = strtoupper(trim($request->registration_number));
+        $pemohon = Auth::guard('pemohon')->user();
 
-        $lastDigits = substr($regNumber, -4);
-        $status = 'DALAM PENELITIAN';
-        $responseDate = null;
-        $infoRequested = 'Laporan yang Dimohonkan (Contoh Data)';
+        // Halaman ini wajib login, jadi pencarian dibatasi pada permohonan
+        // milik akun yang sedang masuk. Nomor registrasi orang lain tetap
+        // dijawab "tidak ditemukan".
+        $permohonan = $this->fromDatabase(
+            fn () => PermohonanInformasi::where('pemohon_id', $pemohon->id)
+                ->where('kode_permohonan', $regNumber)
+                ->first(),
+            null,
+            'cek status permohonan'
+        );
 
-        if ($lastDigits === '1000') {
-            $status = 'DIPROSES';
-        } elseif ($lastDigits === '2000') {
-            $status = 'DITERIMA';
-            $responseDate = now()->subDays(2)->translatedFormat('d F Y');
-        } elseif ($lastDigits === '3000') {
-            $status = 'DITOLAK';
-            $responseDate = now()->subDays(1)->translatedFormat('d F Y');
-        } elseif ($lastDigits === '9999') {
-            $status = 'TIDAK DITEMUKAN';
-        } else {
-            $status = 'DALAM PENELITIAN';
+        if (!$permohonan) {
+            return response()->json([
+                'success' => true,
+                'number' => $regNumber,
+                'status' => 'TIDAK DITEMUKAN',
+                'response_date' => null,
+                'info_requested' => null,
+            ]);
         }
+
+        $label = [
+            'diajukan'          => 'DIAJUKAN',
+            'diverifikasi'      => 'DALAM PENELITIAN',
+            'diproses'          => 'DIPROSES',
+            'menunggu_approval' => 'MENUNGGU PERSETUJUAN',
+            'disetujui'         => 'DITERIMA',
+            'ditolak'           => 'DITOLAK',
+            'ditolak_sebagian'  => 'DITOLAK SEBAGIAN',
+            'selesai'           => 'SELESAI',
+            'kedaluwarsa'       => 'KEDALUWARSA',
+        ];
 
         return response()->json([
             'success' => true,
-            'number' => $regNumber,
-            'status' => $status,
-            'response_date' => $responseDate,
-            'info_requested' => $infoRequested,
+            'number' => $permohonan->kode_permohonan,
+            'status' => $label[$permohonan->status] ?? strtoupper((string) $permohonan->status),
+            'response_date' => optional($permohonan->tanggal_tanggapan)->translatedFormat('d F Y'),
+            'info_requested' => \Illuminate\Support\Str::limit($permohonan->rincian_informasi, 160),
         ]);
     }
 
@@ -573,6 +573,9 @@ class PpidController extends Controller
             'description' => $meta['description'],
             'slug'        => $slug,
             'reports'     => $reports,
+            // Angka ringkas seluruh sistem — dulu tampil di Beranda, sekarang
+            // hanya pada Laporan Statistik Informasi Publik.
+            'stats'       => $slug === 'statistik-informasi' ? $this->statistikRingkas() : [],
             'db_offline'  => $this->dbOffline,
             'summary'     => $summary->isEmpty() ? null : [
                 'tahun'      => $latestYear,
@@ -585,6 +588,44 @@ class PpidController extends Controller
         ];
 
         return view('ppid.report', compact('data'));
+    }
+
+    /**
+     * Empat angka ringkas: pemohon, dokumen, regulasi, kepuasan.
+     * Sebelumnya tampil di Beranda (HomeController@statistik).
+     */
+    private function statistikRingkas(): array
+    {
+        $angka = $this->fromDatabase(
+            function () {
+                $rating = \Illuminate\Support\Facades\DB::table('survey_kepuasan')->avg('rating');
+
+                return [
+                    'pemohon'  => PermohonanInformasi::count(),
+                    'dokumen'  => \App\Models\InformasiPublik::published()->count(),
+                    'regulasi' => Regulasi::count(),
+                    'kepuasan' => $rating ? round(((float) $rating / 5) * 100).'%' : '—',
+                ];
+            },
+            null,
+            'statistik_ringkas'
+        );
+
+        if ($angka === null) {
+            return [
+                ['value' => '—', 'label' => 'Pemohon'],
+                ['value' => '—', 'label' => 'Dokumen'],
+                ['value' => '—', 'label' => 'Regulasi'],
+                ['value' => '—', 'label' => 'Kepuasan'],
+            ];
+        }
+
+        return [
+            ['value' => number_format($angka['pemohon'], 0, ',', '.'), 'label' => 'Pemohon'],
+            ['value' => number_format($angka['dokumen'], 0, ',', '.'), 'label' => 'Dokumen'],
+            ['value' => number_format($angka['regulasi'], 0, ',', '.'), 'label' => 'Regulasi'],
+            ['value' => $angka['kepuasan'], 'label' => 'Kepuasan'],
+        ];
     }
 
     /**

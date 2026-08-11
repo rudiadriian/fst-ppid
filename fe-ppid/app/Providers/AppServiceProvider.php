@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Pemohon;
 use App\View\Composers\CmsLayoutComposer;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\HtmlString;
@@ -27,8 +30,27 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // Satu-satunya akun di situs publik adalah pengunjung (`Pemohon`), jadi
+        // notifikasi selalu menunjuk ke halaman `/akun/…`.
+        VerifyEmail::createUrlUsing(fn (Pemohon $pemohon) => URL::temporarySignedRoute(
+            'akun.verifikasi.verify',
+            now()->addMinutes(60),
+            ['id' => $pemohon->getKey(), 'hash' => sha1($pemohon->getEmailForVerification())]
+        ));
+
+        ResetPassword::createUrlUsing(fn (Pemohon $pemohon, string $token) => route('akun.password.reset', [
+            'token' => $token,
+            'email' => $pemohon->getEmailForPasswordReset(),
+        ]));
+
         // Menu dan blok kontak di header/footer diisi dari CMS.
         View::composer(['layouts.header', 'layouts.footer'], CmsLayoutComposer::class);
+
+        // Kelas isian formulir dipakai bersama halaman akun & portal pengguna,
+        // supaya seluruh formulir tampil seragam tanpa menyalin kelas panjang.
+        View::share('fsInput', 'mt-1.5 block w-full px-4 py-3 bg-gray-50 border border-gray-200 dark:border-white/10 rounded-xl focus:bg-white dark:bg-[#0B2A1D] focus:border-[#10462F] focus:ring-2 focus:ring-[#10462F]/15 outline-none transition-all text-base');
+        View::share('fsLabel', 'block text-sm font-medium text-gray-700 dark:text-gray-300');
+        View::share('fsBtn', 'inline-flex items-center justify-center py-3 px-6 fs-gradient-accent text-white text-base font-semibold rounded-xl shadow-lg shadow-emerald-900/20 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0');
 
         // Latar kartu bergantian antara tiga nada oranye (acuan theme-color-card.png).
         // Kelas .fs-card-1/2/3 didefinisikan di layouts/app.blade.php.

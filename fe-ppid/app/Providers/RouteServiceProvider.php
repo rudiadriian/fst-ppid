@@ -11,13 +11,15 @@ use Illuminate\Support\Facades\Route;
 class RouteServiceProvider extends ServiceProvider
 {
     /**
-     * The path to your application's "home" route.
+     * Halaman tujuan setelah autentikasi.
      *
-     * Typically, users are redirected here after authentication.
+     * Situs publik tidak punya dasbor admin (login petugas ada di `be-ppid`),
+     * jadi tujuan bawaannya beranda. Akun pengunjung sendiri diarahkan ke
+     * `akun.dashboard` oleh controller-nya masing-masing.
      *
      * @var string
      */
-    public const HOME = '/dashboard';
+    public const HOME = '/';
 
     /**
      * Define your route model bindings, pattern filters, and other route configuration.

@@ -3,7 +3,6 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KontenController;
 use App\Http\Controllers\PpidController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -51,18 +50,35 @@ Route::get('/laporan/{slug}', [PpidController::class, 'showReportPage'])->name('
 Route::get('/register-permohonan', [PpidController::class, 'showRequestRegister'])->name('ppid.register');
 Route::get('/standar-layanan/{slug}', [PpidController::class, 'showServiceStandardPage'])->name('ppid.service');
 
-Route::get('/permohonan', [PpidController::class, 'showRequestForm'])->name('ppid.request');
-Route::post('/submit-request', [PpidController::class, 'submitRequest'])->name('ppid.request.submit');
+/*
+ * Formulir layanan pindah ke Portal Pengguna (`/akun/...`).
+ *
+ * Data pemohon tidak lagi diketik ulang di formulir — semuanya mengikuti akun
+ * yang sedang masuk. Tautan lama tetap hidup supaya menu, bookmark, dan
+ * dokumen yang menyebut /permohonan atau /keberatan tidak putus.
+ */
+Route::redirect('/permohonan', '/akun/permohonan/baru')->name('ppid.request');
+Route::redirect('/keberatan', '/akun/keberatan/baru')->name('ppid.objection');
 
-Route::get('/keberatan', [PpidController::class, 'showObjectionForm'])->name('ppid.objection');
-Route::post('/submit-objection', [PpidController::class, 'submitObjection'])->name('ppid.objection.submit');
+Route::middleware('auth.pemohon')->group(function () {
+    // Cek status permohonan: hasilnya hanya permohonan milik akun yang masuk.
+    Route::get('/cek-status', [PpidController::class, 'showStatusCheck'])->name('ppid.status');
+    Route::post('/check-status', [PpidController::class, 'checkRequestStatus'])->name('ppid.status.check');
 
-Route::get('/cek-status', [PpidController::class, 'showStatusCheck'])->name('ppid.status');
-Route::post('/check-status', [PpidController::class, 'checkRequestStatus'])->name('ppid.status.check');
+    // Permintaan tautan unduh laporan — formulir, jadi ikut wajib masuk.
+    Route::post('/download-report', [PpidController::class, 'sendDownloadLink'])->name('report.download');
+});
 
+/*
+ * Berkas laporan dari tautan email. Tanda tangan URL-nya yang jadi kunci
+ * (berlaku 72 jam), jadi penerima email tidak perlu sesi login lagi.
+ */
+Route::get('/unduh-laporan/{laporan}', [PpidController::class, 'downloadReportFile'])
+    ->middleware('signed')
+    ->whereNumber('laporan')
+    ->name('report.download.file');
 
 Route::get('/search-suggest', [SearchController::class, 'suggestions']);
-Route::post('/download-report', [PpidController::class, 'sendDownloadLink'])->name('report.download');
 
 /*
  * Penyaji berkas media CMS.
@@ -91,10 +107,12 @@ Route::get('/storage/{path}', function (string $path) {
     ]);
 })->where('path', '.*')->name('media.show');
 
-// --- Backend / Web Admin (auth) ---
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+/*
+ * Tidak ada login petugas/admin di situs publik ini.
+ * Halaman login petugas ada di aplikasi `be-ppid`; route Breeze (`/login`,
+ * `/register`, `/dashboard`, `/profile`) beserta controller dan view-nya
+ * sudah dihapus supaya panel admin tidak punya pintu masuk dari sini.
+ */
 
-// Route autentikasi Breeze (login/register/logout/reset password)
-require __DIR__ . '/auth.php';
+// Route akun pengunjung situs publik (guard `pemohon`)
+require __DIR__ . '/akun.php';
