@@ -38,8 +38,48 @@
                         <p class="mt-8 text-sm font-normal text-white/70 border-t border-white/20 pt-4 relative z-10">{{ __($data['footer']) }}</p>
                     </div>
 
-                @elseif ($slug === 'prosedur-permohonan')
+                @elseif (in_array($slug, ['prosedur-permohonan', 'prosedur-keberatan'], true))
                     <p class="text-base font-normal text-gray-600 dark:text-gray-300 leading-relaxed mb-12">{{ __($data['intro']) }}</p>
+
+                    {{-- Alur ringkas berupa kartu bernomor. Untuk Prosedur
+                         Permohonan, blok ini dipindahkan dari beranda. --}}
+                    @if (!empty($data['flow']))
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-5 lg:gap-x-6 mb-14">
+                            @foreach ($data['flow'] as $i => $langkah)
+                                {{-- Wrapper relatif (tanpa overflow) agar konektor tidak terpotong --}}
+                                <div class="group relative h-full">
+                                    <div class="relative h-full {{ $cardTier($i) }} rounded-3xl p-7 shadow-xl shadow-accent-200/60 dark:shadow-black/30 hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                                        {{-- Nomor watermark --}}
+                                        <span class="absolute -top-3 -right-1 text-[6rem] leading-none font-extrabold text-white/25 group-hover:text-white/40 transition-colors select-none">{{ $i + 1 }}</span>
+
+                                        <div class="relative z-10">
+                                            <div class="flex items-center gap-3 mb-5">
+                                                <div class="w-14 h-14 bg-white text-[#E87317] rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $langkah['icon'] }}"></path></svg>
+                                                </div>
+                                                <span class="text-xs font-bold text-white uppercase tracking-widest">{{ __('Langkah') }} {{ $i + 1 }}</span>
+                                            </div>
+                                            <h3 class="text-lg font-bold text-white mb-1.5">{{ __($langkah['title']) }}</h3>
+                                            <p class="text-sm text-white/90 leading-relaxed">{{ __($langkah['desc']) }}</p>
+                                        </div>
+                                    </div>
+
+                                    {{-- Line penghubung + panah antar kartu dalam 1 baris (desktop) --}}
+                                    @if (($i + 1) % 3 !== 0 && $i + 1 < count($data['flow']))
+                                        <div class="hidden lg:block absolute top-1/2 left-full -translate-y-1/2 w-6 z-20">
+                                            <div class="h-[3px] w-full fs-gradient-accent rounded-full opacity-70"></div>
+                                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white dark:bg-[#0B2A1D] border border-accent-200 shadow-md flex items-center justify-center text-[#E87317]">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">{!! $judulDua(__('Rincian Tahapan'), 1) !!}</h3>
+                    @endif
+
                     <div class="relative pl-6">
                         <div class="absolute top-2 bottom-2 left-6 w-0.5 bg-emerald-100"></div>
                         <div class="space-y-8">
@@ -55,9 +95,15 @@
                     </div>
 
                     <div class="mt-12 text-center">
-                        <a href="{{ route('ppid.request') }}" class="inline-flex items-center justify-center px-8 py-3.5 bg-[#10462F] hover:bg-[#0B3524] text-white text-base font-semibold rounded-xl transition-colors duration-300">
-                            {{ __('Mulai Ajukan Permohonan') }}
-                        </a>
+                        @if ($slug === 'prosedur-keberatan')
+                            <a href="{{ route('ppid.objection') }}" class="inline-flex items-center justify-center px-8 py-3.5 bg-[#10462F] hover:bg-[#0B3524] text-white text-base font-semibold rounded-xl transition-colors duration-300">
+                                {{ __('Ajukan Keberatan') }}
+                            </a>
+                        @else
+                            <a href="{{ route('ppid.request') }}" class="inline-flex items-center justify-center px-8 py-3.5 bg-[#10462F] hover:bg-[#0B3524] text-white text-base font-semibold rounded-xl transition-colors duration-300">
+                                {{ __('Mulai Ajukan Permohonan') }}
+                            </a>
+                        @endif
                     </div>
 
                 @elseif ($slug === 'jalur-waktu-layanan')

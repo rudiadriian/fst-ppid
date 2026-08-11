@@ -214,7 +214,199 @@ Tolong jalankan langkah untuk menyesuaikan/ modifikasi halaman frontend aplikasi
 26. [x] tolong Hapus section Arsip Resmi - Laporan & Dokumen pada modul BERANDA, setelah di hapus. tolong ubah background section Berita & Publikasi menjadi warna putih
 27. [x] lebar card warna putih pada setiap MODUL/ SUB MODUL (Kecuali MODUL BERANDA) dibuat lebih lebar lagi ukurannya, karena yang sekarang telalu sempit, contohnya pada struktur organisasi saja ketika web diakses melalui PC/ Monitor tampilannya perlu di scroll supaya terlihat semua.
 28. [x] Ketika formulir Permohonan Informasi dan Permohonan Keberatan sudah disubmit berikan notifikasi ke admin (be-ppid).
-29. Hapus sub Modul Dasar Hukum pada modul Profil. lalu ganti dengan sub modul Tugas, Fungsi dan Wewenang
+29. [x] Hapus sub Modul Dasar Hukum pada modul Profil. lalu ganti dengan sub modul Tugas, Fungsi dan Wewenang. tolong buatkan sub modulnya saja dulu dengan konsep dinamis pada be-ppid.
+30. [x] Sesuaikan isi konten sub modul-modul pada modul Profil (kecuali STRUKTUR PPID -> GANTI NAMA LABELnya menjadi STRUKTUR ORGANISASI), SESUAIKAN isi kontennya pada path D:\Project\Ppid\Profil VISI MISI FUNGSI.docx
+31. [x] Sesuaikan baik di Front End (fe-ppid) maupun di Back End (be-ppid) Modul dan Sub Mobul dengan struktur seperti ini : 
+    - Infromasi Publik (Modul existing)
+        - Daftar Informasi Publik
+        - Daftar Informasi Dikecualikan
+        - Informasi Berkala
+        - Informasi Serta Merta
+        - Informasi Tersedia Setiap Saat
+        - Berita (Daftar berita, jika diberanda hanya berita terbaru saja yang muncul)
+    - Standar Layanan
+        - Maklumat Pelayanan
+        - Prosedur Permohonan Informasi Publik (Konten Alur Permohonan Informasi pada beranda dipindahkan ke sub modul ini )
+        - Prosedur Permohonan Keberatan Informasi Publik
+        - Jalur dan Waktu Layanan
+    - Layanan
+        - Permohonan Informasi Publik
+        - Pengajuan Keberatan Informasi Publik
+        - Laporan Statistik Informasi Publik
+        - Register Permohonan Informasi
+        - Laporan Pelayanan Informasi
+    Jika pada struktur modul maupun sub modul sudah sesuai dilewati saja.
+32. [x] Hapus Konten Susunan Pejabat PPID pada sub modul Struktur Organisasi. lalu lengkapi setiap label yang bertuliskan Food Station menjadi PT Food Station Tjipinang Jaya (Perseroda)
+33. [x] Untuk Modul Regulasi tolong disesuaikan :
+    - file-file regulasinya ada di path D:\Project\Ppid\REGULASI contoh tampilannya ada di path D:\Project\Ppid\regulasi.png
+    - Label "Regulasi dan Pedoman" diubah menjadi "REGULASI"
+    - HAPUS Konten ini "Catatan Penting Dokumen regulasi di halaman ini tersedia untuk diunduh secara langsung (Setiap Saat). Jika membutuhkan dokumen regulasi spesifik lainnya, silakan gunakan menu Permohonan Informasi Publik."
+34. [x] pada Back End (be-ppid) Modul Regulasi & Dasar Hukum disesuaikan:
+    - diubah label namanya "Regulasi & Dasar Hukum" menjadi "Regulasi"
+    - field Nomor dan Tahun di Hapus
+    - Hanya bisa upload file PDF/ Gambar
+35. sesuaikan Front End (fe-ppid) Modul Regulasi, 
+    - [x] pada bagian dibawah ini :
+        "sm:w-56 lg:w-64 flex-shrink-0 bg-[#FAF6EC] dark:bg-[#082217] border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-white/10 flex flex-col items-center justify-center gap-3 py-8 px-6 "
+        dibuat warna putih card saja, lalu menampilkan halaman pertama pada dokumen yang di upload BUKAN TAHUN DAN JUDUL 
+    - [x] Label "DAFTAR PERATURAN" diubah menjadi "DAFTAR REGULASI"
+    - [x] Fitur UNDUH dihapus, jadi haru masuk ke halaman DETAIL (setiap data regulasi dapat diKLIK yang nanti menampilkan informasi detail dokumennya, perlakukan juga tombol LIHAT seperti ini) 
+    - [x] Halaman Detail itu Menampilkan Dokumennya, tidak pindah tab tapi tetapi disitu di lihatnya. lalu ada Section "Postingan Relevan" dibawahnya agar user dapat melihat REGULASI LAIN tanpa harus kembali ke Halaman REGULASI
+    - pada DAFTAR REGULASI informasi yang ditampilkan adalah :
+        - [x]  Gambar halaman awal dokumen
+        - [x] bagian Internal PPID, disesuaikan dengan Kategori Regulasi
+        - [x] bagian Nomor 4 Tahun 2023, disesuaikan dengan Tanggal Waktu Publish
+        - [x] Judul Regulasi
+        - [x] Ringkasan Regulasi
+        - [x] Di upload oleh User Admin Siapa (Ikon Food Station - Diupload oleh - Nama User Admin )
+36. 
+
+
+
+---
+
+
+## Status Pengerjaan (putaran 21 — langkah 35 lanjutan)
+
+Butir yang belum tercentang pada langkah 35 dikerjakan di putaran ini: label daftar, halaman detail, dan isi kartu.
+
+### Data baru yang dibutuhkan
+
+Migrasi `api-ppid/database/migrations/2026_08_11_000001_add_ringkasan_and_uploader_to_regulasi_table.php` (**sudah dijalankan**) menambah dua kolom pada `regulasi`:
+
+| Kolom | Isi |
+|---|---|
+| `ringkasan` | kutipan singkat yang tampil di daftar dan halaman detail |
+| `uploaded_by` | petugas pengunggah (FK `users`, `nullOnDelete`) |
+
+`uploaded_by` **diisi server dari token** lewat `beforeSave()` di `RegulasiController`, bukan dari input klien — nama yang tampil di situs publik pasti petugas yang benar-benar menyimpan. Baris lama diisi dengan akun admin yang ada. Modul CMS-nya dapat field **Ringkasan** serta kolom **Diunggah oleh** dan **Tanggal publikasi**.
+
+### Daftar Regulasi (`/regulasi`)
+
+- Judul daftar **"DAFTAR PERATURAN" → "DAFTAR REGULASI"**.
+- **Tombol Unduh dihapus.** Seluruh kartu kini dapat diklik menuju halaman detail (tautan judul dilebarkan lewat `after:inset-0`, jadi area kliknya sekartu penuh); tombol **Lihat** ikut menuju halaman detail yang sama, bukan lagi membuka berkas di tab baru.
+- Isi kartu sekarang: sampul halaman pertama dokumen, **badge kategori regulasi** (Dasar Hukum PPID / Regulasi / Pedoman — sebelumnya label lama "Internal PPID"), **tanggal dan jam publikasi** (menggantikan nomor peraturan), judul, **ringkasan**, dan baris **"Diunggah oleh <nama petugas>"** berikon logo perusahaan.
+- Urutan daftar mengikuti tanggal publikasi terbaru.
+
+### Halaman detail (`/regulasi/{id}`)
+
+- Rute baru `ppid.regulation.show`; id di luar data menghasilkan 404.
+- Dokumen **dibaca di halaman itu juga** — seluruh halaman PDF digambar berurutan ke `<canvas>` oleh `resources/js/sampul-pdf.js` (fungsi `gambarDokumen`), tidak membuka tab baru dan tidak memaksa unduh. Berkas gambar ditampilkan sebagai `<img>`.
+- Bagian atas memuat kategori, tanggal + jam publikasi, judul, dan pengunggah; di bawahnya ringkasan, lalu dokumennya.
+- Section **"Postingan Relevan"** berisi 6 regulasi lain — yang sekategori didahulukan, sisanya yang terbaru — lengkap dengan sampul halaman pertamanya, sehingga pengunjung bisa langsung pindah dokumen tanpa kembali ke daftar.
+
+### Verifikasi
+
+- `php -l` bersih; `npx tsc --noEmit` di be-ppid tanpa error; `npm run build` sukses.
+- `/regulasi` 200 dengan 9 kartu, **nol tombol "Unduh"**, 9 baris "Diunggah oleh", tautan detail per kartu (`/regulasi/17`, `/regulasi/15`, …).
+- `/regulasi/17` 200: tangkapan layar memperlihatkan dokumen Perda Nomor 4 Tahun 2023 tergambar utuh di halaman (bukan tautan unduh), ringkasan tampil, dan 6 kartu "Postingan Relevan" ikut menggambar sampulnya.
+- `/regulasi/99999` 404; beranda tetap 200. `lang/en.json`: +12 kunci (total 619).
+
+**Catatan** — menjalankan ulang seeder regulasi mengembalikan kategori kedelapan dokumen ke `dasar_hukum_ppid`, sehingga badge-nya kini "Dasar Hukum PPID". Kalau Anda memang ingin ketiganya berkategori "Regulasi", ubah dari panel be-ppid; seeder hanya perlu dijalankan sekali dan tidak akan dijalankan lagi kecuali diminta.
+
+---
+
+## Status Pengerjaan (putaran 20 — langkah 34 & 35)
+
+### Langkah 34 — modul Regulasi di be-ppid
+
+- Label modul **"Regulasi & Dasar Hukum" → "Regulasi"** (`be-ppid/src/app/(control-panel)/ppid/lib/resources.ts`).
+- **Field Nomor dan Tahun dihapus** dari formulir maupun kolom tabelnya. Kolomnya sendiri tetap ada di database supaya data lama tidak hilang; tabel CMS sekarang menampilkan Judul, Kategori, Jenis, dan Berkas. Karena kolom Tahun tidak ada lagi, urutan bawaannya pindah ke **judul** — ikut diubah di `api-ppid/app/Http/Controllers/Api/Cms/RegulasiController.php` supaya sisi server dan panel sepakat.
+- **Unggahan dibatasi PDF dan gambar.** Ditambahkan jenis berkas baru `dokumen_gambar` di `api-ppid/app/Http/Controllers/Api/UploadController.php` (ekstensi `pdf, jpg, jpeg, png, webp`, batas 20 MB, divalidasi lewat `extensions:` + `mimes:` dan dicek ulang setelahnya). Sisi panel: `UploadField` memakai `accept=".pdf,image/jpeg,image/png,image/webp"`, dan tipe `jenis` di `types.ts` serta `ppidApi.upload()` diperluas. Field berkasnya diberi keterangan bahwa halaman pertamanya dipakai sebagai sampul di situs publik.
+
+Penolakan berkas di luar daftar terjadi di server, bukan hanya di dialog pilih berkas — jadi ekstensi lain tetap ditolak walau atribut `accept` di-bypass.
+
+### Langkah 35 — sampul kartu Regulasi di fe-ppid
+
+Blok sampul (yang kelasnya Anda tunjuk) sekarang **berlatar putih** (`bg-white dark:bg-[#0B2A1D]`) dan isinya **halaman pertama dokumen**, bukan lagi tahun dan jenis peraturan.
+
+**Cara menggambarnya** — `resources/js/sampul-pdf.js` (entri Vite terpisah, hanya dimuat di halaman Regulasi lewat `@push('scripts')` + `@stack('scripts')` yang baru ditambahkan di layout). Halaman pertama PDF digambar ke `<canvas>` memakai **pdf.js** (`pdfjs-dist`, dependensi baru). Berkas gambar (JPG/PNG/WEBP) langsung ditampilkan sebagai `<img>`.
+
+Catatan teknis yang perlu diingat kalau nanti disentuh lagi:
+
+- Awalnya PDF disematkan lewat `<object>`, tapi hasilnya bergantung pembaca PDF bawaan peramban — sebagian perangkat menampilkan kotak kosong. pdf.js dipilih supaya hasilnya seragam.
+- Worker pdf.js **dijalankan di thread utama** (`globalThis.pdfjsWorker` + `workerSrc` kosong). Versi worker terpisah (`?worker` maupun `workerSrc`) membuat `getDocument().promise` menggantung tanpa galat — berkasnya terunduh penuh, tapi jawaban worker tidak pernah datang. Menggambar satu halaman pertama cukup ringan untuk thread utama.
+- Berkas baru diunduh saat kartunya mendekati layar (cek `getBoundingClientRect()` pada muat, gulir, dan ubah ukuran), dan digambar satu per satu — halaman berisi banyak dokumen tidak menarik semua PDF sekaligus.
+- Selama belum tergambar, atau bila berkas rusak/bukan PDF, yang tampil `partials/regulasi_sampul_cadangan.blade.php` (lambang dokumen + "Pratinjau tidak tersedia").
+
+### Verifikasi
+
+- `php -l` bersih di berkas PHP yang disentuh; `npx tsc --noEmit` di be-ppid tanpa error; `npm run build` di fe-ppid sukses (bundel `sampul-pdf` ±479 kB, hanya dimuat di halaman Regulasi).
+- Halaman `/regulasi` diperiksa lewat peramban headless: **8 sampul PDF benar-benar tergambar** (halaman pertama, terbaca), satu baris tanpa berkas memakai sampul cadangan. Sempat gagal diam-diam sampai penyebabnya ketemu (worker menggantung) — bukti render sekarang berupa elemen `<canvas>` yang muncul di DOM.
+- Beranda, `/informasi`, `/berita`, dan `/standar-layanan/prosedur-permohonan` tetap 200.
+- `lang/en.json`: +2 kunci (total 607).
+
+**Catatan** — kategori kedelapan dokumen di database saat ini terbaca `regulasi` (bukan `dasar_hukum_ppid` seperti saat diseed), sehingga badge-nya tampil "Internal PPID". Sepertinya sudah Anda ubah lewat panel; saya biarkan apa adanya. Bilang saja kalau mau dikembalikan ke Dasar Hukum PPID.
+
+---
+
+## Status Pengerjaan (putaran 19 — langkah 33)
+
+### Langkah 33 — Modul Regulasi
+
+**Delapan berkas dari folder REGULASI sudah masuk sistem.** PDF-nya disalin ke disk `media` (`fe-ppid/storage/app/public/uploads/regulasi/`) dengan nama rapi, lalu ditautkan lewat `api-ppid/database/seeders/RegulasiDasarHukumSeeder.php` (**sudah dijalankan**):
+
+| Nomor | Jenis | Berkas |
+|---|---|---|
+| Nomor 14 Tahun 2008 | Undang-Undang | `uu-14-2008.pdf` |
+| Nomor 25 Tahun 2009 | Undang-Undang | `uu-25-2009.pdf` |
+| Nomor 1 Tahun 2021 | Peraturan Komisi Informasi | `perki-1-2021.pdf` |
+| Nomor 1 Tahun 2003 | Peraturan Komisi Informasi | `perki-1-2003.pdf` |
+| Nomor 175 Tahun 2016 | Peraturan Gubernur | `pergub-175-2016.pdf` |
+| Nomor 61 Tahun 2010 | Peraturan Pemerintah | `pp-61-2010.pdf` |
+| Nomor 54 Tahun 2017 | Peraturan Pemerintah | `pp-54-2017.pdf` |
+| Nomor 4 Tahun 2023 | Peraturan Daerah | `perda-4-2023.pdf` |
+
+Judul dan kategorinya (`dasar_hukum_ppid`) mengikuti `REGULASI/PPID_Dasar Hukum.docx`. Seeder-nya idempoten: dicocokkan lewat `file_path`, dan **baris data contoh lama yang membahas peraturan yang sama tetapi belum punya berkas dipakai ulang, bukan digandakan** — itulah kenapa UU 14/2008, PP 61/2010, dan Perki 1/2021 tidak muncul dobel. Seluruh isinya tetap bisa disunting dari be-ppid → Regulasi.
+
+**Tampilan diganti jadi daftar kartu** (`resources/views/ppid/regulation.blade.php`), mengikuti contoh `regulasi.png`: sampul dokumen di kiri (lambang berkas + tahun + jenis peraturan), lalu badge kategori, nomor peraturan, judul, dan tombol **Unduh** + **Lihat**. Ada pencarian judul di sisi kanan judul daftar. Tabel lima kolom yang lama dilepas.
+
+**Label** "Regulasi dan Pedoman" → **"REGULASI"** (judul halaman + `<title>`), dan tautan footer "Regulasi & Pedoman" ikut disederhanakan jadi "Regulasi".
+
+**Blok "Catatan Penting"** beserta tautan ke Permohonan Informasi Publik **dihapus** dari halaman.
+
+Perubahan kecil yang menyertai: `mapRegulasi()` kini mengirim `year` dan `jenis`; berkas yang kosong tidak lagi memberi tombol unduh menuju `#` melainkan keterangan "Belum tersedia".
+
+**Verifikasi** — `php -l` bersih; `/regulasi` HTTP 200 dan memuat kedelapan tautan PDF; berkas `storage/uploads/regulasi/uu-14-2008.pdf` dilayani `200 application/pdf` 1.040.400 byte; tangkapan layar 1700px diperiksa (kartu, badge, tombol, judul "REGULASI", tanpa blok Catatan Penting); beranda dan pencarian tetap 200. `lang/en.json`: 11 kunci baru (total 605), JSON tervalidasi.
+
+**Catatan** — satu baris data contoh lama, "Peraturan Direksi tentang Pedoman Keterbukaan Informasi Publik" (No. 12 Tahun 2023, kategori Regulasi), tidak punya berkas sehingga tampil dengan keterangan "Belum tersedia". Sengaja tidak saya hapus karena itu peraturan internal yang mungkin memang mau Anda unggah; bilang saja kalau mau dibuang.
+
+---
+
+## Status Pengerjaan (putaran 18 — langkah 29 & 30)
+
+### Langkah 29 — Dasar Hukum diganti Tugas, Fungsi dan Wewenang
+
+**Yang dihapus** — rute `/profile/dasar-hukum` (`ppid.legal_basis`), method `PpidController@showLegalBasisPage`, serta tautannya di menu Profil (desktop + ponsel) dan footer.
+
+**Dokumennya tidak ikut hilang** — dua baris regulasi berkategori `dasar_hukum_ppid` sebelumnya hanya tayang di halaman itu. Halaman **Regulasi** sekarang memuat ketiga kategori (`regulasi`, `pedoman`, `dasar_hukum_ppid`), dan hasil pencarian untuk dasar hukum diarahkan ke sana. Tanpa ini, dua dokumen tersebut jadi tidak bisa dibuka publik.
+
+**Sub modul barunya dinamis dari be-ppid** — `api-ppid/database/seeders/HalamanProfilSeeder.php` (**sudah dijalankan**) membuat satu baris di modul **Halaman Statis** dengan slug `tugas-fungsi-wewenang`, judul "Tugas, Fungsi dan Wewenang", isinya sudah terisi dari dokumen acuan. Operator tinggal membuka be-ppid → Halaman Statis → sunting isinya; situs publik langsung ikut berubah tanpa deploy. Seeder-nya idempoten dan **tidak menimpa** isi yang sudah disunting operator — baris yang sudah ada dilewati.
+
+Rute `/profile/{slug}` yang lama sudah mendukung pola ini, jadi halaman baru tidak butuh rute sendiri. Bila baris CMS-nya dinonaktifkan atau database sedang bermasalah, halaman jatuh ke tata letak bawaan (kartu Fungsi + kartu Wewenang) yang ditulis di controller — halaman tidak pernah kosong.
+
+**Perbaikan yang menyusul** — kelas `prose` yang dipakai untuk menampilkan isi CMS tidak menghasilkan gaya apa pun karena plugin `@tailwindcss/typography` memang tidak terpasang di proyek ini; judul dan daftar tampil rata tanpa penanda. Ditambahkan kelas `.fs-rte` di `resources/css/app.css` (heading, daftar bernomor/berbutir, tautan, kutipan, gambar, tabel, lengkap dengan mode gelap) dan dipakai di halaman Profil serta detail Berita.
+
+### Langkah 30 — isi sub modul Profil mengikuti dokumen resmi
+
+Sumber: `Profil VISI MISI FUNGSI.docx`.
+
+| Sub modul | Perubahan |
+|---|---|
+| Profil Singkat | Judul isi jadi "Tentang PPID PT Food Station Tjipinang Jaya (Perseroda)", teksnya dipecah dua paragraf sesuai dokumen. Blok **Fungsi & Wewenang** dipindah ke sub modul baru. Blok **Waktu Layanan** tetap di sini (tidak dibahas dokumen, jadi tidak dibuang) |
+| Struktur PPID | **Label diganti jadi "Struktur Organisasi"** di menu Profil, footer, judul halaman `/profile/struktur`, dan halaman `/struktur-ppid`. Isinya tidak diubah — dokumen tidak memuat bagian ini |
+| Visi & Misi | Visi diganti dengan rumusan resmi ("Terwujudnya pelayanan informasi publik yang transparan…"); Misi jadi **4 butir** sesuai dokumen (sebelumnya 3 butir lama) |
+| Tugas, Fungsi dan Wewenang | Baru. 1 butir Fungsi + 7 butir Wewenang, persis dokumen |
+
+`lang/en.json`: 7 kunci mati dihapus, 11 kunci baru ditambahkan (total 557), JSON tervalidasi dan diurut.
+
+### Verifikasi
+
+- `php -l` bersih pada seluruh berkas PHP yang disentuh; `npm run build` sukses.
+- Halaman dicek: `/profile/singkat`, `/profile/struktur`, `/profile/visi-misi`, `/profile/tugas-fungsi-wewenang`, `/struktur-ppid`, `/regulasi`, `/search?q=undang` semuanya **200**; `/profile/dasar-hukum` sekarang **404** sebagaimana mestinya.
+- Isi terverifikasi di HTML hasil render: halaman baru menampilkan isi dari CMS (bukan cadangan controller), visi baru muncul di `/profile/visi-misi`, dan "Undang-Undang Nomor 14" kini tampil di `/regulasi`.
+- Tangkapan layar ketiga halaman Profil diperiksa: judul, daftar berbutir, dan penomoran misi tampil benar setelah `.fs-rte` dipasang.
+- Terjemahan diuji dengan mengganti bahasa ke EN: "Organizational Structure", "Duties, Functions and Authority", dan visi versi Inggris tampil; bahasa dikembalikan ke ID.
 
 ---
 

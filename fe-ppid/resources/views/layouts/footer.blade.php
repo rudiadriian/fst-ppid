@@ -64,14 +64,16 @@
                         {{-- Slug harus sama dengan kunci di PpidController@showProfilePage
                              maupun slug halaman di modul Halaman Statis. --}}
                         <li><a href="{{ route('ppid.profile', 'singkat') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Profil Singkat') }}</a></li>
-                        <li><a href="{{ route('ppid.profile', 'struktur') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Struktur PPID') }}</a></li>
-                        <li><a href="{{ route('ppid.legal_basis') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Dasar Hukum') }}</a></li>
+                        <li><a href="{{ route('ppid.profile', 'struktur') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Struktur Organisasi') }}</a></li>
                         <li><a href="{{ route('ppid.profile', 'visi-misi') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Visi & Misi') }}</a></li>
+                        <li><a href="{{ route('ppid.profile', 'tugas-fungsi-wewenang') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Tugas, Fungsi dan Wewenang') }}</a></li>
                     </ul>
                 </div>
                 <div class="space-y-4">
                     <h5 class="text-sm font-bold text-white uppercase tracking-wide">{{ __('Informasi Publik') }}</h5>
                     <ul class="space-y-2.5">
+                        <li><a href="{{ route('ppid.information.index') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Daftar Informasi Publik') }}</a></li>
+                        <li><a href="{{ route('ppid.excluded') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Daftar Informasi Dikecualikan') }}</a></li>
                         @foreach ($cmsKategoriInformasi as $kat)
                             <li><a href="{{ route('ppid.information', $kat['slug']) }}" class="text-sm text-white/70 hover:text-white transition">{{ $kat['nama'] }}</a></li>
                         @endforeach
@@ -79,20 +81,24 @@
                     </ul>
                 </div>
                 <div class="space-y-4">
-                    <h5 class="text-sm font-bold text-white uppercase tracking-wide">{{ __('Layanan') }}</h5>
+                    <h5 class="text-sm font-bold text-white uppercase tracking-wide">{{ __('Standar Layanan') }}</h5>
                     <ul class="space-y-2.5">
-                        <li><a href="{{ route('ppid.regulation') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Regulasi & Pedoman') }}</a></li>
-                        <li><a href="{{ route('ppid.request') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Permohonan Informasi') }}</a></li>
-                        <li><a href="{{ route('ppid.objection') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Pengajuan Keberatan') }}</a></li>
-                        <li><a href="{{ route('ppid.status') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Cek Status') }}</a></li>
+                        <li><a href="{{ route('ppid.service', 'maklumat-pelayanan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Maklumat Pelayanan') }}</a></li>
+                        <li><a href="{{ route('ppid.service', 'prosedur-permohonan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Prosedur Permohonan Informasi Publik') }}</a></li>
+                        <li><a href="{{ route('ppid.service', 'prosedur-keberatan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Prosedur Permohonan Keberatan Informasi Publik') }}</a></li>
+                        <li><a href="{{ route('ppid.service', 'jalur-waktu-layanan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Jalur dan Waktu Layanan') }}</a></li>
                     </ul>
                 </div>
                 <div class="space-y-4">
-                    <h5 class="text-sm font-bold text-white uppercase tracking-wide">{{ __('Standar Pelayanan') }}</h5>
+                    <h5 class="text-sm font-bold text-white uppercase tracking-wide">{{ __('Layanan') }}</h5>
                     <ul class="space-y-2.5">
-                        <li><a href="{{ route('ppid.service', 'maklumat-pelayanan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Maklumat Pelayanan') }}</a></li>
-                        <li><a href="{{ route('ppid.service', 'prosedur-permohonan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Prosedur Permohonan') }}</a></li>
-                        <li><a href="{{ route('ppid.service', 'jalur-waktu-layanan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Jalur & Waktu Layanan') }}</a></li>
+                        <li><a href="{{ route('ppid.request') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Permohonan Informasi Publik') }}</a></li>
+                        <li><a href="{{ route('ppid.objection') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Pengajuan Keberatan Informasi Publik') }}</a></li>
+                        <li><a href="{{ route('ppid.report', 'statistik-informasi') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Laporan Statistik Informasi Publik') }}</a></li>
+                        <li><a href="{{ route('ppid.register') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Register Permohonan Informasi') }}</a></li>
+                        <li><a href="{{ route('ppid.report', 'pelayanan-informasi') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Laporan Pelayanan Informasi') }}</a></li>
+                        <li><a href="{{ route('ppid.regulation') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Regulasi') }}</a></li>
+                        <li><a href="{{ route('ppid.status') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Cek Status') }}</a></li>
                     </ul>
                 </div>
             </div>

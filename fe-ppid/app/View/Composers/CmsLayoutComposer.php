@@ -47,7 +47,7 @@ class CmsLayoutComposer
             return [
                 ['nama' => 'Informasi Berkala', 'slug' => 'berkala'],
                 ['nama' => 'Informasi Serta Merta', 'slug' => 'serta-merta'],
-                ['nama' => 'Informasi Setiap Saat', 'slug' => 'setiap-saat'],
+                ['nama' => 'Informasi Tersedia Setiap Saat', 'slug' => 'setiap-saat'],
             ];
         }
 

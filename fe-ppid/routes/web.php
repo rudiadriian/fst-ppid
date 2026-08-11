@@ -37,15 +37,19 @@ Route::get('/set-locale/{locale}', function (string $locale) {
     return redirect()->back();
 })->name('locale.set');
 
-// Kanal Profil: Dasar Hukum didaftarkan sebelum /profile/{slug} agar tidak tertangkap wildcard.
-Route::get('/profile/dasar-hukum', [PpidController::class, 'showLegalBasisPage'])->name('ppid.legal_basis');
+// Kanal Profil. Sub halamannya (termasuk Tugas, Fungsi dan Wewenang) ditangani
+// satu rute slug; isinya boleh ditimpa lewat modul Halaman Statis di be-ppid.
 Route::get('/profile/{slug}', [PpidController::class, 'showProfilePage'])->name('ppid.profile');
 
 // Kanal Informasi Publik: Daftar Informasi Dikecualikan sebelum /informasi/{slug}.
+Route::get('/informasi', [PpidController::class, 'showPublicInformationIndex'])->name('ppid.information.index');
 Route::get('/informasi/dikecualikan', [PpidController::class, 'showExcludedInformation'])->name('ppid.excluded');
 Route::get('/informasi/{slug}', [PpidController::class, 'showPublicInformation'])->name('ppid.information');
 
 Route::get('/regulasi', [PpidController::class, 'showRegulationPage'])->name('ppid.regulation');
+Route::get('/regulasi/{regulasi}', [PpidController::class, 'showRegulationDetail'])
+    ->whereNumber('regulasi')
+    ->name('ppid.regulation.show');
 Route::get('/laporan/{slug}', [PpidController::class, 'showReportPage'])->name('ppid.report');
 Route::get('/register-permohonan', [PpidController::class, 'showRequestRegister'])->name('ppid.register');
 Route::get('/standar-layanan/{slug}', [PpidController::class, 'showServiceStandardPage'])->name('ppid.service');

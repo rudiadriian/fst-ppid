@@ -6,7 +6,7 @@ export default defineConfig({
     plugins: [
         laravel({
             // Hanya JS (jika perlu) dan CSS
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/sampul-pdf.js'],
             refresh: true,
         }),
     ],

@@ -158,7 +158,7 @@ export const ppidApi = {
 	async upload(
 		file: File,
 		folder: string,
-		jenis: 'gambar' | 'dokumen' | 'video'
+		jenis: 'gambar' | 'dokumen' | 'dokumen_gambar' | 'video'
 	): Promise<{ path: string; url: string; nama_file: string; ukuran_file: number; tipe_file: string }> {
 		const form = new FormData();
 		form.append('file', file);

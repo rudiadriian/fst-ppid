@@ -29,7 +29,7 @@
 
                 {{-- Isi berita ditulis lewat editor CMS. Hanya tag aman yang
                      dirender agar konten tidak bisa menyisipkan skrip. --}}
-                <div class="prose prose-emerald max-w-none dark:prose-invert">
+                <div class="fs-rte">
                     {!! strip_tags($berita->konten ?? '', '<p><br><strong><em><u><ul><ol><li><h2><h3><h4><blockquote><a><img><table><thead><tbody><tr><th><td>') !!}
                 </div>
             </article>

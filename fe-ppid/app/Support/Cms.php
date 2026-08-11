@@ -117,4 +117,16 @@ class Cms
 
         return $carbon->format('j').' '.$bulan[(int) $carbon->format('n')].' '.$carbon->format('Y');
     }
+
+    /** Tanggal beserta jamnya, mis. "11 Agustus 2026, 14.05 WIB". */
+    public static function tanggalWaktu($waktu): string
+    {
+        if (blank($waktu)) {
+            return '';
+        }
+
+        $carbon = $waktu instanceof \DateTimeInterface ? $waktu : \Illuminate\Support\Carbon::parse($waktu);
+
+        return self::tanggal($carbon).', '.$carbon->format('H.i').' WIB';
+    }
 }

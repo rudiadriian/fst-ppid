@@ -17,15 +17,6 @@
         // $cardTier (rotasi tiga nada oranye untuk latar kartu) di-share global
         // dari AppServiceProvider.
 
-        $timelineSteps = [
-            'Ajukan Permohonan',
-            'Verifikasi',
-            'Diproses',
-            'Persetujuan PPID',
-            'Informasi Dikirim',
-            'Selesai',
-        ];
-
     @endphp
 
     {{-- =====================================================================
@@ -192,72 +183,6 @@
                         </a>
                     </div>
                 @endforeach
-            </div>
-        </div>
-    </section>
-
-    {{-- =====================================================================
-         5. ALUR PERMOHONAN
-         ===================================================================== --}}
-    <section class="py-16 lg:py-24 bg-white dark:bg-[#0B2A1D]">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            {{-- Ringkasan angka pindah ke halaman Laporan Statistik Informasi Publik. --}}
-            <div class="text-center max-w-2xl mx-auto mb-16">
-                <span class="text-sm font-bold text-[#10462F] uppercase tracking-widest">{{ __('Prosedur') }}</span>
-                <h2 class="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white mt-3">{!! $judulDua(__('Alur Permohonan Informasi')) !!}</h2>
-                <p class="text-gray-500 dark:text-gray-400 mt-4 leading-relaxed">{{ __('Enam tahapan sederhana dari pengajuan hingga informasi Anda terima.') }}</p>
-            </div>
-
-            @php
-                $flowSteps = [
-                    ['title' => 'Ajukan Permohonan', 'desc' => 'Isi formulir permohonan informasi secara daring.', 'icon' => 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'],
-                    ['title' => 'Verifikasi', 'desc' => 'Berkas & identitas pemohon diperiksa petugas PPID.', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
-                    ['title' => 'Diproses', 'desc' => 'Permohonan ditelaah dan informasi dihimpun.', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.525.321 1.157.498 1.724 1.065z'],
-                    ['title' => 'Persetujuan PPID', 'desc' => 'Keputusan pemberian informasi disetujui pejabat PPID.', 'icon' => 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z'],
-                    ['title' => 'Informasi Dikirim', 'desc' => 'Dokumen dikirim via email atau diambil di kantor.', 'icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
-                    ['title' => 'Selesai', 'desc' => 'Permohonan tuntas & tercatat dalam arsip layanan.', 'icon' => 'M5 13l4 4L19 7'],
-                ];
-            @endphp
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-5 lg:gap-x-6">
-                @foreach ($flowSteps as $i => $step)
-                    {{-- Wrapper relatif (tanpa overflow) agar konektor tidak terpotong --}}
-                    <div class="group relative h-full">
-                        <div class="relative h-full {{ $cardTier($i) }} rounded-3xl p-7 shadow-xl shadow-accent-200/60 dark:shadow-black/30 hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                            {{-- Nomor watermark --}}
-                            <span class="absolute -top-3 -right-1 text-[6rem] leading-none font-extrabold text-white/25 group-hover:text-white/40 transition-colors select-none">{{ $i + 1 }}</span>
-
-                            <div class="relative z-10">
-                                <div class="flex items-center gap-3 mb-5">
-                                    <div class="w-14 h-14 bg-white text-[#E87317] rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $step['icon'] }}"></path></svg>
-                                    </div>
-                                    <span class="text-xs font-bold text-white uppercase tracking-widest">{{ __('Langkah') }} {{ $i + 1 }}</span>
-                                </div>
-                                <h3 class="text-lg font-bold text-white mb-1.5">{{ __($step['title']) }}</h3>
-                                <p class="text-sm text-white/90 leading-relaxed">{{ __($step['desc']) }}</p>
-                            </div>
-                        </div>
-
-                        {{-- Line penghubung + panah antar kartu dalam 1 baris (desktop) --}}
-                        @if (!in_array($i, [2, 5]))
-                            <div class="hidden lg:block absolute top-1/2 left-full -translate-y-1/2 w-6 z-20">
-                                <div class="h-[3px] w-full fs-gradient-accent rounded-full opacity-70"></div>
-                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white dark:bg-[#0B2A1D] border border-accent-200 shadow-md flex items-center justify-center text-[#E87317]">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
-                                </div>
-                            </div>
-                        @endif
-
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="text-center mt-12">
-                <a href="{{ route('ppid.request') }}" class="inline-flex items-center gap-2 px-8 py-3.5 fs-gradient-accent text-white text-base font-semibold rounded-xl shadow-lg shadow-emerald-900/20 hover:-translate-y-0.5 transition-all duration-200">
-                    {{ __('Mulai Ajukan Permohonan') }}
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                </a>
             </div>
         </div>
     </section>

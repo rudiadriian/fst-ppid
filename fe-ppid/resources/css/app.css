@@ -78,3 +78,57 @@
 .fs-search-focus:focus-within {
     border-color: var(--color-fs-cta);
 }
+
+/* ---------------------------------------------------------------------------
+   Isi rich text dari CMS (Halaman Statis, Berita).
+   Plugin @tailwindcss/typography tidak dipasang di proyek ini, sehingga kelas
+   `prose` tidak menghasilkan gaya apa pun — heading, daftar, dan tabel tampil
+   rata tanpa penanda. Kelas di bawah menggantikannya dengan gaya secukupnya
+   dan mengikuti mode gelap.
+   --------------------------------------------------------------------------- */
+.fs-rte {
+    @apply text-base leading-relaxed text-gray-600 dark:text-gray-300;
+}
+.fs-rte > * + * {
+    @apply mt-4;
+}
+.fs-rte h2 {
+    @apply text-2xl font-bold text-gray-900 dark:text-white mt-10 mb-4;
+}
+.fs-rte h3 {
+    @apply text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-3;
+}
+.fs-rte h4 {
+    @apply text-lg font-semibold text-gray-900 dark:text-white mt-6 mb-2;
+}
+.fs-rte ul {
+    @apply list-disc pl-6 space-y-2;
+}
+.fs-rte ol {
+    @apply list-decimal pl-6 space-y-2;
+}
+.fs-rte li::marker {
+    color: var(--color-fs-primary);
+}
+.fs-rte a {
+    @apply font-medium text-[#10462F] underline underline-offset-2 hover:text-[#0B3524] dark:text-[#3E9C6C];
+}
+.fs-rte strong {
+    @apply font-semibold text-gray-900 dark:text-white;
+}
+.fs-rte blockquote {
+    @apply border-l-4 border-[#10462F] pl-5 py-2 italic bg-[#FAF6EC] dark:bg-[#082217] rounded-r-xl;
+}
+.fs-rte img {
+    @apply rounded-2xl max-w-full h-auto;
+}
+.fs-rte table {
+    @apply w-full text-left border-collapse;
+}
+.fs-rte th,
+.fs-rte td {
+    @apply border border-gray-200 dark:border-white/10 px-4 py-2.5 align-top;
+}
+.fs-rte th {
+    @apply bg-[#FAF6EC] dark:bg-[#082217] font-semibold text-gray-900 dark:text-white;
+}

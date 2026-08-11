@@ -50,9 +50,9 @@ class SearchController extends Controller
                 ->map(fn ($row) => [
                     'title'    => $row->judul,
                     'kategori' => $row->kategori === 'dasar_hukum_ppid' ? 'Dasar Hukum' : 'Regulasi',
-                    'url'      => $row->kategori === 'dasar_hukum_ppid'
-                        ? route('ppid.legal_basis')
-                        : route('ppid.regulation'),
+                    // Dasar hukum kini ikut tayang di halaman Regulasi, jadi
+                    // seluruh hasil regulasi menuju satu halaman yang sama.
+                    'url'      => route('ppid.regulation'),
                 ]);
 
             $laporan = LaporanLayanan::published()

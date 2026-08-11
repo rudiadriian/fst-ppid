@@ -53,7 +53,7 @@ class HomeController extends Controller
     {
         $cadangan = [
             ['title' => 'Informasi Berkala', 'count' => 0, 'slug' => 'berkala', 'desc' => 'Informasi yang wajib disediakan dan diumumkan secara berkala.'],
-            ['title' => 'Informasi Setiap Saat', 'count' => 0, 'slug' => 'setiap-saat', 'desc' => 'Informasi yang wajib tersedia setiap saat bagi publik.'],
+            ['title' => 'Informasi Tersedia Setiap Saat', 'count' => 0, 'slug' => 'setiap-saat', 'desc' => 'Informasi yang wajib tersedia setiap saat bagi publik.'],
             ['title' => 'Informasi Serta Merta', 'count' => 0, 'slug' => 'serta-merta', 'desc' => 'Informasi yang wajib diumumkan tanpa penundaan.'],
         ];
 

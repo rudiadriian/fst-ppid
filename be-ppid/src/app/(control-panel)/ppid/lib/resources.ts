@@ -88,7 +88,7 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'informasi-publik',
 		modul: 'informasi-publik',
-		title: 'Informasi Publik',
+		title: 'Daftar Informasi Publik',
 		singular: 'Informasi',
 		description: 'Daftar informasi yang wajib disediakan dan diumumkan.',
 		icon: 'lucide:file-text',
@@ -168,7 +168,7 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'informasi-dikecualikan',
 		modul: 'informasi-dikecualikan',
-		title: 'Informasi Dikecualikan',
+		title: 'Daftar Informasi Dikecualikan',
 		singular: 'Informasi Dikecualikan',
 		description: 'Daftar informasi yang dikecualikan beserta dasar hukumnya.',
 		icon: 'lucide:lock',
@@ -251,7 +251,7 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'permohonan',
 		modul: 'permohonan',
-		title: 'Permohonan Informasi',
+		title: 'Permohonan Informasi Publik',
 		singular: 'Permohonan',
 		description: 'Permohonan masuk beserta status penanganannya.',
 		icon: 'lucide:inbox',
@@ -332,7 +332,7 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'keberatan',
 		modul: 'keberatan',
-		title: 'Keberatan Informasi',
+		title: 'Pengajuan Keberatan Informasi Publik',
 		singular: 'Keberatan',
 		description: 'Keberatan atas layanan informasi dan tanggapan atasan PPID.',
 		icon: 'lucide:triangle-alert',
@@ -792,20 +792,32 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'regulasi',
 		modul: 'regulasi',
-		title: 'Regulasi & Dasar Hukum',
+		title: 'Regulasi',
 		singular: 'Regulasi',
 		description: 'Peraturan, dasar hukum PPID, dan pedoman layanan.',
 		icon: 'lucide:scale',
-		defaultSort: '-tahun',
+		// Kolom Nomor dan Tahun dilepas dari modul ini, jadi urutan bawaannya
+		// memakai judul.
+		defaultSort: 'judul',
 		columns: [
-			{ key: 'judul', label: 'Judul', size: 320 },
+			{ key: 'judul', label: 'Judul', size: 380 },
 			{ key: 'kategori', label: 'Kategori', size: 170 },
-			{ key: 'nomor_peraturan', label: 'Nomor', size: 160 },
-			{ key: 'tahun', label: 'Tahun', type: 'number', size: 90 },
+			{ key: 'jenis_peraturan', label: 'Jenis', size: 180 },
+			{ key: 'pengunggah', label: 'Diunggah oleh', type: 'relation', relationKey: 'name', size: 180, noSort: true },
+			{ key: 'created_at', label: 'Tanggal publikasi', type: 'datetime', size: 170 },
 			{ key: 'file_path', label: 'Berkas', type: 'file', size: 110, noSort: true }
 		],
 		fields: [
 			{ name: 'judul', label: 'Judul peraturan', type: 'text', required: true, span: 2, maxLength: 255 },
+			{
+				name: 'ringkasan',
+				label: 'Ringkasan',
+				type: 'textarea',
+				span: 2,
+				rows: 3,
+				maxLength: 2000,
+				help: 'Dipakai sebagai kutipan singkat pada daftar regulasi di situs publik.'
+			},
 			{
 				name: 'kategori',
 				label: 'Kategori',
@@ -817,16 +829,15 @@ export const resources: ResourceConfig[] = [
 				],
 				defaultValue: 'regulasi'
 			},
-			{ name: 'nomor_peraturan', label: 'Nomor peraturan', type: 'text', maxLength: 100 },
 			{ name: 'jenis_peraturan', label: 'Jenis peraturan', type: 'text', maxLength: 100 },
-			{ name: 'tahun', label: 'Tahun', type: 'number', min: 1945, max: 2100 },
 			{ name: 'tanggal_berlaku', label: 'Berlaku sejak', type: 'date' },
 			{
 				name: 'file_path',
 				label: 'Berkas peraturan',
 				type: 'file',
 				span: 2,
-				upload: { folder: 'regulasi', jenis: 'dokumen' }
+				help: 'Hanya PDF atau gambar (JPG/PNG/WEBP). Halaman pertamanya dipakai sebagai sampul di situs publik.',
+				upload: { folder: 'regulasi', jenis: 'dokumen_gambar' }
 			}
 		],
 		filters: [

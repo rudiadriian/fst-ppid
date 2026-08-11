@@ -7,35 +7,39 @@ import { resources } from './resources';
  * Urutan grup dan isinya ditentukan di sini; label, ikon, dan URL diambil dari
  * registry modul supaya menu tidak pernah menyimpang dari halaman yang ada.
  */
+/**
+ * Susunannya sengaja dibuat sama dengan menu situs publik (Informasi Publik →
+ * Standar Layanan → Layanan), supaya operator mencari modul di tempat yang sama
+ * dengan yang dilihat pengunjung. Modul yang tidak punya padanan di situs publik
+ * tetap berkumpul di Konten Situs dan Administrasi Sistem.
+ */
 const GRUP: { id: string; title: string; icon: string; slugs: string[] }[] = [
 	{
 		id: 'ppid.informasi',
 		title: 'Informasi Publik',
 		icon: 'lucide:folder-open',
-		slugs: ['informasi-publik', 'kategori-informasi', 'informasi-dikecualikan']
+		// Berita ikut di sini: di situs publik ia sub modul Informasi Publik.
+		slugs: ['informasi-publik', 'informasi-dikecualikan', 'kategori-informasi', 'berita', 'kategori-berita']
+	},
+	{
+		id: 'ppid.standar',
+		title: 'Standar Layanan',
+		icon: 'lucide:clipboard-list',
+		// Maklumat, kedua prosedur, dan jalur/waktu layanan adalah halaman —
+		// isinya disunting lewat modul Halaman Statis.
+		slugs: ['halaman-statis']
 	},
 	{
 		id: 'ppid.layanan',
-		title: 'Layanan Informasi',
+		title: 'Layanan',
 		icon: 'lucide:inbox',
-		slugs: ['permohonan', 'pemohon', 'keberatan', 'survey-kepuasan', 'laporan-layanan']
+		slugs: ['permohonan', 'keberatan', 'laporan-layanan', 'pemohon', 'survey-kepuasan']
 	},
 	{
 		id: 'ppid.konten',
 		title: 'Konten Situs',
 		icon: 'lucide:layout-dashboard',
-		slugs: [
-			'berita',
-			'kategori-berita',
-			'galeri',
-			'banner-slider',
-			'halaman-statis',
-			'struktur-organisasi',
-			'regulasi',
-			'faq',
-			'tautan-terkait',
-			'menu-navigasi'
-		]
+		slugs: ['galeri', 'banner-slider', 'struktur-organisasi', 'regulasi', 'faq', 'tautan-terkait', 'menu-navigasi']
 	},
 	{
 		id: 'ppid.sistem',

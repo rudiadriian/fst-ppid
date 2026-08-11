@@ -34,7 +34,7 @@ export type FieldConfig = {
 	/** Untuk type 'relation': ambil opsi dari resource lain. */
 	relation?: { resource: string; labelKey: string };
 	/** Untuk type 'file' | 'image' | 'files'. */
-	upload?: { folder: string; jenis: 'gambar' | 'dokumen' | 'video' };
+	upload?: { folder: string; jenis: 'gambar' | 'dokumen' | 'dokumen_gambar' | 'video' };
 	help?: string;
 	rows?: number;
 	/** Lebar kolom pada grid dua kolom. */

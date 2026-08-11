@@ -116,5 +116,8 @@
     {{-- Widget aksesibilitas (EqualWeb) --}}
     @include('partials.accessibility')
 
+    {{-- Skrip khusus halaman (mis. penggambar sampul PDF di halaman Regulasi). --}}
+    @stack('scripts')
+
 </body>
 </html>

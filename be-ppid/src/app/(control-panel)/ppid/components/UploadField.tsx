@@ -55,7 +55,11 @@ export function UploadField({ field, value, onChange, disabled, errorText }: Upl
 			? 'image/jpeg,image/png,image/webp,image/gif'
 			: upload.jenis === 'video'
 				? 'video/mp4,video/webm'
-				: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt';
+				: upload.jenis === 'dokumen_gambar'
+					? // Modul yang berkasnya dibaca langsung di halaman publik
+						// (mis. Regulasi) hanya menerima PDF dan gambar.
+						'.pdf,image/jpeg,image/png,image/webp'
+					: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt';
 
 	async function pilihBerkas(event: React.ChangeEvent<HTMLInputElement>) {
 		const file = event.target.files?.[0];

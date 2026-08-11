@@ -50,23 +50,31 @@ class UploadController extends Controller
 
     private const EKSTENSI_VIDEO = ['mp4', 'webm'];
 
+    /**
+     * Berkas yang bisa dibaca langsung di peramban: PDF dan gambar. Dipakai
+     * modul yang memang hanya boleh menerima keduanya, mis. Regulasi.
+     */
+    private const EKSTENSI_PDF_GAMBAR = ['pdf', 'jpg', 'jpeg', 'png', 'webp'];
+
     /** Batas ukuran per jenis, dalam kilobyte. */
     private const BATAS_KB = [
-        'gambar' => 5120,     // 5 MB
-        'dokumen' => 20480,   // 20 MB
-        'video' => 102400,    // 100 MB
+        'gambar' => 5120,           // 5 MB
+        'dokumen' => 20480,         // 20 MB
+        'dokumen_gambar' => 20480,  // 20 MB
+        'video' => 102400,          // 100 MB
     ];
 
     public function store(Request $request): JsonResponse
     {
         $meta = $request->validate([
             'folder' => ['required', Rule::in(self::FOLDER)],
-            'jenis' => ['required', Rule::in(['gambar', 'dokumen', 'video'])],
+            'jenis' => ['required', Rule::in(['gambar', 'dokumen', 'dokumen_gambar', 'video'])],
         ]);
 
         $jenis = $meta['jenis'];
         $ekstensiSah = match ($jenis) {
             'gambar' => self::EKSTENSI_GAMBAR,
+            'dokumen_gambar' => self::EKSTENSI_PDF_GAMBAR,
             'video' => self::EKSTENSI_VIDEO,
             default => self::EKSTENSI_DOKUMEN,
         };
