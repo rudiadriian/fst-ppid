@@ -106,25 +106,10 @@ export type ResourceConfig = {
 	 * Dipakai bila satu tabel dibagi jadi beberapa modul: nilainya ikut sebagai
 	 * filter saat memuat daftar dan ikut dikirim saat menyimpan, sehingga
 	 * operator tidak perlu memilihnya sendiri dan tidak bisa salah pilih.
-	 * Contoh: modul Laporan Statistik dan Laporan Pelayanan sama-sama memakai
-	 * tabel `laporan_layanan`, dibedakan oleh `tipe_laporan`.
+	 * Contoh: modul Laporan Pelayanan memakai tabel `laporan_layanan` yang
+	 * dibedakan lewat `tipe_laporan`.
 	 */
 	nilaiTetap?: Record<string, string | number>;
-	/**
-	 * Tombol bantu di formulir: mengambil angka dari endpoint hitung otomatis
-	 * lalu mengisikannya ke field. Dipakai Laporan Layanan supaya rekap tidak
-	 * diketik manual.
-	 */
-	aksiIsiOtomatis?: {
-		label: string;
-		/** Path API relatif terhadap `v1/`, mis. `laporan-layanan/rekap`. */
-		endpoint: string;
-		/** Field formulir yang dikirim sebagai query string; wajib terisi dulu. */
-		params: string[];
-		/** Field formulir yang diisi ulang dari respons. */
-		isi: string[];
-		help?: string;
-	};
 	/** Formulir dibuka sebagai halaman penuh, bukan dialog. */
 	formPenuh?: boolean;
 };

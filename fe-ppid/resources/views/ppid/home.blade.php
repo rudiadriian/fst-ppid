@@ -344,16 +344,9 @@
                             </div>
                         @endforeach
                     </div>
-                    <div class="rounded-2xl overflow-hidden border border-gray-100 dark:border-white/10 h-[260px]">
-                        <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.349182907665!2d106.89023207499014!3d-6.217601393770331!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f4b2635315a3%3A0x923242750674630!2sPT.%20Food%20Station%20Tjipinang%20Jaya!5e0!3m2!1sid!2sid!4v1709123456789!5m2!1sid!2sid"
-                            class="w-full h-full"
-                            style="border:0;"
-                            allowfullscreen=""
-                            loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade">
-                        </iframe>
-                    </div>
+                    {{-- Peta dipisah ke partial supaya titik lokasinya sama
+                         dengan yang tampil di halaman Standar Layanan. --}}
+                    @include('partials.peta_lokasi', ['tinggi' => 'h-[260px]'])
                 </div>
 
             </div>

@@ -115,8 +115,8 @@
                             class="absolute z-50 mt-1 w-80 rounded-xl shadow-xl bg-white ring-1 ring-black/5 overflow-hidden origin-top-left dark:bg-[#0A2619] dark:ring-white/10">
                             <div class="py-1.5">
                                 <a href="{{ route('ppid.service', 'maklumat-pelayanan') }}" class="{{ $dropItem($isService && $activeSlug === 'maklumat-pelayanan') }}">{{ __('Maklumat Pelayanan') }}</a>
-                                <a href="{{ route('ppid.service', 'prosedur-permohonan') }}" class="{{ $dropItem($isService && $activeSlug === 'prosedur-permohonan') }}">{{ __('Prosedur Permohonan Informasi Publik') }}</a>
-                                <a href="{{ route('ppid.service', 'prosedur-keberatan') }}" class="{{ $dropItem($isService && $activeSlug === 'prosedur-keberatan') }}">{{ __('Prosedur Permohonan Keberatan Informasi Publik') }}</a>
+                                <a href="{{ route('ppid.service', 'prosedur-permohonan') }}" class="{{ $dropItem($isService && $activeSlug === 'prosedur-permohonan') }}">{{ __('Prosedur Permohonan Informasi') }}</a>
+                                <a href="{{ route('ppid.service', 'prosedur-keberatan') }}" class="{{ $dropItem($isService && $activeSlug === 'prosedur-keberatan') }}">{{ __('Prosedur Permohonan Keberatan') }}</a>
                                 <a href="{{ route('ppid.service', 'jalur-waktu-layanan') }}" class="{{ $dropItem($isService && $activeSlug === 'jalur-waktu-layanan') }}">{{ __('Jalur dan Waktu Layanan') }}</a>
                             </div>
                         </div>
@@ -132,14 +132,13 @@
                             <div class="py-1.5">
                                 <a href="{{ route('ppid.request') }}" class="{{ $dropItem(false) }}">{{ __('Permohonan Informasi Publik') }}</a>
                                 <a href="{{ route('ppid.objection') }}" class="{{ $dropItem(false) }}">{{ __('Pengajuan Keberatan Informasi Publik') }}</a>
-                                <a href="{{ route('ppid.report', 'statistik-informasi') }}" class="{{ $dropItem($isReport && $activeSlug === 'statistik-informasi') }}">{{ __('Laporan Statistik Informasi Publik') }}</a>
                                 {{-- Pengunjung harus punya akun sebelum bisa mengajukan permohonan,
                                      jadi pintu masuknya ditaruh di menu Layanan. Disembunyikan
                                      untuk yang sudah masuk — akunnya sudah ada. --}}
                                 @guest('pemohon')
                                     <a href="{{ route('akun.register') }}" class="{{ $dropItem($isRegister) }}">{{ __('Registrasi Akun') }}</a>
                                 @endguest
-                                <a href="{{ route('ppid.report', 'pelayanan-informasi') }}" class="{{ $dropItem($isReport && $activeSlug === 'pelayanan-informasi') }}">{{ __('Laporan Pelayanan Informasi') }}</a>
+                                <a href="{{ route('ppid.report') }}" class="{{ $dropItem($isReport) }}">{{ __('Laporan Pelayanan Informasi') }}</a>
                             </div>
                         </div>
                     </div>
@@ -277,8 +276,8 @@
                 </button>
                 <div x-show="open" x-collapse @if (!$openStandar) style="display:none" @endif>
                     <a href="{{ route('ppid.service', 'maklumat-pelayanan') }}" class="{{ $mobileSub($isService && $activeSlug === 'maklumat-pelayanan') }}">{{ __('Maklumat Pelayanan') }}</a>
-                    <a href="{{ route('ppid.service', 'prosedur-permohonan') }}" class="{{ $mobileSub($isService && $activeSlug === 'prosedur-permohonan') }}">{{ __('Prosedur Permohonan Informasi Publik') }}</a>
-                    <a href="{{ route('ppid.service', 'prosedur-keberatan') }}" class="{{ $mobileSub($isService && $activeSlug === 'prosedur-keberatan') }}">{{ __('Prosedur Permohonan Keberatan Informasi Publik') }}</a>
+                    <a href="{{ route('ppid.service', 'prosedur-permohonan') }}" class="{{ $mobileSub($isService && $activeSlug === 'prosedur-permohonan') }}">{{ __('Prosedur Permohonan Informasi') }}</a>
+                    <a href="{{ route('ppid.service', 'prosedur-keberatan') }}" class="{{ $mobileSub($isService && $activeSlug === 'prosedur-keberatan') }}">{{ __('Prosedur Permohonan Keberatan') }}</a>
                     <a href="{{ route('ppid.service', 'jalur-waktu-layanan') }}" class="{{ $mobileSub($isService && $activeSlug === 'jalur-waktu-layanan') }}">{{ __('Jalur dan Waktu Layanan') }}</a>
                 </div>
             </div>
@@ -291,11 +290,10 @@
                 <div x-show="open" x-collapse @if (!$openLayanan) style="display:none" @endif>
                     <a href="{{ route('ppid.request') }}" class="{{ $mobileSub(false) }}">{{ __('Permohonan Informasi Publik') }}</a>
                     <a href="{{ route('ppid.objection') }}" class="{{ $mobileSub(false) }}">{{ __('Pengajuan Keberatan Informasi Publik') }}</a>
-                    <a href="{{ route('ppid.report', 'statistik-informasi') }}" class="{{ $mobileSub($isReport && $activeSlug === 'statistik-informasi') }}">{{ __('Laporan Statistik Informasi Publik') }}</a>
                     @guest('pemohon')
                         <a href="{{ route('akun.register') }}" class="{{ $mobileSub($isRegister) }}">{{ __('Registrasi Akun') }}</a>
                     @endguest
-                    <a href="{{ route('ppid.report', 'pelayanan-informasi') }}" class="{{ $mobileSub($isReport && $activeSlug === 'pelayanan-informasi') }}">{{ __('Laporan Pelayanan Informasi') }}</a>
+                    <a href="{{ route('ppid.report') }}" class="{{ $mobileSub($isReport) }}">{{ __('Laporan Pelayanan Informasi') }}</a>
                 </div>
             </div>
 

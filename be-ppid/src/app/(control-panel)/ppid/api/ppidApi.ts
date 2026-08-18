@@ -136,7 +136,7 @@ export const ppidApi = {
 		}
 	},
 
-	/** Baca endpoint non-CRUD ber-GET (mis. `laporan-layanan/rekap?tahun=2026`). */
+	/** Baca endpoint non-CRUD ber-GET (mis. `role/3/akses`). */
 	async ambil<T = unknown>(path: string, params: ListParams = {}): Promise<T> {
 		try {
 			const hasil = await api.get(`v1/${path}`, { searchParams: bersihkanParams(params) }).json<{ data: T }>();

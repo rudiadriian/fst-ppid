@@ -446,7 +446,7 @@ class PpidController extends Controller
             // Alur enam tahap ini sebelumnya tayang di beranda; dipindah ke
             // sini supaya prosedurnya berada satu tempat dengan penjelasannya.
             'prosedur-permohonan' => [
-                'title' => 'Prosedur Permohonan Informasi Publik',
+                'title' => 'Prosedur Permohonan Informasi',
                 'intro' => 'Enam tahapan sederhana dari pengajuan hingga informasi Anda terima.',
                 'flow' => [
                     ['title' => 'Ajukan Permohonan', 'desc' => 'Isi formulir permohonan informasi secara daring.', 'icon' => 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'],
@@ -465,7 +465,7 @@ class PpidController extends Controller
                 ]
             ],
             'prosedur-keberatan' => [
-                'title' => 'Prosedur Permohonan Keberatan Informasi Publik',
+                'title' => 'Prosedur Permohonan Keberatan',
                 'intro' => 'Keberatan diajukan bila permohonan ditolak, tidak ditanggapi, atau informasi yang diberikan tidak sesuai. Pengajuannya lewat akun yang sama dengan permohonan informasi.',
                 'flow' => [
                     ['title' => 'Cek Permohonan', 'desc' => 'Keberatan selalu menunjuk satu permohonan informasi milik Anda sendiri.', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
@@ -487,10 +487,18 @@ class PpidController extends Controller
             'jalur-waktu-layanan' => [
                 'title' => 'Jalur & Waktu Layanan Informasi',
                 'intro' => 'Informasi mengenai jam operasional dan pilihan saluran yang dapat digunakan pemohon untuk mengakses pelayanan PPID.',
+                /*
+                 * Jalur Surat dihapus (langkah 70): permohonan lewat surat
+                 * tidak lagi dilayani, semuanya masuk lewat portal atau meja
+                 * layanan.
+                 *
+                 * `aksi` menentukan perilaku kartunya di halaman:
+                 *   - `masuk`   → menuju halaman masuk Portal Pemohon
+                 *   - `waktu`   → membuka panel Waktu Layanan + peta lokasi
+                 */
                 'channels' => [
-                    ['label' => 'Online', 'desc' => 'Melalui Formulir Permohonan di website resmi PPID.', 'recommended' => true],
-                    ['label' => 'Langsung', 'desc' => 'Datang ke meja layanan PPID pada jam operasional.', 'recommended' => false],
-                    ['label' => 'Surat', 'desc' => 'Mengirimkan surat permohonan ke alamat kantor PPID.', 'recommended' => false],
+                    ['label' => 'Online', 'desc' => 'Melalui Formulir Permohonan di website resmi PPID.', 'recommended' => true, 'aksi' => 'masuk'],
+                    ['label' => 'Langsung', 'desc' => 'Datang ke meja layanan PPID pada jam operasional.', 'recommended' => false, 'aksi' => 'waktu'],
                 ],
                 'hours' => [
                     ['days' => 'Senin s.d. Kamis', 'time' => '08.00 – 15.00 WIB', 'break' => '12.00 – 13.00 WIB'],
@@ -678,84 +686,19 @@ class PpidController extends Controller
     }
 
     /**
-     * Laporan Statistik Informasi Publik & Laporan Pelayanan Informasi.
+     * Laporan Pelayanan Informasi.
+     *
+     * Sejak langkah 68 menu Laporan hanya berisi satu halaman: Laporan
+     * Statistik Informasi Publik dihapus beserta rekap angkanya, jadi tidak
+     * ada lagi percabangan slug di sini.
      */
-    public function showReportPage($slug)
+    public function showReportPage()
     {
-        $tipeMap = [
-            'statistik-informasi' => [
-                'tipe'        => 'statistik_informasi',
-                'title'       => 'Laporan Statistik Informasi Publik',
-                'description' => 'Rekapitulasi angka permohonan informasi publik per periode: jumlah permohonan masuk, dikabulkan, ditolak, keberatan, dan rata-rata waktu respon.',
-            ],
-            'pelayanan-informasi' => [
-                'tipe'        => 'pelayanan_informasi',
-                'title'       => 'Laporan Pelayanan Informasi',
-                'description' => 'Laporan periodik penyelenggaraan layanan informasi publik PPID PT Food Station Tjipinang Jaya (Perseroda).',
-            ],
-        ];
-
-        if (!array_key_exists($slug, $tipeMap)) {
-            abort(404, 'Halaman Laporan tidak ditemukan.');
-        }
-
-        $meta = $tipeMap[$slug];
-
-        // Laporan Pelayanan Informasi isinya berkas PDF per tahun yang diunggah
-        // petugas, bukan rekap angka. Penyajiannya karena itu mengikuti modul
-        // Regulasi: kartu bersampul halaman pertama dokumen + halaman detail.
-        if ($slug === 'pelayanan-informasi') {
-            return $this->halamanLaporanPelayanan($meta);
-        }
-
-        $reports = $this->fromDatabase(
-            fn () => LaporanLayanan::published()
-                ->tipe($meta['tipe'])
-                ->orderByDesc('tahun')
-                ->orderByDesc('id')
-                ->get()
-                ->map(fn ($row) => [
-                    'judul'            => $row->judul,
-                    'tahun'            => $row->tahun,
-                    'periode'          => $row->periode ?: 'Tahunan',
-                    'masuk'            => $row->jumlah_permohonan_masuk,
-                    'dikabulkan'       => $row->jumlah_dikabulkan,
-                    'ditolak'          => $row->jumlah_ditolak,
-                    'ditolak_sebagian' => $row->jumlah_ditolak_sebagian,
-                    'keberatan'        => $row->jumlah_keberatan,
-                    'rata_rata_hari'   => $row->rata_rata_hari_respon,
-                    'ringkasan'        => $row->ringkasan,
-                    'file'             => $this->fileUrl($row->file_laporan),
-                ])
-                ->all(),
-            [],
-            'laporan_layanan'
-        );
-
-        // Kartu ringkasan memakai tahun terbaru yang tersedia.
-        $latestYear = collect($reports)->max('tahun');
-        $summary    = collect($reports)->where('tahun', $latestYear);
-
-        $data = [
-            'title'       => $meta['title'],
-            'description' => $meta['description'],
-            'slug'        => $slug,
-            'reports'     => $reports,
-            // Angka ringkas seluruh sistem — dulu tampil di Beranda, sekarang
-            // hanya pada Laporan Statistik Informasi Publik.
-            'stats'       => $slug === 'statistik-informasi' ? $this->statistikRingkas() : [],
-            'db_offline'  => $this->dbOffline,
-            'summary'     => $summary->isEmpty() ? null : [
-                'tahun'      => $latestYear,
-                'masuk'      => $summary->sum('masuk'),
-                'dikabulkan' => $summary->sum('dikabulkan'),
-                'ditolak'    => $summary->sum('ditolak') + $summary->sum('ditolak_sebagian'),
-                'keberatan'  => $summary->sum('keberatan'),
-                'rata_rata'  => round((float) $summary->avg('rata_rata_hari'), 1),
-            ],
-        ];
-
-        return view('ppid.report', compact('data'));
+        return $this->halamanLaporanPelayanan([
+            'tipe'        => 'pelayanan_informasi',
+            'title'       => 'Laporan Pelayanan Informasi',
+            'description' => 'Laporan periodik penyelenggaraan layanan informasi publik PPID PT Food Station Tjipinang Jaya (Perseroda).',
+        ]);
     }
 
     /**
@@ -849,48 +792,6 @@ class PpidController extends Controller
             'pengunggah' => $row->penerbit->name ?? null,
             'link'       => $this->fileUrl($row->file_laporan),
             'url'        => route('ppid.report.show', $row->id),
-        ];
-    }
-
-    /**
-     * Empat angka ringkas: pemohon, dokumen, regulasi, kepuasan.
-     * Sebelumnya tampil di Beranda (HomeController@statistik).
-     */
-    private function statistikRingkas(): array
-    {
-        $angka = $this->fromDatabase(
-            function () {
-                // Query mentah, jadi filter soft delete-nya ditulis sendiri:
-                // survei yang dihapus petugas tidak boleh ikut menarik rata-rata.
-                $rating = \Illuminate\Support\Facades\DB::table('survey_kepuasan')
-                    ->whereNull('deleted_at')
-                    ->avg('rating');
-
-                return [
-                    'pemohon'  => PermohonanInformasi::count(),
-                    'dokumen'  => \App\Models\InformasiPublik::published()->count(),
-                    'regulasi' => Regulasi::count(),
-                    'kepuasan' => $rating ? round(((float) $rating / 5) * 100).'%' : '—',
-                ];
-            },
-            null,
-            'statistik_ringkas'
-        );
-
-        if ($angka === null) {
-            return [
-                ['value' => '—', 'label' => 'Pemohon'],
-                ['value' => '—', 'label' => 'Dokumen'],
-                ['value' => '—', 'label' => 'Regulasi'],
-                ['value' => '—', 'label' => 'Kepuasan'],
-            ];
-        }
-
-        return [
-            ['value' => number_format($angka['pemohon'], 0, ',', '.'), 'label' => 'Pemohon'],
-            ['value' => number_format($angka['dokumen'], 0, ',', '.'), 'label' => 'Dokumen'],
-            ['value' => number_format($angka['regulasi'], 0, ',', '.'), 'label' => 'Regulasi'],
-            ['value' => $angka['kepuasan'], 'label' => 'Kepuasan'],
         ];
     }
 

@@ -298,7 +298,7 @@ Tolong jalankan langkah untuk menyesuaikan/ modifikasi halaman frontend aplikasi
 60. [x] semua modul yang ada di be-ppid (backend) data Diubah dikosongkan saja, karena belum ada aktifitas Ubah data kan? ketika buat data baru pun harusnya tanggal ubah belum terisi. lalu,
 61. [x] semua modul yang ada di be-ppid (backend) Kolom "Diubah Oleh" dan "Diubah pada" dibuat menjadi default hide saja tetapi kalau mau ditampilkan bisa menggunakan widget Show/Hide kolom.
 62. [x] ubah label kolom Diubah pada menjadi Diubah dan Dibuat pada menjadi Dibuat
-63. tolong jalankan langkah registrasi akun pengguna/ pengunjung website ppdi alur prosesnya :
+63. [x] tolong jalankan langkah registrasi akun pengguna/ pengunjung website ppdi alur prosesnya :
     1. isi formulir registrasi akun:
         - Nama lengkap
         - Email
@@ -330,6 +330,13 @@ Tolong jalankan langkah untuk menyesuaikan/ modifikasi halaman frontend aplikasi
     - untuk verifikasi akun pemohon yang baru mendaftar ada dipath ini D:\Project\Ppid\Konfirmasi Email.docx
     - untuk reset password, tolong buatkan dengan konsep yang sesuai standar
     - untuk notifikasi email permohonan informasi atau keberatan informasi juga dibuatkan sesuai standar (dengan catatan pemohon hanya mendapatkan email tersebut jika pengajuan permohonan informasi atau keberatan informasi terlah berhasil Dikirim dan Diterima, dan Selesai  oleh Admin PPID PT Food Station Tjipinang Jaya (Perseroda) )
+68. [x] modul Laporan Infromasi Statistik Publik di fe-ppid (dihapus) berlakukan juga jika ada di api-ppid dan be-ppid 
+69. [x] pada fe-ppid tolong ubah penamaan pada modul "Prosedur Permohonan Informasi Publik" menjadi "Prosedur Permohonan Informasi" dan "Prosedur Permohonan Keberatan Informasi Publik" menjadi "Prosedur Permohonan Keberatan"
+70. [x] pada fe-ppid tolong sesuaikan pada modul Standar Layanan, sub modul Jalu dan Waktu Layanan :
+    - hapus bagian Jalur Pelayanan CARD SURAT - Mengirimkan surat permohonan ke alamat kantor PPID.
+    - ketika diklik CARD ONLINE, mengarah ke halaman Login Pemohon
+    - ketika bagian Waktu Pelayanan dibuat minimize, jadi ketika bagian Jalur Pelayanan CARD LANGSUNG diklik maximize Waktu Pelayanan (tambahkan peta lokasi google.com/maps/search/pt+food+station+tjipinang+jaya/@-6.213053,106.881272,17z?entry=s&sa=X&ved=1t%3A199789) berlakukan juga Peta lokasi pada modul Beranda dibagian Hubungi Kami Kontak PPID Food Station
+
 
 
 pada portal pemohon atau http://localhost:8000/akun tolong buatkan lonceng notifikasi jika ada upadate dari feedback yang diberikan oleh admin
@@ -339,6 +346,127 @@ pada portal pemohon atau http://localhost:8000/akun tolong buatkan lonceng notif
 
 
 ---
+
+
+## Status Pengerjaan (putaran 50 — langkah 70)
+
+Halaman **Standar Layanan → Jalur & Waktu Layanan** (`/standar-layanan/jalur-waktu-layanan`) dirombak jadi dua kartu yang bisa ditindaklanjuti, bukan tiga kartu keterangan.
+
+### Jalur Pelayanan
+
+- **Kartu Surat dihapus** dari `PpidController` — permohonan lewat surat tidak lagi dilayani. Gridnya menyesuaikan dari 3 kolom jadi 2.
+- **Kartu Online kini tautan** ke `route('akun.login')`, jadi pengunjung yang memilih jalur daring langsung mendarat di halaman masuk Portal Pemohon.
+- **Kartu Langsung kini tombol** yang membuka panel Waktu Layanan, lalu menggulirkan halaman ke panel itu.
+
+Kedua kartu memakai penanda baru `aksi` (`masuk` / `waktu`) di data channel, bukan dicocokkan lewat label — label bisa berubah kata, penanda tidak. Isi kartunya dipindah ke `partials/jalur_layanan_isi.blade.php` karena pembungkusnya kini berbeda (`<a>` vs `<button>`) sedangkan isinya harus tetap sama persis. Keduanya juga mendapat baris petunjuk di kaki kartu ("Masuk ke Portal Pemohon" / "Lihat waktu layanan & lokasi") supaya jelas kartunya bisa diklik.
+
+### Waktu Layanan jadi panel lipat
+
+Judulnya berubah jadi tombol ber-`aria-expanded`/`aria-controls`, panelnya `x-collapse`, dan **tertutup saat halaman dibuka** — jam operasional hanya berarti bagi yang memang berencana datang. Saat tertutup, subjudul "Jam operasional & lokasi kantor PPID" menerangkan isinya; panah ikut berputar mengikuti keadaan.
+
+Ditambahkan juga `[x-cloak] { display: none !important; }` di `resources/css/app.css`. Aturan itu belum pernah ada padahal `x-cloak` sudah dipakai beberapa layar akun; tanpa itu panel yang seharusnya tertutup sempat berkedip tampil sebelum Alpine selesai memuat.
+
+### Peta lokasi
+
+Peta dipisah ke `partials/peta_lokasi.blade.php` dan dipakai dua tempat: di dalam panel Waktu Layanan (tinggi 320px) dan di kartu Kontak Beranda (260px).
+
+Beranda **sudah** punya iframe peta sebelumnya, tetapi titiknya berbeda dari yang diminta dan URL-nya berupa token `maps/embed?pb=…` hasil salinan peramban — panjang, tidak terbaca, dan tidak bisa disesuaikan kalau titiknya bergeser. Sekarang keduanya memakai koordinat yang sama (`-6.213053, 106.881272`, zoom 17) lewat bentuk `?q=<lat>,<lng>&output=embed` yang bisa dibaca dan disunting. Di bawah peta ada tautan **Buka di Google Maps** ke alamat yang diberikan, karena peta tersemat tidak bisa dipakai menyusun rute.
+
+### Verifikasi
+
+- `/standar-layanan/jalur-waktu-layanan` **200**: dua kartu (`Online`, `Langsung`), nol kemunculan `Surat`; kartu Online menaut ke `/akun/masuk`; penanda `waktuTerbuka` terpasang; peta memakai koordinat baru.
+- Tiga halaman Standar Layanan lain (`maklumat-pelayanan`, `prosedur-permohonan`, `prosedur-keberatan`) tetap **200**, nol `Undefined variable`/`Whoops`.
+- Beranda memuat peta dari partial yang sama beserta tautan Google Maps-nya.
+- `lang/en.json`: enam kunci baru ditambahkan, tiga kunci sisa jalur Surat dilepas, JSON tetap sah. Versi Inggris halaman itu menampilkan `Sign in to the Applicant Portal`, `View service hours & location`, `PPID Office Location`, `Open in Google Maps` — nol teks Indonesia yang tertinggal.
+- `npm run build` sukses.
+
+
+## Status Pengerjaan (putaran 49 — langkah 69)
+
+Dua label di menu Layanan dipendekkan: **Prosedur Permohonan Informasi Publik → Prosedur Permohonan Informasi**, dan **Prosedur Permohonan Keberatan Informasi Publik → Prosedur Permohonan Keberatan**.
+
+Yang diubah hanya teks yang dibaca pengunjung, di empat berkas fe-ppid: judul halaman pada `PpidController@showServiceStandardPage` (2 baris), tautan menu di `layouts/header.blade.php` (desktop + mobile) dan `layouts/footer.blade.php`, serta kunci terjemahannya di `lang/en.json` — kuncinya ikut diganti karena `__()` memakai teks Indonesia sebagai kunci, dan terjemahannya dipendekkan sejalan: `Information Request Procedure` dan `Objection Request Procedure`.
+
+**Slug rutenya sengaja tidak disentuh.** `/standar-layanan/prosedur-permohonan` dan `/standar-layanan/prosedur-keberatan` tetap seperti semula supaya tautan yang sudah tersebar tidak mati; yang berubah cuma label.
+
+Dicek juga bahwa label ini tidak tersimpan di basis data: `halaman_statis.judul`, `pengaturan_situs.value`, dan `menu_navigasi.label` nol baris yang memuat frasa itu, jadi tidak ada isian CMS yang perlu ikut disunting.
+
+### Verifikasi
+
+- Nol sisa frasa lama di `app`, `resources`, `routes`, dan `lang`.
+- Kedua halaman **200**; `<title>`-nya kini `Prosedur Permohonan Informasi | Standar Pelayanan PPID` dan `Prosedur Permohonan Keberatan | Standar Pelayanan PPID`.
+- Menu di Beranda menampilkan kedua label baru; versi Inggris (`?lang=en`) menampilkan `Information Request Procedure` dan `Objection Request Procedure`, tanpa sisa "Public …".
+
+
+## Status Pengerjaan (putaran 48 — langkah 68)
+
+Langkah 58 melepas modul Laporan Statistik dari panel, tetapi sengaja menyisakan halaman publiknya, endpoint rekap, dan tipe `statistik_informasi` — waktu itu situs masih memakainya. Putaran ini menuntaskannya di ketiga aplikasi.
+
+### fe-ppid — halaman publiknya hilang
+
+- `resources/views/ppid/report.blade.php` dihapus.
+- Rute `/laporan/{slug}` diganti `/laporan/pelayanan-informasi`. Nama rutenya tetap `ppid.report` supaya tautan yang sudah ada tidak perlu diubah namanya, tetapi kini **tanpa parameter** — alamat lama `/laporan/statistik-informasi` menghasilkan 404, begitu pula slug karangan lain.
+- `PpidController@showReportPage` tinggal meneruskan ke Laporan Pelayanan; percabangan slug dan seluruh perakitan angka rekap (`masuk`, `dikabulkan`, `ditolak`, `keberatan`, `rata_rata_hari`) dilepas.
+- `statistikRingkas()` ikut dihapus. Empat angka Pemohon/Dokumen/Regulasi/Kepuasan dulu tampil di Beranda, lalu dipindah ke halaman Laporan Statistik pada langkah 11; sekarang tidak punya tempat tampil lagi, jadi query-nya tidak disisakan menganggur.
+- Tautan di menu Layanan (header desktop, header mobile, footer) dihapus; tiga tautan Laporan Pelayanan yang tersisa memakai `route('ppid.report')` tanpa argumen.
+- **Pencarian situs** dulu menaut hasil laporan ke `/laporan/statistik-informasi` bila tipenya statistik. Sekarang `SearchController` hanya mencari `tipe('pelayanan_informasi')` dan menaut ke halaman detail laporannya — kalau tidak, hasil pencarian bisa menuju halaman yang sudah tidak ada.
+- `lang/en.json`: kunci `Laporan Statistik Informasi Publik`, `Dikabulkan`, dan `Rata-rata Hari` dilepas karena tidak dipakai berkas mana pun lagi. `Ditolak Sebagian` dan `Kepuasan` **tetap** — keduanya masih dipakai layar lain.
+
+### api-ppid — endpoint rekap dan tipenya dilepas
+
+- Route `GET laporan-layanan/rekap` beserta `LaporanLayananController@rekap` dihapus. Satu-satunya pemakainya adalah tombol "Hitung otomatis" di form Laporan Statistik.
+- `tipe_laporan` sekarang hanya menerima `pelayanan_informasi`; mengirim `statistik_informasi` ditolak 422.
+- Aturan validasi enam kolom angka rekap dilepas, dan kolomnya dikeluarkan dari `$fillable`/`$casts` model `LaporanLayanan`.
+- **Kolomnya sendiri tidak di-drop.** `jumlah_permohonan_masuk`, `jumlah_dikabulkan`, `jumlah_ditolak`, `jumlah_ditolak_sebagian`, `jumlah_keberatan`, dan `rata_rata_hari_respon` masih ada di tabel `laporan_layanan` dalam keadaan tidak terpakai. Menghapus kolom itu perubahan skema yang tidak bisa dibatalkan tanpa data, jadi dibiarkan sebagai migrasi tersendiri bila memang mau dibereskan.
+
+### be-ppid — kode mati ikut dibuang
+
+Modulnya sudah tidak ada sejak langkah 58, tapi mesinnya masih tertinggal:
+
+- `aksiIsiOtomatis` di `lib/types.ts` beserta implementasinya di `ResourceFormDialog.tsx` (fungsi `isiOtomatis`, state `menghitung`, tombolnya, dan panel bantuannya) dihapus — tidak ada satu pun resource yang memakainya setelah Laporan Statistik lepas. Impor `useState` dan `ppidApi` yang menganggur ikut dibersihkan.
+- Tujuh kunci `@i18n/kamusPpid.ts` yang hanya melayani tombol itu dilepas; deskripsi modul Survei yang menyebut halaman Laporan Statistik ditulis ulang.
+
+### Verifikasi
+
+- `/laporan/pelayanan-informasi` **200**; `/laporan/statistik-informasi` dan `/laporan/apa-saja` **404**. Beranda, Informasi, Regulasi, Berita, FAQ, dan `/akun/masuk` tetap 200.
+- `/search?q=…` dan `/search-suggest?q=…` **200**, dan HTML hasilnya nol tautan `statistik-informasi`.
+- `laporan-layanan/rekap` **404**; CRUD `laporan-layanan` tetap **200**. Simpan `tipe_laporan: statistik_informasi` → **422** (`"Pilihan Tipe laporan tidak sah."`), `pelayanan_informasi` → **201**. Baris ujinya dihapus, `laporan_layanan` kembali 0 baris.
+- Tujuh endpoint panel lain (navigasi, survei, permohonan, keberatan, pemohon, dashboard) tetap 200.
+- `npx tsc --noEmit` bersih; `npx vite build` sukses; `php -l` bersih di seluruh berkas yang disentuh.
+
+
+## Pemulihan Basis Data (18 Agustus 2026)
+
+Panel be-ppid tidak bisa masuk sama sekali. `POST /api/v1/auth/sign-in` menjawab 500 dengan `column users.deleted_at does not exist`. Penyebabnya bukan kode: basis data `ppiddb` tinggal 5 tabel bawaan Laravel, `users` **0 baris**, dan tabel `pemohon`, `berita`, `roles`, dan seterusnya sudah tidak ada. Tabel `migrations` hanya menyimpan 4 baris batch 1. Tidak ada backup di mesin ini, dan hanya ada satu instance PostgreSQL (PG18, port 5432) — jadi bukan salah alamat sambungan.
+
+### Lubang yang membuat ini bisa terjadi
+
+Seluruh tabel inti PPID dulu dibuat lewat DDL manual di luar Git. Migrasi yang ada di repo semuanya hanya menambal (`add_*`, `make_*`, `clear_*`) — tidak satu pun membuat tabel intinya, dan riwayat Git juga tidak pernah memuatnya. Artinya proyek ini **tidak pernah bisa dipasang ulang dari nol**, dan sekali basis datanya hilang, tidak ada jalan kembali.
+
+Karena itu ditambahkan `2026_07_20_000000_create_skema_dasar_ppid.php`: baseline berisi 33 tabel, direkonstruksi dari model Eloquent, aturan validasi controller, seeder, dan pemakaian kolom di kedua aplikasi. Tanggalnya sengaja mendahului seluruh migrasi tambalan, dan isinya **keadaan sebelum ditambal** — kolom seperti `pemohon.status_verifikasi`, `regulasi.ringkasan`, atau seluruh kolom `*_en` tidak ada di sana, karena migrasi tambalannya yang memasang, persis seperti urutan aslinya. Setiap blok dijaga `hasTable`/`hasColumn` supaya aman dijalankan di basis data yang isinya sudah sebagian.
+
+Dua hal yang semula hidup sebagai DDL manual ikut dipindahkan ke migrasi:
+
+- **`trg_infopublik_search`** — mengisi `informasi_publik.search_vector`, bobot A untuk judul, B ringkasan, C konten, plus indeks GIN.
+- **`trg_permohonan_kode`** — mengisi `kode_permohonan` berformat `PPID-FSTJ/<tanggal>/<urutan harian>` bila pemanggilnya tidak menyertakan nomor. Panel admin memang menyimpan permohonan tanpa nomor, sedangkan Portal Pengguna menghitung nomornya sendiri; trigger ini menghormati nomor yang sudah diisi dan hanya mengisi yang kosong, sehingga keduanya berbagi satu deret nomor per hari. `pg_advisory_xact_lock` menahan dua permohonan bersamaan agar tidak memperebutkan urutan yang sama.
+
+### Yang dijalankan
+
+1. `php artisan migrate` — 15 migrasi, semua DONE. Basis data kini 42 tabel.
+2. `php artisan db:seed` (`ModulSistemSeeder`) — 18 modul, 3 role, 54 baris hak akses.
+3. Akun admin `admin@foodstation.co.id` (role `super-admin`) dibuat ulang.
+4. Seeder konten resmi dijalankan: `KontenAwal`, `PenamaanModul`, `HalamanProfil`, `RegulasiDasarHukum`, `DaftarInformasiPublik`, `DaftarInformasiDikecualikan`, `InformasiBerkala`, `MaklumatAwal`, `BaganStrukturPpid`, `TerjemahanInggris`. Hasilnya 24 informasi publik, 22 informasi dikecualikan, 8 regulasi, 7 simpul struktur, 5 FAQ, 1 maklumat, 1 halaman profil. **`PemohonDemoSeeder` sengaja tidak dijalankan** — isinya akun contoh, bukan konten resmi.
+
+### Verifikasi
+
+- Login panel lewat jalur asli (proxy Vite `/api/v1` → `127.0.0.1:8001`): **200**, JWT terbit, role `super-admin`.
+- 28 endpoint modul panel diuji dengan token: **semuanya 200**, termasuk `me/navigation` dan kedua endpoint dashboard.
+- 8 halaman situs publik: **semuanya 200**; `/informasi` merender 36 tautan dokumen dan `/regulasi` 8 berkas PDF, tanpa `Undefined variable` maupun `SQLSTATE`.
+- Uji tulis (baris ujinya dihapus permanen setelahnya): nomor registrasi terbit urut `…/0001`, `…/0002`; nomor yang dipasok aplikasi (`…/7777`) tidak ditimpa; `search_vector` terisi dan `to_tsquery('simple','realisasi')` menemukan barisnya.
+
+**Data lama tidak dapat dikembalikan** — yang pulih adalah struktur dan konten dasar yang memang ada seedernya. Permohonan, keberatan, akun pemohon, dan berita yang pernah diinput sudah hilang bersama basis data lamanya.
+
+**Catatan:** `2014_10_12_000000_create_users_table` tercatat sudah jalan di tabel `migrations`, tetapi **berkasnya tidak ada di repo**. Di mesin baru, `users` akan dibuat oleh baseline ini. Kolom khas panel (`role_id`, `phone`, `is_active`, `last_login_at`) ditambahkan lewat blok ber-`hasColumn`, jadi basis data lama maupun baru berakhir sama.
 
 
 ## Status Pengerjaan (putaran 47 — langkah 67)

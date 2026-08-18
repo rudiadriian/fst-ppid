@@ -81,10 +81,6 @@ const kamusPpid: Record<string, string> = {
 	'Modul ini hanya dapat dibaca.': 'This module is read-only.',
 	diperbarui: 'updated',
 	ditambahkan: 'added',
-	'Angka rekap diperbarui dari data permohonan.': 'Recap figures updated from request data.',
-	'Gagal menghitung rekap otomatis.': 'Failed to compute the automatic recap.',
-	'Isi dulu': 'Fill in',
-	'sebelum menghitung otomatis.': 'before computing automatically.',
 	Semua: 'All',
 	data: 'records',
 	'data terpilih?': 'selected records?',
@@ -233,11 +229,10 @@ const kamusPpid: Record<string, string> = {
 	'Permohonan masuk beserta status penanganannya.': 'Incoming requests and their handling status.',
 	'Keberatan atas layanan informasi dan tanggapan atasan PPID.':
 		'Objections to information services and the responses of the PPID supervisor.',
-	'Rekap angka permohonan informasi per periode.': 'Recap of information request figures per period.',
 	'Berkas Laporan Pelayanan Informasi per tahun untuk situs publik.':
 		'Information Service Report files per year for the public site.',
-	'Penilaian pemohon atas layanan informasi. Rata-ratanya menjadi angka "Kepuasan" pada halaman Laporan Statistik Informasi Publik di situs publik.':
-		'Applicant ratings of the information service. Their average becomes the "Satisfaction" figure on the Public Information Statistics Report page.',
+	'Penilaian pemohon atas layanan informasi, diisi pemohon dari Portal Pemohon setelah permohonannya selesai.':
+		'Applicant ratings of the information service, submitted from the Applicant Portal once their request is completed.',
 	'Artikel dan siaran pers yang tampil di situs publik.': 'Articles and press releases shown on the public site.',
 	'Foto dan video kegiatan.': 'Activity photos and videos.',
 	'Pertanyaan yang sering diajukan pemohon.': 'Questions frequently asked by applicants.',
@@ -433,7 +428,6 @@ const kamusPpid: Record<string, string> = {
 	'Grup — bingkai berjudul yang membungkus anak-anaknya': 'Group — a titled frame wrapping its children',
 
 	// --- Keterangan bantuan ----------------------------------------------
-	'Hitung otomatis': 'Compute automatically',
 	'Kosongkan agar dibuat otomatis.': 'Leave blank to generate automatically.',
 	'Kosongkan agar dibuat otomatis dari nama.': 'Leave blank to generate automatically from the name.',
 	'Kosongkan agar dibuat otomatis. Mengubahnya memutus tautan lama.':
@@ -480,8 +474,6 @@ const kamusPpid: Record<string, string> = {
 		'Determines how the box is drawn on the Organisational Structure chart on the public site.',
 	'Satu butir per baris. Diisi bila isi kotak berupa daftar (mis. Tim Pertimbangan PPID); kalau kosong, yang tampil adalah kolom Nama.':
 		'One item per line. Fill this in when the box contains a list (e.g. PPID Advisory Team); if blank, the Name column is shown instead.',
-	'Isi Tahun lalu tekan "Hitung otomatis" untuk mengambil angka rekap langsung dari data permohonan & keberatan. Angka tetap bisa disunting sebelum disimpan.':
-		'Fill in the Year then press "Compute automatically" to pull recap figures straight from the request and objection data. The figures can still be edited before saving.',
 	'Rata-rata rating dibagi 5 menjadi persentase kepuasan di situs publik.':
 		'The average rating divided by 5 becomes the satisfaction percentage on the public site.',
 	'Boleh dikosongkan bila survei tidak terkait satu permohonan tertentu.':

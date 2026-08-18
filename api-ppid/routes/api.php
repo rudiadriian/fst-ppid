@@ -114,12 +114,13 @@ Route::prefix('v1')->group(function () {
         Route::post('pemohon/{id}/verifikasi', [PemohonController::class, 'verifikasi'])
             ->middleware('akses:permohonan,approve')->whereNumber('id');
         CrudRoute::register('keberatan', KeberatanController::class, 'keberatan');
-        // Sumber angka "Kepuasan" pada Laporan Statistik Informasi Publik.
+        // Penilaian pemohon atas layanan; dibaca panel lewat modul Survei.
         CrudRoute::register('survey-kepuasan', SurveyKepuasanController::class, 'permohonan');
 
         // --- Laporan ---
-        Route::get('laporan-layanan/rekap', [LaporanLayananController::class, 'rekap'])
-            ->middleware('akses:laporan-layanan,view');
+        // Endpoint `laporan-layanan/rekap` dihapus pada langkah 68 bersama
+        // Laporan Statistik Informasi Publik — angka rekap tahunan tidak punya
+        // pemakai lagi, baik di panel maupun di situs publik.
         CrudRoute::register('laporan-layanan', LaporanLayananController::class, 'laporan-layanan');
 
         // --- Konten situs ---

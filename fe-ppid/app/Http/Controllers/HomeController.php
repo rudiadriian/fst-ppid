@@ -91,8 +91,9 @@ class HomeController extends Controller
         ])->all();
     }
 
-    // Statistik ringkas (Pemohon/Dokumen/Regulasi/Kepuasan) pindah ke halaman
-    // Laporan Statistik Informasi Publik — lihat PpidController@statistikRingkas.
+    // Statistik ringkas (Pemohon/Dokumen/Regulasi/Kepuasan) sempat pindah ke
+    // halaman Laporan Statistik Informasi Publik, lalu ikut hilang bersama
+    // halaman itu pada langkah 68. Tidak ada penggantinya di situs publik.
 
     /** Tiga berita terbaru yang sudah diterbitkan. */
     private function beritaTerbaru(): array

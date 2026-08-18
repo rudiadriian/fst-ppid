@@ -12,7 +12,7 @@
     <section class="relative fs-gradient overflow-hidden">
         <div class="absolute inset-0 opacity-[0.07]" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 28px 28px;"></div>
         <div class="relative z-10 max-w-screen-2xl mx-auto px-6 lg:px-8 py-14 lg:py-16">
-            <a href="{{ route('ppid.report', 'pelayanan-informasi') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-white transition mb-6">
+            <a href="{{ route('ppid.report') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-white transition mb-6">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 {{ __('Kembali ke daftar laporan') }}
             </a>

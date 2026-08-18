@@ -449,11 +449,10 @@ export const resources: ResourceConfig[] = [
 	// ------------------------------------------------------------------
 	// Laporan
 	// ------------------------------------------------------------------
-	// Modul Laporan Statistik dilepas dari panel (langkah 58). Tabel
-	// `laporan_layanan` tetap dipakai modul Laporan Pelayanan; baris bertipe
-	// `statistik_informasi` beserta endpoint `laporan-layanan/rekap` masih ada
-	// di API, jadi modulnya bisa dikembalikan hanya dengan menulis ulang
-	// konfigurasi ini.
+	// Modul Laporan Statistik dilepas dari panel pada langkah 58, lalu dihapus
+	// tuntas pada langkah 68: halaman publiknya, endpoint
+	// `laporan-layanan/rekap`, dan tipe `statistik_informasi` sudah tidak ada.
+	// Tabel `laporan_layanan` kini melayani satu modul saja, Laporan Pelayanan.
 	{
 		slug: 'laporan-pelayanan',
 		apiPath: 'laporan-layanan',
@@ -513,7 +512,7 @@ export const resources: ResourceConfig[] = [
 		title: 'Survei',
 		singular: 'Survei Kepuasan',
 		description:
-			'Penilaian pemohon atas layanan informasi. Rata-ratanya menjadi angka "Kepuasan" pada halaman Laporan Statistik Informasi Publik di situs publik.',
+			'Penilaian pemohon atas layanan informasi, diisi pemohon dari Portal Pemohon setelah permohonannya selesai.',
 		icon: 'lucide:smile',
 		defaultSort: '-id',
 		searchPlaceholder: 'Cari komentar…',

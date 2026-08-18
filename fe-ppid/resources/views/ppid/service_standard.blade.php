@@ -180,7 +180,10 @@
 
                 @elseif ($slug === 'jalur-waktu-layanan')
                     <p class="text-base font-normal text-gray-600 dark:text-gray-300 leading-relaxed mb-10">{{ __($data['intro']) }}</p>
-                    <div class="space-y-6">
+                    {{-- Panel Waktu Layanan tertutup saat halaman dibuka dan
+                         terbuka lewat kartu jalur "Langsung" — jam operasional
+                         hanya berarti bagi yang memang datang ke kantor. --}}
+                    <div class="space-y-6" x-data="{ waktuTerbuka: false }">
                         {{-- Jalur Pelayanan --}}
                         <div class="p-6 sm:p-8 rounded-2xl bg-[#FAF6EC] dark:bg-[#082217] border border-gray-100 dark:border-white/10">
                             <div class="flex items-center gap-4 mb-6">
@@ -193,35 +196,71 @@
                                 $channelIcons = [
                                     'Online' => 'M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3 2.5 15 0 18-2.5-3-2.5-15 0-18z',
                                     'Langsung' => 'M17 20h5v-2a3 3 0 00-5.36-1.86M17 20H7m10 0v-2c0-.66-.13-1.3-.36-1.86M7 20H2v-2a3 3 0 015.36-1.86M7 20v-2c0-.66.13-1.3.36-1.86m0 0A5 5 0 0112 13a5 5 0 014.64 3.14M15 7a3 3 0 11-6 0 3 3 0 016 0z',
-                                    'Surat' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
                                 ];
+
+                                // Kelas kartunya sama, hanya elemen pembungkusnya
+                                // yang berbeda: satu tautan, satu tombol.
+                                $kelasKartu = 'h-full w-full text-left flex flex-col rounded-xl p-5 shadow-lg shadow-accent-200/60 dark:shadow-black/30 transition hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#175A3C]';
                             @endphp
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 @foreach ($data['channels'] as $i => $channel)
-                                    <div class="h-full flex flex-col rounded-xl {{ $cardTier($i) }} p-5 shadow-lg shadow-accent-200/60 dark:shadow-black/30">
-                                        <span class="w-10 h-10 mb-4 bg-white text-[#E87317] rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $channelIcons[$channel['label']] ?? $channelIcons['Surat'] }}"></path></svg>
-                                        </span>
-                                        <div class="flex flex-wrap items-center gap-2 mb-2">
-                                            <span class="text-[11px] font-bold uppercase tracking-[0.14em] text-white">{{ __($channel['label']) }}</span>
-                                            @if ($channel['recommended'])
-                                                <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white text-[#9E470D]">{{ __('Direkomendasikan') }}</span>
-                                            @endif
+                                    @php
+                                        $aksi = $channel['aksi'] ?? null;
+                                        $petunjuk = $aksi === 'masuk'
+                                            ? __('Masuk ke Portal Pemohon')
+                                            : ($aksi === 'waktu' ? __('Lihat waktu layanan & lokasi') : null);
+                                    @endphp
+
+                                    {{-- Isi kartunya identik untuk kedua jalur;
+                                         hanya pembungkusnya yang berbeda. --}}
+                                    @php
+                                        $isiKartu = view('partials.jalur_layanan_isi', [
+                                            'channel' => $channel,
+                                            'ikon' => $channelIcons[$channel['label']] ?? $channelIcons['Langsung'],
+                                            'petunjuk' => $petunjuk,
+                                        ])->render();
+                                    @endphp
+
+                                    @if ($aksi === 'masuk')
+                                        <a href="{{ route('akun.login') }}" class="{{ $kelasKartu }} {{ $cardTier($i) }}">
+                                            {!! $isiKartu !!}
+                                        </a>
+                                    @elseif ($aksi === 'waktu')
+                                        <button type="button"
+                                                @click="waktuTerbuka = !waktuTerbuka; if (waktuTerbuka) $nextTick(() => $refs.waktuLayanan.scrollIntoView({ behavior: 'smooth', block: 'nearest' }))"
+                                                :aria-expanded="waktuTerbuka ? 'true' : 'false'"
+                                                aria-controls="panel-waktu-layanan"
+                                                class="{{ $kelasKartu }} {{ $cardTier($i) }}">
+                                            {!! $isiKartu !!}
+                                        </button>
+                                    @else
+                                        <div class="{{ $kelasKartu }} {{ $cardTier($i) }}">
+                                            {!! $isiKartu !!}
                                         </div>
-                                        <p class="text-sm font-normal text-white/90 leading-relaxed">{{ __($channel['desc']) }}</p>
-                                    </div>
+                                    @endif
                                 @endforeach
                             </div>
                         </div>
 
                         {{-- Waktu Layanan --}}
-                        <div class="p-6 sm:p-8 rounded-2xl bg-[#FAF6EC] dark:bg-[#082217] border border-gray-100 dark:border-white/10">
-                            <div class="flex items-center gap-4 mb-6">
+                        <div x-ref="waktuLayanan" class="p-6 sm:p-8 rounded-2xl bg-[#FAF6EC] dark:bg-[#082217] border border-gray-100 dark:border-white/10">
+                            <button type="button"
+                                    @click="waktuTerbuka = !waktuTerbuka"
+                                    :aria-expanded="waktuTerbuka ? 'true' : 'false'"
+                                    aria-controls="panel-waktu-layanan"
+                                    class="w-full flex items-center gap-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#175A3C] rounded-xl"
+                                    :class="waktuTerbuka ? 'mb-6' : ''">
                                 <span class="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 text-[#10462F] rounded-2xl flex items-center justify-center flex-shrink-0">
                                     <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 </span>
-                                <h3 class="text-xl sm:text-[22px] font-semibold text-gray-900 dark:text-white min-w-0">{{ __('Waktu Layanan') }}</h3>
-                            </div>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block text-xl sm:text-[22px] font-semibold text-gray-900 dark:text-white">{{ __('Waktu Layanan') }}</span>
+                                    <span class="block text-sm font-normal text-gray-500 dark:text-gray-400" x-show="!waktuTerbuka">{{ __('Jam operasional & lokasi kantor PPID') }}</span>
+                                </span>
+                                <svg class="w-5 h-5 flex-shrink-0 text-gray-500 dark:text-gray-400 transition-transform" :class="waktuTerbuka ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+
+                            <div id="panel-waktu-layanan" x-show="waktuTerbuka" x-collapse x-cloak>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 @foreach ($data['hours'] as $schedule)
                                     <div class="rounded-xl bg-white dark:bg-[#0B2A1D] border border-gray-100 dark:border-white/10 p-5 shadow-sm">
@@ -238,6 +277,14 @@
                                 <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 <span>{{ __($data['note']) }}</span>
                             </p>
+
+                            {{-- Jam layanan hanya berguna kalau pemohon tahu
+                                 harus datang ke mana. --}}
+                            <div class="mt-6 border-t border-gray-200 dark:border-white/10 pt-6">
+                                <h4 class="text-sm font-bold uppercase tracking-[0.14em] text-[#10462F] dark:text-[#3E9C6C] mb-4">{{ __('Lokasi Kantor PPID') }}</h4>
+                                @include('partials.peta_lokasi', ['tinggi' => 'h-[320px]'])
+                            </div>
+                            </div>
                         </div>
                     </div>
 

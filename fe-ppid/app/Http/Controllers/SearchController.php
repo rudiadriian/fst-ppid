@@ -55,7 +55,11 @@ class SearchController extends Controller
                     'url'      => route('ppid.regulation'),
                 ]);
 
+            // Hanya Laporan Pelayanan Informasi yang punya halaman publik sejak
+            // langkah 68; baris tipe lain di `laporan_layanan` tidak ikut
+            // muncul supaya hasil pencarian tidak menuju halaman yang tiada.
             $laporan = LaporanLayanan::published()
+                ->tipe('pelayanan_informasi')
                 ->where('judul', 'ilike', $like)
                 ->orderByDesc('tahun')
                 ->limit($limit)
@@ -63,9 +67,7 @@ class SearchController extends Controller
                 ->map(fn ($row) => [
                     'title'    => $row->judul,
                     'kategori' => 'Laporan',
-                    'url'      => route('ppid.report', $row->tipe_laporan === 'statistik_informasi'
-                        ? 'statistik-informasi'
-                        : 'pelayanan-informasi'),
+                    'url'      => route('ppid.report.show', $row->id),
                 ]);
 
             $dikecualikan = InformasiDikecualikan::published()

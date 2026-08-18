@@ -84,8 +84,8 @@
                     <h5 class="text-sm font-bold text-white uppercase tracking-wide">{{ __('Standar Layanan') }}</h5>
                     <ul class="space-y-2.5">
                         <li><a href="{{ route('ppid.service', 'maklumat-pelayanan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Maklumat Pelayanan') }}</a></li>
-                        <li><a href="{{ route('ppid.service', 'prosedur-permohonan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Prosedur Permohonan Informasi Publik') }}</a></li>
-                        <li><a href="{{ route('ppid.service', 'prosedur-keberatan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Prosedur Permohonan Keberatan Informasi Publik') }}</a></li>
+                        <li><a href="{{ route('ppid.service', 'prosedur-permohonan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Prosedur Permohonan Informasi') }}</a></li>
+                        <li><a href="{{ route('ppid.service', 'prosedur-keberatan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Prosedur Permohonan Keberatan') }}</a></li>
                         <li><a href="{{ route('ppid.service', 'jalur-waktu-layanan') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Jalur dan Waktu Layanan') }}</a></li>
                     </ul>
                 </div>
@@ -94,11 +94,10 @@
                     <ul class="space-y-2.5">
                         <li><a href="{{ route('ppid.request') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Permohonan Informasi Publik') }}</a></li>
                         <li><a href="{{ route('ppid.objection') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Pengajuan Keberatan Informasi Publik') }}</a></li>
-                        <li><a href="{{ route('ppid.report', 'statistik-informasi') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Laporan Statistik Informasi Publik') }}</a></li>
                         @guest('pemohon')
                             <li><a href="{{ route('akun.register') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Registrasi Akun') }}</a></li>
                         @endguest
-                        <li><a href="{{ route('ppid.report', 'pelayanan-informasi') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Laporan Pelayanan Informasi') }}</a></li>
+                        <li><a href="{{ route('ppid.report') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Laporan Pelayanan Informasi') }}</a></li>
                         <li><a href="{{ route('ppid.regulation') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Regulasi') }}</a></li>
                         <li><a href="{{ route('ppid.status') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Cek Status') }}</a></li>
                     </ul>

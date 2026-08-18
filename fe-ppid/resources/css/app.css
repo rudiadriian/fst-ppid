@@ -8,6 +8,13 @@
       /* Menerapkan Poppins sebagai font-sans default */
       font-family: 'Poppins', sans-serif;
     }
+
+    /* Elemen ber-`x-cloak` disembunyikan sampai Alpine selesai memuat.
+       Tanpa ini panel yang seharusnya tertutup sempat berkedip tampil
+       pada muat pertama. */
+    [x-cloak] {
+      display: none !important;
+    }
   }
 
 

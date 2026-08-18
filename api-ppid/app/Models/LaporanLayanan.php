@@ -7,6 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Laporan Pelayanan Informasi — berkas laporan per tahun.
+ *
+ * Kolom angka rekap (`jumlah_*`, `rata_rata_hari_respon`) sengaja tidak lagi
+ * fillable: pemakainya cuma Laporan Statistik Informasi Publik yang dihapus
+ * pada langkah 68. Kolomnya sendiri masih ada di tabel dan boleh dilepas
+ * lewat migrasi tersendiri bila memang tidak akan dipakai lagi.
+ */
 class LaporanLayanan extends Model
 {
     use MencatatPelaku, SoftDeletes;
@@ -18,12 +26,6 @@ class LaporanLayanan extends Model
         'judul',
         'tahun',
         'periode',
-        'jumlah_permohonan_masuk',
-        'jumlah_dikabulkan',
-        'jumlah_ditolak',
-        'jumlah_ditolak_sebagian',
-        'jumlah_keberatan',
-        'rata_rata_hari_respon',
         'ringkasan',
         'file_laporan',
         'status',
@@ -32,12 +34,6 @@ class LaporanLayanan extends Model
 
     protected $casts = [
         'tahun' => 'integer',
-        'jumlah_permohonan_masuk' => 'integer',
-        'jumlah_dikabulkan' => 'integer',
-        'jumlah_ditolak' => 'integer',
-        'jumlah_ditolak_sebagian' => 'integer',
-        'jumlah_keberatan' => 'integer',
-        'rata_rata_hari_respon' => 'float',
     ];
 
     public function publisher(): BelongsTo

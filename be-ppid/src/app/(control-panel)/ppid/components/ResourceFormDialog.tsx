@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -9,7 +9,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
-import { ppidApi, PpidApiError } from '../api/ppidApi';
+import { PpidApiError } from '../api/ppidApi';
 import { useCreateResource, useResourceItem, useUpdateResource } from '../api/useResource';
 import { apiPathOf, FieldConfig, ResourceConfig } from '../lib/types';
 import ResourceField from './ResourceField';
@@ -72,11 +72,9 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 
 	const fields = useMemo(() => config.fields.filter((f) => fieldTampil(f, modeUbah)), [config.fields, modeUbah]);
 
-	const { control, handleSubmit, reset, setError, getValues, setValue } = useForm<FieldValues>({
+	const { control, handleSubmit, reset, setError } = useForm<FieldValues>({
 		defaultValues: nilaiAwal(fields)
 	});
-
-	const [menghitung, setMenghitung] = useState(false);
 
 	const buat = useCreateResource(apiPath);
 	const ubah = useUpdateResource(apiPath);
@@ -89,53 +87,6 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 
 		reset(nilaiAwal(fields, modeUbah ? record : undefined));
 	}, [open, record, fields, modeUbah, reset]);
-
-	/**
-	 * Isi field rekap dari endpoint hitung otomatis. Nilai lama ditimpa supaya
-	 * angka yang tersimpan selalu cocok dengan data permohonan di database.
-	 */
-	async function isiOtomatis() {
-		const aksi = config.aksiIsiOtomatis;
-
-		if (!aksi) {
-			return;
-		}
-
-		const params: Record<string, string> = {};
-
-		for (const nama of aksi.params) {
-			const nilai = getValues(nama);
-
-			if (nilai === undefined || nilai === null || nilai === '') {
-				const label = config.fields.find((f) => f.name === nama)?.label ?? nama;
-				enqueueSnackbar(`${t('Isi dulu')} ${t(label)} ${t('sebelum menghitung otomatis.')}`, { variant: 'warning' });
-				return;
-			}
-
-			params[nama] = String(nilai);
-		}
-
-		setMenghitung(true);
-
-		try {
-			const hasil = await ppidApi.ambil<Record<string, unknown>>(aksi.endpoint, params);
-
-			aksi.isi.forEach((nama) => {
-				if (nama in hasil) {
-					setValue(nama, (hasil[nama] ?? '') as never, { shouldDirty: true });
-				}
-			});
-
-			enqueueSnackbar(t('Angka rekap diperbarui dari data permohonan.'), { variant: 'success' });
-		} catch (error) {
-			enqueueSnackbar(
-				error instanceof PpidApiError ? error.message : t('Gagal menghitung rekap otomatis.'),
-				{ variant: 'error' }
-			);
-		} finally {
-			setMenghitung(false);
-		}
-	}
 
 	async function simpan(values: FieldValues) {
 		// String kosong dikirim sebagai null supaya kolom nullable di DB tidak
@@ -213,15 +164,6 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 
 				{modeUbah && !memuat && <JejakDokumen record={record} />}
 
-				{config.aksiIsiOtomatis?.help && (
-					<Alert
-						severity="info"
-						className="mt-4"
-					>
-						{t(config.aksiIsiOtomatis.help)}
-					</Alert>
-				)}
-
 				{config.readOnly && (
 					<Alert
 						severity="info"
@@ -233,16 +175,6 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 			</DialogContent>
 
 			<DialogActions>
-				{config.aksiIsiOtomatis && (
-					<Button
-						onClick={isiOtomatis}
-						disabled={menyimpan || memuat || menghitung}
-						startIcon={menghitung ? <CircularProgress size={16} /> : undefined}
-						className="mr-auto"
-					>
-						{t(config.aksiIsiOtomatis.label)}
-					</Button>
-				)}
 				<Button
 					onClick={onClose}
 					disabled={menyimpan}

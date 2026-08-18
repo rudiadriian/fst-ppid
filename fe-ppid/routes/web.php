@@ -66,12 +66,17 @@ Route::get('/regulasi/{regulasi}', [PpidController::class, 'showRegulationDetail
     ->whereNumber('regulasi')
     ->name('ppid.regulation.show');
 // Halaman detail Laporan Pelayanan Informasi — dokumennya dibaca di halaman
-// itu juga, sama seperti detail Regulasi. Didaftarkan sebelum `/laporan/{slug}`
-// supaya dua segmennya tidak tertelan rute daftar.
+// itu juga, sama seperti detail Regulasi. Didaftarkan sebelum rute daftarnya
+// supaya dua segmennya tidak tertelan.
 Route::get('/laporan/pelayanan-informasi/{laporan}', [PpidController::class, 'showServiceReportDetail'])
     ->whereNumber('laporan')
     ->name('ppid.report.show');
-Route::get('/laporan/{slug}', [PpidController::class, 'showReportPage'])->name('ppid.report');
+/*
+ * Menu Laporan tinggal satu: Laporan Pelayanan Informasi. Halaman Laporan
+ * Statistik Informasi Publik dihapus pada langkah 68, jadi rutenya tidak lagi
+ * menerima slug — alamat lama `/laporan/statistik-informasi` kini 404.
+ */
+Route::get('/laporan/pelayanan-informasi', [PpidController::class, 'showReportPage'])->name('ppid.report');
 Route::get('/register-permohonan', [PpidController::class, 'showRequestRegister'])->name('ppid.register');
 Route::get('/standar-layanan/{slug}', [PpidController::class, 'showServiceStandardPage'])->name('ppid.service');
 
