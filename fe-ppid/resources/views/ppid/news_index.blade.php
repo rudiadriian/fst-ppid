@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Berita & Publikasi | PPID FSTJ')
-
+@section('title', __('Berita & Publikasi') . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     {{-- HERO --}}

@@ -41,9 +41,21 @@ class HomeController extends Controller
             return [];
         }
 
+        // Judul dan ringkasan ikut tiap gambar: slider beranda menampilkan teks
+        // milik slide yang sedang tayang. Slide tanpa judul memakai teks bawaan
+        // beranda (ditangani di view), jadi banner lama tetap tampil wajar.
+        //
+        // Modul Banner tidak lagi punya kolom isian versi Inggris. Urutan
+        // pencariannya: kolom `*_en` bila kebetulan terisi (lewat `teks()`),
+        // lalu kamus situs `lang/en.json` lewat `__()`. Kalimat yang belum ada
+        // di kamus tetap tampil dalam Bahasa Indonesia — tidak ada penerjemah
+        // otomatis di sini.
+        $terjemah = fn (?string $teks) => filled($teks) ? __($teks) : '';
+
         return $baris->map(fn ($b) => [
             'image' => Cms::url($b->gambar),
-            'caption' => $b->judul ?: '',
+            'caption' => $terjemah($b->teks('judul')),
+            'ringkasan' => $terjemah($b->teks('ringkasan')),
             'link' => $b->link,
         ])->all();
     }
@@ -72,10 +84,10 @@ class HomeController extends Controller
         }
 
         return $baris->map(fn ($k) => [
-            'title' => $k->nama,
+            'title' => $k->teks('nama'),
             'count' => (int) $k->jumlah,
             'slug' => $k->slug,
-            'desc' => $k->deskripsi ?: '',
+            'desc' => $k->teks('deskripsi') ?: '',
         ])->all();
     }
 
@@ -97,10 +109,10 @@ class HomeController extends Controller
         );
 
         return $baris->map(fn ($b) => [
-            'title' => $b->judul,
+            'title' => $b->teks('judul'),
             'date' => Cms::tanggal($b->tanggal_publikasi),
-            'category' => $b->kategori->nama ?? 'Publikasi',
-            'excerpt' => $b->ringkasan ?: str($b->konten ?? '')->stripTags()->limit(160)->toString(),
+            'category' => $b->kategori?->teks('nama') ?? __('Publikasi'),
+            'excerpt' => $b->teks('ringkasan') ?: str($b->teks('konten') ?? '')->stripTags()->limit(160)->toString(),
             'image' => Cms::url($b->thumbnail) ?: asset('assets/images/logo/logo_fs.png'),
             'url' => route('ppid.news.show', $b->slug),
         ])->all();
@@ -112,8 +124,8 @@ class HomeController extends Controller
         $baris = Cms::ambil(fn () => Faq::aktif()->limit(8)->get(), collect(), 'faq');
 
         return $baris->map(fn ($f) => [
-            'q' => $f->pertanyaan,
-            'a' => strip_tags($f->jawaban),
+            'q' => $f->teks('pertanyaan'),
+            'a' => strip_tags($f->teks('jawaban')),
         ])->all();
     }
 

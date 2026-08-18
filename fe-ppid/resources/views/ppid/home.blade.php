@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'PPID FSTJ - Transparansi Informasi Publik')
-
+@section('title', __('PPID FSTJ - Transparansi Informasi Publik'))
 @section('content')
 
     {{-- Data beranda ($infoPublik, $news, $faqs, $heroSlides, $contacts)
@@ -22,10 +21,29 @@
     {{-- =====================================================================
          1. HERO — slider full-bleed: gambar mengisi seluruh lebar & tinggi
             hero, teks + CTA menumpuk di atasnya (mengikuti theme-slider-beranda.jpeg)
+
+            Di layar besar hero mengisi satu layar penuh. Header beranda
+            melayang transparan di atasnya, jadi tingginya satu viewport utuh
+            (bukan dikurangi tinggi header) dan isinya diberi jarak atas supaya
+            tidak tertimpa header. Ukuran unggahan yang dianjurkan:
+            1920 × 1080 px (16:9).
+
+            Tiap banner boleh membawa judul dan ringkasannya sendiri (modul
+            Banner di CMS). Banner tanpa judul memakai teks bawaan di bawah ini.
          ===================================================================== --}}
+    @php
+        // Slider baru memunculkan blok teks per slide bila ada minimal satu
+        // banner yang punya judul; kalau semua banner hanya gambar, teks
+        // bawaan beranda yang dipakai (satu blok, tidak ikut berganti).
+        $adaTeksSlide = collect($heroSlides)->contains(fn ($s) => filled($s['caption'] ?? null));
+        $judulBawaan = __('Portal Keterbukaan');
+        $judulBawaanAksen = __('Informasi Publik');
+        $ringkasanBawaan = __('Wujud tata kelola perusahaan yang baik dan akuntabel — melaksanakan keterbukaan informasi publik sesuai Undang-Undang No. 14 Tahun 2008.');
+    @endphp
+
     <section class="relative overflow-hidden fs-gradient"
              x-data="{ active: 0, total: {{ max(count($heroSlides), 1) }}, timer: null,
-                       start() { if (this.total > 1) this.timer = setInterval(() => this.next(), 6000) },
+                       start() { if (this.total > 1) this.timer = setInterval(() => this.next(), 7000) },
                        next() { this.active = (this.active + 1) % this.total },
                        prev() { this.active = (this.active - 1 + this.total) % this.total },
                        go(i) { this.active = i; clearInterval(this.timer); this.start() } }"
@@ -44,51 +62,97 @@
                      x-transition:leave-end="opacity-0"
                      class="absolute inset-0"
                      @if ($i !== 0) style="display:none" @endif>
+                    {{-- Gambar yang sedang tayang merayap membesar (Ken Burns)
+                         supaya slider terasa bergerak, bukan gambar diam. --}}
                     <img src="{{ $slide['image'] }}" alt="{{ $slide['caption'] }}"
-                         class="w-full h-full object-cover" @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif>
+                         class="w-full h-full object-cover object-center"
+                         :class="active === {{ $i }} ? 'fs-kenburns' : ''"
+                         @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif>
                 </div>
             @endforeach
 
-            {{-- Scrim: gelap di kiri supaya teks tetap terbaca di atas gambar apa pun --}}
-            <div class="absolute inset-0 bg-gradient-to-r from-[#041710]/90 via-[#041710]/65 to-[#041710]/25"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-[#041710]/70 via-transparent to-[#041710]/30"></div>
+            {{-- Scrim: gelap di kiri supaya teks tetap terbaca, makin ke kanan
+                 makin bening supaya gambar bannernya sendiri tetap terlihat
+                 jelas — bukan tertutup lapisan gelap satu halaman penuh. --}}
+            <div class="absolute inset-0 bg-gradient-to-r from-[#041710]/90 via-[#041710]/55 to-transparent"></div>
+            <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#041710]/55 to-transparent"></div>
         </div>
 
-        {{-- Konten hero --}}
-        <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 flex items-center min-h-[560px] lg:min-h-[660px] py-20 lg:py-28">
-            <div class="max-w-2xl">
-                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/25 text-white/90 text-xs font-semibold tracking-wide uppercase mb-6 backdrop-blur-sm">
-                    <span class="w-2 h-2 rounded-full bg-[#F5A94C] animate-pulse"></span>
-                    {{ __('PPID PT Food Station Tjipinang Jaya') }}
-                </span>
-                {{-- Baris kedua memakai warna aksen (konsep judul dua warna). --}}
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] mb-6 drop-shadow-lg">
-                    {{ __('Portal Keterbukaan') }}<br><span class="fs-title-accent-soft">{{ __('Informasi Publik') }}</span>
-                </h1>
-                <p class="text-lg text-white/90 max-w-xl mb-9 leading-relaxed drop-shadow">
-                    {{ __('Wujud tata kelola perusahaan yang baik dan akuntabel — melaksanakan keterbukaan informasi publik sesuai Undang-Undang No. 14 Tahun 2008.') }}
-                </p>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <a href="{{ route('ppid.request') }}" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 fs-gradient-accent text-white text-base font-bold rounded-xl hover:brightness-110 hover:-translate-y-0.5 transition-all duration-200 shadow-xl">
-                        {{ __('Ajukan Permohonan') }}
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                    </a>
-                    <a href="{{ route('ppid.status') }}" class="inline-flex items-center justify-center px-7 py-3.5 bg-white/10 border border-white/40 text-white text-base font-bold rounded-xl backdrop-blur-sm hover:bg-white/20 transition-colors duration-200">
-                        {{ __('Cek Status Permohonan') }}
-                    </a>
+        {{-- Konten hero sekaligus penentu tinggi hero: satu layar penuh
+             (dibatasi 1100 px supaya di layar yang sangat jangkung banner tidak
+             jadi terlalu panjang). Jarak atas menghindari header melayang. --}}
+        <div class="relative z-10 flex items-center min-h-[560px] lg:min-h-screen lg:max-h-[1100px] pt-[104px] pb-20 lg:pb-24">
+            <div class="w-full max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="max-w-2xl">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/25 text-white/90 text-xs font-semibold tracking-wide uppercase mb-6 backdrop-blur-sm">
+                        <span class="w-2 h-2 rounded-full bg-[#F5A94C] animate-pulse"></span>
+                        {{ __('PPID PT Food Station Tjipinang Jaya') }}
+                    </span>
+
+                    @if ($adaTeksSlide)
+                        {{-- Judul + ringkasan milik slide yang sedang tayang.
+                             Semua slide ditumpuk pada satu sel grid supaya tinggi
+                             bloknya mengikuti teks terpanjang — tombol di bawahnya
+                             tidak melompat saat slide berganti. --}}
+                        <div class="grid mb-9">
+                            @foreach ($heroSlides as $i => $slide)
+                                <div class="col-start-1 row-start-1"
+                                     x-show="active === {{ $i }}"
+                                     x-transition:enter="transition ease-out duration-700 delay-150"
+                                     x-transition:enter-start="opacity-0 translate-y-6"
+                                     x-transition:enter-end="opacity-100 translate-y-0"
+                                     x-transition:leave="transition ease-in duration-300"
+                                     x-transition:leave-start="opacity-100"
+                                     x-transition:leave-end="opacity-0"
+                                     @if ($i !== 0) style="display:none" @endif>
+                                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] drop-shadow-lg">
+                                        @if (filled($slide['caption']))
+                                            {{ $slide['caption'] }}
+                                        @else
+                                            {{ $judulBawaan }}<br><span class="fs-title-accent-soft">{{ $judulBawaanAksen }}</span>
+                                        @endif
+                                    </h1>
+                                    <p class="text-lg text-white/90 max-w-xl mt-6 leading-relaxed drop-shadow">
+                                        {{ filled($slide['ringkasan'] ?? null) ? $slide['ringkasan'] : $ringkasanBawaan }}
+                                    </p>
+
+                                    @if (!empty($slide['link']))
+                                        <a href="{{ $slide['link'] }}" class="inline-flex items-center gap-2 mt-6 text-base font-bold text-[#F5A94C] hover:text-white transition-colors">
+                                            {{ __('Selengkapnya') }}
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                        </a>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        {{-- Baris kedua memakai warna aksen (konsep judul dua warna). --}}
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] mb-6 drop-shadow-lg">
+                            {{ $judulBawaan }}<br><span class="fs-title-accent-soft">{{ $judulBawaanAksen }}</span>
+                        </h1>
+                        <p class="text-lg text-white/90 max-w-xl mb-9 leading-relaxed drop-shadow">
+                            {{ $ringkasanBawaan }}
+                        </p>
+                    @endif
+
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="{{ route('ppid.request') }}" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 fs-gradient-accent text-white text-base font-bold rounded-xl hover:brightness-110 hover:-translate-y-0.5 transition-all duration-200 shadow-xl">
+                            {{ __('Ajukan Permohonan') }}
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </a>
+                        <a href="{{ route('ppid.status') }}" class="inline-flex items-center justify-center px-7 py-3.5 bg-white/10 border border-white/40 text-white text-base font-bold rounded-xl backdrop-blur-sm hover:bg-white/20 transition-colors duration-200">
+                            {{ __('Cek Status Permohonan') }}
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
         @if (count($heroSlides) > 1)
-            {{-- Caption slide aktif --}}
-            <div class="hidden lg:block absolute bottom-10 right-8 z-20 max-w-xs text-right">
-                @foreach ($heroSlides as $i => $slide)
-                    <p x-show="active === {{ $i }}" x-transition.opacity.duration.500ms
-                       class="text-sm font-semibold text-white/85 drop-shadow"
-                       @if ($i !== 0) style="display:none" @endif>{{ $slide['caption'] }}</p>
-                @endforeach
-            </div>
+            {{-- Judul slide sudah tampil pada blok teks utama, jadi caption
+                 terpisah di pojok kanan bawah dilepas — isinya kembar. Penanda
+                 nomor slide juga dilepas; posisi slide sudah terbaca dari
+                 titik-titik di bawah banner. --}}
 
             {{-- Prev / Next --}}
             <button @click="prev()" aria-label="{{ __('Slide sebelumnya') }}"

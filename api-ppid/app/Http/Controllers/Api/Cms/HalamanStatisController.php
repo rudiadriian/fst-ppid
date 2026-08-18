@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api\Cms;
 use App\Http\Controllers\Api\CrudController;
 use App\Models\HalamanStatis;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class HalamanStatisController extends CrudController
 {
@@ -20,7 +18,8 @@ class HalamanStatisController extends CrudController
 
     protected string $defaultSort = 'judul';
 
-    protected array $withList = ['editor:id,name'];
+    // Pemuatan relasi pelaku (`pembuat`/`pengubah`/`penghapus`) ditangani
+    // CrudController untuk semua modul, jadi tidak perlu ditulis di sini.
 
     protected array $filterable = [
         'is_active' => 'boolean',
@@ -34,16 +33,11 @@ class HalamanStatisController extends CrudController
 
         return [
             'judul' => [$wajib, 'string', 'max:255'],
+            'judul_en' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'konten' => ['nullable', 'string'],
+            'konten_en' => ['nullable', 'string'],
             'is_active' => ['boolean'],
         ];
-    }
-
-    protected function beforeSave(array $data, Request $request, ?Model $record): array
-    {
-        $data['updated_by'] = Auth::guard('api')->id();
-
-        return $data;
     }
 }

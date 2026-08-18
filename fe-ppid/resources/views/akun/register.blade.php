@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar Akun Pengunjung | PPID FSTJ')
-
+@section('title', __('Daftar Akun Pengunjung') . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     <section class="relative fs-gradient overflow-hidden">
@@ -44,15 +43,16 @@
                     </div>
 
                     <div>
-                        <label for="no_hp" class="{{ $labelClass }}">{{ __('Nomor Telepon/HP') }}</label>
-                        <input id="no_hp" name="no_hp" type="tel" value="{{ old('no_hp') }}" class="{{ $inputClass }}">
+                        <label for="no_hp" class="{{ $labelClass }}">{{ __('Nomor Telepon/HP (WhatsApp)') }}</label>
+                        <input id="no_hp" name="no_hp" type="tel" value="{{ old('no_hp') }}" required autocomplete="tel" class="{{ $inputClass }}">
+                        <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ __('Nomor aktif WhatsApp. Dipakai petugas untuk mengonfirmasi berkas verifikasi, dan bisa dipakai untuk masuk selain email.') }}</p>
                         @error('no_hp')<p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
                         <label for="password" class="{{ $labelClass }}">{{ __('Password') }}</label>
                         <input id="password" name="password" type="password" required autocomplete="new-password" class="{{ $inputClass }}">
-                        <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ __('Minimal 8 karakter, memuat huruf dan angka.') }}</p>
+                        <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ __('Minimal 10 karakter, memuat huruf besar, huruf kecil, dan angka.') }}</p>
                         @error('password')<p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>@enderror
                     </div>
 
@@ -60,6 +60,8 @@
                         <label for="password_confirmation" class="{{ $labelClass }}">{{ __('Ulangi Password') }}</label>
                         <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password" class="{{ $inputClass }}">
                     </div>
+
+                    @include('akun.partials.captcha', ['idForm' => 'daftar'])
 
                     <label class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
                         <input type="checkbox" name="setuju" value="1" @checked(old('setuju')) required

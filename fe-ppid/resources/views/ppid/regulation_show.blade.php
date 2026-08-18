@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $data['title'] . ' | Regulasi PPID FSTJ')
-
+@section('title', __($data['title']) . ' | ' . __('Regulasi PPID FSTJ'))
 {{-- Penggambar dokumen memakai pdf.js; hanya dimuat di halaman ini. --}}
 @push('scripts')
     @vite('resources/js/sampul-pdf.js')

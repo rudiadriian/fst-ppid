@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import { useSnackbar } from 'notistack';
+import { useTranslation } from 'react-i18next';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import ppidApi, { PpidApiError } from '../api/ppidApi';
 import { FieldConfig } from '../lib/types';
@@ -44,6 +45,7 @@ type UploadFieldProps = {
  */
 export function UploadField({ field, value, onChange, disabled, errorText }: UploadFieldProps) {
 	const inputRef = useRef<HTMLInputElement>(null);
+	const { t } = useTranslation();
 	const [mengunggah, setMengunggah] = useState(false);
 	const { enqueueSnackbar } = useSnackbar();
 
@@ -94,7 +96,7 @@ export function UploadField({ field, value, onChange, disabled, errorText }: Upl
 				variant="caption"
 				className="mb-1 block font-medium"
 			>
-				{field.label}
+				{t(field.label)}
 				{field.required ? ' *' : ''}
 			</Typography>
 
@@ -123,7 +125,7 @@ export function UploadField({ field, value, onChange, disabled, errorText }: Upl
 						size="small"
 						disabled={disabled}
 						onClick={() => onChange(null)}
-						aria-label={`Hapus ${field.label}`}
+						aria-label={`${t('Hapus')} ${t(field.label)}`}
 					>
 						<FuseSvgIcon size={18}>lucide:x</FuseSvgIcon>
 					</IconButton>
@@ -138,7 +140,7 @@ export function UploadField({ field, value, onChange, disabled, errorText }: Upl
 						mengunggah ? <CircularProgress size={16} /> : <FuseSvgIcon size={18}>lucide:upload</FuseSvgIcon>
 					}
 				>
-					{mengunggah ? 'Mengunggah…' : 'Pilih berkas'}
+					{mengunggah ? t('Mengunggah…') : t('Pilih berkas')}
 				</Button>
 			)}
 
@@ -182,6 +184,7 @@ type MultiUploadFieldProps = {
  */
 export function MultiUploadField({ field, value, onChange, disabled }: MultiUploadFieldProps) {
 	const inputRef = useRef<HTMLInputElement>(null);
+	const { t } = useTranslation();
 	const [mengunggah, setMengunggah] = useState(false);
 	const { enqueueSnackbar } = useSnackbar();
 
@@ -231,7 +234,7 @@ export function MultiUploadField({ field, value, onChange, disabled }: MultiUplo
 				variant="caption"
 				className="mb-1 block font-medium"
 			>
-				{field.label}
+				{t(field.label)}
 			</Typography>
 
 			<div className="mb-2 flex flex-col gap-1">
@@ -258,7 +261,7 @@ export function MultiUploadField({ field, value, onChange, disabled }: MultiUplo
 							size="small"
 							disabled={disabled}
 							onClick={() => onChange(daftar.filter((_, i) => i !== index))}
-							aria-label="Hapus lampiran"
+							aria-label={t('Hapus lampiran')}
 						>
 							<FuseSvgIcon size={18}>lucide:x</FuseSvgIcon>
 						</IconButton>
@@ -275,7 +278,7 @@ export function MultiUploadField({ field, value, onChange, disabled }: MultiUplo
 					mengunggah ? <CircularProgress size={16} /> : <FuseSvgIcon size={18}>lucide:upload</FuseSvgIcon>
 				}
 			>
-				{mengunggah ? 'Mengunggah…' : 'Tambah lampiran'}
+				{mengunggah ? t('Mengunggah…') : t('Tambah lampiran')}
 			</Button>
 
 			<input

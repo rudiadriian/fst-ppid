@@ -32,9 +32,12 @@ class AppServiceProvider extends ServiceProvider
 
         // Satu-satunya akun di situs publik adalah pengunjung (`Pemohon`), jadi
         // notifikasi selalu menunjuk ke halaman `/akun/…`.
+        // Masa berlakunya dibaca dari `config('auth.verification.expire')` supaya
+        // angka yang dipakai membuat tautan sama dengan angka yang ditulis di
+        // email dan di halaman peringatan.
         VerifyEmail::createUrlUsing(fn (Pemohon $pemohon) => URL::temporarySignedRoute(
             'akun.verifikasi.verify',
-            now()->addMinutes(60),
+            now()->addMinutes((int) config('auth.verification.expire', 1440)),
             ['id' => $pemohon->getKey(), 'hash' => sha1($pemohon->getEmailForVerification())]
         ));
 

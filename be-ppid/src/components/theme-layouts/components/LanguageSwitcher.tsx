@@ -37,8 +37,10 @@ function LanguageSwitcher() {
 				onClick={langMenuClick}
 				className="gap-1"
 			>
+				{/* Ukuran bendera dikunci lewat kelas: berkas SVG-nya punya ukuran
+				    bawaan jauh lebih besar dari tombolnya. */}
 				<img
-					className="min-w-5"
+					className="h-4 w-6 shrink-0 rounded-[2px] object-cover ring-1 ring-black/10"
 					src={`/assets/images/flags/${language.flag}.svg`}
 					alt={language.title}
 				/>
@@ -75,7 +77,7 @@ function LanguageSwitcher() {
 					>
 						<ListItemIcon className="min-w-9">
 							<img
-								className="min-w-5"
+								className="h-4 w-6 shrink-0 rounded-[2px] object-cover ring-1 ring-black/10"
 								src={`/assets/images/flags/${lng.flag}.svg`}
 								alt={lng.title}
 							/>

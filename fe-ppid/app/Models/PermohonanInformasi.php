@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\TanpaCapUbahSaatDibuat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PermohonanInformasi extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, TanpaCapUbahSaatDibuat;
 
     protected $table = 'permohonan_informasi';
 

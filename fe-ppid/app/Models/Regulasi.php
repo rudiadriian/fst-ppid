@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PunyaVersiInggris;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Regulasi extends Model
 {
-    protected $table = 'regulasi';
+    use PunyaVersiInggris, SoftDeletes;
 
-    /** Tabel regulasi hanya punya created_at. */
-    const UPDATED_AT = null;
+    protected $table = 'regulasi';
 
     protected $casts = [
         'tahun'           => 'integer',

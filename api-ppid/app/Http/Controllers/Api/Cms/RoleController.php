@@ -65,7 +65,9 @@ class RoleController extends CrudController
 
         $akses = RoleModulAkses::where('role_id', $role->id)->get()->keyBy('modul_id');
 
-        $baris = ModulSistem::orderBy('urutan')->get()->map(fn (ModulSistem $modul) => [
+        // Hanya modul aktif yang ditawarkan: modul yang sudah dilepas dari panel
+        // tidak perlu lagi muncul sebagai baris matrix hak akses.
+        $baris = ModulSistem::where('is_active', true)->orderBy('urutan')->get()->map(fn (ModulSistem $modul) => [
             'modul_id' => $modul->id,
             'slug' => $modul->slug,
             'nama' => $modul->nama,

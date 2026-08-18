@@ -71,6 +71,8 @@ export type FilterConfig = {
 	type: 'select' | 'relation' | 'date';
 	options?: PilihanOpsi[];
 	relation?: { resource: string; labelKey: string };
+	/** Label pilihan kosong pada filter select; default "Semua". */
+	labelKosong?: string;
 };
 
 export type ResourceConfig = {
@@ -91,6 +93,23 @@ export type ResourceConfig = {
 	searchPlaceholder?: string;
 	/** Modul yang hanya bisa dibaca (mis. audit log). */
 	readOnly?: boolean;
+	/**
+	 * Modul tanpa kolom jejak dokumen.
+	 *
+	 * Dipakai Audit Log: tabelnya memang catatan perubahan, jadi tidak punya
+	 * (dan tidak perlu) kolom `created_by`/`updated_by`/`deleted_by` sendiri.
+	 */
+	tanpaJejak?: boolean;
+	/**
+	 * Nilai kolom yang dikunci untuk modul ini.
+	 *
+	 * Dipakai bila satu tabel dibagi jadi beberapa modul: nilainya ikut sebagai
+	 * filter saat memuat daftar dan ikut dikirim saat menyimpan, sehingga
+	 * operator tidak perlu memilihnya sendiri dan tidak bisa salah pilih.
+	 * Contoh: modul Laporan Statistik dan Laporan Pelayanan sama-sama memakai
+	 * tabel `laporan_layanan`, dibedakan oleh `tipe_laporan`.
+	 */
+	nilaiTetap?: Record<string, string | number>;
 	/**
 	 * Tombol bantu di formulir: mengambil angka dari endpoint hitung otomatis
 	 * lalu mengisikannya ke field. Dipakai Laporan Layanan supaya rekap tidak

@@ -23,7 +23,7 @@
         @if ($node->tipe() === 'grup')
             {{-- Bingkai berjudul; anak-anaknya berjajar di dalamnya. --}}
             <div class="rounded-3xl border-2 {{ $putus }} px-5 py-6 sm:px-8">
-                <p class="text-center text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-5">{{ $node->jabatan }}</p>
+                <p class="text-center text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-5">{{ $node->teks('jabatan') }}</p>
 
                 <div class="flex justify-center items-start gap-5">
                     @foreach ($cabang['alur'] as $isiGrup)
@@ -34,7 +34,7 @@
         @else
             {{-- Kotak biasa: kepala hijau (jabatan) + badan abu (nama / butir). --}}
             <div class="w-[15rem] sm:w-[17rem] rounded-xl overflow-hidden shadow-sm">
-                <p class="px-4 py-2.5 fs-gradient text-white text-sm font-bold text-center leading-snug">{{ $node->jabatan }}</p>
+                <p class="px-4 py-2.5 fs-gradient text-white text-sm font-bold text-center leading-snug">{{ $node->teks('jabatan') }}</p>
 
                 <div class="px-4 py-4 bg-gray-200 dark:bg-white/10 text-sm text-gray-700 dark:text-gray-200 text-center leading-relaxed">
                     @if ($poin)
@@ -47,8 +47,8 @@
                         {{ $node->nama }}
                     @endif
 
-                    @if ($node->deskripsi)
-                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ $node->deskripsi }}</p>
+                    @if ($node->teks('deskripsi'))
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ $node->teks('deskripsi') }}</p>
                     @endif
                 </div>
             </div>

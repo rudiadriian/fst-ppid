@@ -1,20 +1,37 @@
-@php $locale = app()->getLocale(); @endphp
+@php
+    $locale = app()->getLocale();
+
+    // Beranda memakai hero setinggi layar. Di sana header melayang di atas
+    // banner (transparan) dan baru berlatar putih setelah halaman digulir.
+    // Halaman lain tetap memakai header putih yang menempel seperti biasa.
+    $headerMelayang = request()->is('/');
+@endphp
 
 {{-- Top utility bar dihapus supaya header lebih full & clean (mengikuti desain acuan).
      Alamat, telepon, dan email tetap tampil di footer (dari $cmsKontak). --}}
 
 <header x-data="{ open_mobile: false, scrolled: false }"
+        x-init="scrolled = (window.pageYOffset > 10)"
         @scroll.window="scrolled = (window.pageYOffset > 10)"
-        class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 transition-all duration-300 dark:bg-[#071A12]/95 dark:border-white/10"
-        :class="scrolled ? 'shadow-md shadow-gray-200/60 dark:shadow-black/40' : ''">
+        @if ($headerMelayang)
+            class="fixed inset-x-0 top-0 z-50 transition-all duration-300"
+            {{-- Menu mobile yang terbuka ikut memaksa latar putih supaya
+                 daftar menunya tidak mengambang di atas gambar. --}}
+            :class="(scrolled || open_mobile)
+                ? 'bg-white/95 backdrop-blur border-b border-gray-100 shadow-md shadow-gray-200/60 dark:bg-[#071A12]/95 dark:border-white/10 dark:shadow-black/40'
+                : 'hdr-top'"
+        @else
+            class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 transition-all duration-300 dark:bg-[#071A12]/95 dark:border-white/10"
+            :class="scrolled ? 'shadow-md shadow-gray-200/60 dark:shadow-black/40' : ''"
+        @endif>
     <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-[72px]">
             {{-- Logo --}}
             <a href="/" class="flex items-center gap-3 group">
                 <img src="{{ asset('assets/images/logo/logo_fs.png') }}" alt="PT Food Station Tjipinang Jaya (Perseroda)"
-                     class="h-9 sm:h-10 w-auto transition-transform duration-200 group-hover:scale-[1.03] dark:bg-white dark:rounded-lg dark:px-2 dark:py-1">
-                <span class="w-px h-9 bg-gray-200 dark:bg-white/15"></span>
-                <span class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-none dark:text-white">PPID</span>
+                     class="hdr-logo h-9 sm:h-10 w-auto transition-transform duration-200 group-hover:scale-[1.03] dark:bg-white dark:rounded-lg dark:px-2 dark:py-1">
+                <span class="hdr-divider w-px h-9 bg-gray-200 dark:bg-white/15"></span>
+                <span class="hdr-brand text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-none dark:text-white">PPID</span>
             </a>
 
             {{-- Desktop nav --}}
@@ -33,11 +50,15 @@
                         $isStatus     = request()->routeIs('ppid.status');
                         $isExcluded   = request()->routeIs('ppid.excluded');
                         $isReport     = request()->routeIs('ppid.report');
-                        $isRegister   = request()->routeIs('ppid.register');
+                        // Sub modul "Register Permohonan Informasi" diganti pintu Registrasi Akun.
+                        $isRegister   = request()->routeIs('akun.register');
                         $activeSlug   = request()->route('slug');
 
-                        $navLinkClass       = 'text-sm font-semibold text-gray-600 hover:text-[#10462F] transition-colors duration-200 px-3.5 py-2 rounded-lg hover:bg-emerald-50 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5';
-                        $navLinkActiveClass = 'text-sm font-semibold text-[#10462F] px-3.5 py-2 rounded-lg bg-emerald-50 dark:bg-white/5 dark:text-[#3E9C6C]';
+                        // Kelas penanda `hdr-nav-link` / `hdr-nav-active` dipakai
+                        // CSS `.hdr-top` untuk memutihkan teks saat header masih
+                        // transparan di atas banner beranda.
+                        $navLinkClass       = 'hdr-nav-link text-sm font-semibold text-gray-600 hover:text-[#10462F] transition-colors duration-200 px-3.5 py-2 rounded-lg hover:bg-emerald-50 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5';
+                        $navLinkActiveClass = 'hdr-nav-link hdr-nav-active text-sm font-semibold text-[#10462F] px-3.5 py-2 rounded-lg bg-emerald-50 dark:bg-white/5 dark:text-[#3E9C6C]';
                         $dropdownItemClass       = 'block px-4 py-2.5 text-sm text-gray-600 hover:bg-emerald-50 hover:text-[#10462F] transition-colors dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-[#3E9C6C]';
                         $dropdownItemActiveClass = 'block px-4 py-2.5 text-sm font-bold text-[#10462F] bg-emerald-50 border-l-2 border-[#10462F] dark:bg-white/5 dark:text-[#3E9C6C] dark:border-[#3E9C6C]';
 
@@ -75,7 +96,7 @@
 
                                 {{-- Daftar kategori mengikuti modul Kategori Informasi di CMS. --}}
                                 @foreach ($cmsKategoriInformasi as $kat)
-                                    <a href="{{ route('ppid.information', $kat['slug']) }}" class="{{ $dropItem($isInfo && $activeSlug === $kat['slug']) }}">{{ $kat['nama'] }}</a>
+                                    <a href="{{ route('ppid.information', $kat['slug']) }}" class="{{ $dropItem($isInfo && $activeSlug === $kat['slug']) }}">{{ __($kat['nama']) }}</a>
                                 @endforeach
 
                                 <a href="{{ route('ppid.news.index') }}" class="{{ $dropItem($isNews) }}">{{ __('Berita') }}</a>
@@ -112,7 +133,12 @@
                                 <a href="{{ route('ppid.request') }}" class="{{ $dropItem(false) }}">{{ __('Permohonan Informasi Publik') }}</a>
                                 <a href="{{ route('ppid.objection') }}" class="{{ $dropItem(false) }}">{{ __('Pengajuan Keberatan Informasi Publik') }}</a>
                                 <a href="{{ route('ppid.report', 'statistik-informasi') }}" class="{{ $dropItem($isReport && $activeSlug === 'statistik-informasi') }}">{{ __('Laporan Statistik Informasi Publik') }}</a>
-                                <a href="{{ route('ppid.register') }}" class="{{ $dropItem($isRegister) }}">{{ __('Register Permohonan Informasi') }}</a>
+                                {{-- Pengunjung harus punya akun sebelum bisa mengajukan permohonan,
+                                     jadi pintu masuknya ditaruh di menu Layanan. Disembunyikan
+                                     untuk yang sudah masuk — akunnya sudah ada. --}}
+                                @guest('pemohon')
+                                    <a href="{{ route('akun.register') }}" class="{{ $dropItem($isRegister) }}">{{ __('Registrasi Akun') }}</a>
+                                @endguest
                                 <a href="{{ route('ppid.report', 'pelayanan-informasi') }}" class="{{ $dropItem($isReport && $activeSlug === 'pelayanan-informasi') }}">{{ __('Laporan Pelayanan Informasi') }}</a>
                             </div>
                         </div>
@@ -120,21 +146,31 @@
                 </nav>
 
                 {{-- Theme toggle --}}
-                <button @click="$store.theme.toggle()" class="p-2.5 rounded-lg text-gray-600 hover:text-[#10462F] hover:bg-emerald-50 transition duration-200 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5" :title="$store.theme.dark ? '{{ __('Mode Terang') }}' : '{{ __('Mode Gelap') }}'">
+                <button @click="$store.theme.toggle()" class="hdr-ctl p-2.5 rounded-lg text-gray-600 hover:text-[#10462F] hover:bg-emerald-50 transition duration-200 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5" :title="$store.theme.dark ? '{{ __('Mode Terang') }}' : '{{ __('Mode Gelap') }}'">
                     <svg x-show="!$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                     <svg x-show="$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 </button>
 
                 {{-- Lang (server-side switch) --}}
                 <div class="relative hidden sm:block" x-data="{ open_lang: false }" @click.outside="open_lang = false">
-                    <button @click="open_lang = !open_lang" class="flex items-center gap-1 px-2.5 py-2 rounded-lg text-gray-600 hover:text-[#10462F] hover:bg-emerald-50 transition duration-200 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5">
+                    <button @click="open_lang = !open_lang" type="button"
+                            aria-haspopup="true" :aria-expanded="open_lang ? 'true' : 'false'"
+                            aria-label="{{ __('Ganti bahasa') }}"
+                            class="hdr-ctl flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-gray-600 hover:text-[#10462F] hover:bg-emerald-50 transition duration-200 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5">
+                        @include('partials.bendera', ['kode' => $locale, 'kelas' => 'w-5'])
                         <span class="uppercase font-semibold text-sm">{{ $locale }}</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
-                    <div x-show="open_lang" x-transition class="absolute z-50 mt-1 w-40 rounded-xl shadow-xl bg-white ring-1 ring-black/5 right-0 overflow-hidden origin-top-right dark:bg-[#0A2619] dark:ring-white/10" style="display:none">
+                    <div x-show="open_lang" x-transition class="absolute z-50 mt-1 w-44 rounded-xl shadow-xl bg-white ring-1 ring-black/5 right-0 overflow-hidden origin-top-right dark:bg-[#0A2619] dark:ring-white/10" style="display:none">
                         <div class="py-1.5">
-                            <a href="/set-locale/id" class="{{ $dropdownItemClass }} {{ $locale === 'id' ? 'font-bold' : '' }}">🇮🇩 {{ __('Indonesia') }}</a>
-                            <a href="/set-locale/en" class="{{ $dropdownItemClass }} {{ $locale === 'en' ? 'font-bold' : '' }}">🇬🇧 {{ __('English') }}</a>
+                            <a href="{{ route('locale.set', 'id') }}" class="{{ $dropdownItemClass }} flex items-center gap-2.5 {{ $locale === 'id' ? 'font-bold' : '' }}">
+                                @include('partials.bendera', ['kode' => 'id', 'kelas' => 'w-5'])
+                                {{ __('Indonesia') }}
+                            </a>
+                            <a href="{{ route('locale.set', 'en') }}" class="{{ $dropdownItemClass }} flex items-center gap-2.5 {{ $locale === 'en' ? 'font-bold' : '' }}">
+                                @include('partials.bendera', ['kode' => 'en', 'kelas' => 'w-5'])
+                                {{ __('English') }}
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -143,7 +179,7 @@
                 @php $akun = auth('pemohon')->user(); @endphp
                 @if ($akun)
                     <div class="relative hidden sm:block" x-data="{ open_akun: false }" @click.outside="open_akun = false">
-                        <button @click="open_akun = !open_akun" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#10462F] hover:bg-emerald-50 transition duration-200 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5">
+                        <button @click="open_akun = !open_akun" class="hdr-ctl flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#10462F] hover:bg-emerald-50 transition duration-200 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5">
                             <span class="w-7 h-7 rounded-full fs-gradient-accent text-white text-xs font-bold flex items-center justify-center">
                                 {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($akun->nama, 0, 1)) }}
                             </span>
@@ -162,7 +198,7 @@
                         </div>
                     </div>
                 @else
-                    <a href="{{ route('akun.login') }}" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5">
+                    <a href="{{ route('akun.login') }}" class="hdr-outline hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5">
                         {{ __('Masuk') }}
                     </a>
                 @endif
@@ -174,7 +210,7 @@
                 </a>
 
                 {{-- Mobile toggle --}}
-                <button @click="open_mobile = !open_mobile" class="lg:hidden text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition duration-200 dark:text-gray-200 dark:hover:bg-white/5">
+                <button @click="open_mobile = !open_mobile" class="hdr-ctl lg:hidden text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition duration-200 dark:text-gray-200 dark:hover:bg-white/5">
                     <svg x-show="!open_mobile" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     <svg x-show="open_mobile" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -226,7 +262,7 @@
                     <a href="{{ route('ppid.information.index') }}" class="{{ $mobileSub($isInfoIndex) }}">{{ __('Daftar Informasi Publik') }}</a>
                     <a href="{{ route('ppid.excluded') }}" class="{{ $mobileSub($isExcluded) }}">{{ __('Daftar Informasi Dikecualikan') }}</a>
                     @foreach ($cmsKategoriInformasi as $kat)
-                        <a href="{{ route('ppid.information', $kat['slug']) }}" class="{{ $mobileSub($isInfo && $activeSlug === $kat['slug']) }}">{{ $kat['nama'] }}</a>
+                        <a href="{{ route('ppid.information', $kat['slug']) }}" class="{{ $mobileSub($isInfo && $activeSlug === $kat['slug']) }}">{{ __($kat['nama']) }}</a>
                     @endforeach
                     <a href="{{ route('ppid.news.index') }}" class="{{ $mobileSub($isNews) }}">{{ __('Berita') }}</a>
                 </div>
@@ -256,15 +292,23 @@
                     <a href="{{ route('ppid.request') }}" class="{{ $mobileSub(false) }}">{{ __('Permohonan Informasi Publik') }}</a>
                     <a href="{{ route('ppid.objection') }}" class="{{ $mobileSub(false) }}">{{ __('Pengajuan Keberatan Informasi Publik') }}</a>
                     <a href="{{ route('ppid.report', 'statistik-informasi') }}" class="{{ $mobileSub($isReport && $activeSlug === 'statistik-informasi') }}">{{ __('Laporan Statistik Informasi Publik') }}</a>
-                    <a href="{{ route('ppid.register') }}" class="{{ $mobileSub($isRegister) }}">{{ __('Register Permohonan Informasi') }}</a>
+                    @guest('pemohon')
+                        <a href="{{ route('akun.register') }}" class="{{ $mobileSub($isRegister) }}">{{ __('Registrasi Akun') }}</a>
+                    @endguest
                     <a href="{{ route('ppid.report', 'pelayanan-informasi') }}" class="{{ $mobileSub($isReport && $activeSlug === 'pelayanan-informasi') }}">{{ __('Laporan Pelayanan Informasi') }}</a>
                 </div>
             </div>
 
             {{-- Lang switch mobile --}}
             <div class="flex gap-2 pt-3">
-                <a href="/set-locale/id" class="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold border {{ $locale === 'id' ? 'fs-gradient text-white border-transparent' : 'border-gray-200 text-gray-600 dark:border-white/10 dark:text-gray-300' }}">🇮🇩 ID</a>
-                <a href="/set-locale/en" class="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold border {{ $locale === 'en' ? 'fs-gradient text-white border-transparent' : 'border-gray-200 text-gray-600 dark:border-white/10 dark:text-gray-300' }}">🇬🇧 EN</a>
+                <a href="{{ route('locale.set', 'id') }}" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border {{ $locale === 'id' ? 'fs-gradient text-white border-transparent' : 'border-gray-200 text-gray-600 dark:border-white/10 dark:text-gray-300' }}">
+                    @include('partials.bendera', ['kode' => 'id', 'kelas' => 'w-5'])
+                    ID
+                </a>
+                <a href="{{ route('locale.set', 'en') }}" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border {{ $locale === 'en' ? 'fs-gradient text-white border-transparent' : 'border-gray-200 text-gray-600 dark:border-white/10 dark:text-gray-300' }}">
+                    @include('partials.bendera', ['kode' => 'en', 'kelas' => 'w-5'])
+                    EN
+                </a>
             </div>
 
             <div class="pt-3 space-y-2">

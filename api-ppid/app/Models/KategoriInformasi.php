@@ -2,19 +2,25 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class KategoriInformasi extends Model
 {
+    use MencatatPelaku, SoftDeletes;
+
     protected $table = 'kategori_informasi';
 
     protected $fillable = [
         'parent_id',
         'nama',
+        'nama_en',
         'slug',
         'deskripsi',
+        'deskripsi_en',
         'urutan',
         'is_active',
     ];

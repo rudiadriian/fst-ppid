@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Struktur Organisasi | PPID FSTJ')
-
+@section('title', __('Struktur Organisasi') . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     <section class="relative fs-gradient overflow-hidden">

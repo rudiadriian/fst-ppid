@@ -77,6 +77,32 @@
         }
         .fs-dot-pattern { background-image: radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px); background-size: 26px 26px; }
 
+        /* Header melayang (beranda): transparan di atas banner sampai halaman
+           digulir, lalu berubah putih. Warna isinya dibalik lewat satu kelas
+           `.hdr-top` di elemen <header>, jadi tiap tautan tidak perlu punya
+           aturan warna sendiri. */
+        .hdr-top { background-color: transparent; border-color: transparent; box-shadow: none; }
+        .hdr-top .hdr-brand { color: #fff; }
+        .hdr-top .hdr-divider { background-color: rgba(255,255,255,.4); }
+        .hdr-top .hdr-logo { background-color: #fff; border-radius: .5rem; padding: .15rem .4rem; }
+        .hdr-top .hdr-nav-link,
+        .hdr-top .hdr-ctl,
+        .hdr-top .hdr-outline { color: #fff; }
+        .hdr-top .hdr-nav-link:hover,
+        .hdr-top .hdr-ctl:hover,
+        .hdr-top .hdr-outline:hover { color: #fff; background-color: rgba(255,255,255,.16); }
+        .hdr-top .hdr-nav-active { background-color: rgba(255,255,255,.18); }
+        .hdr-top .hdr-outline { border-color: rgba(255,255,255,.55); }
+
+        /* Ken Burns: gambar slider yang sedang tayang merayap membesar pelan
+           supaya perpindahan slide tidak terasa seperti gambar diam. */
+        @keyframes fs-kenburns { from { transform: scale(1); } to { transform: scale(1.08); } }
+        .fs-kenburns { animation: fs-kenburns 8s ease-out forwards; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .fs-kenburns { animation: none; }
+        }
+
         /* Judul section dua warna (acuan: theme-color.jpeg) — sebagian kata
            memakai warna aksen oranye. Dipasang lewat helper $judulDua. */
         .fs-title-accent { color: #E87317; }
@@ -112,6 +138,11 @@
 
     {{-- Memuat Footer --}}
     @include('layouts.footer')
+
+    {{-- Penghalang Verifikasi Data Diri Pemohon (hanya di portal pengguna) --}}
+    @auth('pemohon')
+        @include('akun.partials.popup-verifikasi')
+    @endauth
 
     {{-- Widget aksesibilitas (EqualWeb) --}}
     @include('partials.accessibility')

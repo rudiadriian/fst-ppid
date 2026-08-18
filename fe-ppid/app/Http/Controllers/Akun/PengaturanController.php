@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Akun;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pemohon;
+use App\Support\NotifikasiAdmin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,6 +58,16 @@ class PengaturanController extends Controller
     {
         $pemohon = Auth::guard('pemohon')->user();
 
+        // Sudah ditolak sampai batas: pengiriman ulang ditutup di sisi server,
+        // bukan hanya dengan menyembunyikan tombolnya.
+        if ($pemohon->verifikasiDiblokir()) {
+            throw ValidationException::withMessages([
+                'nik' => __('Data diri Anda sudah ditolak :batas kali sehingga pengiriman ulang ditutup. Hubungi petugas PPID untuk melanjutkan.', [
+                    'batas' => Pemohon::BATAS_DITOLAK,
+                ]),
+            ]);
+        }
+
         $data = $request->validate([
             'jenis_pemohon' => ['required', 'in:'.implode(',', array_keys(Pemohon::JENIS))],
             'nik' => ['required', 'string', 'digits_between:8,30'],
@@ -75,13 +86,22 @@ class PengaturanController extends Controller
             unset($data['file_ktp']);
         }
 
-        // Data berubah berarti harus diperiksa ulang petugas.
+        // Data berubah berarti harus diperiksa ulang petugas. Catatan penolakan
+        // lama dibuang supaya pemohon tidak melihat alasan yang sudah tidak
+        // berlaku untuk berkas barunya.
         $data['status_verifikasi'] = 'menunggu';
         $data['tanggal_verifikasi'] = null;
+        $data['catatan_verifikasi'] = null;
 
         $pemohon->fill($data)->save();
 
-        return back()->with('status', __('Data Pemohon terkirim dan menunggu pemeriksaan petugas PPID.'));
+        // Berkasnya baru menunggu diperiksa — inilah yang perlu dilihat petugas
+        // di lonceng notifikasi be-ppid, bukan sekadar pendaftaran akunnya.
+        NotifikasiAdmin::verifikasiPemohonMenunggu($pemohon);
+
+        return back()->with('status', __('Data Pemohon terkirim dan menunggu pemeriksaan petugas PPID. Pemeriksaan memerlukan waktu paling lama :hari hari kerja.', [
+            'hari' => (int) config('ppid.akun.sla_verifikasi_hari_kerja', 14),
+        ]));
     }
 
     public function password(): View

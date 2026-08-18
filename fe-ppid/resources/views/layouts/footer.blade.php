@@ -75,7 +75,7 @@
                         <li><a href="{{ route('ppid.information.index') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Daftar Informasi Publik') }}</a></li>
                         <li><a href="{{ route('ppid.excluded') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Daftar Informasi Dikecualikan') }}</a></li>
                         @foreach ($cmsKategoriInformasi as $kat)
-                            <li><a href="{{ route('ppid.information', $kat['slug']) }}" class="text-sm text-white/70 hover:text-white transition">{{ $kat['nama'] }}</a></li>
+                            <li><a href="{{ route('ppid.information', $kat['slug']) }}" class="text-sm text-white/70 hover:text-white transition">{{ __($kat['nama']) }}</a></li>
                         @endforeach
                         <li><a href="{{ route('ppid.news.index') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Berita') }}</a></li>
                     </ul>
@@ -95,7 +95,9 @@
                         <li><a href="{{ route('ppid.request') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Permohonan Informasi Publik') }}</a></li>
                         <li><a href="{{ route('ppid.objection') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Pengajuan Keberatan Informasi Publik') }}</a></li>
                         <li><a href="{{ route('ppid.report', 'statistik-informasi') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Laporan Statistik Informasi Publik') }}</a></li>
-                        <li><a href="{{ route('ppid.register') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Register Permohonan Informasi') }}</a></li>
+                        @guest('pemohon')
+                            <li><a href="{{ route('akun.register') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Registrasi Akun') }}</a></li>
+                        @endguest
                         <li><a href="{{ route('ppid.report', 'pelayanan-informasi') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Laporan Pelayanan Informasi') }}</a></li>
                         <li><a href="{{ route('ppid.regulation') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Regulasi') }}</a></li>
                         <li><a href="{{ route('ppid.status') }}" class="text-sm text-white/70 hover:text-white transition">{{ __('Cek Status') }}</a></li>

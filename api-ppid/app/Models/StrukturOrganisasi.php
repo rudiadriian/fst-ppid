@@ -2,27 +2,32 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StrukturOrganisasi extends Model
 {
-    protected $table = 'struktur_organisasi';
+    use MencatatPelaku, SoftDeletes;
 
-    public $timestamps = false;
+    protected $table = 'struktur_organisasi';
 
     protected $fillable = [
         'nama',
         'jabatan',
+        'jabatan_en',
         'foto',
         'urutan',
         'deskripsi',
+        'deskripsi_en',
         'is_active',
         // Pembentuk bagan pada situs publik.
         'parent_id',
         'tipe_node',
         'poin',
+        'poin_en',
     ];
 
     protected $casts = [

@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MenuNavigasi extends Model
 {
-    protected $table = 'menu_navigasi';
+    use MencatatPelaku, SoftDeletes;
 
-    public $timestamps = false;
+    protected $table = 'menu_navigasi';
 
     protected $fillable = [
         'parent_id',

@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Lupa Password | PPID FSTJ')
-
+@section('title', __('Lupa Password') . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     <section class="relative fs-gradient overflow-hidden">
@@ -36,6 +35,12 @@
                         <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus class="{{ $inputClass }}">
                         @error('email')<p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>@enderror
                     </div>
+
+                    @include('akun.partials.captcha', ['idForm' => 'lupa-password'])
+
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('Satu tautan dapat dikirim setiap :menit menit. Periksa folder Spam bila belum tampak di kotak masuk.', ['menit' => (int) config('ppid.akun.jeda_kirim_tautan_menit', 30)]) }}
+                    </p>
 
                     <button type="submit" class="{{ $btnClass }} w-full">{{ __('Kirim Tautan') }}</button>
                 </form>

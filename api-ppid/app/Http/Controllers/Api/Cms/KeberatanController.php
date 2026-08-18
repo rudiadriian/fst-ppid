@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api\Cms;
 
 use App\Http\Controllers\Api\CrudController;
 use App\Models\KeberatanInformasi;
+use App\Support\EmailPemohon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class KeberatanController extends CrudController
@@ -48,8 +50,13 @@ class KeberatanController extends CrudController
         ];
     }
 
+    /** Status sebelum penyimpanan, dipakai menentukan perlu-tidaknya email. */
+    private ?string $statusLama = null;
+
     protected function beforeSave(array $data, Request $request, ?Model $record): array
     {
+        $this->statusLama = $record?->status;
+
         // Petugas penanggung jawab terisi otomatis begitu keberatan mulai ditangani.
         if (($data['status'] ?? null) !== null && $data['status'] !== 'diajukan') {
             $data['ditangani_oleh'] = $record?->ditangani_oleh ?? Auth::guard('api')->id();
@@ -60,5 +67,18 @@ class KeberatanController extends CrudController
         }
 
         return $data;
+    }
+
+    /**
+     * Beri tahu pemohon saat keberatannya mulai ditangani dan saat selesai.
+     *
+     * Menunggu commit: perubahan status yang batal tidak boleh menyisakan
+     * email atas keadaan yang tidak pernah tersimpan.
+     */
+    protected function afterSave(Model $record, Request $request, string $mode): void
+    {
+        $statusLama = $mode === 'create' ? null : $this->statusLama;
+
+        DB::afterCommit(fn () => EmailPemohon::statusBerubah($record, $statusLama, (string) $record->status));
     }
 }

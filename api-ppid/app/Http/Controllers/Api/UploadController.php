@@ -34,6 +34,7 @@ class UploadController extends Controller
         'permohonan',
         'keberatan',
         'laporan',
+        'maklumat',
         'berita',
         'galeri',
         'banner',

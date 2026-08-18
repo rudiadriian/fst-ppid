@@ -1,6 +1,14 @@
 @extends('layouts.app')
 
-@section('title', $data['title'] . ' | Standar Pelayanan PPID')
+@section('title', __($data['title']) . ' | ' . __('Standar Pelayanan PPID'))
+
+{{-- Maklumat berupa PDF digambar lewat pdf.js, sama seperti halaman detail
+     Regulasi; skripnya hanya dimuat bila memang ada PDF yang dibaca. --}}
+@if (!empty($data['dokumen']) && $data['dokumen']['ext'] === 'pdf')
+    @push('scripts')
+        @vite('resources/js/sampul-pdf.js')
+    @endpush
+@endif
 
 @section('content')
 
@@ -24,6 +32,69 @@
                 <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">{!! $judulDua(__('Detail').' '.__($data['title'])) !!}</h2>
 
                 @if ($slug === 'maklumat-pelayanan')
+                    @include('partials.db_notice')
+
+                    @if (!empty($data['dokumen']))
+                        @php
+                            $dokumen = $data['dokumen'];
+                        @endphp
+
+                        {{-- Maklumat resmi dibaca utuh di halaman ini; berkasnya
+                             diunggah petugas lewat modul Maklumat di CMS. --}}
+                        @if (!empty($dokumen['ringkasan']))
+                            <p class="text-base font-normal text-gray-600 dark:text-gray-300 leading-relaxed mb-8">{{ $dokumen['ringkasan'] }}</p>
+                        @endif
+
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                            <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                @if (!empty($dokumen['tanggal']))
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        {{ __('Terbit') }} {{ $dokumen['tanggal'] }}
+                                    </span>
+                                @endif
+                                <span class="inline-flex items-center gap-2">
+                                    <img src="{{ asset('assets/images/logo/logo_fs.png') }}" alt="PT Food Station Tjipinang Jaya (Perseroda)"
+                                         class="w-6 h-6 rounded-full object-contain bg-white p-0.5 border border-gray-100 dark:border-white/10">
+                                    {{ __('Diunggah oleh') }}
+                                    <span class="font-semibold text-gray-700 dark:text-gray-200">{{ $dokumen['pengunggah'] ?: __('Petugas PPID') }}</span>
+                                </span>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <a href="{{ $dokumen['url'] }}" target="_blank" rel="noopener"
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/15 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-[#FAF6EC] dark:hover:bg-[#082217] transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 5h5m0 0v5m0-5L10 14M18 14v5a1 1 0 01-1 1H6a1 1 0 01-1-1V7a1 1 0 011-1h5"></path></svg>
+                                    {{ __('Buka di tab baru') }}
+                                </a>
+                                <a href="{{ $dokumen['url'] }}" download
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#10462F] hover:bg-[#0B3524] text-white text-sm font-semibold transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"></path></svg>
+                                    {{ __('Unduh Maklumat') }}
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="rounded-2xl border border-gray-100 dark:border-white/10 bg-[#FAF6EC] dark:bg-[#082217] p-4 sm:p-6">
+                            @if ($dokumen['ext'] === 'pdf')
+                                <div class="mx-auto w-full max-w-4xl space-y-4"
+                                     data-pdf-dokumen="{{ $dokumen['url'] }}"
+                                     aria-label="{{ __('Isi dokumen') }}: {{ $dokumen['judul'] }}">
+                                    <div data-pdf-dokumen-status class="rounded-xl border border-gray-100 dark:border-white/10 bg-white dark:bg-[#0B2A1D] py-16 text-center">
+                                        <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('Memuat dokumen…') }}</p>
+                                    </div>
+                                </div>
+                            @elseif (in_array($dokumen['ext'], ['jpg', 'jpeg', 'png', 'webp'], true))
+                                <img src="{{ $dokumen['url'] }}" alt="{{ $dokumen['judul'] }}"
+                                     class="mx-auto w-full max-w-4xl rounded-xl border border-gray-100 dark:border-white/10 bg-white">
+                            @else
+                                <div class="py-16 text-center">
+                                    <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ __('Berkas maklumat hanya dapat diunduh.') }}</p>
+                                </div>
+                            @endif
+                        </div>
+                    @else
                     <div class="p-8 rounded-2xl fs-gradient text-white relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-16 -mt-16"></div>
                         <p class="text-xl font-semibold leading-relaxed mb-8 relative z-10">"{{ __($data['intro']) }}"</p>
@@ -37,6 +108,7 @@
                         </ul>
                         <p class="mt-8 text-sm font-normal text-white/70 border-t border-white/20 pt-4 relative z-10">{{ __($data['footer']) }}</p>
                     </div>
+                    @endif
 
                 @elseif (in_array($slug, ['prosedur-permohonan', 'prosedur-keberatan'], true))
                     <p class="text-base font-normal text-gray-600 dark:text-gray-300 leading-relaxed mb-12">{{ __($data['intro']) }}</p>

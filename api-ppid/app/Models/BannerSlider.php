@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BannerSlider extends Model
 {
-    protected $table = 'banner_slider';
+    use MencatatPelaku, SoftDeletes;
 
-    public $timestamps = false;
+    protected $table = 'banner_slider';
 
     protected $fillable = [
         'judul',
+        'judul_en',
+        'ringkasan',
+        'ringkasan_en',
         'gambar',
         'link',
         'urutan',

@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PunyaVersiInggris;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Faq extends Model
 {
-    protected $table = 'faq';
+    use PunyaVersiInggris, SoftDeletes;
 
-    public $timestamps = false;
+    protected $table = 'faq';
 
     protected $casts = [
         'urutan'    => 'integer',

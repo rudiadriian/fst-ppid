@@ -8,6 +8,8 @@ use App\Support\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
@@ -20,6 +22,19 @@ use Tymon\JWTAuth\Exceptions\JWTException;
  */
 class AuthController extends Controller
 {
+    /**
+     * Kunci akun sementara setelah sekian kali gagal berturut-turut.
+     *
+     * Melengkapi `throttle:login` yang jendelanya hanya satu menit: pembatas
+     * per menit masih mengizinkan penebakan pelan-pelan sepanjang hari, sedang
+     * hitungan ini memakai jendela panjang sehingga percobaan yang sabar pun
+     * ikut tertahan.
+     */
+    private const GAGAL_MAKSIMUM = 10;
+
+    /** Lama kunci sekaligus lama jendela hitungan, dalam detik. */
+    private const LAMA_KUNCI = 900;
+
     public function signIn(Request $request): JsonResponse
     {
         try {
@@ -31,10 +46,26 @@ class AuthController extends Controller
             return $this->fieldErrors($e->errors(), 422);
         }
 
+        $kunciGagal = $this->kunciGagal($request, $credentials['email']);
+
+        if (RateLimiter::tooManyAttempts($kunciGagal, self::GAGAL_MAKSIMUM)) {
+            $detik = RateLimiter::availableIn($kunciGagal);
+
+            AuditLogger::record(null, 'login_locked', null, null, null, [
+                'email' => $credentials['email'],
+            ]);
+
+            return response()->json([
+                ['type' => 'password', 'message' => "Terlalu banyak percobaan masuk. Coba lagi dalam {$detik} detik."],
+            ], 429);
+        }
+
         /** @var string|false $token */
         $token = Auth::guard('api')->attempt($credentials);
 
         if (!$token) {
+            RateLimiter::hit($kunciGagal, self::LAMA_KUNCI);
+
             // Pesan sengaja tidak membedakan "email tidak ada" vs "password salah"
             // agar tidak bisa dipakai untuk enumerasi akun.
             AuditLogger::record(null, 'login_failed', null, null, null, [
@@ -45,6 +76,8 @@ class AuthController extends Controller
                 ['type' => 'password', 'message' => 'Email atau kata sandi salah.'],
             ], 401);
         }
+
+        RateLimiter::clear($kunciGagal);
 
         /** @var User $user */
         $user = Auth::guard('api')->user();
@@ -57,7 +90,12 @@ class AuthController extends Controller
             ], 403);
         }
 
+        // Cap waktu login bukan penyuntingan data pengguna: `timestamps`
+        // dimatikan sebentar supaya kolom "Diubah" pada modul Pengguna tidak
+        // ikut terisi setiap kali orangnya masuk.
+        $user->timestamps = false;
         $user->forceFill(['last_login_at' => now()])->saveQuietly();
+        $user->timestamps = true;
         $user->loadMissing('role');
 
         AuditLogger::record($user->id, 'login', User::class, $user->id);
@@ -167,5 +205,17 @@ class AuthController extends Controller
         }
 
         return response()->json($payload, $status);
+    }
+
+    /**
+     * Kunci hitungan kegagalan: per kombinasi email + IP.
+     *
+     * Dipisah per email supaya satu penyerang tidak bisa mengunci akun orang
+     * lain hanya dengan menghabiskan jatah dari IP-nya sendiri, dan dipisah per
+     * IP supaya kegagalan sah dari kantor yang sama tidak saling menjatuhkan.
+     */
+    private function kunciGagal(Request $request, string $email): string
+    {
+        return 'admin-login|'.Str::transliterate(Str::lower($email)).'|'.$request->ip();
     }
 }

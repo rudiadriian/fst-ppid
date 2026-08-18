@@ -22,20 +22,28 @@ class ModulSistemSeeder extends Seeder
         'kategori-informasi' => ['Kategori Informasi', 'heroicons-outline:tag', '/ppid/kategori-informasi', 3],
         'informasi-dikecualikan' => ['Informasi Dikecualikan', 'heroicons-outline:lock-closed', '/ppid/informasi-dikecualikan', 4],
         'permohonan' => ['Permohonan Informasi', 'heroicons-outline:inbox', '/ppid/permohonan', 5],
-        'keberatan' => ['Keberatan Informasi', 'heroicons-outline:exclamation', '/ppid/keberatan', 6],
+        'keberatan' => ['Keberatan Informasi', 'heroicons-outline:exclamation-triangle', '/ppid/keberatan', 6],
         'laporan-layanan' => ['Laporan Layanan', 'heroicons-outline:chart-bar', '/ppid/laporan-layanan', 7],
         'berita' => ['Berita', 'heroicons-outline:newspaper', '/ppid/berita', 8],
-        'galeri' => ['Galeri', 'heroicons-outline:photograph', '/ppid/galeri', 9],
+        'galeri' => ['Galeri', 'heroicons-outline:photo', '/ppid/galeri', 9],
         'faq' => ['FAQ', 'heroicons-outline:question-mark-circle', '/ppid/faq', 10],
         'banner-slider' => ['Banner Slider', 'heroicons-outline:presentation-chart-line', '/ppid/banner-slider', 11],
         'struktur-organisasi' => ['Struktur Organisasi', 'heroicons-outline:users', '/ppid/struktur-organisasi', 12],
         'halaman-statis' => ['Halaman Statis', 'heroicons-outline:template', '/ppid/halaman-statis', 13],
         'regulasi' => ['Regulasi & Dasar Hukum', 'heroicons-outline:scale', '/ppid/regulasi', 14],
-        'tautan-terkait' => ['Tautan Terkait', 'heroicons-outline:link', '/ppid/tautan-terkait', 15],
         'menu-navigasi' => ['Menu Navigasi', 'heroicons-outline:menu', '/ppid/menu-navigasi', 16],
         'pengguna' => ['Pengguna & Role', 'heroicons-outline:user-group', '/ppid/pengguna', 17],
         'pengaturan-situs' => ['Pengaturan Situs', 'heroicons-outline:cog', '/ppid/pengaturan-situs', 18],
         'audit-log' => ['Audit Log', 'heroicons-outline:clipboard-list', '/ppid/audit-log', 19],
+    ];
+
+    /**
+     * Modul yang sudah dilepas dari panel. Barisnya tidak dihapus supaya data
+     * dan hak akses lamanya tetap tersimpan, tetapi dinonaktifkan sehingga
+     * hilang dari menu, dari matrix hak akses role, dan ditolak middleware.
+     */
+    private const NONAKTIF = [
+        'tautan-terkait',
     ];
 
     public function run(): void
@@ -52,6 +60,8 @@ class ModulSistemSeeder extends Seeder
                 ]
             );
         }
+
+        ModulSistem::whereIn('slug', self::NONAKTIF)->update(['is_active' => false]);
 
         $superAdmin = Role::firstOrCreate(
             ['slug' => 'super-admin'],

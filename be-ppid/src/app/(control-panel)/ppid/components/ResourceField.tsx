@@ -4,6 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 import { SimpleEditor } from '@/components/tiptap/tiptap-templates/simple/simple-editor';
 import { FieldConfig } from '../lib/types';
 import { useRelationOptions } from '../api/useResource';
@@ -22,6 +23,7 @@ type ResourceFieldProps = {
  * (nilai terkendali, pesan error per field dari API bisa ditempelkan).
  */
 export function ResourceField({ field, control, disabled }: ResourceFieldProps) {
+	const { t } = useTranslation();
 	const perluRelasi = field.type === 'relation' && Boolean(field.relation);
 	const { data: opsiRelasi, isLoading: memuatRelasi } = useRelationOptions(
 		field.relation?.resource ?? '',
@@ -35,7 +37,7 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 		<Controller
 			name={field.name}
 			control={control}
-			rules={{ required: field.required ? `${field.label} wajib diisi.` : false }}
+			rules={{ required: field.required ? `${t(field.label)} ${t('wajib diisi.')}` : false }}
 			render={({ field: rhf, fieldState }) => {
 				const pesanError = fieldState.error?.message;
 				const nonaktif = disabled || field.readOnly;
@@ -51,7 +53,7 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 										disabled={nonaktif}
 									/>
 								}
-								label={field.label}
+								label={t(field.label)}
 							/>
 							{(pesanError || field.help) && (
 								<Typography
@@ -59,7 +61,7 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 									color={pesanError ? 'error' : 'text.secondary'}
 									className="block"
 								>
-									{pesanError || field.help}
+									{pesanError || (field.help ? t(field.help) : undefined)}
 								</Typography>
 							)}
 						</div>
@@ -73,7 +75,7 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 								variant="caption"
 								className="mb-1 block font-medium"
 							>
-								{field.label}
+								{t(field.label)}
 								{field.required ? ' *' : ''}
 							</Typography>
 							<SimpleEditor
@@ -89,7 +91,7 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 									color={pesanError ? 'error' : 'text.secondary'}
 									className="mt-1 block"
 								>
-									{pesanError || field.help}
+									{pesanError || (field.help ? t(field.help) : undefined)}
 								</Typography>
 							)}
 						</div>
@@ -123,13 +125,13 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 					return (
 						<TextField
 							select
-							label={field.label}
+							label={t(field.label)}
 							required={field.required}
 							fullWidth
 							size="small"
 							disabled={nonaktif || (field.type === 'relation' && memuatRelasi)}
 							error={Boolean(pesanError)}
-							helperText={pesanError || field.help}
+							helperText={pesanError || (field.help ? t(field.help) : undefined)}
 							value={rhf.value ?? ''}
 							onChange={(event) => {
 								const nilai = event.target.value;
@@ -139,7 +141,7 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 						>
 							{!field.required && (
 								<MenuItem value="">
-									<em>— tidak dipilih —</em>
+									<em>— {t('tidak dipilih')} —</em>
 								</MenuItem>
 							)}
 							{opsi.map((item) => (
@@ -147,7 +149,7 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 									key={String(item.value)}
 									value={item.value}
 								>
-									{item.label}
+									{field.type === 'relation' ? item.label : t(String(item.label))}
 								</MenuItem>
 							))}
 						</TextField>
@@ -161,7 +163,7 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 						{...rhf}
 						value={rhf.value ?? ''}
 						type={tipeInput}
-						label={field.label}
+						label={t(field.label)}
 						required={field.required}
 						fullWidth
 						size="small"
@@ -169,7 +171,7 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 						multiline={field.type === 'textarea'}
 						minRows={field.type === 'textarea' ? (field.rows ?? 3) : undefined}
 						error={Boolean(pesanError)}
-						helperText={pesanError || field.help}
+						helperText={pesanError || (field.help ? t(field.help) : undefined)}
 						slotProps={{
 							inputLabel: field.type === 'date' ? { shrink: true } : undefined,
 							htmlInput: {

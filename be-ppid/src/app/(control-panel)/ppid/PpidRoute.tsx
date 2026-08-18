@@ -20,6 +20,9 @@ const route: FuseRouteItemType[] = [
 		children: [
 			{ path: '', element: <Navigate to="/ppid/dashboard" replace /> },
 			{ path: 'dashboard', element: <PpidDashboard /> },
+			// Analitik & SLA melebur ke Dashboard. Alamat lamanya dibiarkan
+			// hidup sebagai pengalihan supaya tautan/bookmark tidak mati.
+			{ path: 'analitik', element: <Navigate to="/ppid/dashboard" replace /> },
 			{ path: ':resourceSlug', element: <PpidResourcePage /> }
 		]
 	}

@@ -15,6 +15,7 @@
                 <p class="text-sm mt-1 {{ $pemohon->verifikasiMenunggu() ? 'text-blue-800' : 'text-amber-800' }}">
                     @if ($pemohon->verifikasiMenunggu())
                         {{ __('Berkas Anda sedang diperiksa petugas PPID. Pengajuan permohonan bisa dilakukan setelah data disetujui.') }}
+                        {{ __('Pemeriksaan berkas memerlukan waktu paling lama :hari hari kerja sejak berkas lengkap diterima.', ['hari' => (int) config('ppid.akun.sla_verifikasi_hari_kerja', 14)]) }}
                     @elseif ($pemohon->status_verifikasi === 'ditolak')
                         {{ __('Data Anda ditolak petugas. Perbaiki isian dan berkas KTP, lalu kirim ulang.') }}
                     @else

@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Galeri extends Model
 {
-    protected $table = 'galeri';
+    use MencatatPelaku, SoftDeletes;
 
-    public const UPDATED_AT = null;
+    protected $table = 'galeri';
 
     protected $fillable = [
         'judul',

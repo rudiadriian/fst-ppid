@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TautanTerkait extends Model
 {
-    protected $table = 'tautan_terkait';
+    use SoftDeletes;
 
-    public $timestamps = false;
+    protected $table = 'tautan_terkait';
 
     protected $casts = [
         'urutan'    => 'integer',

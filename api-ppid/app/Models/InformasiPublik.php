@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InformasiPublik extends Model
 {
-    use SoftDeletes;
+    use MencatatPelaku, SoftDeletes;
 
     protected $table = 'informasi_publik';
 
@@ -20,9 +21,12 @@ class InformasiPublik extends Model
     protected $fillable = [
         'kategori_id',
         'judul',
+        'judul_en',
         'slug',
         'ringkasan',
+        'ringkasan_en',
         'konten',
+        'konten_en',
         'tautan',
         'nomor_klasifikasi',
         'tanggal_publikasi',

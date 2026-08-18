@@ -39,9 +39,12 @@ class InformasiPublikController extends CrudController
         return [
             'kategori_id' => [$wajib, Rule::exists('kategori_informasi', 'id')],
             'judul' => [$wajib, 'string', 'max:255'],
+            'judul_en' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'ringkasan' => ['nullable', 'string'],
+            'ringkasan_en' => ['nullable', 'string'],
             'konten' => ['nullable', 'string'],
+            'konten_en' => ['nullable', 'string'],
             // Entri bisa menunjuk ke halaman lain, bukan berkas unggahan.
             'tautan' => ['nullable', 'url', 'max:500'],
             'nomor_klasifikasi' => ['nullable', 'string', 'max:50'],

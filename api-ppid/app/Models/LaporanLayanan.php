@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LaporanLayanan extends Model
 {
+    use MencatatPelaku, SoftDeletes;
+
     protected $table = 'laporan_layanan';
 
     protected $fillable = [

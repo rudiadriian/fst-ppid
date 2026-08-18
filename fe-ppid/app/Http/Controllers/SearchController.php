@@ -48,7 +48,7 @@ class SearchController extends Controller
                 ->limit($limit)
                 ->get()
                 ->map(fn ($row) => [
-                    'title'    => $row->judul,
+                    'title'    => $row->teks('judul'),
                     'kategori' => $row->kategori === 'dasar_hukum_ppid' ? 'Dasar Hukum' : 'Regulasi',
                     // Dasar hukum kini ikut tayang di halaman Regulasi, jadi
                     // seluruh hasil regulasi menuju satu halaman yang sama.
@@ -73,7 +73,7 @@ class SearchController extends Controller
                 ->limit($limit)
                 ->get()
                 ->map(fn ($row) => [
-                    'title'    => $row->judul,
+                    'title'    => $row->teks('judul'),
                     'kategori' => 'Informasi Dikecualikan',
                     'url'      => route('ppid.excluded'),
                 ]);

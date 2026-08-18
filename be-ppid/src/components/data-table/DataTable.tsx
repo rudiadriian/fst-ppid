@@ -28,7 +28,11 @@ const tableIcons: Partial<MRT_Icons> = {
 };
 
 function DataTable<TData>(props: MaterialReactTableProps<TData>) {
-	const { columns, data, ...rest } = props;
+	// `initialState` dikeluarkan dari `rest` supaya bisa digabung per kunci:
+	// `_.defaults` hanya mengisi kunci yang kosong, jadi bila pemanggil
+	// mengirim initialState-nya sendiri seluruh bawaan di bawah ini akan hilang
+	// (kerapatan, pin kolom, ukuran halaman).
+	const { columns, data, initialState, ...rest } = props;
 	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('lg'));
 	const defaults = useMemo(
 		() =>
@@ -44,7 +48,8 @@ function DataTable<TData>(props: MaterialReactTableProps<TData>) {
 					pagination: {
 						pageSize: 15
 					},
-					enableFullScreenToggle: false
+					enableFullScreenToggle: false,
+					...initialState
 				},
 				enableFullScreenToggle: false,
 				enableColumnFilterModes: true,

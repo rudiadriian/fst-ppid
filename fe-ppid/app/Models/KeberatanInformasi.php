@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\TanpaCapUbahSaatDibuat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Keberatan atas layanan informasi publik.
@@ -14,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class KeberatanInformasi extends Model
 {
+    use SoftDeletes, TanpaCapUbahSaatDibuat;
+
     protected $table = 'keberatan_informasi';
 
     /** Nilai yang diterima CHECK constraint `keberatan_informasi_jenis_keberatan_check`. */

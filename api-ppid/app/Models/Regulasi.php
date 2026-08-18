@@ -2,19 +2,23 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Regulasi extends Model
 {
-    protected $table = 'regulasi';
+    use MencatatPelaku, SoftDeletes;
 
-    public const UPDATED_AT = null;
+    protected $table = 'regulasi';
 
     protected $fillable = [
         'kategori',
         'judul',
+        'judul_en',
         'ringkasan',
+        'ringkasan_en',
         'nomor_peraturan',
         'jenis_peraturan',
         'tahun',

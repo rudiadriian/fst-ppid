@@ -21,6 +21,14 @@ const BADGE_KONTEN = {
 	archived: { label: 'Arsip', color: 'default' as const }
 };
 
+/** Status Verifikasi Data Diri Pemohon; nilainya dari kolom `status_verifikasi`. */
+const BADGE_VERIFIKASI = {
+	belum: { label: 'Belum Diverifikasi', color: 'default' as const },
+	menunggu: { label: 'Menunggu Pemeriksaan', color: 'warning' as const },
+	terverifikasi: { label: 'Terverifikasi', color: 'success' as const },
+	ditolak: { label: 'Ditolak', color: 'error' as const }
+};
+
 const BADGE_PERMOHONAN = {
 	diajukan: { label: 'Diajukan', color: 'info' as const },
 	diverifikasi: { label: 'Diverifikasi', color: 'info' as const },
@@ -54,6 +62,7 @@ export const resources: ResourceConfig[] = [
 		],
 		fields: [
 			{ name: 'nama', label: 'Nama kategori', type: 'text', required: true, maxLength: 150 },
+			{ name: 'nama_en', label: 'Nama kategori (English)', type: 'text', maxLength: 150, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'slug', label: 'Slug', type: 'text', help: 'Kosongkan agar dibuat otomatis dari nama.' },
 			{
 				name: 'parent_id',
@@ -71,6 +80,7 @@ export const resources: ResourceConfig[] = [
 				rows: 3,
 				help: 'Tampil sebagai teks pengantar di halaman kategori dan ringkasan pada kartunya (dipotong ~120 karakter).'
 			},
+			{ name: 'deskripsi_en', label: 'Deskripsi (English)', type: 'textarea', span: 2, rows: 3, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'is_active', label: 'Aktif', type: 'boolean', defaultValue: true }
 		],
 		filters: [
@@ -88,13 +98,14 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'informasi-publik',
 		modul: 'informasi-publik',
-		title: 'Daftar Informasi Publik',
+		title: 'Informasi Publik',
 		singular: 'Informasi',
 		description: 'Daftar informasi yang wajib disediakan dan diumumkan.',
 		icon: 'lucide:file-text',
 		defaultSort: '-id',
 		searchPlaceholder: 'Cari judul, ringkasan, nomor klasifikasi…',
 		columns: [
+			{ key: 'nomor_klasifikasi', label: 'No.', size: 80, noSort: true },
 			{ key: 'judul', label: 'Judul', size: 320 },
 			{ key: 'kategori', label: 'Kategori', type: 'relation', relationKey: 'nama', noSort: true },
 			{ key: 'status', label: 'Status', type: 'badge', badgeMap: BADGE_KONTEN, size: 140 },
@@ -103,6 +114,7 @@ export const resources: ResourceConfig[] = [
 		],
 		fields: [
 			{ name: 'judul', label: 'Judul', type: 'text', required: true, span: 2, maxLength: 255 },
+			{ name: 'judul_en', label: 'Judul (English)', type: 'text', span: 2, maxLength: 255, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{
 				name: 'kategori_id',
 				label: 'Kategori',
@@ -127,6 +139,7 @@ export const resources: ResourceConfig[] = [
 			{ name: 'tanggal_publikasi', label: 'Tanggal publikasi', type: 'date' },
 			{ name: 'slug', label: 'Slug', type: 'text', help: 'Kosongkan agar dibuat otomatis. Mengubahnya memutus tautan lama.' },
 			{ name: 'ringkasan', label: 'Ringkasan', type: 'textarea', span: 2, rows: 3 },
+			{ name: 'ringkasan_en', label: 'Ringkasan (English)', type: 'textarea', span: 2, rows: 3, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{
 				name: 'tautan',
 				label: 'Tautan halaman',
@@ -136,6 +149,7 @@ export const resources: ResourceConfig[] = [
 				help: 'Isi bila informasi ini ada di halaman lain (mis. https://foodstation.id/sejarah-perusahaan/). Tombol "Selengkapnya" di situs akan menuju alamat ini. Kosongkan bila memakai lampiran dokumen.'
 			},
 			{ name: 'konten', label: 'Isi informasi', type: 'richtext', span: 2 },
+			{ name: 'konten_en', label: 'Isi informasi (English)', type: 'richtext', span: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{
 				name: 'files',
 				label: 'Lampiran dokumen',
@@ -168,7 +182,7 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'informasi-dikecualikan',
 		modul: 'informasi-dikecualikan',
-		title: 'Daftar Informasi Dikecualikan',
+		title: 'Informasi Dikecualikan',
 		singular: 'Informasi Dikecualikan',
 		description: 'Daftar informasi yang dikecualikan beserta dasar hukumnya.',
 		icon: 'lucide:lock',
@@ -181,12 +195,21 @@ export const resources: ResourceConfig[] = [
 		],
 		fields: [
 			{ name: 'judul', label: 'Judul', type: 'text', required: true, span: 2, maxLength: 255 },
+			{ name: 'judul_en', label: 'Judul (English)', type: 'text', span: 2, maxLength: 255, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'dasar_hukum_pengecualian', label: 'Dasar hukum', type: 'text', maxLength: 255 },
 			{ name: 'jangka_waktu_pengecualian', label: 'Jangka waktu', type: 'text', maxLength: 100 },
 			{ name: 'tanggal_penetapan', label: 'Tanggal penetapan', type: 'date' },
 			{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN, defaultValue: 'draft' },
 			{ name: 'ringkasan', label: 'Ringkasan', type: 'textarea', span: 2, rows: 2 },
-			{ name: 'alasan_pengecualian', label: 'Alasan pengecualian', type: 'textarea', required: true, span: 2, rows: 4 },
+			{ name: 'ringkasan_en', label: 'Ringkasan (English)', type: 'textarea', span: 2, rows: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
+			{
+				name: 'alasan_pengecualian',
+				label: 'Alasan pengecualian',
+				type: 'textarea',
+				span: 2,
+				rows: 4,
+				help: 'Opsional. Keterangan penetapan tidak ditampilkan di situs publik; isi hanya bila diperlukan untuk arsip internal.'
+			},
 			{
 				name: 'file_surat_penetapan',
 				label: 'Surat penetapan',
@@ -204,46 +227,57 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'pemohon',
 		modul: 'permohonan',
-		title: 'Data Pemohon',
+		title: 'Pemohon',
 		singular: 'Pemohon',
-		description: 'Identitas pemohon informasi. NIK tidak ditampilkan di panel.',
+		description:
+			'Identitas pemohon informasi. Datanya diisi sendiri oleh pengunjung lewat Registrasi Akun di situs publik; petugas memeriksa dan memutuskan hasil Verifikasi Data Diri lewat aksi baris. NIK tidak ditampilkan di panel.',
 		icon: 'lucide:user',
+		// Tanpa tambah/ubah/hapus: datanya milik pengunjung dan disunting dari
+		// akunnya sendiri. Satu-satunya tindakan petugas adalah menyetujui atau
+		// menolak berkas verifikasi — butuh hak `Setujui`, bukan `Ubah`.
+		readOnly: true,
+		defaultSort: '-created_at',
 		columns: [
 			{ key: 'nama', label: 'Nama' },
 			{ key: 'email', label: 'Email' },
 			{ key: 'no_hp', label: 'No. HP', size: 140 },
 			{ key: 'jenis_pemohon', label: 'Jenis', size: 120 },
+			{
+				key: 'status_verifikasi',
+				label: 'Verifikasi',
+				type: 'badge',
+				badgeMap: BADGE_VERIFIKASI,
+				size: 160
+			},
+			{ key: 'jumlah_ditolak', label: 'Jumlah Ditolak', type: 'number', size: 130 },
+			{ key: 'verifikator', label: 'Diperiksa oleh', type: 'relation', relationKey: 'name', size: 160, noSort: true },
 			{ key: 'nama_lembaga', label: 'Lembaga' }
 		],
-		fields: [
-			{ name: 'nama', label: 'Nama lengkap', type: 'text', required: true, maxLength: 150 },
-			{ name: 'email', label: 'Email', type: 'text', required: true, maxLength: 150 },
-			{ name: 'no_hp', label: 'Nomor HP', type: 'text', maxLength: 30 },
-			{ name: 'nik', label: 'NIK', type: 'text', maxLength: 16, help: 'Hanya angka. Tidak ditampilkan kembali setelah disimpan.' },
+		// Tanpa formulir: modulnya hanya dibaca.
+		fields: [],
+		filters: [
 			{
-				name: 'jenis_pemohon',
-				label: 'Jenis pemohon',
+				name: 'status_verifikasi',
+				label: 'Verifikasi',
 				type: 'select',
 				options: [
-					{ value: 'pribadi', label: 'Pribadi' },
-					{ value: 'instansi', label: 'Instansi' },
-					{ value: 'kelompok', label: 'Kelompok' }
-				],
-				defaultValue: 'pribadi'
+					{ value: 'menunggu', label: 'Menunggu Pemeriksaan' },
+					{ value: 'terverifikasi', label: 'Terverifikasi' },
+					{ value: 'ditolak', label: 'Ditolak' },
+					{ value: 'belum', label: 'Belum Diverifikasi' }
+				]
 			},
-			{ name: 'nama_lembaga', label: 'Nama lembaga', type: 'text', maxLength: 200 },
-			{ name: 'pekerjaan', label: 'Pekerjaan', type: 'text', maxLength: 100 },
-			{ name: 'alamat', label: 'Alamat', type: 'textarea', span: 2, rows: 2 }
-		],
-		filters: [
 			{
 				name: 'jenis_pemohon',
 				label: 'Jenis',
 				type: 'select',
+				// Sama dengan pilihan pada formulir Data Pemohon di situs publik
+				// (`App\Models\Pemohon::JENIS`).
 				options: [
-					{ value: 'pribadi', label: 'Pribadi' },
-					{ value: 'instansi', label: 'Instansi' },
-					{ value: 'kelompok', label: 'Kelompok' }
+					{ value: 'perorangan', label: 'Perorangan' },
+					{ value: 'mahasiswa', label: 'Mahasiswa' },
+					{ value: 'lembaga', label: 'Lembaga / Organisasi / Perusahaan' },
+					{ value: 'kelompok', label: 'Kelompok Orang' }
 				]
 			}
 		]
@@ -251,7 +285,7 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'permohonan',
 		modul: 'permohonan',
-		title: 'Permohonan Informasi Publik',
+		title: 'Permohonan',
 		singular: 'Permohonan',
 		description: 'Permohonan masuk beserta status penanganannya.',
 		icon: 'lucide:inbox',
@@ -332,7 +366,7 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'keberatan',
 		modul: 'keberatan',
-		title: 'Pengajuan Keberatan Informasi Publik',
+		title: 'Keberatan',
 		singular: 'Keberatan',
 		description: 'Keberatan atas layanan informasi dan tanggapan atasan PPID.',
 		icon: 'lucide:triangle-alert',
@@ -415,48 +449,33 @@ export const resources: ResourceConfig[] = [
 	// ------------------------------------------------------------------
 	// Laporan
 	// ------------------------------------------------------------------
+	// Modul Laporan Statistik dilepas dari panel (langkah 58). Tabel
+	// `laporan_layanan` tetap dipakai modul Laporan Pelayanan; baris bertipe
+	// `statistik_informasi` beserta endpoint `laporan-layanan/rekap` masih ada
+	// di API, jadi modulnya bisa dikembalikan hanya dengan menulis ulang
+	// konfigurasi ini.
 	{
-		slug: 'laporan-layanan',
+		slug: 'laporan-pelayanan',
+		apiPath: 'laporan-layanan',
 		modul: 'laporan-layanan',
-		title: 'Laporan Layanan',
-		singular: 'Laporan',
-		description: 'Laporan statistik informasi dan laporan pelayanan informasi.',
-		icon: 'lucide:chart-bar',
+		title: 'Laporan Pelayanan',
+		singular: 'Laporan Pelayanan',
+		description: 'Berkas Laporan Pelayanan Informasi per tahun untuk situs publik.',
+		icon: 'lucide:file-text',
 		defaultSort: '-tahun',
-		aksiIsiOtomatis: {
-			label: 'Hitung otomatis',
-			endpoint: 'laporan-layanan/rekap',
-			params: ['tahun'],
-			isi: [
-				'jumlah_permohonan_masuk',
-				'jumlah_dikabulkan',
-				'jumlah_ditolak',
-				'jumlah_ditolak_sebagian',
-				'jumlah_keberatan',
-				'rata_rata_hari_respon'
-			],
-			help: 'Isi Tahun lalu tekan "Hitung otomatis" untuk mengambil angka rekap langsung dari data permohonan & keberatan. Angka tetap bisa disunting sebelum disimpan.'
-		},
+		nilaiTetap: { tipe_laporan: 'pelayanan_informasi' },
+		searchPlaceholder: 'Cari judul atau periode…',
 		columns: [
-			{ key: 'judul', label: 'Judul', size: 280 },
-			{ key: 'tipe_laporan', label: 'Tipe', size: 180 },
+			{ key: 'judul', label: 'Judul', size: 320 },
 			{ key: 'tahun', label: 'Tahun', type: 'number', size: 90 },
 			{ key: 'periode', label: 'Periode', size: 130 },
 			{ key: 'status', label: 'Status', type: 'badge', badgeMap: BADGE_KONTEN, size: 120 },
+			{ key: 'publisher', label: 'Diunggah oleh', type: 'relation', relationKey: 'name', size: 180, noSort: true },
+			{ key: 'created_at', label: 'Tanggal publikasi', type: 'datetime', size: 170 },
 			{ key: 'file_laporan', label: 'Berkas', type: 'file', size: 110, noSort: true }
 		],
 		fields: [
 			{ name: 'judul', label: 'Judul laporan', type: 'text', required: true, span: 2, maxLength: 255 },
-			{
-				name: 'tipe_laporan',
-				label: 'Tipe laporan',
-				type: 'select',
-				required: true,
-				options: [
-					{ value: 'statistik_informasi', label: 'Statistik Informasi' },
-					{ value: 'pelayanan_informasi', label: 'Pelayanan Informasi' }
-				]
-			},
 			{ name: 'tahun', label: 'Tahun', type: 'number', required: true, min: 2000, max: 2100 },
 			{ name: 'periode', label: 'Periode', type: 'text', maxLength: 30, help: 'Contoh: Triwulan I, Semester II, Tahunan.' },
 			{
@@ -465,42 +484,33 @@ export const resources: ResourceConfig[] = [
 				type: 'select',
 				options: STATUS_KONTEN,
 				defaultValue: 'draft',
-				help: 'Halaman Laporan Statistik Informasi Publik di situs publik hanya menampilkan laporan berstatus Terbit.'
+				help: 'Situs publik hanya menampilkan laporan berstatus Terbit.'
 			},
-			{ name: 'jumlah_permohonan_masuk', label: 'Permohonan masuk', type: 'number', min: 0, defaultValue: 0 },
-			{ name: 'jumlah_dikabulkan', label: 'Dikabulkan', type: 'number', min: 0, defaultValue: 0 },
-			{ name: 'jumlah_ditolak', label: 'Ditolak', type: 'number', min: 0, defaultValue: 0 },
-			{ name: 'jumlah_ditolak_sebagian', label: 'Ditolak sebagian', type: 'number', min: 0, defaultValue: 0 },
-			{ name: 'jumlah_keberatan', label: 'Keberatan', type: 'number', min: 0, defaultValue: 0 },
-			{ name: 'rata_rata_hari_respon', label: 'Rata-rata hari respon', type: 'number', min: 0 },
-			{ name: 'ringkasan', label: 'Ringkasan', type: 'textarea', span: 2, rows: 3 },
+			{
+				name: 'ringkasan',
+				label: 'Ringkasan',
+				type: 'textarea',
+				span: 2,
+				rows: 3,
+				help: 'Kutipan singkat yang tampil pada kartu laporan dan halaman detail di situs publik.'
+			},
 			{
 				name: 'file_laporan',
 				label: 'Berkas laporan',
 				type: 'file',
 				span: 2,
-				upload: { folder: 'laporan', jenis: 'dokumen' }
+				help: 'Hanya PDF atau gambar (JPG/PNG/WEBP). Halaman pertamanya dipakai sebagai sampul kartu di situs publik dan isinya dibaca langsung di halaman detail.',
+				upload: { folder: 'laporan', jenis: 'dokumen_gambar' }
 			}
 		],
-		filters: [
-			{
-				name: 'tipe_laporan',
-				label: 'Tipe',
-				type: 'select',
-				options: [
-					{ value: 'statistik_informasi', label: 'Statistik Informasi' },
-					{ value: 'pelayanan_informasi', label: 'Pelayanan Informasi' }
-				]
-			},
-			{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN }
-		]
+		filters: [{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN }]
 	},
 	{
 		slug: 'survey-kepuasan',
 		// Hak aksesnya menumpang modul Permohonan: survei melekat pada
 		// permohonan yang sudah dilayani.
 		modul: 'permohonan',
-		title: 'Survei Kepuasan',
+		title: 'Survei',
 		singular: 'Survei Kepuasan',
 		description:
 			'Penilaian pemohon atas layanan informasi. Rata-ratanya menjadi angka "Kepuasan" pada halaman Laporan Statistik Informasi Publik di situs publik.',
@@ -564,6 +574,7 @@ export const resources: ResourceConfig[] = [
 		],
 		fields: [
 			{ name: 'nama', label: 'Nama kategori', type: 'text', required: true, maxLength: 100 },
+			{ name: 'nama_en', label: 'Nama kategori (English)', type: 'text', maxLength: 100, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'slug', label: 'Slug', type: 'text', help: 'Kosongkan agar dibuat otomatis.' }
 		]
 	},
@@ -583,6 +594,7 @@ export const resources: ResourceConfig[] = [
 		],
 		fields: [
 			{ name: 'judul', label: 'Judul', type: 'text', required: true, span: 2, maxLength: 255 },
+			{ name: 'judul_en', label: 'Judul (English)', type: 'text', span: 2, maxLength: 255, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{
 				name: 'kategori_berita_id',
 				label: 'Kategori',
@@ -600,7 +612,9 @@ export const resources: ResourceConfig[] = [
 				upload: { folder: 'berita', jenis: 'gambar' }
 			},
 			{ name: 'ringkasan', label: 'Ringkasan', type: 'textarea', span: 2, rows: 3 },
-			{ name: 'konten', label: 'Isi berita', type: 'richtext', span: 2 }
+			{ name: 'ringkasan_en', label: 'Ringkasan (English)', type: 'textarea', span: 2, rows: 3, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
+			{ name: 'konten', label: 'Isi berita', type: 'richtext', span: 2 },
+			{ name: 'konten_en', label: 'Isi berita (English)', type: 'richtext', span: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 		],
 		filters: [{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN }]
 	},
@@ -660,7 +674,10 @@ export const resources: ResourceConfig[] = [
 		title: 'FAQ',
 		singular: 'FAQ',
 		description: 'Pertanyaan yang sering diajukan pemohon.',
-		icon: 'lucide:circle-question-mark',
+		// Nama ikon harus sama dengan id di sprite `public/assets/icons/lucide.svg`.
+		// Sebelumnya `circle-question-mark` — id itu tidak ada di sprite, jadi
+		// menu FAQ tampil tanpa ikon.
+		icon: 'lucide:circle-help',
 		defaultSort: 'urutan',
 		columns: [
 			{ key: 'pertanyaan', label: 'Pertanyaan', size: 340 },
@@ -670,8 +687,11 @@ export const resources: ResourceConfig[] = [
 		],
 		fields: [
 			{ name: 'pertanyaan', label: 'Pertanyaan', type: 'textarea', required: true, span: 2, rows: 2 },
+			{ name: 'pertanyaan_en', label: 'Pertanyaan (English)', type: 'textarea', span: 2, rows: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'jawaban', label: 'Jawaban', type: 'richtext', required: true, span: 2 },
+			{ name: 'jawaban_en', label: 'Jawaban (English)', type: 'richtext', span: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'kategori', label: 'Kategori', type: 'text', maxLength: 100 },
+			{ name: 'kategori_en', label: 'Kategori (English)', type: 'text', maxLength: 100, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'urutan', label: 'Urutan', type: 'number', min: 0, defaultValue: 0 },
 			{ name: 'is_active', label: 'Aktif', type: 'boolean', defaultValue: true }
 		]
@@ -679,13 +699,14 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'banner-slider',
 		modul: 'banner-slider',
-		title: 'Banner Slider',
+		title: 'Banner',
 		singular: 'Banner',
-		description: 'Gambar sorotan pada beranda situs.',
+		description: 'Gambar sorotan pada beranda situs. Boleh lebih dari satu — tampil bergantian sebagai slider.',
 		icon: 'lucide:panels-top-left',
 		defaultSort: 'urutan',
 		columns: [
 			{ key: 'judul', label: 'Judul' },
+			{ key: 'ringkasan', label: 'Ringkasan', size: 280 },
 			{ key: 'gambar', label: 'Gambar', type: 'file', size: 110, noSort: true },
 			{ key: 'urutan', label: 'Urutan', type: 'number', size: 90 },
 			{ key: 'tanggal_mulai', label: 'Mulai', type: 'date', size: 130 },
@@ -693,13 +714,34 @@ export const resources: ResourceConfig[] = [
 			{ key: 'is_active', label: 'Status', type: 'boolean', size: 110 }
 		],
 		fields: [
-			{ name: 'judul', label: 'Judul', type: 'text', maxLength: 255 },
+			{
+				name: 'judul',
+				label: 'Judul',
+				type: 'text',
+				span: 2,
+				maxLength: 255,
+				help: 'Tampil sebagai judul besar di atas gambar. Kosongkan bila banner ini hanya gambar — teks bawaan beranda yang dipakai.'
+			},
+			// Field versi Inggris sengaja tidak ada di modul ini: teks banner
+			// dicocokkan ke kamus situs (`lang/en.json`) saat pengunjung memilih
+			// bahasa Inggris. Kolom `judul_en`/`ringkasan_en` tetap ada di basis
+			// data bila suatu saat perlu diisi manual lagi.
+			{
+				name: 'ringkasan',
+				label: 'Ringkasan',
+				type: 'textarea',
+				span: 2,
+				rows: 2,
+				maxLength: 500,
+				help: 'Satu sampai dua kalimat di bawah judul. Kosongkan bila tidak perlu.'
+			},
 			{
 				name: 'gambar',
 				label: 'Gambar banner',
 				type: 'image',
 				required: true,
 				span: 2,
+				help: 'Ukuran ideal 1920 × 1080 px (rasio 16:9), minimal 1600 × 900 px. JPG/WEBP, usahakan di bawah 500 KB. Banner mengisi satu layar penuh di beranda, jadi bagian tepi gambar ikut terpotong mengikuti bentuk layar pengunjung — taruh objek penting di tengah, dan hindari teks di 15% tepi kiri/kanan. Sisi kiri juga tertutup judul dan tombol hero.',
 				upload: { folder: 'banner', jenis: 'gambar' }
 			},
 			{ name: 'link', label: 'Tautan tujuan', type: 'text', maxLength: 500 },
@@ -712,7 +754,7 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'struktur-organisasi',
 		modul: 'struktur-organisasi',
-		title: 'Struktur Organisasi',
+		title: 'Struktur',
 		singular: 'Anggota',
 		description: 'Susunan pejabat pengelola informasi dan dokumentasi.',
 		icon: 'lucide:users',
@@ -728,6 +770,7 @@ export const resources: ResourceConfig[] = [
 		fields: [
 			{ name: 'nama', label: 'Nama', type: 'text', required: true, maxLength: 150 },
 			{ name: 'jabatan', label: 'Jabatan', type: 'text', required: true, maxLength: 150 },
+			{ name: 'jabatan_en', label: 'Jabatan (English)', type: 'text', maxLength: 150, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{
 				name: 'foto',
 				label: 'Foto',
@@ -762,15 +805,17 @@ export const resources: ResourceConfig[] = [
 				rows: 3,
 				help: 'Satu butir per baris. Diisi bila isi kotak berupa daftar (mis. Tim Pertimbangan PPID); kalau kosong, yang tampil adalah kolom Nama.'
 			},
+			{ name: 'poin_en', label: 'Butir isi kotak (English)', type: 'textarea', span: 2, rows: 3, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'urutan', label: 'Urutan', type: 'number', min: 0, defaultValue: 0 },
 			{ name: 'is_active', label: 'Aktif', type: 'boolean', defaultValue: true },
-			{ name: 'deskripsi', label: 'Deskripsi tugas', type: 'textarea', span: 2, rows: 3 }
+			{ name: 'deskripsi', label: 'Deskripsi tugas', type: 'textarea', span: 2, rows: 3 },
+			{ name: 'deskripsi_en', label: 'Deskripsi tugas (English)', type: 'textarea', span: 2, rows: 3, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 		]
 	},
 	{
 		slug: 'halaman-statis',
 		modul: 'halaman-statis',
-		title: 'Halaman Statis',
+		title: 'Halaman',
 		singular: 'Halaman',
 		description: 'Halaman profil, visi misi, maklumat, dan sejenisnya.',
 		icon: 'lucide:layout-template',
@@ -778,16 +823,87 @@ export const resources: ResourceConfig[] = [
 		columns: [
 			{ key: 'judul', label: 'Judul' },
 			{ key: 'slug', label: 'Slug' },
-			{ key: 'editor', label: 'Diubah oleh', type: 'relation', relationKey: 'name', noSort: true },
-			{ key: 'updated_at', label: 'Diperbarui', type: 'datetime', size: 160 },
+			// Kolom "Diubah oleh"/"Diubah" tidak ditulis di sini lagi: keduanya
+			// sudah datang dari jejak dokumen (`lib/jejak.ts`) seperti modul lain,
+			// termasuk aturan sembunyikan-dulu-nya.
 			{ key: 'is_active', label: 'Status', type: 'boolean', size: 110 }
 		],
 		fields: [
 			{ name: 'judul', label: 'Judul halaman', type: 'text', required: true, maxLength: 255 },
+			{ name: 'judul_en', label: 'Judul halaman (English)', type: 'text', maxLength: 255, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'slug', label: 'Slug', type: 'text', help: 'Menentukan URL di situs publik. Kosongkan agar dibuat otomatis.' },
 			{ name: 'konten', label: 'Isi halaman', type: 'richtext', span: 2 },
+			{ name: 'konten_en', label: 'Isi halaman (English)', type: 'richtext', span: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'is_active', label: 'Aktif', type: 'boolean', defaultValue: true }
 		]
+	},
+	{
+		slug: 'maklumat',
+		// Maklumat adalah salah satu halaman Standar Layanan, jadi hak aksesnya
+		// menumpang modul Halaman Statis — tidak ada modul baru di matrix role.
+		modul: 'halaman-statis',
+		title: 'Maklumat',
+		singular: 'Maklumat',
+		description:
+			'Berkas Maklumat Pelayanan Informasi Publik yang dibaca langsung di situs publik. Situs memakai satu maklumat berstatus Terbit dengan tanggal terbit terbaru.',
+		icon: 'lucide:scroll-text',
+		defaultSort: '-tanggal_terbit',
+		searchPlaceholder: 'Cari judul maklumat…',
+		columns: [
+			{ key: 'judul', label: 'Judul', size: 320 },
+			{ key: 'tanggal_terbit', label: 'Tanggal terbit', type: 'date', size: 150 },
+			{ key: 'status', label: 'Status', type: 'badge', badgeMap: BADGE_KONTEN, size: 120 },
+			{ key: 'publisher', label: 'Diunggah oleh', type: 'relation', relationKey: 'name', size: 180, noSort: true },
+			{ key: 'file_dokumen', label: 'Dokumen', type: 'file', size: 120, noSort: true }
+		],
+		fields: [
+			{ name: 'judul', label: 'Judul maklumat', type: 'text', required: true, span: 2, maxLength: 255 },
+			{
+				name: 'judul_en',
+				label: 'Judul maklumat (English)',
+				type: 'text',
+				span: 2,
+				maxLength: 255,
+				help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.'
+			},
+			{
+				name: 'file_dokumen',
+				label: 'Dokumen maklumat',
+				type: 'file',
+				required: true,
+				span: 2,
+				help: 'Wajib. PDF atau gambar (JPG/PNG/WEBP) hasil pindai maklumat yang sudah ditandatangani. Isinya ditampilkan utuh di halaman Standar Layanan, bukan diketik ulang di sini.',
+				upload: { folder: 'maklumat', jenis: 'dokumen_gambar' }
+			},
+			{ name: 'tanggal_terbit', label: 'Tanggal terbit', type: 'date', help: 'Kosongkan agar diisi tanggal saat maklumat diterbitkan.' },
+			{
+				name: 'status',
+				label: 'Status',
+				type: 'select',
+				options: STATUS_KONTEN,
+				defaultValue: 'draft',
+				help: 'Situs publik hanya menayangkan maklumat berstatus Terbit; maklumat lama cukup diubah jadi Arsip agar tetap tersimpan.'
+			},
+			{
+				name: 'ringkasan',
+				label: 'Pengantar',
+				type: 'textarea',
+				span: 2,
+				rows: 3,
+				maxLength: 2000,
+				help: 'Kalimat pengantar singkat yang tampil di atas dokumen. Boleh dikosongkan.'
+			},
+			{
+				name: 'ringkasan_en',
+				label: 'Pengantar (English)',
+				type: 'textarea',
+				span: 2,
+				rows: 3,
+				maxLength: 2000,
+				help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.'
+			}
+		],
+		filters: [{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN }]
 	},
 	{
 		slug: 'regulasi',
@@ -809,6 +925,7 @@ export const resources: ResourceConfig[] = [
 		],
 		fields: [
 			{ name: 'judul', label: 'Judul peraturan', type: 'text', required: true, span: 2, maxLength: 255 },
+			{ name: 'judul_en', label: 'Judul peraturan (English)', type: 'text', span: 2, maxLength: 255, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{
 				name: 'ringkasan',
 				label: 'Ringkasan',
@@ -818,6 +935,7 @@ export const resources: ResourceConfig[] = [
 				maxLength: 2000,
 				help: 'Dipakai sebagai kutipan singkat pada daftar regulasi di situs publik.'
 			},
+			{ name: 'ringkasan_en', label: 'Ringkasan (English)', type: 'textarea', span: 2, rows: 3, maxLength: 2000, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{
 				name: 'kategori',
 				label: 'Kategori',
@@ -853,32 +971,14 @@ export const resources: ResourceConfig[] = [
 			}
 		]
 	},
-	{
-		slug: 'tautan-terkait',
-		modul: 'tautan-terkait',
-		title: 'Tautan Terkait',
-		singular: 'Tautan',
-		description: 'Tautan mitra dan instansi terkait di footer situs.',
-		icon: 'lucide:link',
-		defaultSort: 'urutan',
-		columns: [
-			{ key: 'nama', label: 'Nama' },
-			{ key: 'url', label: 'URL', size: 300 },
-			{ key: 'urutan', label: 'Urutan', type: 'number', size: 90 },
-			{ key: 'is_active', label: 'Status', type: 'boolean', size: 110 }
-		],
-		fields: [
-			{ name: 'nama', label: 'Nama', type: 'text', required: true, maxLength: 150 },
-			{ name: 'url', label: 'URL', type: 'text', required: true, maxLength: 500, help: 'Harus diawali http:// atau https://' },
-			{ name: 'logo', label: 'Logo', type: 'image', upload: { folder: 'tautan', jenis: 'gambar' } },
-			{ name: 'urutan', label: 'Urutan', type: 'number', min: 0, defaultValue: 0 },
-			{ name: 'is_active', label: 'Aktif', type: 'boolean', defaultValue: true }
-		]
-	},
+	// Modul Tautan dilepas dari panel: isinya (tautan mitra di footer) tidak
+	// dikelola lagi dari sini. Tabel `tautan_terkait` dan endpoint-nya masih
+	// ada, jadi modulnya bisa dikembalikan hanya dengan menambah konfigurasi
+	// ini lagi.
 	{
 		slug: 'menu-navigasi',
 		modul: 'menu-navigasi',
-		title: 'Menu Navigasi',
+		title: 'Navigasi',
 		singular: 'Menu',
 		description: 'Struktur menu situs publik.',
 		icon: 'lucide:menu',
@@ -967,7 +1067,7 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'role',
 		modul: 'pengguna',
-		title: 'Role & Hak Akses',
+		title: 'Role',
 		singular: 'Role',
 		description: 'Peran pengguna dan matrix hak akses per modul.',
 		icon: 'lucide:shield-check',
@@ -983,10 +1083,15 @@ export const resources: ResourceConfig[] = [
 			{ name: 'description', label: 'Deskripsi', type: 'textarea', span: 2, rows: 2 }
 		]
 	},
+	// Modul "Modul Sistem" dilepas dari panel. Daftar modul tidak perlu
+	// disunting tangan: isinya sudah menjadi baris-baris matrix pada dialog
+	// "Atur hak akses" di modul Role, dan diambil langsung dari tabel
+	// `modul_sistem` lewat API. Endpoint CRUD-nya masih ada bila suatu saat
+	// modul ini ingin dikembalikan.
 	{
 		slug: 'pengaturan-situs',
 		modul: 'pengaturan-situs',
-		title: 'Pengaturan Situs',
+		title: 'Pengaturan',
 		singular: 'Pengaturan',
 		description: 'Pasangan kunci–nilai yang dibaca situs publik.',
 		icon: 'lucide:settings',
@@ -1005,12 +1110,15 @@ export const resources: ResourceConfig[] = [
 	{
 		slug: 'audit-log',
 		modul: 'audit-log',
-		title: 'Audit Log',
+		title: 'Audit',
 		singular: 'Log',
 		description: 'Jejak seluruh perubahan data dan aktivitas login.',
 		icon: 'lucide:clipboard-list',
 		defaultSort: '-created_at',
 		readOnly: true,
+		// Tabel `audit_log` adalah catatannya sendiri: barisnya tidak pernah
+		// diubah atau dihapus, jadi tidak punya kolom jejak seperti modul lain.
+		tanpaJejak: true,
 		columns: [
 			{ key: 'created_at', label: 'Waktu', type: 'datetime', size: 170 },
 			{ key: 'user', label: 'Pengguna', type: 'relation', relationKey: 'name', noSort: true },

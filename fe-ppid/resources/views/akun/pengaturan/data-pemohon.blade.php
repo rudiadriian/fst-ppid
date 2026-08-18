@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', 'Data Pemohon & Berkas | PPID FSTJ')
+@section('title', __('Data Pemohon & Berkas') . ' | ' . __('PPID FSTJ'))
 @section('portal-judul', __('Data Pemohon & Berkas'))
 
 @section('portal')
@@ -23,10 +23,23 @@
                 {{ __('Mengubah data di bawah akan membuat status kembali menunggu pemeriksaan.') }}
             @elseif ($pemohon->verifikasiMenunggu())
                 {{ __('Berkas Anda sedang diperiksa petugas PPID.') }}
+                {{ __('Pemeriksaan berkas memerlukan waktu paling lama :hari hari kerja sejak berkas lengkap diterima.', ['hari' => (int) config('ppid.akun.sla_verifikasi_hari_kerja', 14)]) }}
+            @elseif ($pemohon->verifikasiDiblokir())
+                {{ __('Data diri Anda sudah ditolak :batas kali, sehingga pengiriman ulang ditutup. Hubungi petugas PPID untuk melanjutkan.', ['batas' => \App\Models\Pemohon::BATAS_DITOLAK]) }}
+            @elseif ($pemohon->status_verifikasi === 'ditolak')
+                {{ __('Perbaiki isian dan berkas KTP Anda, lalu kirim ulang untuk diperiksa.') }}
+                {{ __('Sisa kesempatan kirim ulang: :sisa dari :batas.', ['sisa' => $pemohon->sisaKesempatanVerifikasi(), 'batas' => \App\Models\Pemohon::BATAS_DITOLAK]) }}
             @else
                 {{ __('Semua isian wajib diisi. Permohonan Informasi baru bisa diajukan setelah data diverifikasi petugas.') }}
             @endif
         </p>
+
+        @if (filled($pemohon->catatan_verifikasi))
+            <p class="mt-3 p-3 rounded-xl bg-white/70 dark:bg-white/5 text-sm">
+                <span class="font-semibold block">{{ __('Catatan petugas') }}</span>
+                {{ $pemohon->catatan_verifikasi }}
+            </p>
+        @endif
     </div>
 
     <div class="bg-white dark:bg-[#0B2A1D] rounded-2xl border border-gray-100 dark:border-white/10 p-6 sm:p-8">
@@ -102,7 +115,17 @@
                 <textarea id="alamat" name="alamat" rows="3" required maxlength="500" class="{{ $fsInput }}">{{ old('alamat', $pemohon->alamat) }}</textarea>
             </div>
 
-            <button type="submit" class="{{ $fsBtn }}">{{ __('Kirim untuk Verifikasi') }}</button>
+            {{-- Tombol dimatikan, bukan disembunyikan, supaya alasannya terbaca.
+                 Pembatasan sebenarnya tetap di server (PengaturanController). --}}
+            <button type="submit" class="{{ $fsBtn }}" @disabled($pemohon->verifikasiDiblokir())>
+                {{ __('Kirim untuk Verifikasi') }}
+            </button>
+
+            @if ($pemohon->verifikasiDiblokir())
+                <p class="text-sm text-red-600 dark:text-red-400">
+                    {{ __('Pengiriman ulang ditutup setelah :batas kali penolakan.', ['batas' => \App\Models\Pemohon::BATAS_DITOLAK]) }}
+                </p>
+            @endif
         </form>
     </div>
 

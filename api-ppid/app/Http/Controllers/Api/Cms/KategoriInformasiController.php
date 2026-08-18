@@ -36,8 +36,10 @@ class KategoriInformasiController extends CrudController
         return [
             'parent_id' => ['nullable', Rule::exists('kategori_informasi', 'id')],
             'nama' => [$wajib, 'string', 'max:150'],
+            'nama_en' => ['nullable', 'string', 'max:150'],
             'slug' => ['nullable', 'string', 'max:150'],
             'deskripsi' => ['nullable', 'string'],
+            'deskripsi_en' => ['nullable', 'string'],
             'urutan' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['boolean'],
         ];

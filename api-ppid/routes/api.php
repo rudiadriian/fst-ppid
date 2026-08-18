@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AnalitikController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Cms\AuditLogController;
 use App\Http\Controllers\Api\Cms\BannerSliderController;
@@ -13,7 +14,9 @@ use App\Http\Controllers\Api\Cms\KategoriBeritaController;
 use App\Http\Controllers\Api\Cms\KategoriInformasiController;
 use App\Http\Controllers\Api\Cms\KeberatanController;
 use App\Http\Controllers\Api\Cms\LaporanLayananController;
+use App\Http\Controllers\Api\Cms\MaklumatController;
 use App\Http\Controllers\Api\Cms\MenuNavigasiController;
+use App\Http\Controllers\Api\Cms\ModulSistemController;
 use App\Http\Controllers\Api\Cms\PemohonController;
 use App\Http\Controllers\Api\Cms\PengaturanSitusController;
 use App\Http\Controllers\Api\Cms\PenggunaController;
@@ -66,6 +69,9 @@ Route::prefix('v1')->group(function () {
         Route::get('me/navigation', [NavigationController::class, 'index']);
         Route::get('dashboard/ringkasan', [DashboardController::class, 'ringkasan'])
             ->middleware('akses:dashboard,view');
+        // Ringkasan, analisa, kepatuhan SLA, dan capaian KPI.
+        Route::get('dashboard/analitik', [AnalitikController::class, 'index'])
+            ->middleware('akses:dashboard,view');
 
         // Notifikasi pribadi pengguna; tidak terikat modul mana pun.
         Route::get('notifikasi', [NotifikasiController::class, 'index']);
@@ -92,7 +98,21 @@ Route::prefix('v1')->group(function () {
         Route::delete('permohonan/{id}/tanggapan-files/{fileId}', [PermohonanController::class, 'hapusTanggapanFile'])
             ->middleware('akses:permohonan,edit')->whereNumber('id')->whereNumber('fileId');
         CrudRoute::register('permohonan', PermohonanController::class, 'permohonan');
-        CrudRoute::register('pemohon', PemohonController::class, 'permohonan');
+        // Pemohon hanya bisa dibaca dari panel. Akunnya dibuat dan disunting
+        // sendiri oleh pengunjung lewat portal pemohon, jadi tidak ada jalur
+        // tambah/ubah/hapus dari sisi petugas.
+        Route::get('pemohon', [PemohonController::class, 'index'])->middleware('akses:permohonan,view');
+        Route::get('pemohon/{id}', [PemohonController::class, 'show'])
+            ->middleware('akses:permohonan,view')->whereNumber('id');
+        // Berkas KTP disajikan di belakang token panel, bukan lewat URL media
+        // publik situs — dokumen identitas tidak boleh terbuka tanpa masuk.
+        Route::get('pemohon/{id}/berkas-ktp', [PemohonController::class, 'berkasKtp'])
+            ->middleware('akses:permohonan,view')->whereNumber('id');
+        // Satu-satunya jalur tulis pada modul Pemohon: keputusan Verifikasi Data
+        // Diri. Memakai hak `approve`, bukan `edit`, karena yang dilakukan
+        // petugas memang menyetujui/menolak berkas, bukan menyunting datanya.
+        Route::post('pemohon/{id}/verifikasi', [PemohonController::class, 'verifikasi'])
+            ->middleware('akses:permohonan,approve')->whereNumber('id');
         CrudRoute::register('keberatan', KeberatanController::class, 'keberatan');
         // Sumber angka "Kepuasan" pada Laporan Statistik Informasi Publik.
         CrudRoute::register('survey-kepuasan', SurveyKepuasanController::class, 'permohonan');
@@ -110,6 +130,9 @@ Route::prefix('v1')->group(function () {
         CrudRoute::register('banner-slider', BannerSliderController::class, 'banner-slider');
         CrudRoute::register('struktur-organisasi', StrukturOrganisasiController::class, 'struktur-organisasi');
         CrudRoute::register('halaman-statis', HalamanStatisController::class, 'halaman-statis');
+        // Maklumat = halaman Standar Layanan berbentuk unggahan dokumen;
+        // hak aksesnya menumpang modul Halaman Statis.
+        CrudRoute::register('maklumat', MaklumatController::class, 'halaman-statis');
         CrudRoute::register('regulasi', RegulasiController::class, 'regulasi');
         CrudRoute::register('tautan-terkait', TautanTerkaitController::class, 'tautan-terkait');
         CrudRoute::register('menu-navigasi', MenuNavigasiController::class, 'menu-navigasi');
@@ -121,6 +144,8 @@ Route::prefix('v1')->group(function () {
             ->middleware('akses:pengguna,edit')->whereNumber('id');
         CrudRoute::register('pengguna', PenggunaController::class, 'pengguna');
         CrudRoute::register('role', RoleController::class, 'pengguna');
+        // Modul sistem = dasar matrix hak akses; hak aksesnya ikut modul Pengguna.
+        CrudRoute::register('modul-sistem', ModulSistemController::class, 'pengguna');
         Route::post('pengaturan-situs/massal', [PengaturanSitusController::class, 'simpanMassal'])
             ->middleware('akses:pengaturan-situs,edit');
         CrudRoute::register('pengaturan-situs', PengaturanSitusController::class, 'pengaturan-situs');

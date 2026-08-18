@@ -259,12 +259,1106 @@ Tolong jalankan langkah untuk menyesuaikan/ modifikasi halaman frontend aplikasi
         - [x] Judul Regulasi
         - [x] Ringkasan Regulasi
         - [x] Di upload oleh User Admin Siapa (Ikon Food Station - Diupload oleh - Nama User Admin )
-36. 
+36. [x] Pada modul Informasi Publik, tolong anda sesuaikan:
+    - Isi konten pada sub Modul Daftar Informasi Publik berbentuk Table atau mungkin anda ada ide lain untuk menampilkannya agar lebih rapi, modern, responsive dan informatif yang isinya pada path D:\Project\Ppid\DAFTAR INFORMASI PUBLIK PT FOOD STATION TJIPINANG JAYA.docx.pdf buatkan konsep di back-end (be-ppid)nya juga
+    - Isi konten pada sub Modul Daftar Informasi Dikecualikan berbentuk Table atau mungkin anda ada ide lain untuk menampilkannya agar lebih rapi, modern, responsive dan informatif yang isinya pada path D:\Project\Ppid\DAFTAR INFORMASI DIKECUALIKAN PT FOOD STATION TJIPINANG JAYA.docx.pdf
+37. [x] sub Modul Informasi Dikecualikan tolong hapus informasi Alasan Pengecualian, Dasar Hukum, Jangka Waktu, dan Tanggal Penetapan. jadikan opsional pada backend (be-ppid) pada field-field ini, jadi tidak perlu di isi
+38. [x] Perbaiki widget perubahaan Bahasa Indonesia - Inggris masih belum sempurna dan Ikon Bendera Bahasa Indonesia dan Inggris juga belum tampil
+39. [x] Tampilan Daftar Informasi Dikecualikan samakan konsep penyajian informasinya seperti Daftar Informasi Publik, lalu hapus label ini "Entri yang dokumennya belum tersedia untuk diunduh tetap dapat dimohonkan melalui menu Permohonan Informasi Publik." dan label ini "Catatan Penting Pengecualian informasi ditetapkan melalui uji konsekuensi sesuai Pasal 17 UU No. 14 Tahun 2008 dan bersifat sementara sesuai jangka waktu yang ditetapkan. Keberatan atas penetapan ini dapat diajukan melalui menu Pengajuan Keberatan." 
+40. [x] Modul Layanan dan sub Modul Register Permohonan Informasi bagian ini adalah halaman untuk Registrasi Akun untuk bisa melakukan permohonan informasi
+41. [x] Modul Layanan dan sub Modul Laporan Pelayanan Informasi bagian ini kontennya adalah berupa Laporan Pelayanan Informasi per tahun dalam bentuk PDF yang di upload oleh Admin, Konsepnya Ui/Ux sama seperti MODUL REGULASI, buatkan konsep Backend (be-ppid)nya juga untuk upload file Laporan Pelayanan Informasi
+42. [x] pada backend tolong sesuaikan penamaan modul (jangan terlalu panjang).
+43. [x] pada backend fitur translate Bahasa Indonesia - Inggris (dan sebaliknya) masih belum bisa.
+44. [x] Ikon bendera pda fitur translate, ukurannya tidak ideal terlalu besar.
+45. [x] Buatkan konsep summary, analisa, dan SLA yang sekiranya dapat menjadi referensi tindakan, laporan serta penilaian KPI
+46. [x] Sesuaikan Modul-modul yang memang berfungsi untuk pengelolaan informasi, management (user, modul, roles, settings, audit log dan jika ada yang perlu ditambahkan silahkan) dan disesuaikan pada front end (fe-ppid)
+47. [x] Modul Analitik & SLA dipindahkan saja kontennya ke Modul DASHBOARD jadi yang diakses secara garis besar hanya modul dashboard saja tapi informasi yang didapat sudah ada analisis juga.
+48. [x] pada Modul Dasboard susunan informasinya seperti ini :
+    - CARD (Total permohonan, menunggu persetujuan, lewat batas waktu, keberatan belum selesai)
+    - CARD (Informasi Publik, Berita, Kepuasan Pemohon)
+    - CARD Perlu tindakan segera (bagian ini perlu di highlight)
+    - CARD Kepatuhan SLA
+    - CARD Capaian KPI
+    - CARD Permohonan masuk vs ditanggapi (dibuat summary perbulan saja, lalu nanti ada comparasi berbading dengan maksimal 3 tahun kebelakang), disebelahnya CARD Sebaran status dan Kategori paling diminta
+    - CARD Informasi Publik, Berita, dan Kepuasan Pemohon (DI HAPUS)
+49. [x] pada Modul MAKLUMAT bagian ini adalah tampilan pdf/ gambar yang terview langsung isinya di frontend, di backend konsepnya adalah upload dokumen. filenya ada di path D:\Project\Ppid\MAKLUMAT PPID.png
+50. [x] pada banner di modul BERANDA tolong dibuat full (tinggi bannernya kurang maksimal) agar tampilannya lebih clean, karena saat ini seperti di file ini D:\Project\Ppid\Screenshot 2026-08-13 105621.png, adapun contoh tampilannya seperti ini D:\Project\Ppid\Screenshot 2026-08-13 105813.png. infokan juga gambar ukuran resolusi gambar yang ideal jika nantinya gambar di upload dari backend
+51. [x] pada HEADER saya ingin headernya transparan ketika belum discroll kebawah, ketika discroll kebawah headernya menjadi putih.
+52. [x] saya ingin banner ini bisa multi gambar, caption dan ringkasan pada gambar dibannernya. lalu, ada transisi animasi ketika slider berjalan. tolong hapus angka 01/02 dipojok kanan bawah bener dan tidak perlu input Judul bahasa inggris karena nanti akan otomatis translate ya?
+53. [x] pda modul Profil Singkat, tolong hapus bagian Waktu Layanan Informasi Publik karena ini sudah difasilitasi informasinya di modul lain.
+54. [x] Hapus modul Tautan dan Modul Sistem
+55. [x] Hapus Fitur CRUD pada modul Pemohon
+56. [x] Anda belum membuat Konsep Management User (khusus untuk admin) yang dinamis, jika User dibuat lalu role juga dibuat harusnya role tersebut dapat mengikat hak akses terhadap menu-menu, fitur CRUD pada setiap modul di backend (be-ppid)
+57. [x] ikon modul FAQ di be-ppid (backend) tidak ada, tolong berikan icon pada modulnya. 
+58. [x] Hapus modul Laporan Statistik di be-ppid (backend)
+59. [x] pada semua modul yang ada di be-ppid (backend) pastikan ada field/ kolom yang menginformasikan 
+    - Dibuat, Diubah, Dihapus oleh user siapa
+    - pada hari dan waktu kapan
+    tujuannya untuk traceability dokumen
+60. [x] semua modul yang ada di be-ppid (backend) data Diubah dikosongkan saja, karena belum ada aktifitas Ubah data kan? ketika buat data baru pun harusnya tanggal ubah belum terisi. lalu,
+61. [x] semua modul yang ada di be-ppid (backend) Kolom "Diubah Oleh" dan "Diubah pada" dibuat menjadi default hide saja tetapi kalau mau ditampilkan bisa menggunakan widget Show/Hide kolom.
+62. [x] ubah label kolom Diubah pada menjadi Diubah dan Dibuat pada menjadi Dibuat
+63. tolong jalankan langkah registrasi akun pengguna/ pengunjung website ppdi alur prosesnya :
+    1. isi formulir registrasi akun:
+        - Nama lengkap
+        - Email
+        - No Telpon/ Hp (Whatsapp)
+        - Password
+        - Konfirmasi Password
+        - konfirmasi Captcha
+    2. setelah disubmit, redirect ke halaman login (munculkan alert bahwa sebelum login harus verifikasi email)
+    3. lalu, klik link verifikasi yang dikirim (jika berhasil kembali ke halaman login) berikan waktu expired yang ideal
+    4. login dengan nomor telepon atau email dan password, isi captcha
+    5. jika sukses, pengguna harus Verifikasi Data Diri Pemohon, jika belum notifikasi ini selalu muncul dan tidak bisa melakukan apapun (pop up, klik tombol mengarahkan ke modul Data Pemohon dan Berkas)    
+    6. proses Verifikasi Data Diri Pemohon paling minimal 14 hari kerja   
+    # konfigurasi email sebagai berikut :
+    - email : noreply-ppid@foodstation.co.id 
+    - password : Ppid@123
+    - server mail : srv179.niagahoster.com
+    # dikarenakan kami ada batas limit email agar tidak terkena spam, buatkan regulasi yang ketat agar tidak ada percobaan untuk spam, hacker, brute force, sql injection ataupun hal lainnya di Metode AUTH (baik fitur AUTH Pengguna dan AUTH Admin backend)
+64. [x] Sekarang buat fitur keamanan fitur AUTH akun pengunjung, seperti :
+    - Kirim tautan saat REGISTRASI dan LUPA PASSWORD (tambahkan captcha) bisa dilakukan ketika 30 menit sekali dengan alamat ip dan mac address yang tercatat
+    - Fitur login user ketika gagal 3 kali, buat menunggu dulu: 
+        - percobaan 3 kali pertama, 1 jam
+        - percobaan 3 kali kedua, 24 jam
+        - percobaan 3 kali ketiga, 72 jam
+65. [x] melanjuti, langkah ke 64. proses pendaftaran ini akan masuk ke notifikasi be-ppid (backend admin) dan masuk ke modul Layanan - Pemohon. pada modul ini pastikan ada fitur untuk memverifikasi data Pemohon apakah sesuai atau tidak, jika sesuai (statusnya berhasil terverifikasi, jika tidak status verifikasi ditolak tetapi pengguna masih bisa mengajukan kembali sampai 3 kali ditolak, proses registrasi diblockir). 
+66. [x] melanjuti, langkah ke 65. 
+    - buatkan fitur detail be-ppid (backend admin) pada modul Layanan - Pemohon, gunanya agar memudahkan dalam melakukan verifikasi data pemohon. 
+    - notifikasi sudah berhasil, tapi tidak bisa diklik yang langsung mengarah ke data sesuai notifikasinya.
+67. [x] tolong buatkan format email untuk konfirmasi akun baik untuk registrasi akun pemohon baru, reset password atau hal lainnya. contohnya: 
+    - untuk verifikasi akun pemohon yang baru mendaftar ada dipath ini D:\Project\Ppid\Konfirmasi Email.docx
+    - untuk reset password, tolong buatkan dengan konsep yang sesuai standar
+    - untuk notifikasi email permohonan informasi atau keberatan informasi juga dibuatkan sesuai standar (dengan catatan pemohon hanya mendapatkan email tersebut jika pengajuan permohonan informasi atau keberatan informasi terlah berhasil Dikirim dan Diterima, dan Selesai  oleh Admin PPID PT Food Station Tjipinang Jaya (Perseroda) )
+
+
+pada portal pemohon atau http://localhost:8000/akun tolong buatkan lonceng notifikasi jika ada upadate dari feedback yang diberikan oleh admin
+
+
 
 
 
 ---
 
+
+## Status Pengerjaan (putaran 47 — langkah 67)
+
+### Satu kop untuk semua email
+
+Sebelumnya tidak ada satu pun templat email pemohon: verifikasi pendaftaran dan reset password memakai notifikasi bawaan Laravel — markdown polos, sebagian berbahasa Inggris, berkop nama aplikasi. Sekarang semuanya lewat komponen yang sama di `resources/views/components/email/`:
+
+- `layout` — kop logo Food Station, kartu putih di atas latar krem, kaki berisi nama instansi, alamat kontak layanan, dan peringatan "jangan balas". Tata letaknya `<table>` dengan gaya inline, bukan flex/grid: Gmail dan Outlook membuang `<style>` di `<head>`.
+- `tombol`, `tautan-cadangan`, `rincian` — tombol aksi, URL mentah untuk klien email yang memblokir tombol, dan tabel ringkasan pengajuan.
+
+Isi suratnya:
+
+| Berkas | Peristiwa |
+| --- | --- |
+| `emails/akun/verifikasi.blade.php` | Pendaftar baru — naskahnya mengikuti `Konfirmasi Email.docx` |
+| `emails/akun/reset-password.blade.php` | Permintaan lupa password |
+| `emails/layanan/status.blade.php` | Status pengajuan & hasil verifikasi data pemohon |
+
+`App\Notifications\VerifikasiEmailPemohon` dan `ResetPasswordPemohon` menggantikan notifikasi bawaan lewat override `sendEmailVerificationNotification()` / `sendPasswordResetNotification()` di model `Pemohon`. Tautan verifikasinya tetap URL bertanda tangan dengan hash email seperti bawaan Laravel, jadi pembatasan 30 menit sekali dan masa berlaku 24 jam dari putaran sebelumnya tidak berubah.
+
+### Email layanan hanya di tiga titik
+
+Sesuai permintaan, pemohon hanya diberi email saat pengajuan **Dikirim**, **Diterima**, dan **Selesai** — pergeseran status internal (diproses, menunggu approval) tidak mengirim apa pun. Kuota kirim SMTP terbatas, dan semua status tetap terlihat di portal.
+
+- **Dikirim** — dari situs, begitu formulir Permohonan/Keberatan tersimpan (`App\Support\EmailPemohon`).
+- **Diterima** — dari panel: permohonan saat berpindah ke `diverifikasi`, keberatan saat berpindah ke `diproses`. Keberatan tidak punya status `diverifikasi`, jadi `diproses` yang dipakai sebagai penanda "sudah diperiksa petugas".
+- **Selesai** — dari panel, saat status menjadi `selesai`.
+
+Pengirimannya menunggu `DB::afterCommit`: transaksi yang batal tidak boleh menyisakan pemberitahuan atas status yang tidak jadi tersimpan. Perbandingan dengan status lama menjaga email tidak terkirim dua kali kalau petugas menyimpan ulang baris yang statusnya tidak berubah.
+
+**Tambahan di luar tiga peristiwa itu:** hasil pemeriksaan Verifikasi Data Diri Pemohon (terverifikasi / ditolak) kini juga dikirim lewat email — sebelumnya pemohon baru tahu kalau kebetulan membuka portal, padahal selama belum terverifikasi ia tidak bisa mengajukan apa pun dan kesempatan kirim ulangnya terbatas. Suratnya memuat catatan petugas dan sisa kesempatan; kalau kesempatannya sudah habis, tombol "Perbaiki Data Pemohon" ikut ditiadakan supaya tidak bertabrakan dengan isinya.
+
+### api-ppid ikut mengirim email
+
+Status berpindah di panel admin, jadi api-ppid yang harus mengirim dua email terakhir. Karena itu:
+
+- `MAIL_*` di `api-ppid/.env` diarahkan ke SMTP yang sama dengan situs (`srv179.niagahoster.com`, pengirim `noreply-ppid@foodstation.co.id`). Sebelumnya masih `mailpit`/`hello@example.com` bawaan Laravel.
+- Berkas templat emailnya **disalin apa adanya** ke `api-ppid/resources/views/`, dan `config/ppid.php` dibuat di kedua aplikasi dengan kunci yang sama (`kontak`, `situs_url`, `bahasa_email`, `zona_waktu`). Konsekuensinya: **kalau salah satu templat diubah, salinannya harus ikut diubah.** Alternatifnya adalah tabel antrean email di `ppiddb` yang dikirim satu pekerja terjadwal — lebih rapi, tapi menambah komponen yang harus selalu hidup, jadi tidak diambil sekarang.
+
+### Dua keputusan yang perlu diketahui
+
+- **Bahasa email dikunci Bahasa Indonesia** (`config('ppid.bahasa_email')`), tidak mengikuti pemilih bahasa situs. Panel admin tidak tahu bahasa yang dipilih pengunjung, jadi tanpa kunci ini satu pengajuan bisa menghasilkan rangkaian email yang berpindah-pindah bahasa.
+- **Jam pada email digeser ke `Asia/Jakarta`** sebelum diberi label "WIB". Aplikasi menyimpan waktu dalam UTC (`config('app.timezone')`). Catatan terpisah: `App\Support\Cms::tanggalWaktu()` yang dipakai halaman portal **belum** melakukan penggeseran ini, jadi jam di layar masih meleset tujuh jam dari jam di email. Perbaikannya menyentuh tampilan tanggal di seluruh situs, jadi dicatat di sini sebagai pekerjaan tersendiri.
+
+### Verifikasi
+
+Semua email dirender lewat transport `array` (tidak ada yang benar-benar terkirim, tidak ada data uji yang tertinggal di basis data — semua modelnya dibuat di memori):
+
+- fe-ppid, dengan `App::setLocale('en')` untuk meniru pengunjung versi Inggris: 4 email keluar, semuanya tetap Bahasa Indonesia, pengirim `"PPID Food Station" <noreply-ppid@foodstation.co.id>`, tautan mengarah ke `http://localhost:8000/akun/...` dan logonya ke `/assets/images/logo/logo_fs.png`.
+- api-ppid, 5 perpindahan status diuji → **3 email**; `diverifikasi → diproses` dan penyimpanan ulang `selesai → selesai` benar-benar tidak mengirim apa pun.
+- Hasil verifikasi data pemohon: 3 keadaan (disetujui, ditolak dengan sisa 2 kesempatan, ditolak dengan kesempatan habis) — yang terakhir terbukti tidak lagi memuat tombol perbaikan.
+- `php -l` bersih di seluruh berkas yang disentuh.
+- `php artisan test` di fe-ppid tetap merah seperti sebelum putaran ini: 23 kegagalannya semua milik sisa scaffolding Breeze (`App\Models\User` yang memang tidak ada, rute `/login` & `/register` yang sudah pindah ke `/akun/...`). Tidak ada satu pun yang menyentuh berkas putaran ini.
+
+
+## Status Pengerjaan (putaran 46 — langkah 66)
+
+### Detail Pemohon
+
+Dialog **Detail & Verifikasi Pemohon** menggantikan dialog verifikasi cepat dari putaran 45. Digabung dalam satu layar dengan sengaja: memutuskan tanpa melihat KTP dan isian identitasnya berdampingan berarti menebak.
+
+Isinya: identitas lengkap (email, no. HP, **NIK**, jenis pemohon, pekerjaan, lembaga, alamat), status email, jumlah permohonan, **pratinjau berkas KTP** langsung di dialog, jejak verifikasi (diperiksa oleh, tanggal, terdaftar sejak), catatan penolakan sebelumnya, lalu formulir keputusannya.
+
+- **NIK kini ditampilkan — tetapi hanya di endpoint detail.** Sebelumnya NIK disembunyikan dari seluruh panel; tanpa NIK petugas tidak bisa mencocokkan isian dengan KTP yang diunggah, padahal itu inti pemeriksaannya. Pembukaannya sempit dan disengaja: hanya lewat `GET pemohon/{id}`, hanya untuk yang berhak melihat modul, dan tetap tidak muncul di daftar maupun ekspor.
+- **Membuka detail cukup hak `Lihat`;** formulir keputusannya yang menuntut hak `Setujui`. Menu barisnya menyesuaikan: "Detail & verifikasi" atau "Lihat detail".
+
+### Berkas KTP tidak lagi lewat URL publik
+
+Berkas yang diunggah pemohon tersimpan di `storage/app/public/uploads/ktp/…` dan disajikan situs lewat route `/storage/{path}` yang **tidak menuntut siapa pun masuk**. Untuk gambar berita hal itu wajar; untuk **dokumen identitas** terlalu longgar — nama berkasnya memang UUID sehingga sulit ditebak, tetapi sekali URL-nya bocor, siapa pun bisa mengunduhnya tanpa akun.
+
+Karena itu panel tidak memakai URL publik tersebut. Ditambahkan `GET pemohon/{id}/berkas-ktp` di api-ppid yang membaca berkas dari disk `media` dan menyajikannya di belakang token panel serta hak akses modul, dengan `Cache-Control: private, no-store`. Panel mengambilnya sebagai blob (peramban tidak mengirim header Authorization untuk `<img src>`/`<iframe src>`), lalu memakainya lewat object URL yang dilepas kembali saat dialog ditutup.
+
+**Catatan:** route publik `/storage/{path}` di situs sendiri belum diubah — masih melayani `uploads/ktp/…` bagi siapa pun yang tahu URL-nya. Mempersempitnya menyentuh penyajian media di luar cakupan langkah ini, jadi dicatat di sini sebagai hal yang sebaiknya dibereskan tersendiri.
+
+### Notifikasi yang membuka datanya
+
+Kartu notifikasi di panel sebenarnya sudah bisa diklik — `NotificationCard` merender `NavLinkAdapter` bila `link` terisi, dan API memang mengirimkannya. Yang menjadi keluhan adalah tujuannya: tautannya hanya `/ppid/pemohon`, jadi berhenti di daftar modul dan petugas masih harus mencari barisnya sendiri.
+
+Sekarang semua notifikasi menaut ke barisnya: `/ppid/pemohon?detail={id}`, `/ppid/permohonan?detail={id}`, `/ppid/keberatan?detail={id}`. `PpidResourcePage` membaca parameter `detail`, membuka dialog detail modul yang bersangkutan, lalu **membersihkan parameternya dari URL** — kalau dibiarkan, menutup dialog dan memuat ulang halaman akan membukanya lagi.
+
+Untuk saat ini yang punya dialog detail baru modul **Pemohon**; notifikasi Permohonan dan Keberatan tetap membawa `?detail=` tetapi mendarat di daftarnya, menunggu modul itu punya layar detail sendiri.
+
+### Verifikasi
+
+Diuji lewat HTTP sungguhan; token admin dibuat dari akun `Administrator` yang sudah ada — **tidak ada akun uji baru di panel**. Data uji sudah dihapus.
+
+- `GET pemohon/12` mengembalikan `nik`, `jumlah_permohonan`, `punya_berkas_ktp: true`, dan relasi `verifikator`.
+- `GET pemohon/12/berkas-ktp` dengan token → **200**, `Content-Type: image/png`. **Tanpa token → 401.**
+- `GET notifikasi` mengembalikan `"link":"/ppid/pemohon?detail=12"`.
+- `npx tsc --noEmit` + `npx vite build` (be) bersih; `php -l` bersih.
+
+### Rapi-rapi
+
+Ditemukan satu berkas KTP yatim di `storage/app/public/uploads/ktp` — sisa pengujian putaran 45 yang gagal terhapus karena dihapus dari disk `local`, padahal berkasnya ada di disk `public`. Sudah dibersihkan; pemeriksaan ulang menunjukkan 0 berkas yatim.
+
+### Yang belum dikerjakan
+
+- Captcha gambar masih belum dapat diakses pembaca layar (tercatat sejak putaran 43).
+- Lonceng notifikasi **di portal pemohon** (kalimat tanpa nomor di bawah blok langkah 66) belum dikerjakan.
+- Halaman detail untuk modul Permohonan dan Keberatan.
+- Route media publik `/storage/{path}` masih melayani berkas KTP tanpa autentikasi.
+
+---
+
+
+## Status Pengerjaan (putaran 45 — langkah 65)
+
+### Notifikasi ke be-ppid
+
+Lonceng notifikasi panel sudah ada (membaca `GET /v1/notifikasi`), yang belum ada adalah pemicunya dari sisi pemohon. Sekarang ada dua, dan sengaja dipisah karena bobotnya berbeda:
+
+| Kejadian | Tipe | Isi |
+|---|---|---|
+| Akun pengunjung baru mendaftar | `pemohon_baru` | "Akun pemohon baru: :nama (:email)." |
+| Berkas data diri dikirim / dikirim ulang | `verifikasi_pemohon` | "Data diri :nama menunggu verifikasi (pengiriman ke-:ke dari :batas)." |
+
+Yang menuntut tindakan adalah yang kedua — pendaftaran saja belum ada yang bisa diperiksa, karena berkas identitasnya baru dikirim pada langkah berikutnya. Teks notifikasi kedua menyebut pengiriman ke berapa, supaya petugas tahu bobot keputusannya (menolak untuk ketiga kalinya menutup pintu bagi pemohon) sebelum membuka berkasnya. Keduanya menaut ke `/ppid/pemohon`, dan penerimanya hanya akun aktif yang rolenya punya hak lihat modul tersebut.
+
+### Fitur verifikasi di modul Layanan → Pemohon
+
+Modul Pemohon tetap **baca-saja** — datanya milik pengunjung dan disunting dari akunnya sendiri. Yang ditambahkan hanya satu tindakan: **Verifikasi data** pada menu aksi baris.
+
+- Dialog barunya (`PemohonVerifikasiDialog.tsx`) menampilkan status sekarang, catatan penolakan sebelumnya, dan **sisa kesempatan kirim ulang**, lalu meminta keputusan **Terverifikasi** atau **Ditolak**.
+- **Alasan wajib diisi saat menolak.** Kesempatan pemohon terbatas; menolak tanpa memberi tahu apa yang salah membuat kesempatan itu terbuang percuma. Alasannya tampil di portal pemohon sebagai "Catatan petugas".
+- Aksi ini memakai hak **`Setujui`**, bukan `Ubah` — yang dilakukan petugas memang menyetujui/menolak berkas, bukan menyunting data. Konsekuensinya modul Pemohon perlu hak `Setujui` di matrix hak akses role.
+- `ResourceListPage` disesuaikan: kolom aksi kini juga muncul pada modul baca-saja yang punya aksi khusus. Sebelumnya kolom itu hanya muncul bila modulnya bisa ditulis, sehingga menu aksi pada Pemohon tidak akan pernah tampil.
+- Daftar Pemohon mendapat kolom **Verifikasi** (badge), **Jumlah Ditolak**, **Diperiksa oleh**, plus filter status verifikasi. Urutan bawaan diubah ke terbaru dulu.
+- Perbaikan sekalian: filter **Jenis** masih memakai pilihan lama (`pribadi` / `instansi` / `kelompok`) yang tidak ada di formulir situs publik, jadi memfilter apa pun selalu menghasilkan daftar kosong. Sekarang mengikuti `App\Models\Pemohon::JENIS`: perorangan, mahasiswa, lembaga, kelompok.
+
+### Batas tiga kali penolakan
+
+- Kolom baru pada `pemohon`: `jumlah_ditolak`, `catatan_verifikasi`, `diverifikasi_oleh`.
+- Keadaan "diblokir" **diturunkan dari `jumlah_ditolak >= 3`**, bukan dari status baru. Dengan begitu `status_verifikasi` tetap memakai empat nilai yang sudah dikenal seluruh sistem, CHECK constraint yang ada tidak perlu diubah, dan data lama tetap sah.
+- Setelah tiga penolakan:
+  - tombol **Kirim untuk Verifikasi** di portal dimatikan **dan** pengirimannya ditolak di server (`PengaturanController`), bukan sekadar disembunyikan;
+  - **pendaftaran ulang dengan email yang sama ditolak** (`RegisterController`) — kalau tidak, blokirnya bisa dilewati hanya dengan mendaftar lagi;
+  - API menolak penolakan keempat;
+  - lapisan penghalang di portal berubah pesannya dan tidak lagi menawarkan tombol Data Pemohon, karena tidak ada lagi yang bisa dikirim.
+- Setiap pengiriman ulang **menghapus catatan penolakan lama**, supaya pemohon tidak membaca alasan yang sudah tidak berlaku untuk berkas barunya.
+- Berkas yang sudah **terverifikasi tidak bisa ditolak** lewat endpoint ini: membalik keputusan berarti mencabut layanan yang mungkin sudah berjalan, jadi itu harus disengaja, bukan salah klik.
+- Keputusan verifikasi dicatat ke `audit_log` sebagai `verifikasi_pemohon` lengkap dengan nilai sebelum dan sesudah.
+
+### Berkas yang ditambahkan / disentuh
+
+- `api-ppid`: migrasi `2026_08_15_000002_add_verifikasi_pemohon_columns.php`, `PemohonController::verifikasi()`, rute `POST pemohon/{id}/verifikasi`, model `Pemohon` (relasi `verifikator`, atribut `verifikasi_diblokir` & `sisa_kesempatan`).
+- `fe-ppid`: `NotifikasiAdmin::pendaftaranBaru()` & `verifikasiPemohonMenunggu()`, penjagaan di `RegisterController` dan `PengaturanController`, model `Pemohon` (`verifikasiDiblokir()`, `sisaKesempatanVerifikasi()`), tampilan Data Pemohon dan lapisan penghalang.
+- `be-ppid`: `PemohonVerifikasiDialog.tsx`, penyesuaian `PpidResourcePage.tsx`, `ResourceListPage.tsx`, `lib/resources.ts`, kamus Inggris.
+
+### Verifikasi
+
+Diuji lewat HTTP sungguhan pada dua server (`api` 8811, `fe` 8813); token admin dibuat dari akun `Administrator` yang sudah ada — **tidak ada akun uji baru di panel**. Seluruh data uji sudah dihapus.
+
+- **Daftar akun** → tercatat 2 baris notifikasi `pemohon_baru` (dua admin berhak), pesan: "Akun pemohon baru: Uji Verifikasi 65 (uji65@…)."
+- **Kirim berkas data diri** (dengan unggahan KTP) → status `menunggu`, berkas tersimpan, 2 baris notifikasi `verifikasi_pemohon`: "…menunggu verifikasi (pengiriman ke-1 dari 3)."
+- **API `GET pemohon`** mengembalikan `status_verifikasi`, `jumlah_ditolak`, `verifikasi_diblokir`, `sisa_kesempatan`, dan relasi `verifikator`.
+- **Tolak 3 kali** → 200 dengan sisa kesempatan **2 → 1 → 0**. **Tolak keempat** → **422** "Pemohon ini sudah ditolak 3 kali dan tidak dapat mengirim berkas lagi." **Tolak tanpa alasan** → **422** "Alasan penolakan wajib diisi…".
+- **Portal saat diblokir**: halaman Data Pemohon menampilkan alasan petugas, "Pengiriman ulang ditutup setelah 3 kali penolakan", tombol kirim `disabled`; pengiriman paksa lewat POST **ditolak server** (isian `alamat` tidak berubah).
+- **Daftar ulang dengan email terblokir** → ditolak: "Pendaftaran dengan email ini diblokir karena data diri sudah ditolak 3 kali…".
+- **Setujui** → 200 "Data pemohon dinyatakan terverifikasi.", `tanggal_verifikasi` dan `verifikator` terisi (`Administrator`). Mencoba **menolak setelah terverifikasi** → **422**.
+- **Setelah disetujui**, lapisan penghalang di portal hilang (0 kemunculan) dan `/akun/permohonan/baru` terbuka **200**.
+- `php -l` bersih; `npx tsc --noEmit` + `npx vite build` (be) bersih.
+
+### Catatan untuk operator
+
+Modul Pemohon sekarang membutuhkan hak **Setujui** pada modul `permohonan` di matrix hak akses role. Role yang hanya punya `Lihat` akan melihat daftarnya tetapi tanpa menu **Verifikasi data**.
+
+### Yang belum dikerjakan
+
+- Captcha gambar masih belum dapat diakses pembaca layar (tercatat sejak putaran 43).
+- Lonceng notifikasi **di portal pemohon** (kalimat tanpa nomor di bawah blok langkah 65) belum dikerjakan. Yang selesai pada putaran ini adalah arah sebaliknya: pemohon → notifikasi admin.
+
+---
+
+
+## Status Pengerjaan (putaran 44 — langkah 64)
+
+### Soal MAC address — tidak bisa dipenuhi apa adanya
+
+Permintaannya menyebut pencatatan **MAC address**. Alamat itu **tidak pernah sampai ke server**: paket yang tiba sudah melewati banyak perangkat jaringan, dan MAC hanya terlihat oleh perangkat yang berada di segmen jaringan yang sama dengan pengunjung. Tidak ada header HTTP, API JavaScript, maupun konfigurasi server yang bisa mengambilnya dari peramban — ini batas protokol, bukan soal pustaka yang belum dipasang.
+
+Gantinya dicatat tiga hal, dan **ketiganya dihitung terpisah**:
+
+| Yang dicatat | Sifatnya |
+|---|---|
+| `ip_address` | asal permintaan; bisa berubah bila ganti jaringan |
+| `penanda_perangkat` | nilai acak 48 karakter dalam cookie berumur 2 tahun; menandai **peramban**, hilang bila cookie dibersihkan atau memakai mode penyamaran |
+| `user_agent` | sidik peramban, untuk catatan bila cookie dihapus |
+
+Karena hitungannya terpisah, menghapus cookie **tidak** mengosongkan hitungan email dan IP — jadi pembatasannya tidak bergantung pada penanda perangkat sendirian.
+
+### Kirim tautan: satu kali per 30 menit
+
+Berlaku untuk **tautan verifikasi pendaftaran** dan **tautan lupa password**, masing-masing dengan jatah sendiri (`jenis` berbeda di tabel).
+
+- Tabel baru **`pengiriman_tautan_akun`** mencatat tiap pengiriman: jenis, email tujuan, IP, penanda perangkat, user agent, waktu. Selain menjadi dasar pembatasan, isinya jejak bila perlu menelusuri siapa yang menghabiskan kuota email.
+- Pemeriksaannya membandingkan **email ATAU IP ATAU penanda perangkat** dalam 30 menit terakhir. Tanpa hitungan per-IP, satu orang bisa menguras kuota hanya dengan mengetik alamat yang berbeda-beda tiap kali.
+- **Tombol "Kirim Ulang Tautan"** pada halaman verifikasi ikut memakai jatah yang sama. Kalau tidak, tombol itu jadi celah yang membuat pembatasan di halaman daftar tidak ada gunanya.
+- Pemeriksaan dijalankan **sebelum** baris pemohon dibuat, sehingga percobaan yang ditolak tidak meninggalkan akun setengah jadi.
+- Pesannya menyebut sisa menitnya dan mengingatkan memeriksa folder Spam.
+- **Captcha ditambahkan pada formulir Lupa Password** (pada Registrasi sudah ada sejak putaran 43), berikut honeypot dan jeda pengisian minimum.
+
+Angkanya di `config('ppid.akun.jeda_kirim_tautan_menit')` (`PPID_JEDA_KIRIM_TAUTAN_MENIT`, bawaan 30).
+
+### Kunci masuk bertingkat
+
+Tabel baru **`percobaan_login_pemohon`** menyimpan hitungan kegagalan dan sampai kapan dikunci. Disimpan di basis data, bukan cache: kuncinya bisa berlaku sampai 72 jam, sedang cache berkas bisa terhapus tanpa sengaja dan kuncinya ikut hilang.
+
+| Kegagalan ke- | Masa tunggu |
+|---|---|
+| 3 | 1 jam |
+| 6 | 24 jam |
+| 9 | 72 jam |
+| 12, 15, … | tetap 72 jam |
+
+- Selama terkunci, **password yang benar pun ditolak** — kalau tidak, kuncinya tidak menahan apa pun.
+- Berhasil masuk **menghapus** barisnya, jadi hitungan mulai dari nol lagi.
+- Hitungan disetel ulang bila 72 jam berlalu tanpa kegagalan baru (`PPID_RESET_HITUNGAN_GAGAL_JAM`). Tanpa ini, orang yang lupa password tiga kali beberapa bulan lalu akan langsung mendarat di tahap berikutnya.
+- Kegagalan captcha **tidak** dihitung sebagai kegagalan masuk: captcha diperiksa pada tahap validasi, sebelum password diadu.
+
+**Kunci dipasang per kombinasi identitas + alamat IP, bukan per identitas saja.** Ini pilihan sadar dan perlu diketahui: mengunci per identitas berarti siapa pun yang tahu email seorang pemohon bisa mengunci akun itu selama 72 jam hanya dengan sengaja salah password sembilan kali — pemblokiran layanan yang lebih merugikan daripada serangan yang hendak dicegah. Penyerang sungguhan tetap tertahan karena kegagalannya menumpuk pada IP-nya sendiri, dan penyebaran lewat banyak IP masih dibatasi rem per-IP per menit yang dipasang pada putaran 43. Bila tetap ingin per identitas, yang perlu diubah hanya kunci pencarian di `App\Support\KunciLoginPemohon`.
+
+Selain itu, syarat password pada **Reset Password** dinaikkan agar sama dengan formulir pendaftaran (10 karakter, huruf besar-kecil, angka) — sebelumnya masih 8 karakter, sehingga reset password menjadi jalan memutar untuk memasang password lemah.
+
+### Berkas yang ditambahkan
+
+- `api-ppid/database/migrations/2026_08_15_000001_create_keamanan_akun_tables.php`
+- `fe-ppid/app/Support/PenandaPerangkat.php`, `PembatasTautan.php`, `KunciLoginPemohon.php`
+- `fe-ppid/app/Models/PengirimanTautanAkun.php`, `PercobaanLoginPemohon.php`
+
+### Verifikasi
+
+Diuji lewat HTTP sungguhan pada `php artisan serve` (mailer dialihkan ke `log` selama pengujian lalu dikembalikan ke `smtp`; seluruh data uji sudah dihapus):
+
+- **Daftar pertama** → **302 ke `/akun/masuk`**, dan tercatat satu baris `pengiriman_tautan_akun`: `registrasi | uji64a@… | ip=127.0.0.1 | perangkat=Qnkgzvah9lE9… | ua=curl/8.8.0`.
+- **Daftar kedua, email berbeda, IP/perangkat sama** → ditolak: "Tautan sudah pernah dikirim. Silakan coba lagi dalam 26 menit…", **tanpa** akun baru dan **tanpa** catatan kirim tambahan.
+- **Lupa password pertama** → terkirim (jatahnya sendiri, tidak terpengaruh jatah pendaftaran). **Kedua, email berbeda** → ditolak "…coba lagi dalam 30 menit", catatan tetap 1 baris.
+- **Kunci bertingkat**: gagal ke-1 dan ke-2 dijawab "Email/nomor telepon atau password tidak cocok"; gagal ke-3 → **"Sudah 3 kali gagal masuk. Demi keamanan akun, coba lagi setelah 1 jam."** Tahap berikutnya diuji langsung: ke-6 → **24 jam**, ke-9 → **72 jam**, ke-12 → **tetap 72 jam** (`tahap_kunci` 2/3/4).
+- **Password benar saat terkunci** → tetap ditolak: "Akun ini sementara dikunci karena terlalu banyak percobaan masuk yang gagal…".
+- **Login berhasil** setelah kunci dilepas → baris `percobaan_login_pemohon` **terhapus** (0 baris tersisa).
+- 6 rute akun diperiksa **200** (`/akun/verifikasi` 302 karena tidak ada akun yang menunggu); `php -l` bersih.
+
+### Yang belum dikerjakan
+
+- Captcha gambar masih **belum dapat diakses pembaca layar** (dicatat sejak putaran 43).
+- Lonceng notifikasi portal pemohon di bawah blok langkah 64 belum dikerjakan — tidak bernomor dan tidak termasuk permintaan putaran ini.
+
+---
+
+
+## Status Pengerjaan (putaran 43 — langkah 63)
+
+Alur akun pengunjung sudah ada sebagian sejak awal (pendaftaran, verifikasi email, guard `pemohon`, kolom `status_verifikasi`). Putaran ini melengkapi yang belum ada dan meluruskan alurnya sesuai enam langkah yang diminta.
+
+### 1. Formulir pendaftaran
+
+- **Nomor Telepon/HP (WhatsApp) kini wajib** — sebelumnya boleh kosong. Formatnya dibatasi angka dan tanda `+ ( ) -`, dan keterangannya menyebut nomor itu juga dipakai untuk masuk.
+- **Captcha gambar** ditambahkan (lihat bagian keamanan). Nama lengkap, email, password, dan konfirmasi password sudah ada sebelumnya.
+- Syarat password dinaikkan dari 8 karakter menjadi **10 karakter dengan huruf besar, huruf kecil, dan angka**.
+- Email divalidasi `rfc,dns` — domain yang tidak bisa menerima surat ditolak sejak awal, sehingga tidak ada kuota kirim yang terbuang ke alamat mati.
+- Perbaikan sekalian: pendaftar baru sempat disimpan dengan `jenis_pemohon = 'pribadi'`, nilai yang tidak ada di daftar pilihan modul Pemohon. Sekarang `'perorangan'`.
+
+### 2. Setelah submit → halaman masuk
+
+Sebelumnya pendaftar dilempar ke halaman "cek email Anda". Sekarang ia mendarat di **halaman masuk** dengan kotak peringatan kuning: akun sudah dibuat, tetapi tautan verifikasi harus dibuka dulu, lengkap dengan alamat tujuannya dan masa berlaku tautan. Di dalamnya ada tautan "Belum menerima emailnya?" menuju halaman kirim ulang.
+
+Alasannya alurnya jadi satu arah: halaman masuk adalah tempat yang sama yang akan ia datangi lagi setelah membuka tautan di emailnya.
+
+### 3. Tautan verifikasi
+
+- Masa berlaku dipindah ke `config('auth.verification.expire')` dan disetel **24 jam** (`PPID_VERIFIKASI_EMAIL_MENIT`), naik dari bawaan Laravel 60 menit. 60 menit terlalu pendek untuk layanan publik: orang membuka emailnya beberapa jam kemudian, lalu meminta tautan baru — dan tiap permintaan ulang memakan kuota kirim yang terbatas. Angka yang sama dipakai saat membuat tautan, di badan email, dan di teks halaman, jadi tidak ada dua angka yang berbeda.
+- Tautannya tetap bertanda tangan dan terikat pada id + email pemiliknya.
+- Membuka tautan tanpa sesi login → kembali ke **halaman masuk** dengan pesan "Email Anda sudah terverifikasi. Silakan masuk." (perilaku ini sudah benar sebelumnya, hanya diuji ulang).
+
+### 4. Masuk dengan email **atau** nomor telepon
+
+- Satu isian `identitas` menerima keduanya; bentuknya ditebak dari ada tidaknya `@`.
+- Nomor telepon **tidak** diserahkan mentah ke guard sebagai `['no_hp' => …]`. Kolom itu tidak dijamin unik — baris lama bisa diinput petugas dengan nomor sama — jadi nomornya diterjemahkan dulu menjadi email pemiliknya, hanya di antara baris yang benar-benar punya akun. Penulisan `0812…`, `+62 812…`, dengan spasi atau tanda hubung sama-sama dikenali karena kedua sisi diringkas ke angka saja.
+- Nomor yang tidak ditemukan tetap diteruskan sebagai email kosong supaya gagalnya lewat jalur yang sama — halaman ini tidak bisa dipakai menebak nomor mana yang terdaftar.
+- Captcha ditambahkan di sini juga.
+
+### 5. Penghalang Verifikasi Data Diri Pemohon
+
+Lapisan penuh layar (`akun/partials/popup-verifikasi.blade.php`) menutup portal pengguna selama data diri belum disetujui petugas. Isinya menyesuaikan status (belum diisi / sedang diperiksa / ditolak), menyebut status terkini, dan hanya menyediakan dua jalan: **Buka Data Pemohon & Berkas** atau keluar dari akun.
+
+- Halaman Data Pemohon sendiri, penyimpanannya, unduhan KTP, dan tombol keluar **tidak** ikut ditutup — kalau ikut, syaratnya tidak akan pernah bisa dipenuhi.
+- Lapisan ini urusan tampilan. Pembatasan yang sebenarnya ada di server: **Permohonan** sudah dijaga sejak sebelumnya, dan pada putaran ini **Keberatan** (`create` + `store`) ikut dijaga — sebelumnya bisa diakses langsung lewat URL.
+- Selagi berkas masih diperiksa, portal **tetap** terkunci sesuai permintaan. Karena pada tahap itu pemohon tidak punya lagi yang bisa dikerjakan, perilakunya bisa dilonggarkan lewat `PPID_BLOKIR_SAAT_MENUNGGU=false` tanpa mengubah kode.
+
+### 6. Janji layanan 14 hari kerja
+
+`config('ppid.akun.sla_verifikasi_hari_kerja')` (bawaan 14) ditampilkan di lapisan penghalang dan di banner status pada Dashboard/Permohonan.
+
+### Konfigurasi email
+
+`.env` fe-ppid disetel ke SMTP Niagahoster: `srv179.niagahoster.com`, port **465** (SSL), pengguna dan pengirim **`noreply-ppid@foodstation.co.id`**.
+
+Percobaan pertama memakai `reply-ppid@…` (tanpa `no`) dan ditolak `535 Incorrect authentication data`; setelah alamatnya dibetulkan, autentikasi dijawab `235 Authentication succeeded` dan satu email verifikasi sungguhan berhasil terkirim.
+
+Server mengumumkan batas kirimnya sendiri: `MAILMAX=1000`, `RCPTMAX=50` — itulah kuota yang dijaga oleh masa berlaku tautan 24 jam dan penolakan domain mati pada validasi `rfc,dns`.
+
+### Pengetatan AUTH (pengguna & admin)
+
+Bukan satu rem, melainkan berlapis — captcha saja mudah dilewati skrip yang mengirim langsung ke endpoint.
+
+**Portal pengunjung (fe-ppid)**
+
+- **Captcha gambar buatan sendiri** (`App\Support\Captcha`, GD): tanpa layanan pihak ketiga, jadi tidak ada ketergantungan jaringan luar saat orang mendaftar. Kodenya **tidak pernah disimpan apa adanya** — hanya HMAC-nya yang dititipkan di session; berlaku 5 menit; **sekali diperiksa langsung dibuang**, sehingga satu gambar tidak bisa dipakai menebak berkali-kali. Huruf besar/kecil tidak dibedakan.
+- **Honeypot** `alamat_surat`: isian yang disembunyikan dari mata, pembaca layar, dan urutan tab. Terisi = pasti bukan manusia.
+- **Jeda pengisian minimum**: waktu formulir dibuka dititipkan **terenkripsi** sehingga tidak bisa dipalsukan klien; kiriman yang datang di bawah 3 detik ditolak, begitu pula formulir yang sudah dibuka lebih dari 2 jam (agar penanda waktunya tidak bisa dipakai berulang).
+- **Batas percobaan masuk berlapis**: per kombinasi identitas + IP (5/menit, sudah ada) **ditambah** per IP saja (20/menit). Yang kedua menahan penyerang yang mencoba banyak akun sekaligus dari satu tempat — pola itu lolos dari batas per-identitas karena tiap percobaan memakai identitas berbeda.
+- Pesan gagal tidak membedakan "akun tidak ada" dan "password salah".
+
+**Panel admin (api-ppid)**
+
+- Ditambah **kunci akun sementara**: 10 kegagalan dalam jendela 15 menit → percobaan berikutnya dijawab **429** selama sisa waktu itu. Melengkapi `throttle:login` yang jendelanya hanya satu menit dan karenanya masih mengizinkan penebakan pelan-pelan sepanjang hari. Kejadiannya dicatat ke `audit_log` sebagai `login_locked`.
+- Syarat kata sandi akun petugas sudah kuat sejak sebelumnya (minimal 12 karakter, huruf besar-kecil, angka, simbol) — tidak diubah.
+
+**Injeksi SQL.** Tidak ada satu pun query yang menyambung isian pengguna ke SQL: seluruh modul lewat Eloquent, kolom `sort`/`filter` di panel dicocokkan ke daftar putih, dan satu-satunya ekspresi mentah yang baru (normalisasi nomor telepon saat masuk) memakai parameter terikat.
+
+### Dua bug yang ditemukan saat pengujian dan ikut dibetulkan
+
+1. **Isian captcha tetap wajib walau captcha dimatikan** lewat konfigurasi — formulirnya jadi mustahil dikirim karena isiannya memang tidak dirender. Sekarang wajibnya ikut sakelar yang sama.
+2. **Permintaan gambar captcha menimpa "halaman sebelumnya".** `StartSession` mencatat setiap GET biasa, dan `<img>` termasuk GET biasa — akibatnya `back()` setelah validasi gagal melempar pengguna ke berkas gambar, bukan kembali ke formulirnya. Diperbaiki dengan middleware `BukanHalamanSebelumnya` pada rute captcha.
+
+Ditemukan juga bahwa pesan penolakan honeypot/jeda sebelumnya menumpang pada isian captcha, sehingga hilang tanpa jejak saat captcha dimatikan. Sekarang pesannya punya kunci sendiri (`perisai`) dan tempat tayang sendiri.
+
+### Verifikasi
+
+Diuji lewat HTTP sungguhan pada `php artisan serve` (akun uji `uji.alur63@foodstation.co.id`, **sudah dihapus permanen** beserta baris audit uji):
+
+- **Daftar** → **302 ke `/akun/masuk`**, halaman masuk menampilkan "Verifikasi email dulu sebelum masuk" beserta alamat tujuan dan "Tautannya berlaku 24 jam."
+- **Tautan verifikasi** dari log: `expires` = besok pukul 07.41 terhadap waktu uji 07.42 hari ini → **tepat 24 jam**. Dibuka → **302 ke `/akun/masuk`** dengan "Email Anda sudah terverifikasi. Silakan masuk."
+- **Masuk memakai `+62 812 3456 7890`** (didaftarkan sebagai `0812-3456-7890`) → **302 ke `/akun`**, sesi terbentuk.
+- **Lapisan penghalang**: muncul di `/akun` dan `/akun/histori`, **tidak** muncul di `/akun/pengaturan/data-pemohon`; teksnya memuat "paling lama 14 hari kerja" dan status terkini.
+- **Gerbang server**: `/akun/permohonan/baru` dan `/akun/keberatan/baru` sama-sama **302 ke Data Pemohon**.
+- **Honeypot terisi** → ditolak; **kiriman di bawah 3 detik** → ditolak; keduanya menampilkan pesannya dan **0 baris tersimpan** di basis data.
+- **Captcha**: endpoint mengembalikan **PNG sah** (`89 50 4E 47`, ~5,6 KB) dengan `Content-Type: image/png`; jawaban salah ditolak dan pengguna tetap belum masuk; setelah perbaikan, `back()` mendarat di `/akun/masuk`. Uji satuan: jawaban benar (huruf kecil) diterima, salah ditolak, **kode yang sama tidak bisa dipakai dua kali**, kode kedaluwarsa ditolak, isian kosong ditolak.
+- **Kunci akun admin**: percobaan ke-1..10 dijawab **401**, percobaan ke-11 dijawab **429** "Terlalu banyak percobaan masuk. Coba lagi dalam 896 detik."
+- **SMTP**: `AUTH LOGIN` ke `srv179.niagahoster.com:465` dijawab **`235 Authentication succeeded`**. Satu email verifikasi sungguhan dikirim lewat jalur aplikasi ke kotak surat itu sendiri (`noreply-ppid@foodstation.co.id`) — tanpa exception dan tanpa peringatan di log. Selama pengujian alur lainnya mailer dialihkan ke `log` supaya tidak ada email yang terbuang, lalu dikembalikan ke `smtp`.
+- 7 rute publik dan halaman akun diperiksa **200**; `php -l` bersih.
+
+### Yang belum dikerjakan
+
+- Captcha gambar ini **tidak dapat diakses pembaca layar**. Situs sudah memakai widget aksesibilitas EqualWeb, jadi ini penurunan yang nyata bagi pengguna tunanetra. Alternatif yang setara aman dan tetap terbaca: pertanyaan hitung sederhana dalam bentuk teks. Belum dikerjakan karena permintaannya menyebut "konfirmasi Captcha".
+- Permintaan **lonceng notifikasi di portal pemohon** yang tertulis di bawah blok langkah 63 belum dikerjakan — nomornya tidak termasuk yang diminta pada putaran ini.
+
+---
+
+
+## Status Pengerjaan (putaran 42 — langkah 61, 62)
+
+### Langkah 61 — "Diubah oleh" dan "Diubah" tersembunyi dulu
+
+Kolomnya tetap ada di setiap modul, hanya tidak ditampilkan sejak awal. Operator memunculkannya lewat tombol **Show/Hide columns** di toolbar tabel (ikon `lucide:columns-3-cog`), dan pilihannya bertahan selama halaman itu dibuka.
+
+- `lib/jejak.ts` menambah `visibilitasAwalJejak(config)` yang menghasilkan `{ pengubah: false, updated_at: false }`. Dipakai `ResourceListPage` sebagai `initialState.columnVisibility`, dihitung sekali lewat `useState(() => …)` karena MRT hanya membaca `initialState` pada render pertama — setelah itu visibilitas kolom milik operator dan tidak boleh ditimpa ulang.
+- Kolom bernama sama yang **ditulis sendiri** oleh sebuah modul tidak ikut disembunyikan: modul itu memang sengaja memilihnya sebagai kolom utama.
+- `DataTable` sebelumnya memakai `_.defaults` yang hanya mengisi kunci kosong, jadi `initialState` dari pemanggil akan **menghapus seluruh bawaan** (kerapatan, pin kolom, ukuran halaman). Sekarang `initialState` dikeluarkan lebih dulu lalu digabung per kunci, sehingga bawaan tetap hidup dan pemanggil cukup mengirim yang ingin diubah. Tabel lain tidak terpengaruh karena tak satu pun mengirim `initialState`.
+- Pasangan **"Dihapus oleh"/"Dihapus"** tetap tampil apa adanya — kolomnya memang hanya muncul saat filter **Status data** sedang membuka arsip penghapusan, jadi menyembunyikannya di sana justru melawan alasan operator membukanya.
+
+### Langkah 62 — label kolom dipendekkan
+
+`Dibuat pada` → **`Dibuat`**, `Diubah pada` → **`Diubah`**. Kata "pada" tidak menambah arti; kolom sebelahnya sudah bernama "Dibuat oleh"/"Diubah oleh" sehingga bedanya tetap terbaca.
+
+`Dihapus pada` ikut jadi **`Dihapus`** supaya ketiganya seragam — ini di luar yang diminta, dan cuma label, jadi mudah dikembalikan bila memang ingin tetap "Dihapus pada".
+
+### Rapi-rapi yang menyertai
+
+- Modul **Halaman Statis** tidak lagi menulis kolom `editor` ("Diubah oleh") dan `updated_at` ("Diperbarui") sendiri — keduanya sudah datang dari jejak dokumen, termasuk aturan sembunyikan-dulu-nya. Tanpa ini modul tersebut jadi satu-satunya yang menampilkan "Diubah" secara bawaan.
+- Muatan relasi `editor:id,name` di `HalamanStatisController` dilepas: `CrudController` sudah memuat `pembuat`/`pengubah`/`penghapus` untuk semua modul. Relasi `editor()` di model tetap ada sebagai nama lama.
+- Kunci terjemahan yang tidak terpakai lagi dihapus dari `@i18n/kamusPpid.ts` (`Dibuat pada`, `Diubah pada`, `Dihapus pada`, `Diperbarui`); `Diubah` ditambahkan; `Diubah oleh` diselaraskan dari `Edited by` menjadi `Updated by`.
+
+### Verifikasi
+
+- Tombol **Show/Hide columns** dipastikan memang dirender: `DataTableTopToolbar` memasang `MRT_ToolbarInternalButtons`, dan MRT menampilkan `MRT_ShowHideColumnsButton` bila `enableHiding || enableColumnOrdering || enableColumnPinning` — dua yang terakhir memang `true` di `DataTable`, dan `enableHiding` tidak pernah dimatikan.
+- `php -l` bersih; `npx tsc --noEmit` + `npx vite build` (be) bersih.
+
+**Belum diverifikasi lewat browser.** Perubahan putaran ini seluruhnya tampilan, jadi pemeriksaan visual sebaiknya dilakukan sebelum dianggap tuntas.
+
+---
+
+
+## Status Pengerjaan (putaran 41 — langkah 60)
+
+Kolom **Diubah** sekarang hanya terisi oleh perubahan isi yang sungguhan. Sebelumnya Laravel menyamakan `updated_at` dengan `created_at` saat baris dibuat, jadi "Diubah pada" selalu terisi walau belum ada satu pun aktivitas Ubah — angka yang tidak berarti apa-apa.
+
+### Yang diperbaiki di sisi tulis
+
+- **Buat data baru → "Diubah" kosong.** Trait `MencatatPelaku` (api-ppid) meng-null-kan `updated_at` + `updated_by` pada event `creating`, sebelum Laravel sempat menstempelnya. Pasangannya di fe-ppid adalah trait baru `TanpaCapUbahSaatDibuat`, dipasang pada model yang barisnya dibuat pengunjung: `PermohonanInformasi`, `KeberatanInformasi`, `Pemohon`, `SurveyKepuasan`.
+- **Hapus data tidak lagi mengisi "Diubah".** Menghapus bukan mengubah isi. `deleting` mematikan `timestamps` supaya `runSoftDelete()` tidak menstempel `updated_at`, lalu `deleted` mengisi `deleted_by` lewat query builder mentah (`Eloquent\Builder::update()` akan menambahkan `updated_at` sendiri — persis yang dihindari).
+- **Login tidak lagi mengisi "Diubah" pada modul Pengguna.** `AuthController@signIn` menyimpan `last_login_at`; penyimpanannya kini dibungkus `timestamps = false`. Cap waktu login bukan penyuntingan data pengguna.
+- Penghitung tampilan berita di fe-ppid (`KontenController@beritaShow`) memang sudah memakai `timestamps = false` sejak awal — tidak perlu diubah.
+
+### Data lama dikosongkan
+
+Migrasi `2026_08_14_000002_clear_updated_trail_never_edited` mengosongkan `updated_at` pada **22 tabel** modul dengan syarat `updated_by IS NULL`.
+
+Syarat itu penting: sejak jejak dokumen aktif, setiap perubahan isi yang sungguhan selalu meninggalkan pelaku di `updated_by`. Baris tanpa pelaku berarti tidak pernah disunting lewat panel, jadi aman dikosongkan — dan migrasinya tetap aman bila dijalankan lagi di lingkungan yang datanya sudah hidup, karena baris yang benar-benar pernah diubah tidak tersentuh.
+
+Pemeriksaan sebelum dijalankan membenarkan dugaan pada langkah ini: **tidak ada satu pun baris dengan `updated_by` terisi**. Nilai `updated_at` yang ada semuanya cap waktu semu — sama persis dengan waktu pembuatan, atau seragam `2026-08-12 03:30:50` yang berasal dari `TerjemahanInggrisSeeder`. Migrasinya **tidak bisa dibalik**: nilai lama itu tidak disimpan di mana pun, tetapi memang bukan riwayat penyuntingan yang hilang.
+
+### Tampilan
+
+Blok **Jejak dokumen** membedakan dua keadaan yang sebelumnya sama-sama tertulis "Tidak tercatat":
+- **"Belum pernah diubah"** — baris memang belum pernah disunting;
+- **"Tidak tercatat"** — ada cap waktunya tetapi pelakunya tidak terekam (mis. data lama, atau perubahan dari situs publik oleh pemohon sendiri yang bukan pengguna panel).
+
+Kolom "Diubah oleh"/"Diubah pada" di daftar modul menampilkan `—` bila kosong.
+
+### Verifikasi
+
+- **Buat data** (`POST banner-slider`, `POST faq`, `Pemohon::create` di fe-ppid) → `updated_at` dan `updated_by` **null**, `created_by` terisi.
+- **Ubah data** (`PUT banner-slider`) → `updated_at` terisi waktu baru + `updated_by` terisi.
+- **Hapus setelah diubah** → `deleted_at`/`deleted_by` terisi, `updated_at` **tetap pada waktu perubahan tadi** (tidak ikut maju).
+- **Buat lalu hapus tanpa pernah diubah** → `deleted_at`/`deleted_by` terisi, `updated_at`/`updated_by` **tetap null**.
+- **Hapus massal** (`hapus-massal` kategori berita, 2 baris) → hasil sama.
+- **Login ulang** → `last_login_at` terisi, `updated_at` tetap **null**.
+- **23 endpoint modul disapu**: semuanya **200**, dan **tidak ada** `updated_at` terisi di seluruh modul setelah migrasi.
+- **17 rute publik fe-ppid** semuanya **200**.
+- `php -l` bersih; `npx tsc --noEmit` + `npx vite build` (be) bersih.
+- Data uji dan admin sementara sudah dihapus permanen setelah pengujian.
+
+**Belum diverifikasi lewat browser** (pengujian Playwright dihentikan atas permintaan). Perubahan tampilan pada putaran ini hanya label di blok Jejak dokumen; jalur datanya sudah diuji lewat HTTP.
+
+---
+
+
+## Status Pengerjaan (putaran 40 — langkah 58, 59)
+
+### Langkah 58 — modul Laporan Statistik dilepas dari panel
+
+Modulnya sudah tidak ada di registry (`lib/resources.ts`) maupun menu (`lib/navigation.ts`); grup **Layanan** kini berisi Permohonan, Keberatan, Laporan Pelayanan, Pemohon, dan Survei. Sisa kunci terjemahannya (`Laporan Statistik` dan dua teks bantuan khusus laporan statistik) dibersihkan dari `@i18n/kamusPpid.ts` pada putaran ini.
+
+Yang **tidak** dihapus: tabel `laporan_layanan` beserta baris bertipe `statistik_informasi` dan endpoint `laporan-layanan/rekap` di API. Halaman **Laporan Statistik Informasi Publik** di situs publik masih memakai data itu, jadi menghapusnya akan mematikan halaman publik — yang diminta hanya modulnya di panel.
+
+### Langkah 59 — jejak dokumen (traceability) di semua modul
+
+Setiap tabel modul kini punya enam kolom seragam: `created_at`/`created_by`, `updated_at`/`updated_by`, `deleted_at`/`deleted_by`.
+
+- **Migrasi `2026_08_14_000001_add_traceability_columns`** menambahkannya ke **22 tabel** modul (kategori informasi, informasi publik, informasi dikecualikan, pemohon, permohonan, keberatan, laporan layanan, survei, kategori berita, berita, galeri, FAQ, banner, struktur, halaman statis, maklumat, regulasi, menu navigasi, tautan terkait, pengaturan situs, roles, users). Kolom pelaku memakai `nullOnDelete` supaya pengguna yang dihapus tidak menyeret dokumennya ikut hilang.
+- **Penghapusan jadi soft delete.** Tanpa itu `deleted_by` tidak ada gunanya — barisnya sudah lenyap sebelum sempat dicatat. Model di api-ppid **dan** fe-ppid sama-sama memakai `SoftDeletes`, jadi baris terhapus tetap tidak tampil di situs publik. Satu query mentah yang tidak lewat model (`DB::table('survey_kepuasan')->avg('rating')` di `PpidController@statistikRingkas`) diberi `whereNull('deleted_at')` sendiri.
+- **Pengisiannya otomatis** lewat trait `App\Models\Concerns\MencatatPelaku`: `creating` mengisi `created_by` + `updated_by`, `updating` mengisi `updated_by`, `deleting` mengisi `deleted_by`, `restoring` mengosongkannya lagi. Ketiganya **tidak fillable** — pelaku diambil dari token yang login, bukan dari isian klien, jadi tidak bisa dipalsukan lewat body request. Aksi dari luar panel (situs publik, seeder, artisan) meninggalkan pelaku `NULL`, bukan tertulis atas nama orang lain.
+- **`CrudController`** memuat relasi `pembuat`, `pengubah`, `penghapus` (`id,name` saja) di semua daftar dan detail, mengizinkan pengurutan kolom jejak tanpa perlu didaftarkan ulang tiap modul, dan menerima `?terhapus=hanya|semua` untuk membuka arsip penghapusan.
+- **Panel** menempelkan kolom **Dibuat oleh / Dibuat pada / Diubah oleh / Diubah pada** ke setiap daftar modul secara otomatis (`lib/jejak.ts`) — modul baru ikut dapat tanpa mengubah `resources.ts`. Filter **Status data** (Aktif / Terhapus / Aktif + terhapus) membuka data terhapus; saat itu aktif, dua kolom **Dihapus oleh / Dihapus pada** ikut muncul dan tombol Tambah/Ubah/Hapus dimatikan karena barisnya tinggal arsip. Formulir Ubah menampilkan blok **Jejak dokumen** berisi ketiganya.
+- **Audit Log dikecualikan** (`tanpaJejak: true`): tabel itu memang catatan perubahan, barisnya tidak pernah diubah atau dihapus.
+- **Data lama tidak diisi mundur.** Baris yang dibuat sebelum migrasi bernilai `NULL` dan tampil sebagai "Tidak tercatat" — menebak pelaku/waktu untuk data lama justru merusak nilai jejaknya. Blok Jejak dokumen tetap muncul supaya jelas bedanya "belum pernah dicatat" dan "modul ini memang tanpa jejak".
+
+Hubungannya dengan `audit_log` yang sudah ada: log berisi **riwayat lengkap** tiap aksi (termasuk nilai lama/baru dan IP), kolom-kolom baru ini adalah **keadaan terakhir** yang bisa ditampilkan dan diurutkan langsung di daftar modul.
+
+### Verifikasi
+
+Diuji lewat HTTP sungguhan dengan admin sementara (`uji.jejak@local.test`, **sudah dihapus permanen setelah pengujian** beserta data ujinya):
+
+- Siklus penuh pada modul FAQ: `POST` → `created_by=6, updated_by=6`; `PUT` → `updated_by=6` + `updated_at` baru; `DELETE` → `deleted_by=6`, `deleted_at` terisi, baris **hilang dari daftar aktif**; `GET ?terhapus=hanya` → baris itu muncul lengkap dengan `pembuat`, `pengubah`, `penghapus`. `restore()` mengosongkan `deleted_by` kembali.
+- **23 endpoint modul disapu**: semuanya **200**, dan setiap modul yang ada isinya mengembalikan relasi `pembuat`. Audit Log benar tidak mengembalikannya.
+- **18 rute publik fe-ppid** semuanya **200** (`/cek-status` 302 ke login seperti sebelumnya); halaman FAQ, banner beranda, regulasi, dan berita tetap menampilkan isinya — soft delete tidak menyembunyikan data aktif.
+- Panel dibuka dengan Playwright: daftar FAQ dan Banner menampilkan kolom "Dibuat oleh / Dibuat pada / Diubah oleh / Diubah pada"; filter **Status data** ada di keduanya dan **tidak ada** di Audit Log; memilih **Terhapus** memunculkan kolom "Dihapus oleh / Dihapus pada" beserta barisnya; formulir Ubah menampilkan blok **Jejak dokumen**. Tidak ada error di console.
+- `php -l` bersih untuk seluruh berkas yang disentuh; `npx tsc --noEmit` dan `npx vite build` (be) bersih.
+
+---
+
+
+## Status Pengerjaan (putaran 39 — langkah 57)
+
+Ikon menu diambil dari sprite `be-ppid/public/assets/icons/lucide.svg`, dan nama ikon harus persis sama dengan id `<symbol>` di dalamnya. Modul FAQ memakai `lucide:circle-question-mark` — id itu tidak ada di sprite, jadi `<use>`-nya tidak menemukan apa pun dan menunya tampil tanpa ikon (bukan ikon gagal muat, melainkan nama yang salah).
+
+- Ikon FAQ diganti ke **`lucide:circle-help`** (id yang memang ada di sprite).
+- Seluruh nama ikon lain di panel ikut diperiksa terhadap sprite: **36 ikon dipakai, hanya FAQ yang salah nama**; sisanya cocok.
+- Dua ikon pada `ModulSistemSeeder` juga tidak ada di sprite heroicons: `heroicons-outline:photograph` → `heroicons-outline:photo` (Galeri) dan `heroicons-outline:exclamation` → `heroicons-outline:exclamation-triangle` (Keberatan). Ikon di tabel `modul_sistem` belum dipakai menu panel (menu memakai ikon dari registry), tetapi dibetulkan sekalian supaya tidak jadi jebakan bila kolomnya dipakai nanti.
+
+### Verifikasi
+
+- Panel dibuka dengan Playwright memakai admin sementara (**sudah dihapus setelah pengujian**): menu FAQ kini bergambar ikon tanda tanya dalam lingkaran.
+- Pemeriksaan nama ikon terhadap sprite: 0 nama yang tidak ditemukan setelah perbaikan.
+- `php -l` bersih, seeder dijalankan ulang; `npx tsc --noEmit` + `npx vite build` (be) bersih.
+
+---
+
+
+## Status Pengerjaan (putaran 38 — langkah 54, 55, 56)
+
+### Langkah 54 — modul Tautan dan Modul Sistem dilepas
+
+- Keduanya dihapus dari registry modul panel (`lib/resources.ts`) dan dari menu (`lib/navigation.ts`).
+- Baris `tautan-terkait` di tabel `modul_sistem` **dinonaktifkan** (bukan dihapus) lewat `ModulSistemSeeder`. Efeknya berantai: hilang dari menu, hilang dari matrix hak akses, dan endpoint-nya ditolak middleware `akses:` untuk role non-super-admin. Data `tautan_terkait` beserta hak akses lamanya tetap tersimpan.
+- "Modul Sistem" tidak perlu halaman sendiri: daftar modul kini muncul sebagai baris-baris matrix pada dialog **Atur hak akses** di modul Role, diambil langsung dari tabel `modul_sistem`.
+- Situs publik tidak terpengaruh — tabel `tautan_terkait` memang masih kosong, jadi blok tautan di footer sudah tidak tampil sejak awal.
+
+### Langkah 55 — modul Pemohon jadi baca saja
+
+- Konfigurasi modul diberi `readOnly: true` dan daftar field dikosongkan: tombol Tambah, aksi Ubah/Hapus, dan formulirnya hilang.
+- Rute API-nya ikut dipersempit: hanya `GET pemohon` dan `GET pemohon/{id}`. Tidak ada lagi POST/PUT/DELETE, jadi pembatasannya bukan sekadar menyembunyikan tombol.
+- Alasannya ditulis di deskripsi modul: akun pemohon dibuat dan disunting sendiri oleh pengunjung lewat Registrasi Akun di situs publik.
+
+### Langkah 56 — matrix hak akses role yang dinamis
+
+Fondasinya sudah ada (tabel `role_modul_akses`, middleware `akses:{slug},{aksi}`, endpoint `GET/PUT role/{id}/akses`, penyaringan menu di panel), yang belum ada adalah **layar untuk mengaturnya**. Sekarang ditambahkan:
+
+- **Dialog "Atur hak akses"** pada modul Role (`components/RoleAksesDialog.tsx`), dibuka dari menu aksi tiap baris role.
+- Daftar modulnya **diambil dari API**, bukan ditulis di panel — modul baru yang ditambahkan ke `modul_sistem` otomatis muncul sebagai baris baru tanpa mengubah kode.
+- Enam kolom hak per modul: **Lihat, Tambah, Ubah, Hapus, Setujui, Ekspor**. Ada centang induk per kolom (semua modul sekaligus) dan per baris (semua hak satu modul).
+- Aturan bawaan yang dijaga di layar: mencentang hak tulis ikut menyalakan **Lihat**, dan mematikan **Lihat** ikut mematikan semua hak tulis — hak tulis tanpa hak lihat tidak ada gunanya karena modulnya tidak muncul di menu.
+- Role `super-admin` ditampilkan terkunci (API juga menolaknya) supaya tidak ada keadaan "semua orang terkunci di luar".
+- Setelah disimpan, cache menu (`me/navigation`) di-invalidasi sehingga menu dan tombol langsung menyesuaikan bila yang diubah adalah role milik pengguna yang sedang login.
+
+**Alur lengkapnya sekarang:** buat Role → atur matriknya → buat Pengguna dan pilih rolenya. Menu samping hanya berisi modul dengan hak **Lihat**, tombol Tambah/Ubah/Hapus mengikuti hak masing-masing, dan API menolak permintaan di luar hak itu — jadi pembatasannya tidak bisa diakali dari peramban.
+
+### Verifikasi
+
+Diuji lewat HTTP sungguhan dengan pengguna admin sementara (`uji.akses@local.test`, **sudah dihapus setelah pengujian**):
+
+- `GET role/2/akses` → **18 modul** (hanya yang aktif), `tautan-terkait` **tidak ikut**.
+- `PUT role/2/akses` mematikan Tambah+Ubah pada modul FAQ → **200**, dibaca ulang: `create=false edit=false`. Nilainya **dikembalikan seperti semula** setelah uji (`create=true edit=true`).
+- `PUT role/{super-admin}/akses` → **422** "Hak akses super-admin bersifat tetap dan tidak bisa dibatasi."
+- `GET pemohon` → **200**; `POST pemohon` → **405** (rute tulisnya memang sudah tidak ada).
+- Panel dibuka dengan Playwright: menu **Konten Situs** tinggal Banner, Struktur, Regulasi, FAQ (tanpa Tautan) dan **Manajemen Sistem** tinggal Pengguna, Role, Pengaturan, Audit (tanpa Modul Sistem); halaman Pemohon tanpa tombol Tambah dan tanpa kolom aksi; dialog matrix tampil berisi 18 modul dengan ringkasan "15 dari 18 modul dapat dilihat role ini."
+- `php -l` bersih; `npx tsc --noEmit` + `npx vite build` (be) bersih.
+
+---
+
+
+## Status Pengerjaan (putaran 37 — langkah 52)
+
+### Banner multi gambar + teks + animasi
+
+- Tabel `banner_slider` ditambah `judul_en`, `ringkasan`, `ringkasan_en` (migrasi `2026_08_13_000002`); model, validasi, dan pencarian `BannerSliderController` menyesuaikan.
+- Modul Banner di panel mendapat field **Judul** dan **Ringkasan**; boleh lebih dari satu banner dan tampil bergantian.
+- Slider beranda menampilkan judul + ringkasan milik slide yang sedang tayang; slide tanpa judul memakai teks bawaan beranda. Blok teks tiap slide ditumpuk pada satu sel `grid` supaya tombol di bawahnya tidak melompat saat slide berganti. Slide yang punya tautan mendapat tombol teks "Selengkapnya".
+- **Animasi:** silang-pudar gambar (masuk 1 detik, keluar 0,7 detik), teks menyusul naik-memudar (jeda 150 ms), dan gambar aktif merayap membesar (Ken Burns, `scale(1) → scale(1.08)` selama 8 detik; mati bila pengunjung memilih `prefers-reduced-motion`). Autoplay 7 detik, berhenti saat kursor di atas banner.
+
+### Penyesuaian yang diminta pada putaran ini
+
+- **Penanda nomor slide (`01 / 04`) di pojok kanan bawah dihapus.** Posisi slide sudah terbaca dari titik-titik di bawah banner.
+- **Isian Judul/Ringkasan versi Inggris dilepas dari modul Banner.** Sebagai gantinya, teks banner dicocokkan ke kamus situs (`fe-ppid/lang/en.json`) lewat `__()` saat pengunjung memilih bahasa Inggris.
+
+**Penting — tidak ada penerjemah otomatis.** Situs ini tidak memanggil layanan terjemahan mana pun. Yang berjalan adalah pencocokan ke kamus: kalimat yang sudah ada di `lang/en.json` tampil dalam Bahasa Inggris, kalimat yang belum ada **tetap tampil Bahasa Indonesia**. Jadi setiap judul/ringkasan banner baru perlu ditambahkan ke kamus itu (satu baris `"teks Indonesia": "English text"`) supaya ikut berganti bahasa. Kolom `judul_en`/`ringkasan_en` sengaja dibiarkan ada di basis data bila suatu saat isian manualnya ingin dikembalikan.
+
+### Verifikasi
+
+- Diuji dengan dua banner (satu banner uji tambahan sudah dihapus; tersisa dua banner milik CMS): tombol berikutnya memindahkan gambar, judul, ringkasan, dan titik aktif; penanda nomor sudah tidak ada.
+- Kolom `judul_en`/`ringkasan_en` dikosongkan lebih dulu, lalu `?lang=en` tetap menampilkan "Public Information Disclosure Portal" — jalur kamus terbukti bekerja; `?lang=id` menampilkan judul Indonesianya.
+- `php -l` bersih, `lang/en.json` sah; `npm run build` (fe) sukses; `npx tsc --noEmit` + `npx vite build` (be) bersih.
+
+---
+
+
+## Status Pengerjaan (putaran 36 — langkah 53)
+
+Blok **Waktu Layanan Informasi Publik** dilepas dari halaman Profil Singkat (`resources/views/ppid/profile.blade.php`). Jam layanan sekarang hanya punya satu tempat tayang: **Standar Layanan → Jalur dan Waktu Layanan**, sehingga tidak ada dua daftar jam yang bisa berbeda isinya.
+
+- Data `service_hours` untuk slug `singkat` ikut dihapus dari `PpidController::showProfilePage()` — tanpa itu datanya jadi data mati yang tidak pernah dipakai.
+- Jarak bawah blok pengantar dilepas (`mb-12` → tanpa margin) karena sekarang blok itu isi terakhir kartu; kalau dibiarkan, kartunya menyisakan ruang kosong.
+- Tautan "Jalur dan Waktu Layanan" di header dan footer tidak disentuh — itu jalan menuju halaman jam layanan yang tersisa.
+
+### Verifikasi
+
+- `php -l` bersih. `/profile/singkat`, `/profile/struktur`, `/profile/visi-misi`, `/profile/tugas-fungsi-wewenang`, dan `/standar-layanan/jalur-waktu-layanan` semuanya **200**.
+- Halaman Profil Singkat tidak lagi memuat teks "Waktu Layanan Informasi Publik" (0 kemunculan); yang tersisa hanya tautan menu "Jalur dan Waktu Layanan" di header/footer.
+- Tangkapan layar Playwright: kartu profil rapat, tanpa ruang kosong di bawah pengantar.
+
+---
+
+
+## Status Pengerjaan (putaran 34 — langkah 50)
+
+Banner beranda sebelumnya selalu terpotong: tinggi hero dipatok `min-h-[660px]` sementara lebarnya mengikuti layar, jadi `object-cover` harus memperbesar gambar sampai memenuhi lebar dan sisa atas-bawahnya dibuang. Di layar 1920 px, banner 1440 × 550 dipotong ±90 px — persis yang terlihat pada tangkapan layar acuan (tulisan "PANGAN BERKUALITAS" terpangkas).
+
+### Yang diubah
+
+- **Hero mengisi satu layar penuh**, mengikuti contoh PPID JIEP: `lg:min-h-[calc(100vh-72px)]` — tinggi viewport dikurangi header sticky (72 px), dibatasi `lg:max-h-[1100px]` supaya di layar jangkung banner tidak jadi terlalu panjang. Di bawah `lg` tetap `min-h-[560px]`.
+- Percobaan pertama memakai tinggi mengikuti rasio banner (`lg:aspect-[8/3]`, ±714 px di layar 1920). Gambarnya memang tampil utuh, tetapi tinggi banner terasa kurang dan masih menyisakan ruang sebelum section berikutnya — **diganti** dengan satu layar penuh.
+- **Scrim diringankan**: gelap hanya di sisi kiri (zona teks) dan memudar jadi bening di kanan, plus bayangan tipis di dasar. Sebelumnya seluruh banner tertutup dua lapis gelap sehingga gambarnya kusam.
+- Teks hero kembali mengalir di dalam hero (bukan `absolute`), rata tengah secara vertikal.
+
+### Ukuran gambar banner yang dianjurkan
+
+Sudah ditulis sebagai keterangan field **Gambar banner** di modul Banner (be-ppid), jadi petugas membacanya saat mengunggah:
+
+- **Ideal 1920 × 1080 px (rasio 16:9)**, minimal 1600 × 900 px.
+- Format **JPG/WEBP**, usahakan **di bawah 500 KB** (batas sistem 5 MB untuk jenis gambar).
+- Banner mengisi satu layar penuh, jadi **tepi gambar ikut terpotong** mengikuti bentuk layar pengunjung — objek penting ditaruh di tengah, hindari teks pada 15% tepi kiri/kanan.
+- **Sisi kiri juga tertutup judul dan tombol hero.**
+
+**Perlu diganti.** Banner yang terpasang sekarang 1440 × 550 (rasio 2,62) — jauh lebih lebar dari layar penuh, jadi kiri-kanannya terpotong ±27% (tulisan "FOOD STATION" dan "BERKUALITAS" terpangkas). Ganti dengan gambar 16:9 supaya hasilnya bersih.
+
+### Verifikasi
+
+- Tangkapan layar headless 1920 × 1080 dan 1366 × 768: hero mengisi layar penuh sampai batas header, tanpa ruang tersisa sebelum section berikutnya.
+- 768 px dan 430 px: susunan tetap benar, teks dan tombol terbaca.
+- `npm run build` (fe) sukses; `npx tsc --noEmit` + `npx vite build` (be) bersih.
+
+**Catatan — temuan di luar langkah ini.** Pada lebar ±430 px halaman menggulir mendatar sedikit (tombol hero dan kartu di `/regulasi` terpotong di tepi kanan). Diuji juga pada versi sebelum perubahan ini dan hasilnya sama, jadi ini bukan akibat langkah 50 melainkan luapan mendatar yang sudah ada di tata letak. Belum diperbaiki — perlu langkah tersendiri.
+
+---
+
+
+## Status Pengerjaan (putaran 33 — langkah 49)
+
+Maklumat berhenti jadi teks yang ditulis di template. Sekarang isinya **satu berkas yang diunggah petugas** dan dibaca utuh di situs publik — sama seperti maklumat cetak yang ditandatangani, bukan butir-butir yang diketik ulang di CMS.
+
+### Backend (api-ppid) — modul unggah dokumen
+
+- Tabel baru `maklumat`: `judul`/`judul_en`, `ringkasan`/`ringkasan_en` (pengantar, opsional), `file_dokumen`, `tanggal_terbit`, `status`, `published_by`. Migrasi `2026_08_13_000001_create_maklumat_table.php`, batasan status disamakan dengan tabel konten lain (`draft`/`published`/`archived`).
+- `MaklumatController` (turunan `CrudController`) + rute CRUD `api/v1/maklumat`. **Berkas wajib diisi saat membuat** — tanpa berkas modul ini kehilangan artinya. Saat status jadi Terbit, `published_by` dan `tanggal_terbit` diisi otomatis bila kosong.
+- Hak aksesnya **menumpang modul Halaman Statis** (`akses:halaman-statis,…`), mengikuti pola `pemohon`/`survey-kepuasan`. Tidak ada modul baru di matrix role, jadi tidak perlu menyeed ulang hak akses.
+- Folder unggahan `maklumat` ditambahkan ke daftar putih `UploadController`; jenisnya `dokumen_gambar` (PDF/JPG/PNG/WEBP, maks 20 MB).
+- Barisnya boleh lebih dari satu supaya maklumat lama tetap tersimpan sebagai arsip; situs memakai satu baris `published` dengan tanggal terbit terbaru.
+
+### Panel (be-ppid)
+
+Modul **Maklumat** muncul di grup *Standar Layanan*, di atas Halaman. Formulirnya: judul (+English), dokumen (wajib), tanggal terbit, status, pengantar (+English). Kolom daftar memperlihatkan tanggal terbit, status, pengunggah, dan tautan berkas.
+
+### Situs publik (fe-ppid)
+
+Halaman `/standar-layanan/maklumat-pelayanan` menarik maklumat terbit dari database, lalu:
+
+- **PDF digambar halaman demi halaman lewat pdf.js** (`data-pdf-dokumen`), persis mekanisme halaman detail Regulasi — bukan `<iframe>`, karena pembaca PDF bawaan tidak ada di semua ponsel.
+- **Gambar (PNG/JPG/WEBP) ditampilkan langsung** sebagai `<img>`.
+- Di atas dokumen ada tanggal terbit, nama pengunggah, tombol **Buka di tab baru** dan **Unduh Maklumat**.
+- Bila belum ada maklumat terbit atau database tidak terjangkau, halaman **kembali memakai teks bawaan** yang lama dan menampilkan pemberitahuan `db_notice` — halaman tidak pernah kosong.
+
+Judul dan pengantar mengikuti pengalih bahasa lewat trait `PunyaVersiInggris` (kolom `*_en`; kosong = teks Indonesia dipakai).
+
+### Data awal
+
+`MaklumatAwalSeeder` menyalin `MAKLUMAT PPID.png` ke disk `media` seperti hasil unggahan biasa lalu menerbitkannya, jadi halaman langsung menayangkan dokumen aslinya. Idempoten — berhenti bila sudah ada maklumat terbit.
+
+```
+php artisan migrate
+php artisan db:seed --class=MaklumatAwalSeeder
+```
+
+### Verifikasi
+
+- `php -l` bersih untuk seluruh berkas PHP baru/berubah; `npx tsc --noEmit` bersih di be-ppid.
+- Migrasi dan seeder dijalankan: baris terbit `uploads/maklumat/2026/08/….png`.
+- `/standar-layanan/maklumat-pelayanan` **200**, URL dokumen muncul di halaman; `?lang=en` **200** dengan judul dan tombol versi Inggris.
+- `route:list` menampilkan tujuh rute `api/v1/maklumat`.
+
+**Catatan.** `@php(...)` bentuk satu baris tidak dikompilasi utuh oleh Blade di versi ini (tag `<?php` dibuka tanpa penutup, sisa berkas berhenti dikompilasi). Dipakai bentuk blok `@php … @endphp`.
+
+**Catatan.** Verifikasi panel masih statis (typecheck); modul Maklumat belum dibuka lewat browser.
+
+---
+
+
+## Status Pengerjaan (putaran 32 — langkah 48)
+
+Susunan Dashboard diurutkan ulang persis seperti yang diminta:
+
+1. **Kartu beban kerja** — Total permohonan, Menunggu persetujuan, Lewat batas waktu, Keberatan belum selesai
+2. **Kartu konten** — Informasi Publik, Berita, Kepuasan Pemohon *(naik ke atas; baris kembarnya di bagian bawah halaman dihapus)*
+3. **Perlu tindakan segera** — **disorot**
+4. **Kepatuhan SLA**
+5. **Capaian KPI**
+6. **Permohonan masuk vs ditanggapi** (2 kolom) berdampingan dengan **Sebaran status** dan **Kategori paling diminta** (1 kolom)
+
+### Sorotan pada "Perlu tindakan segera"
+
+Kartunya diberi bingkai tebal dan latar tipis yang **warnanya mengikuti keadaan**: merah bila ada permohonan mendesak (plus ikon sirene dan jumlahnya sebagai chip), hijau bila bersih. Warnanya diambil dari palet tema, jadi ikut menyesuaikan mode terang/gelap.
+
+### Tren bulanan + pembanding tahun
+
+Bentuknya berubah dari "12 bulan terakhir" jadi **ringkasan Januari–Desember**, supaya bulan yang sama antar tahun berdiri sejajar dan bisa dibandingkan.
+
+- Tahun utama mengikuti penyaring tahun; tanpa penyaring dipakai tahun berjalan.
+- Ditambah **maksimal 2 tahun sebelumnya** sebagai pembanding (total 3 tahun) — hanya tahun yang benar-benar punya data yang ditarik.
+- Tiap bulan menampilkan satu batang per tahun; tahun utama digambar tebal berwarna, tahun pembanding lebih tipis dan diredupkan. Di kanannya angka `masuk/ditanggapi`.
+- **Skala batang disamakan lintas tahun** — kalau tiap tahun dinormalkan ke lebarnya sendiri, tahun sepi akan terlihat sama ramainya dengan tahun ramai.
+- Di atas grafik ada chip total setahun per tahun pembanding.
+
+Sisi API: `analisa.tren` berubah dari daftar datar jadi objek `{ tahun_utama, tahun_dibanding, bulanan, total }`.
+
+### Verifikasi
+
+- `php -l` bersih; `npx tsc --noEmit` bersih; `npx vite build` sukses; `/ppid/dashboard` 200 di dev server panel.
+- **Perbandingan tahun diuji dengan tiga baris permohonan sementara** (dua di 2025, satu di 2024): `tahun_dibanding` terbaca `[2026, 2025, 2024]`, total per tahun `2026: 5/2, 2025: 2/2, 2024: 1/1`, dan baris Maret benar menempatkan angkanya pada kolom 2025. Saat penyaring diarahkan ke 2025, pembandingnya menyusut jadi `[2025, 2024]` — tahun setelahnya memang tidak ikut dibandingkan. **Ketiga baris ujinya sudah dihapus**; jumlah permohonan kembali 5.
+- Kamus i18n +6 kunci (355) — cakupan 354 string UI, sisa 3 (`FAQ`, `ID`, `IP`) memang sama dalam Bahasa Inggris.
+
+**Catatan.** `tanggal_permohonan` bukan kolom `fillable` pada `PermohonanInformasi` — nilainya diisi database. Ini ketahuan saat menyiapkan baris uji (tanggal yang saya kirim diabaikan, barisnya jatuh ke tahun berjalan). Bukan bug: memang seharusnya server yang menentukan kapan permohonan masuk. Dicatat di sini supaya tidak salah paham kalau nanti perlu membuat data uji lagi.
+
+**Catatan.** Verifikasi panel masih statis (typecheck, build, uji controller, rute); belum dibuka lewat browser.
+
+---
+
+
+## Status Pengerjaan (putaran 31 — langkah 47)
+
+Halaman **Analitik & SLA** yang dibuat pada putaran 30 dilebur ke **Dashboard**. Sekarang hanya ada satu halaman gambaran umum di panel, tetapi isinya sudah lengkap dengan analisa.
+
+### Susunan Dashboard sekarang
+
+Dari "apa keadaannya" sampai "apa yang harus dikerjakan":
+
+1. **Ringkasan** — total permohonan (+ berapa menunggu tindakan), menunggu persetujuan, lewat batas waktu, keberatan belum selesai.
+2. **Kepatuhan SLA** — persentase kepatuhan, tepat waktu, telat dijawab, lewat batas belum dijawab, mendekati batas, plus kepatuhan tanggapan keberatan.
+3. **Capaian KPI** — 5 indikator beserta target, realisasi, dasar perhitungan, dan tanda Tercapai / Belum tercapai.
+4. **Analisa** — tren 12 bulan (masuk vs ditanggapi), sebaran status, kategori paling diminta.
+5. **Perlu tindakan segera** — 10 permohonan paling mendesak lengkap dengan hitungan telat/sisa hari.
+6. **Kondisi konten** — informasi publik, berita, kepuasan pemohon.
+
+Penyaring tahun ikut pindah, jadi seluruh halaman bisa dilihat per tahun.
+
+### Yang berubah di kode
+
+- **Satu endpoint untuk satu halaman.** `GET /v1/dashboard/analitik` diperluas: `ringkasan` menambah `perlu_tindakan`, `menunggu_approval`, dan `keberatan_belum_selesai`; ditambah blok `konten` (informasi publik & berita). Dashboard kini memanggil endpoint ini saja — sebelumnya dua halaman memanggil dua endpoint dan berisiko menampilkan angka yang berbeda untuk hal yang sama.
+- Jumlah konten sengaja **tidak** ikut disaring tahun: yang relevan adalah keadaan pustaka informasi sekarang, bukan per periode.
+- `PpidAnalitik.tsx` dihapus; isinya masuk `PpidDashboard.tsx`.
+- **Alamat lama `/ppid/analitik` tetap hidup** sebagai pengalihan ke `/ppid/dashboard`, supaya tautan atau bookmark yang sudah tersebar tidak mati.
+- Entri menu "Analitik & SLA" dilepas — menu panel kembali hanya punya satu item gambaran umum: Dashboard.
+- Endpoint lama `GET /v1/dashboard/ringkasan` **dibiarkan ada** (tidak lagi dipakai panel) supaya integrasi lain yang mungkin memakainya tidak ikut putus. Bilang saja kalau mau dihapus.
+
+### Verifikasi
+
+- `php -l` bersih; `npx tsc --noEmit` bersih; `npx vite build` sukses.
+- Respons endpoint diperiksa: delapan blok (`tahun`, `tahun_tersedia`, `ringkasan`, `konten`, `sla`, `analisa`, `kpi`, `tindakan`), 5 indikator KPI, tren 12 bulan.
+- `/ppid/dashboard` dan `/ppid/analitik` sama-sama dilayani dev server panel (200); `navigation.ts` sudah tidak memuat entri analitik.
+- Kamus i18n dirapikan: 4 kunci yang tidak lagi terpakai dilepas, jadi **349 kunci untuk 349 string UI** — sisa 3 (`FAQ`, `ID`, `IP`) memang sama dalam Bahasa Inggris.
+
+**Catatan.** Sama seperti putaran sebelumnya, verifikasi panel masih statis (typecheck, build, uji controller, rute). Saya belum login ke panel lewat browser untuk melihat Dashboard gabungan ini ter-render.
+
+---
+
+
+## Status Pengerjaan (putaran 30 — langkah 44, 45, 46)
+
+### Langkah 44 — ukuran ikon bendera
+
+Penyebabnya sederhana: `<img>` bendera di `LanguageSwitcher` hanya diberi `min-w-5`, tanpa lebar maupun tinggi — jadi SVG-nya digambar sebesar ukuran bawaannya. Sekarang ukurannya dikunci `h-4 w-6` (plus sudut membulat dan garis tepi tipis supaya bendera putih tetap terlihat batasnya), dan atribut `width`/`height` pada `ID.svg` serta `GB.svg` dilepas agar tidak melawan kelas CSS-nya.
+
+### Langkah 45 — halaman Analitik & SLA
+
+Halaman baru **`/ppid/analitik`** di panel, sumber datanya endpoint baru `GET /v1/dashboard/analitik` (`AnalitikController`, hak akses `dashboard,view`). Ada penyaring tahun; tahun yang ditawarkan diambil dari tahun yang benar-benar punya data.
+
+| Bagian | Isi |
+|---|---|
+| **Ringkasan** | permohonan, selesai, sedang berjalan, keberatan, rata-rata waktu tanggapan, kepuasan + jumlah responden |
+| **SLA** | persentase kepatuhan, tepat waktu, telat dijawab, lewat batas & belum dijawab, mendekati batas (≤3 hari), plus kepatuhan tanggapan keberatan |
+| **KPI** | 5 indikator: kepatuhan SLA ≥90%, rata-rata tanggapan ≤10 hari, permohonan tuntas ≥85%, kepuasan ≥80%, rasio keberatan ≤5%. Tiap indikator memuat dasar perhitungannya dan ditandai Tercapai / Belum tercapai |
+| **Analisa** | tren 12 bulan (masuk vs ditanggapi), sebaran status, kategori paling diminta, cara pengiriman |
+| **Tindakan** | 10 permohonan paling mendesak: kode, pemohon, status, batas waktu, dan berapa hari telat atau tersisa |
+
+Acuan SLA-nya UU No. 14 Tahun 2008: tanggapan 10 hari kerja (+7 perpanjangan), keberatan 30 hari kerja. Target KPI dikumpulkan dalam satu konstanta `TARGET_KPI` supaya gampang disesuaikan bila manajemen menetapkan angka lain.
+
+Dua keputusan yang perlu diketahui:
+
+- **Yang dinilai hanya baris yang punya `batas_waktu_tanggapan`.** Baris lama tanpa batas waktu tidak ikut dihitung, supaya persentase kepatuhannya tidak menyesatkan.
+- **Permohonan yang belum jatuh tempo tidak dihitung sebagai patuh maupun langgar** — ia baru masuk hitungan setelah dijawab atau setelah batas waktunya lewat.
+
+### Langkah 46 — modul pengelolaan vs manajemen sistem
+
+**Modul baru: Modul Sistem.** Tabel `modul_sistem` adalah dasar seluruh matrix hak akses, tetapi selama ini tidak ada modul CMS-nya — barisnya hanya bisa diubah lewat database. Sekarang ada `ModulSistemController` di api-ppid (hak aksesnya ikut `pengguna`, sama seperti Role) dan modul **Modul Sistem** di panel. Field slug diberi peringatan tegas: slug adalah kunci pemeriksaan hak akses, mengubahnya membuat akses lama tidak lagi cocok.
+
+**Grup menu dirapikan.** Grup `Administrasi Sistem` → **Manajemen Sistem**, isinya Pengguna, Role, Modul Sistem, Pengaturan, Audit.
+
+**Dua modul dikeluarkan dari menu karena isinya tidak tayang di situs publik** — modul, API, dan datanya tidak dihapus, hanya dilepas dari menu:
+
+| Modul | Alasan |
+|---|---|
+| **Galeri** | modul Galeri dihapus dari situs pada langkah 9, jadi isinya tidak punya halaman |
+| **Navigasi** | menu situs publik masih ditulis di template (`layouts/header.blade.php`), belum dibaca dari tabel `menu_navigasi` |
+
+Ini temuan audit, bukan permintaan: keduanya sebelumnya bisa disunting operator padahal hasilnya tidak pernah muncul di situs. Kalau memang ingin dipakai, Navigasi perlu dikerjakan lebih dulu di fe-ppid (header dibaca dari CMS) — bilang saja.
+
+**Hasil audit modul konten lainnya — semuanya sudah tayang:**
+
+| Modul | Tempat tayang di fe-ppid |
+|---|---|
+| Kategori Informasi | menu Informasi Publik + `/informasi/{slug}` |
+| Informasi Publik | `/informasi` |
+| Informasi Dikecualikan | `/informasi/dikecualikan` |
+| Berita, Kategori Berita | `/berita`, kartu berita di beranda |
+| Regulasi | `/regulasi` + halaman detail |
+| Halaman | `/profile/{slug}`, `/standar-layanan/{slug}` |
+| FAQ | `/faq` + ringkasan di beranda |
+| Struktur | `/struktur-ppid` |
+| Banner | hero beranda |
+| Tautan | kolom tautan di footer |
+| Laporan Statistik / Laporan Pelayanan | `/laporan/statistik-informasi`, `/laporan/pelayanan-informasi` |
+| Permohonan, Keberatan, Pemohon, Survei | Portal Pengguna (`/akun/...`) |
+| Pengaturan | dibaca `App\Support\Cms` untuk isian situs |
+
+**Nama modul di database disamakan.** Nama pada `modul_sistem` juga tampil di matrix hak akses Role, jadi kalau tidak ikut dipendekkan satu modul terbaca dua nama berbeda. `PenamaanModulSeeder` (**sudah dijalankan**, 12 baris) menyesuaikannya — mis. `Regulasi & Dasar Hukum` → `Regulasi`, `Pengguna & Role` → `Pengguna, Role & Modul`. **Slug tidak disentuh** karena slug adalah kunci hak akses.
+
+### Verifikasi
+
+- `php -l` bersih; `npx tsc --noEmit` bersih; `npx vite build` sukses. Kamus i18n bertambah jadi **354 entri**; pemeriksaan cakupan: 356 string UI, sisa 3 (`FAQ`, `ID`, `IP`) memang sama dalam Bahasa Inggris.
+- **Perhitungan SLA diuji dengan empat baris permohonan sementara** (satu dijawab tepat waktu, satu dijawab telat, satu lewat batas belum dijawab, satu tinggal 2 hari): hasilnya `dinilai 3, tepat 1, telat dijawab 1, lewat batas 1, mendekati batas 1, kepatuhan 33,3%`, KPI kepatuhan otomatis bertanda "belum tercapai", dan daftar tindakan memuat dua baris dengan hitungan `telat 1 hari` serta `2 hari lagi`. **Keempat baris ujinya sudah dihapus** — jumlah permohonan kembali 5 seperti semula.
+- Rute `GET /v1/dashboard/analitik` dan tujuh rute `modul-sistem` terdaftar; halaman `/ppid/analitik` dilayani dev server panel (200).
+- 9 rute publik fe-ppid dicek pada dua locale, semuanya 200.
+
+**Catatan.** Verifikasi panel masih statis (typecheck, build, uji controller lewat tinker, rute). Saya belum membuka panel di browser dan login untuk melihat halaman Analitik ter-render.
+
+---
+
+
+## Status Pengerjaan (putaran 29 — langkah 41 lanjutan, 42, 43)
+
+### Langkah 41 (lanjutan) — modul unggah di be-ppid
+
+Sisi situs publiknya sudah selesai pada putaran 28. Yang ditambahkan sekarang: **modul khusus untuk mengunggah berkasnya**.
+
+Modul gabungan **Laporan Layanan** dipecah jadi dua, karena isinya beda jenis — yang satu rekap angka, yang satu berkas per tahun:
+
+| Modul | Isi formulir |
+|---|---|
+| **Laporan Statistik** | judul, tahun, periode, status, enam angka rekap + tombol Hitung otomatis, ringkasan, berkas (opsional) |
+| **Laporan Pelayanan** | judul, tahun, periode, status, ringkasan, **berkas laporan** — tanpa satu pun field angka |
+
+Keduanya tetap memakai satu tabel (`laporan_layanan`) dan satu hak akses (`laporan-layanan`); pembedanya kolom `tipe_laporan`. Supaya operator tidak perlu memilih tipe — dan tidak bisa salah pilih — ditambahkan kemampuan baru `nilaiTetap` pada `ResourceConfig`: nilainya ikut sebagai **filter** saat memuat daftar dan ikut **dikirim** saat menyimpan. Dipasang di `ResourceListPage` dan `ResourceFormDialog`, jadi modul lain bisa memakai pola yang sama nanti.
+
+Modul Laporan Pelayanan menampilkan kolom **Diunggah oleh** dan **Tanggal publikasi**, dan berkasnya dibatasi PDF/gambar dengan keterangan bahwa halaman pertamanya jadi sampul di situs publik.
+
+### Langkah 42 — nama modul dipendekkan
+
+14 judul modul dipangkas supaya tidak terpotong di menu samping:
+
+`Daftar Informasi Publik` → **Informasi Publik** · `Daftar Informasi Dikecualikan` → **Informasi Dikecualikan** · `Permohonan Informasi Publik` → **Permohonan** · `Pengajuan Keberatan Informasi Publik` → **Keberatan** · `Data Pemohon` → **Pemohon** · `Survei Kepuasan` → **Survei** · `Banner Slider` → **Banner** · `Struktur Organisasi` → **Struktur** · `Halaman Statis` → **Halaman** · `Tautan Terkait` → **Tautan** · `Menu Navigasi` → **Navigasi** · `Role & Hak Akses` → **Role** · `Pengaturan Situs` → **Pengaturan** · `Audit Log` → **Audit**
+
+Yang diubah hanya labelnya. Slug URL, slug modul, dan hak aksesnya tidak disentuh, jadi tautan lama dan matrix hak akses tetap berlaku. Nama panjangnya tetap terbaca dari keterangan di bawah judul halaman.
+
+### Langkah 43 — pengalih bahasa panel
+
+Penyebabnya: i18n di be-ppid masih bawaan template — hanya berisi satu kunci contoh (`Welcome to React`), bahasanya English/Turki/Arab, dan Bahasa Indonesia tidak ada sama sekali. Jadi tombolnya berpindah tetapi tidak ada yang berubah, dan bendera `ID`/`GB` pun tidak ada berkasnya.
+
+Yang dikerjakan:
+
+- **Kamus** `src/@i18n/kamusPpid.ts` — **310 entri**, kuncinya teks Bahasa Indonesia apa adanya (pola yang sama dengan `lang/en.json` di fe-ppid). Akibatnya mode Indonesia tidak butuh kamus: label baru yang belum diterjemahkan tetap tampil dalam Bahasa Indonesia, bukan hilang atau berubah jadi kode.
+- **`i18n.ts`** — bahasa `id` (bawaan) dan `en`, `fallbackLng: 'id'`, serta `keySeparator`/`nsSeparator` dimatikan; tanpa itu kunci yang memuat titik atau titik dua akan terpotong i18next.
+- **Pilihan bahasa bertahan** setelah halaman dimuat ulang (`localStorage`).
+- **`I18nProvider`** — daftar bahasa jadi Indonesia + English. Turki dan Arab dilepas karena tidak ada terjemahannya.
+- **Bendera** `public/assets/images/flags/ID.svg` dan `GB.svg` ditambahkan (sebelumnya hanya US/TR/SA, sehingga ikonnya kosong).
+- **Penerjemahan dipasang** di menu samping (`navigation.ts` + `PpidNavigationSync`, menu ditulis ulang saat bahasa berganti), halaman daftar, dialog formulir, komponen field, komponen unggah, dan Dashboard: judul & keterangan modul, label kolom, label & bantuan field, pilihan dropdown, badge status, tombol, dan seluruh pesan konfirmasi/notifikasi.
+
+### Verifikasi
+
+- `npx tsc --noEmit` bersih; `npx vite build` sukses.
+- Pemeriksaan cakupan kamus: **313 string UI, 310 sudah ada padanannya**. Tiga sisanya `FAQ`, `ID`, `IP` — memang sama dalam Bahasa Inggris.
+- Berkas bendera dilayani dev server: `/assets/images/flags/ID.svg` dan `GB.svg` sama-sama 200.
+- Registry modul terbaca 24 modul (dari 23) setelah Laporan Layanan dipecah dua; menu grup Layanan memuat keduanya.
+
+**Catatan.** `npm run build` di be-ppid gagal di Windows — skripnya memakai sintaks env Unix (`NODE_OPTIONS=… tsc && vite build`), sehingga muncul `'NODE_OPTIONS' is not recognized as an internal or external command`. Ini sudah ada sebelum perubahan ini. Saya membangun lewat `npx tsc --noEmit` + `npx vite build`. Kalau mau, skripnya bisa dibuat lintas-platform dengan `cross-env`.
+
+---
+
+
+## Status Pengerjaan (putaran 28 — langkah 41)
+
+`/laporan/pelayanan-informasi` tidak lagi memakai tampilan tabel angka. Isinya sekarang **berkas laporan per tahun** yang diunggah petugas, disajikan persis seperti modul Regulasi.
+
+**Laporan Statistik Informasi Publik (`/laporan/statistik-informasi`) tidak diubah** — halaman itu memang berisi rekap angka, jadi tetap memakai view lamanya (`ppid/report.blade.php`). Percabangannya ada di `PpidController@showReportPage`.
+
+### Daftar (`/laporan/pelayanan-informasi`)
+
+View baru `ppid/service_report.blade.php`, isi kartunya sejajar dengan kartu Regulasi:
+
+- **Sampul halaman pertama dokumen** — PDF digambar ke `<canvas>` lewat `resources/js/sampul-pdf.js` (pdf.js), gambar ditampilkan apa adanya; selama belum tergambar atau bila berkasnya belum ada, dipakai `partials/regulasi_sampul_cadangan`.
+- Badge **Tahun** dan **Periode**, tanggal + jam publikasi, judul, ringkasan, lalu baris **"Diunggah oleh <nama petugas>"** berikon logo perusahaan.
+- Seluruh kartu dapat diklik menuju halaman detail (`after:inset-0`), tombol **Lihat** menuju halaman yang sama. Ada pencarian judul/tahun dan penghitung jumlah dokumen.
+- Urutan: tahun terbaru lebih dulu.
+
+### Halaman detail (`/laporan/pelayanan-informasi/{id}`)
+
+Rute baru `ppid.report.show`, view `ppid/service_report_show.blade.php`.
+
+- Dokumen **dibaca di halaman itu juga** (pdf.js, `data-pdf-dokumen`), tidak membuka tab baru dan tidak memaksa unduh.
+- Bagian atas memuat tahun, periode, tanggal + jam publikasi, judul, dan pengunggah; di bawahnya ringkasan lalu dokumennya.
+- Section **"Laporan Lainnya"** berisi hingga 6 laporan pelayanan lain lengkap dengan sampulnya.
+- Rutenya didaftarkan **sebelum** `/laporan/{slug}` supaya tidak tertelan rute daftar; id yang bukan laporan pelayanan (mis. baris statistik) menghasilkan 404.
+
+### Pengunggah
+
+Tidak ada kolom baru. Namanya diambil dari `laporan_layanan.published_by` yang **sudah diisi server dari token** di `LaporanLayananController@beforeSave` saat laporan diterbitkan. Di fe-ppid ditambahkan relasi `LaporanLayanan::penerbit()`; bila kosong (baris lama), yang tampil "Petugas PPID".
+
+### Sisi be-ppid
+
+- Berkas laporan kini **hanya PDF atau gambar** — jenis unggahan `dokumen` → `dokumen_gambar` (validasi ekstensi dan MIME-nya sudah ada di `UploadController` sejak langkah 34), plus keterangan bahwa halaman pertamanya dipakai sebagai sampul.
+- Tabel modulnya dapat kolom **Diunggah oleh** dan **Tanggal publikasi**.
+- Keterangan field Status diperbarui: kedua halaman laporan di situs publik hanya menampilkan yang berstatus Terbit.
+
+### Verifikasi
+
+- `php -l` bersih; `npx tsc --noEmit` di be-ppid tanpa error; `npm run build` sukses. `lang/en.json` +9 kunci (705).
+- Diuji dengan **dua baris laporan sementara** yang ditautkan ke PDF asli: daftar menampilkan 3 kartu, 2 di antaranya memasang `data-pdf-cover` ke berkasnya, 3 baris "Diunggah oleh", dan tautan detail per kartu. Halaman detail memuat `data-pdf-dokumen` serta 2 kartu "Laporan Lainnya". **Baris ujinya sudah dihapus** — tersisa 1 laporan pelayanan asli seperti semula.
+- `/laporan/pelayanan-informasi/99999` → 404; `/laporan/pelayanan-informasi/1` (baris statistik) → 404; `/laporan/statistik-informasi` tetap 200 dengan tampilan lamanya.
+- 8 rute dicek pada dua locale, semuanya 200.
+
+**Catatan.** Satu-satunya laporan pelayanan yang ada sekarang (`Laporan Pelayanan Informasi Publik Tahun 2025`) **belum punya berkas**, jadi kartunya memakai sampul cadangan dan halaman detailnya menampilkan "Berkas dokumen belum tersedia." Unggah PDF-nya lewat be-ppid → modul Laporan Layanan, dan sampul serta isinya langsung muncul tanpa perubahan kode.
+
+---
+
+
+## Status Pengerjaan (putaran 27 — langkah 40)
+
+Sub modul **Register Permohonan Informasi** pada menu Layanan diganti jadi pintu **Registrasi Akun**, menuju halaman daftar akun pengunjung yang sudah ada (`/akun/daftar`).
+
+- Diubah di tiga tempat: dropdown Layanan pada header desktop, menu Layanan pada tampilan ponsel, dan kolom Layanan di footer.
+- Entrinya **hanya tampil untuk pengunjung yang belum masuk** (`@guest('pemohon')`) — yang sudah punya akun tidak diberi tautan mendaftar lagi; menu Akun Saya/Keluar yang tampil.
+- Penanda menu aktif (`$isRegister`) ikut pindah dari `ppid.register` ke `akun.register`, jadi menu Layanan tetap ter-highlight saat halaman pendaftaran dibuka.
+- Kunci terjemahan baru `Registrasi Akun` → `Account Registration` (`lang/en.json` jadi 696 kunci).
+
+**Halaman register publik tidak dihapus.** Rute `/register-permohonan` beserta controller dan view-nya dibiarkan hidup dan tetap bisa diakses langsung — yang dilakukan hanya melepasnya dari menu. Alasannya register permohonan termasuk yang diminta Perki 1/2021 sebagai bukti pelayanan; kalau memang ingin dihapus total (rute + controller + view + kunci terjemahannya), bilang saja.
+
+### Verifikasi
+
+- `npm run build` sukses; 9 rute dicek pada dua locale, semuanya 200.
+- Sebagai tamu: **3 tautan "Registrasi Akun"** (header, ponsel, footer) menuju `/akun/daftar`; **nol** sisa "Register Permohonan Informasi" di menu. Mode EN menampilkan "Account Registration" di ketiga tempat.
+- Sebagai pengguna yang sudah masuk: **nol** entri "Registrasi Akun", dan menu akun (Akun Saya/Keluar) muncul. Diuji dengan akun sementara yang **sudah dihapus** setelah pengujian.
+- `/register-permohonan` tetap 200 walau tidak lagi ada di menu.
+
+**Dua temuan sampingan** (bukan bagian langkah ini, belum saya ubah):
+
+1. Akun contoh `pemohon.demo@foodstation.co.id` **tidak bisa dipakai lagi dengan password yang tercatat di langkah 18** — login menolak dengan "Email atau password tidak cocok.". Kemungkinan passwordnya sudah diganti. Bilang kalau mau saya setel ulang.
+2. api-ppid dan fe-ppid memakai **driver hash yang berbeda**. Akun yang password-nya dibuat dari sisi api-ppid gagal dipakai login di fe-ppid dengan galat `This password does not use the Bcrypt algorithm.` Selama pendaftaran hanya lewat fe-ppid ini tidak terasa, tetapi akan menggigit kalau nanti ada akun pemohon yang dibuat atau di-reset dari panel/API. Perlu disamakan (`config/hashing.php` di kedua sisi) — bilang kalau mau saya kerjakan.
+
+---
+
+
+## Status Pengerjaan (putaran 26 — langkah 39)
+
+### Penyajian disamakan dengan Daftar Informasi Publik
+
+`/informasi/dikecualikan` sebelumnya berupa tumpukan kartu besar satu per entri. Sekarang bentuknya sama persis dengan `/informasi`:
+
+- **Kartu ringkasan di atas daftar yang sekaligus menyaring** — sekali klik, daftar di bawah ikut tersaring tanpa memuat ulang halaman. Daftar ini tidak punya klasifikasi seperti Informasi Publik, jadi yang dikelompokkan adalah ketersediaan surat penetapan: Semua Entri / Ada Surat Penetapan / Belum Ada Surat Penetapan.
+- **Tabel pada layar sedang ke atas** (No., Informasi + ringkasan, Surat Penetapan) dan **kartu di ponsel**, jadi tidak ada tabel yang harus digeser ke samping.
+- **Pencarian judul** dan penghitung jumlah entri tetap ada, posisinya disamakan dengan halaman Informasi Publik.
+- Tombol aksinya dipisah jadi `partials/surat_penetapan_aksi.blade.php`, sejajar dengan `partials/informasi_aksi` milik Informasi Publik: ada berkasnya → tombol **Surat Penetapan**; belum ada → keterangan **Belum tersedia**, bukan tombol mati.
+
+Hitungan kartunya disiapkan di `PpidController@showExcludedInformation` (`$data['kelompok']`), bukan dihitung di view.
+
+### Dua label dihapus
+
+- **"Entri yang dokumennya belum tersedia untuk diunduh tetap dapat dimohonkan melalui menu Permohonan Informasi Publik."** — blok catatan di bawah daftar `ppid/information_index.blade.php` dihapus seluruhnya.
+- **"Catatan Penting — Pengecualian informasi ditetapkan melalui uji konsekuensi sesuai Pasal 17 UU No. 14 Tahun 2008 …"** — blok catatan hijau di bawah daftar `ppid/excluded_information.blade.php` dihapus seluruhnya.
+
+Ketiga kunci terjemahannya ikut dilepas dari `lang/en.json` karena tidak dipakai lagi; tiga kunci baru (`Semua Entri`, `Ada Surat Penetapan`, `Belum Ada Surat Penetapan`) menggantikannya — total tetap 695.
+
+### Verifikasi
+
+- `php -l` bersih; `npm run build` sukses.
+- `/informasi/dikecualikan` 200 dengan **22 baris tabel**; HTML-nya **nol kemunculan** "Catatan Penting" maupun "uji konsekuensi sesuai Pasal 17".
+- `/informasi` 200; **nol kemunculan** "Entri yang dokumennya belum".
+- Kartu ringkasan terbaca 22 / 0 / 22; mode EN memakai label Inggris (`All Entries`, `Determination Letter Available`, `No Determination Letter Yet`).
+- 11 rute publik dicek pada kedua locale, semuanya 200; pemindaian sisa teks Indonesia pada mode EN tetap nol.
+
+**Catatan.** Kartu "Ada Surat Penetapan" saat ini bernilai **0** karena belum satu pun entri dikecualikan yang berkas surat penetapannya diunggah lewat be-ppid. Penyaringnya sudah jalan dan angkanya akan ikut naik begitu berkasnya diunggah.
+
+---
+
+
+## Status Pengerjaan (putaran 23 — langkah 37)
+
+### Situs publik
+
+Keempat keterangan penetapan — **Alasan Pengecualian, Dasar Hukum, Jangka Waktu, Tanggal Penetapan** — dihapus dari halaman `/informasi/dikecualikan`. Kartunya kini hanya memuat nomor urut, judul, ringkasan (bila ada), dan tombol Surat Penetapan bila berkasnya diunggah. Datanya juga **tidak lagi dikirim dari controller ke view**, bukan sekadar disembunyikan dengan CSS.
+
+Teks pengantar halaman ikut disesuaikan karena kalimat lamanya menjanjikan "lengkap dengan alasan pengecualian, dasar hukum, dan jangka waktu".
+
+### Sisi back end
+
+- Migrasi `2026_08_11_000002_make_alasan_pengecualian_nullable.php` (**sudah dijalankan**) melepas `NOT NULL` pada `informasi_dikecualikan.alasan_pengecualian`. Kolomnya tetap ada — isian lama tidak hilang dan masih bisa dipakai untuk arsip internal.
+- Validasi API: `alasan_pengecualian` dari `required` menjadi `nullable`. Tiga field lainnya memang sudah opsional sejak awal.
+- Modul be-ppid: tanda wajib pada Alasan pengecualian dilepas, ditambah keterangan bahwa keterangan penetapan tidak tampil di situs publik dan hanya diisi bila diperlukan.
+- `DaftarInformasiDikecualikanSeeder` tidak lagi mengisi alasan/dasar hukum dengan teks pengganti, dan **teks pengganti yang sempat terisi di 22 baris hasil seeding sudah dikosongkan**. Dua entri contoh lama (`Dokumen Kontrak Pengadaan Beras…`, `Data Pribadi Pemohon…`) sengaja dibiarkan apa adanya karena isinya bukan buatan seeder.
+
+### Verifikasi
+
+- `php -l` bersih; `npx tsc --noEmit` di be-ppid tanpa error.
+- `/informasi/dikecualikan` 200 dan HTML-nya **nol kemunculan** "Alasan Pengecualian", "Dasar Hukum", "Jangka Waktu", maupun "Tanggal Penetapan"; 22 entri tetap tampil.
+- Aturan validasi dicek langsung: `alasan_pengecualian => nullable,string`, dan penyimpanan baris tanpa keterangan penetapan berhasil (baris ujinya sudah dihapus).
+- `/informasi`, `/regulasi`, dan beranda tetap 200.
+
+---
+
+## Status Pengerjaan (putaran 22 — langkah 36)
+
+### Isi kedua daftar diambil dari dokumen resmi
+
+Teks kedua PDF acuan diekstrak dengan `pdftotext -layout` lalu dituang jadi dua seeder idempoten di api-ppid (**keduanya sudah dijalankan**):
+
+| Seeder | Isi |
+|---|---|
+| `DaftarInformasiPublikSeeder` | 17 entri Daftar Informasi Publik 2026 — 7 Berkala, 5 Serta Merta, 5 Tersedia Setiap Saat, lengkap dengan nomor urut dokumen (`nomor_klasifikasi`) dan ringkasan singkat |
+| `DaftarInformasiDikecualikanSeeder` | 22 entri Daftar Informasi Dikecualikan 2026 |
+
+Keduanya dicocokkan lewat `judul`. **Data contoh lama tidak dihapus**, hanya diturunkan jadi `draft` (7 entri informasi publik, 2 entri dikecualikan) sehingga hilang dari situs publik tetapi bisa dikembalikan kapan saja dari be-ppid.
+
+Dokumen acuan Informasi Dikecualikan hanya memuat judul, sedangkan tabelnya mewajibkan alasan pengecualian. Karena itu **alasan dan dasar hukum diisi rumusan umum Pasal 17 UU No. 14 Tahun 2008 sebagai titik awal** — bukan hasil uji konsekuensi per dokumen. Silakan lengkapi per entri lewat be-ppid; seeder tidak menimpa isian yang sudah disunting.
+
+### Tampilan situs publik
+
+**Daftar Informasi Publik (`/informasi`)**
+
+- Empat kartu ringkasan di atas daftar: total entri + jumlah per klasifikasi. Kartunya sekaligus **penyaring** — sekali klik daftar di bawah ikut tersaring, tanpa memuat ulang halaman.
+- Daftar tampil **tabel pada layar sedang ke atas** (No., Informasi + ringkasan, Klasifikasi, Dokumen) dan berubah jadi **kartu di ponsel**, jadi tidak ada tabel yang harus digeser ke samping.
+- Urutannya mengikuti dokumen resmi: per klasifikasi, lalu nomor urut dokumen (`nomor_klasifikasi` dibandingkan sebagai angka lewat `regexp_replace`).
+- Badge klasifikasi menautkan ke halaman kategorinya. Entri yang berkasnya sudah ada memberi tombol **Lihat/Selengkapnya**; yang belum ada berkasnya mengarahkan ke **Permohonan Informasi Publik** (tombol "Mohon Dokumen") — jadi baris tanpa dokumen tetap berguna, bukan jalan buntu.
+
+**Daftar Informasi Dikecualikan (`/informasi/dikecualikan`)**
+
+- Kartu per entri (nomor, judul, ringkasan) dengan empat keterangan: alasan pengecualian, dasar hukum, jangka waktu, tanggal penetapan — plus tombol surat penetapan bila berkasnya diunggah.
+- Ditambah **pencarian judul** dan penghitung jumlah entri di atas daftar.
+
+### Sisi be-ppid
+
+Kedua modul sudah ada dan lengkap (kategori, nomor klasifikasi, ringkasan, tautan, lampiran, status; serta alasan/dasar hukum/jangka waktu/surat penetapan). Yang ditambahkan: kolom **No.** pada tabel Daftar Informasi Publik supaya urutan resmi terlihat langsung dari panel.
+
+### Verifikasi
+
+- `php -l` bersih; `npx tsc --noEmit` di be-ppid tanpa error; `npm run build` sukses.
+- Basis data setelah seeding: **17 entri informasi publik terbit** (7/5/5 per klasifikasi) dan **22 entri dikecualikan terbit**.
+- `/informasi`, `/informasi/dikecualikan`, `/informasi/berkala`, `/informasi/serta-merta`, `/informasi/setiap-saat`, `/regulasi`, dan beranda semuanya 200.
+- Tangkapan layar 1700px diperiksa: kartu ringkasan 17/7/5/5, tabel 17 baris berurutan sesuai dokumen; halaman dikecualikan menampilkan 22 entri. Tangkapan layar 430px memastikan daftar berubah jadi kartu di ponsel.
+- `lang/en.json`: +11 kunci (total 630).
+
+**Catatan** — pada lebar 430px, tangkapan layar memperlihatkan isi terpotong sedikit di sisi kanan. Halaman lain yang tidak saya sentuh (mis. `/berita`) memperlihatkan hal yang sama, jadi ini gejala lama pada layout ponsel, bukan akibat perubahan ini. Bilang saja kalau mau saya telusuri terpisah.
+
+---
 
 ## Status Pengerjaan (putaran 21 — langkah 35 lanjutan)
 

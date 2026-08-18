@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', $data['title'] . ' | PPID FSTJ')
+@section('title', __($data['title']) . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     {{-- HERO --}}
@@ -30,38 +30,19 @@
                 @elseif ($slug === 'singkat')
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">{!! $judulDua(__('Tentang PPID PT Food Station Tjipinang Jaya (Perseroda)'), 2) !!}</h2>
 
-                    <div class="mb-12 space-y-4 border-l-4 border-[#10462F] pl-5 py-4 bg-[#FAF6EC] dark:bg-[#082217] rounded-r-xl">
+                    {{-- Tanpa jarak bawah: blok ini sekarang isi terakhir halaman
+                         Profil Singkat, jadi jarak tambahan hanya menyisakan
+                         ruang kosong di dalam kartu. --}}
+                    <div class="space-y-4 border-l-4 border-[#10462F] pl-5 py-4 bg-[#FAF6EC] dark:bg-[#082217] rounded-r-xl">
                         @foreach ((array) $data['intro'] as $paragraf)
                             <p class="text-base text-gray-700 dark:text-gray-300 leading-relaxed">{{ __($paragraf) }}</p>
                         @endforeach
                     </div>
 
-                    <div class="p-6 sm:p-8 rounded-2xl bg-[#FAF6EC] dark:bg-[#082217] border border-gray-100 dark:border-white/10">
-                        <h3 class="text-xl sm:text-[22px] font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-                            <span class="w-10 h-10 bg-emerald-50 text-[#10462F] rounded-xl flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </span>
-                            <span class="min-w-0">{{ __('Waktu Layanan Informasi Publik') }}</span>
-                        </h3>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            @foreach ($data['service_hours'] as $schedule)
-                                <div class="rounded-xl bg-white dark:bg-[#0B2A1D] border border-gray-100 dark:border-white/10 p-5 shadow-sm">
-                                    <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-[#10462F] dark:text-[#3E9C6C]">{{ __($schedule['days']) }}</p>
-                                    <p class="mt-2 text-lg sm:text-xl font-bold text-gray-900 dark:text-white tabular-nums break-words">{{ $schedule['time'] }}</p>
-                                    <p class="mt-2 flex items-start gap-1.5 text-xs font-normal text-gray-500 dark:text-gray-400">
-                                        <svg class="w-4 h-4 mt-px flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8h2a2 2 0 012 2v2a2 2 0 01-2 2h-2M5 8h12v7a4 4 0 01-4 4H9a4 4 0 01-4-4V8zM3 21h18"></path></svg>
-                                        <span class="tabular-nums">{{ __('Istirahat') }} {{ $schedule['break'] }}</span>
-                                    </p>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <p class="mt-5 flex items-start gap-2.5 text-sm font-normal text-gray-500 dark:text-gray-400 leading-relaxed">
-                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span>{{ __('Layanan dilaksanakan setiap hari kerja (Senin s.d. Jumat) kecuali hari libur nasional atau cuti bersama.') }}</span>
-                        </p>
-                    </div>
+                    {{-- Blok "Waktu Layanan Informasi Publik" dilepas dari sini:
+                         jam dan jalur layanan sudah disajikan lengkap di halaman
+                         Standar Layanan → Jalur dan Waktu Layanan, jadi di profil
+                         isinya hanya kembar. --}}
 
                 @elseif ($slug === 'tugas-fungsi-wewenang')
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">{!! $judulDua(__('Tugas, Fungsi dan Wewenang PPID'), 1) !!}</h2>

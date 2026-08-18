@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Cek Status Permohonan | PPID FSTJ')
-
+@section('title', __('Cek Status Permohonan') . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     {{-- HERO --}}

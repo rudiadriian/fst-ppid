@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SurveyKepuasan extends Model
 {
-    protected $table = 'survey_kepuasan';
+    use MencatatPelaku, SoftDeletes;
 
-    public const UPDATED_AT = null;
+    protected $table = 'survey_kepuasan';
 
     protected $fillable = [
         'permohonan_id',

@@ -76,4 +76,24 @@ return [
 
     'password_timeout' => 10800,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Masa Berlaku Tautan Verifikasi Email
+    |--------------------------------------------------------------------------
+    |
+    | Dalam menit. Bawaan Laravel 60 menit terlalu pendek untuk layanan publik:
+    | banyak orang membuka emailnya beberapa jam kemudian, lalu meminta tautan
+    | baru — dan setiap permintaan ulang memakan kuota kirim email yang
+    | jumlahnya terbatas. 24 jam memberi kelonggaran itu tanpa membuat tautannya
+    | berlaku selamanya.
+    |
+    | Tautannya tetap bertanda tangan dan terikat pada id + email pemiliknya,
+    | jadi memperpanjang masa berlaku tidak membuatnya bisa ditebak.
+    |
+    */
+
+    'verification' => [
+        'expire' => (int) env('PPID_VERIFIKASI_EMAIL_MENIT', 1440),
+    ],
+
 ];

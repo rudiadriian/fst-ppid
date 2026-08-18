@@ -27,6 +27,7 @@ class KategoriBeritaController extends CrudController
 
         return [
             'nama' => [$wajib, 'string', 'max:100'],
+            'nama_en' => ['nullable', 'string', 'max:100'],
             'slug' => ['nullable', 'string', 'max:100'],
         ];
     }

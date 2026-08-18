@@ -1,32 +1,46 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import kamusPpid from './kamusPpid';
 
 /**
- * resources is an object that contains all the translations for the different languages.
+ * Panel ini berbahasa Indonesia; Inggris disediakan lewat kamus terjemahan.
+ *
+ * Kuncinya adalah teks Bahasa Indonesia apa adanya, jadi mode `id` tidak
+ * memerlukan kamus sama sekali — i18next mengembalikan kuncinya sendiri saat
+ * tidak ketemu. Label baru yang belum diterjemahkan karena itu tetap tampil
+ * dalam Bahasa Indonesia, bukan hilang atau berubah jadi kode.
  */
 const resources = {
-	en: {
-		translation: {
-			'Welcome to React': 'Welcome to React and react-i18next'
-		}
-	}
+	id: { translation: {} },
+	en: { translation: kamusPpid }
 };
 
-/**
- * i18n is initialized with the resources object and the language to use.
- * The keySeparator option is set to false because we do not use keys in form messages.welcome.
- * The interpolation option is set to false because we do not use interpolation in form messages.welcome.
- */
-i18n.use(initReactI18next) // passes i18n down to react-i18next
-	.init({
-		resources,
-		lng: 'en',
+export const BAHASA_TERSIMPAN = 'ppid-bahasa';
 
-		keySeparator: false, // we do not use keys in form messages.welcome
+/** Bahasa pilihan terakhir; dipakai ulang saat panel dibuka lagi. */
+function bahasaAwal(): string {
+	if (typeof window === 'undefined') {
+		return 'id';
+	}
 
-		interpolation: {
-			escapeValue: false // react already safes from xss
-		}
-	});
+	const tersimpan = window.localStorage.getItem(BAHASA_TERSIMPAN);
+
+	return tersimpan === 'en' || tersimpan === 'id' ? tersimpan : 'id';
+}
+
+i18n.use(initReactI18next).init({
+	resources,
+	lng: bahasaAwal(),
+	fallbackLng: 'id',
+
+	// Kunci berupa kalimat penuh, jadi pemisah kunci dan namespace harus mati —
+	// tanpa ini teks yang memuat "." atau ":" akan dipotong i18next.
+	keySeparator: false,
+	nsSeparator: false,
+
+	interpolation: {
+		escapeValue: false // react already safes from xss
+	}
+});
 
 export default i18n;

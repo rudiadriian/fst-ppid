@@ -51,7 +51,7 @@ class CmsLayoutComposer
             ];
         }
 
-        return $baris->map(fn ($k) => ['nama' => $k->nama, 'slug' => $k->slug])->all();
+        return $baris->map(fn ($k) => ['nama' => $k->teks('nama'), 'slug' => $k->slug])->all();
     }
 
     private function tautan(): array

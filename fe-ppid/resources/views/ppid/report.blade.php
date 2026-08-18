@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $data['title'] . ' | PPID FSTJ')
-
+@section('title', __($data['title']) . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     {{-- HERO --}}

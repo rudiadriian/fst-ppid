@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PunyaVersiInggris;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Satu kotak pada Bagan Struktur Organisasi PPID.
@@ -16,9 +18,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class StrukturOrganisasi extends Model
 {
-    protected $table = 'struktur_organisasi';
+    use PunyaVersiInggris, SoftDeletes;
 
-    public $timestamps = false;
+    protected $table = 'struktur_organisasi';
 
     protected $fillable = [
         'nama',
@@ -56,11 +58,13 @@ class StrukturOrganisasi extends Model
     /** Butir isi kotak (satu per baris pada kolom `poin`). */
     public function daftarPoin(): array
     {
-        if (blank($this->poin)) {
+        $isi = $this->teks('poin');
+
+        if (blank($isi)) {
             return [];
         }
 
-        return array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $this->poin))));
+        return array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $isi))));
     }
 
     public function tipe(): string

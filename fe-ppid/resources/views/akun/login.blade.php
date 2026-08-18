@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Masuk Akun Pengunjung | PPID FSTJ')
-
+@section('title', __('Masuk Akun Pengunjung') . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     <section class="relative fs-gradient overflow-hidden">
@@ -31,10 +30,11 @@
                     @csrf
 
                     <div>
-                        <label for="email" class="{{ $labelClass }}">{{ __('Email') }}</label>
-                        <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus
+                        <label for="identitas" class="{{ $labelClass }}">{{ __('Email atau Nomor Telepon') }}</label>
+                        <input id="identitas" name="identitas" type="text" value="{{ old('identitas') }}" required autofocus
                                autocomplete="username" class="{{ $inputClass }}">
-                        @error('email')
+                        <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ __('Boleh memakai email atau nomor telepon yang Anda daftarkan.') }}</p>
+                        @error('identitas')
                             <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
@@ -47,6 +47,8 @@
                             <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    @include('akun.partials.captcha', ['idForm' => 'masuk'])
 
                     <div class="flex items-center justify-between pt-1">
                         <a href="{{ route('akun.password.request') }}" class="text-sm font-semibold text-[#E87317] hover:underline">

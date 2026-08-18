@@ -37,7 +37,9 @@ class RegulasiController extends CrudController
         return [
             'kategori' => ['sometimes', Rule::in(['dasar_hukum_ppid', 'regulasi', 'pedoman'])],
             'judul' => [$wajib, 'string', 'max:255'],
+            'judul_en' => ['nullable', 'string', 'max:255'],
             'ringkasan' => ['nullable', 'string', 'max:2000'],
+            'ringkasan_en' => ['nullable', 'string', 'max:2000'],
             'nomor_peraturan' => ['nullable', 'string', 'max:100'],
             'jenis_peraturan' => ['nullable', 'string', 'max:100'],
             'tahun' => ['nullable', 'integer', 'min:1945', 'max:2100'],

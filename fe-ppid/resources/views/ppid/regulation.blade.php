@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', ($data['title'] ?? 'Regulasi') . ' | PPID FSTJ')
-
+@section('title', __(($data['title'] ?? 'Regulasi')) . ' | ' . __('PPID FSTJ'))
 {{-- Penggambar sampul PDF hanya dimuat di halaman ini, bukan di seluruh situs. --}}
 @push('scripts')
     @vite('resources/js/sampul-pdf.js')

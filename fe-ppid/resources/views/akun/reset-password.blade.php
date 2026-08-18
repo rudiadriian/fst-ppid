@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Password Baru | PPID FSTJ')
-
+@section('title', __('Password Baru') . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     <section class="relative fs-gradient overflow-hidden">

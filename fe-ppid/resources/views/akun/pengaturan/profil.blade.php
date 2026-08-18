@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', 'Profil | PPID FSTJ')
+@section('title', __('Profil') . ' | ' . __('PPID FSTJ'))
 @section('portal-judul', __('Profil'))
 
 @section('portal')

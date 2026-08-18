@@ -76,7 +76,7 @@ class KontenController extends Controller
         return view('ppid.news_show', [
             'berita' => $berita,
             'tanggal' => Cms::tanggal($berita->tanggal_publikasi),
-            'kategori' => $berita->kategori->nama ?? 'Publikasi',
+            'kategori' => $berita->kategori?->teks('nama') ?? __('Publikasi'),
             'gambar' => Cms::url($berita->thumbnail),
             'lainnya' => $lainnya,
             'data' => ['db_offline' => Cms::offline()],
@@ -89,10 +89,10 @@ class KontenController extends Controller
         $items = Cms::ambil(fn () => Faq::aktif()->get(), collect(), 'faq_index');
 
         $grup = $items
-            ->groupBy(fn ($f) => $f->kategori ?: 'Umum')
+            ->groupBy(fn ($f) => $f->teks('kategori') ?: __('Umum'))
             ->map(fn ($rows) => $rows->map(fn ($f) => [
-                'pertanyaan' => $f->pertanyaan,
-                'jawaban' => $f->jawaban,
+                'pertanyaan' => $f->teks('pertanyaan'),
+                'jawaban' => $f->teks('jawaban'),
             ])->all())
             ->all();
 
@@ -119,10 +119,10 @@ class KontenController extends Controller
     private function kartuBerita(Berita $b): array
     {
         return [
-            'title' => $b->judul,
+            'title' => $b->teks('judul'),
             'date' => Cms::tanggal($b->tanggal_publikasi),
-            'category' => $b->kategori->nama ?? 'Publikasi',
-            'excerpt' => $b->ringkasan ?: str($b->konten ?? '')->stripTags()->limit(160)->toString(),
+            'category' => $b->kategori?->teks('nama') ?? __('Publikasi'),
+            'excerpt' => $b->teks('ringkasan') ?: str($b->teks('konten') ?? '')->stripTags()->limit(160)->toString(),
             'image' => Cms::url($b->thumbnail) ?: asset('assets/images/logo/logo_fs.png'),
             'url' => route('ppid.news.show', $b->slug),
         ];

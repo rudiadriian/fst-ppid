@@ -12,7 +12,7 @@ class BannerSliderController extends CrudController
 
     protected string $modulSlug = 'banner-slider';
 
-    protected array $searchable = ['judul'];
+    protected array $searchable = ['judul', 'ringkasan'];
 
     protected array $sortable = ['id', 'judul', 'urutan', 'tanggal_mulai'];
 
@@ -28,6 +28,9 @@ class BannerSliderController extends CrudController
 
         return [
             'judul' => ['nullable', 'string', 'max:255'],
+            'judul_en' => ['nullable', 'string', 'max:255'],
+            'ringkasan' => ['nullable', 'string', 'max:500'],
+            'ringkasan_en' => ['nullable', 'string', 'max:500'],
             'gambar' => [$wajib, 'string', 'max:500'],
             'link' => ['nullable', 'string', 'max:500'],
             'urutan' => ['nullable', 'integer', 'min:0'],

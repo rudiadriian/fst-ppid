@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CaptchaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KontenController;
 use App\Http\Controllers\PpidController;
@@ -20,6 +21,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 
+// Gambar captcha untuk formulir daftar/masuk akun. Dibatasi lajunya supaya
+// tidak bisa dipakai memaksa server menggambar terus-menerus.
+Route::get('/captcha', CaptchaController::class)
+    ->middleware(['throttle:30,1', \App\Http\Middleware\BukanHalamanSebelumnya::class])
+    ->name('captcha');
+
 
 Route::get('/', [HomeController::class, 'index'])->name('ppid.home');
 
@@ -30,11 +37,19 @@ Route::get('/faq', [KontenController::class, 'faq'])->name('ppid.faq');
 Route::get('/struktur-ppid', [KontenController::class, 'struktur'])->name('ppid.structure');
 
 // Ganti bahasa (relatif, origin-agnostic) — simpan ke session lalu kembali
-Route::get('/set-locale/{locale}', function (string $locale) {
-    if (in_array($locale, ['id', 'en'])) {
+Route::get('/set-locale/{locale}', function (Request $request, string $locale) {
+    if (in_array($locale, ['id', 'en'], true)) {
         session(['locale' => $locale]);
     }
-    return redirect()->back();
+
+    // Kembali ke halaman asal, tapi hanya kalau asalnya memang situs ini —
+    // header Referer datang dari peramban dan bisa menunjuk ke domain lain.
+    $asal = $request->headers->get('referer');
+    if ($asal && parse_url($asal, PHP_URL_HOST) === $request->getHost()) {
+        return redirect()->to($asal);
+    }
+
+    return redirect()->to('/');
 })->name('locale.set');
 
 // Kanal Profil. Sub halamannya (termasuk Tugas, Fungsi dan Wewenang) ditangani
@@ -50,6 +65,12 @@ Route::get('/regulasi', [PpidController::class, 'showRegulationPage'])->name('pp
 Route::get('/regulasi/{regulasi}', [PpidController::class, 'showRegulationDetail'])
     ->whereNumber('regulasi')
     ->name('ppid.regulation.show');
+// Halaman detail Laporan Pelayanan Informasi — dokumennya dibaca di halaman
+// itu juga, sama seperti detail Regulasi. Didaftarkan sebelum `/laporan/{slug}`
+// supaya dua segmennya tidak tertelan rute daftar.
+Route::get('/laporan/pelayanan-informasi/{laporan}', [PpidController::class, 'showServiceReportDetail'])
+    ->whereNumber('laporan')
+    ->name('ppid.report.show');
 Route::get('/laporan/{slug}', [PpidController::class, 'showReportPage'])->name('ppid.report');
 Route::get('/register-permohonan', [PpidController::class, 'showRequestRegister'])->name('ppid.register');
 Route::get('/standar-layanan/{slug}', [PpidController::class, 'showServiceStandardPage'])->name('ppid.service');

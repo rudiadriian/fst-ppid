@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MenuNavigasi extends Model
 {
-    protected $table = 'menu_navigasi';
+    use SoftDeletes;
 
-    public $timestamps = false;
+    protected $table = 'menu_navigasi';
 
     protected $casts = [
         'urutan'    => 'integer',

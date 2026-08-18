@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PermohonanInformasi extends Model
 {
-    use SoftDeletes;
+    use MencatatPelaku, SoftDeletes;
 
     protected $table = 'permohonan_informasi';
 

@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PunyaVersiInggris;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BannerSlider extends Model
 {
-    protected $table = 'banner_slider';
+    use PunyaVersiInggris, SoftDeletes;
 
-    public $timestamps = false;
+    protected $table = 'banner_slider';
 
     protected $casts = [
         'urutan'          => 'integer',

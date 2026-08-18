@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Akun;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pemohon;
+use App\Models\PengirimanTautanAkun;
+use App\Support\PembatasTautan;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -71,8 +73,14 @@ class EmailVerificationController extends Controller
         $pemohon = $this->pemohonMenunggu($request);
 
         if ($pemohon && !$pemohon->hasVerifiedEmail()) {
+            // Kirim ulang memakai jatah yang sama dengan pendaftaran: satu
+            // tautan per 30 menit. Tanpa ini tombol "kirim ulang" jadi celah
+            // yang membuat pembatasan di halaman daftar tidak ada gunanya.
+            PembatasTautan::pastikanBoleh($request, PengirimanTautanAkun::JENIS_REGISTRASI, $pemohon->email, 'email');
+
             try {
                 $pemohon->sendEmailVerificationNotification();
+                PembatasTautan::catat($request, PengirimanTautanAkun::JENIS_REGISTRASI, $pemohon->email);
             } catch (\Throwable $e) {
                 Log::warning('[PPID] Gagal mengirim ulang email verifikasi: '.$e->getMessage());
 

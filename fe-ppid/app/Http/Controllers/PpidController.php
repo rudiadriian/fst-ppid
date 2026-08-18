@@ -13,6 +13,7 @@ use App\Mail\DownloadReportMail; // Asumsikan Anda membuat Mailable ini
 use Illuminate\Support\Facades\Log;
 use App\Models\InformasiDikecualikan;
 use App\Models\LaporanLayanan;
+use App\Models\Maklumat;
 use App\Models\PermohonanInformasi;
 use App\Models\Regulasi;
 
@@ -129,10 +130,10 @@ class PpidController extends Controller
                     'Pejabat Pengelola Informasi dan Dokumentasi (PPID) PT Food Station Tjipinang Jaya (Perseroda) adalah pejabat yang bertanggung jawab dalam pengelolaan, pendokumentasian, penyimpanan, penyediaan, serta pelayanan informasi publik di lingkungan perusahaan.',
                     'PPID berperan penting dalam mewujudkan transparansi, akuntabilitas, dan pelayanan informasi yang cepat, tepat, dan mudah diakses oleh masyarakat.',
                 ],
-                'service_hours' => [
-                    ['days' => 'Senin s.d. Kamis', 'time' => '08.00 – 15.00 WIB', 'break' => '12.00 – 13.00 WIB'],
-                    ['days' => 'Jum’at', 'time' => '08.00 – 15.00 WIB', 'break' => '11.30 – 13.30 WIB'],
-                ]
+                // Jam layanan tidak lagi disertakan di sini — satu-satunya tempat
+                // tayangnya sekarang halaman Standar Layanan → Jalur dan Waktu
+                // Layanan (`showServiceStandardPage`), supaya tidak ada dua
+                // sumber jam layanan yang bisa berbeda isinya.
             ],
             'struktur' => [
                 'title' => 'Struktur Organisasi',
@@ -184,11 +185,11 @@ class PpidController extends Controller
             abort(404, 'Halaman profil tidak ditemukan.');
         }
 
-        $data = $profileData[$key] ?? ['title' => $halaman->judul];
+        $data = $profileData[$key] ?? ['title' => $halaman->teks('judul')];
 
         if ($halaman) {
-            $data['title'] = $halaman->judul;
-            $data['html'] = $halaman->konten;
+            $data['title'] = $halaman->teks('judul');
+            $data['html'] = $halaman->teks('konten');
         }
 
         // Struktur Organisasi hanya menampilkan bagannya; daftar "Susunan
@@ -213,11 +214,18 @@ class PpidController extends Controller
      */
     public function showPublicInformationIndex()
     {
+        // Urutannya mengikuti Daftar Informasi Publik resmi: dikelompokkan per
+        // klasifikasi, lalu nomor urut pada dokumen (disimpan di
+        // `nomor_klasifikasi`, jadi dibandingkan sebagai angka).
         $rows = $this->fromDatabase(
             fn () => \App\Models\InformasiPublik::published()
                 ->with(['files', 'kategori'])
-                ->orderByDesc('tanggal_publikasi')
-                ->orderBy('judul')
+                ->leftJoin('kategori_informasi', 'kategori_informasi.id', '=', 'informasi_publik.kategori_id')
+                ->orderBy('kategori_informasi.urutan')
+                ->orderBy('kategori_informasi.id')
+                ->orderByRaw("NULLIF(regexp_replace(informasi_publik.nomor_klasifikasi, '[^0-9]', '', 'g'), '')::int NULLS LAST")
+                ->orderBy('informasi_publik.judul')
+                ->select('informasi_publik.*')
                 ->get(),
             collect(),
             'informasi_publik'
@@ -231,9 +239,9 @@ class PpidController extends Controller
 
             return [
                 'no' => $i + 1,
-                'name' => $row->judul,
-                'ringkasan' => $row->ringkasan,
-                'kategori' => $row->kategori->nama ?? '-',
+                'name' => $row->teks('judul'),
+                'ringkasan' => $row->teks('ringkasan'),
+                'kategori' => $row->kategori?->teks('nama') ?? __('Lainnya'),
                 'kategori_slug' => $row->kategori->slug ?? null,
                 'tahun' => optional($row->tanggal_publikasi)->format('Y'),
                 'file' => $url,
@@ -243,8 +251,10 @@ class PpidController extends Controller
 
         $data = [
             'title' => 'Daftar Informasi Publik',
-            'description' => 'Seluruh informasi publik yang telah diumumkan PPID PT Food Station Tjipinang Jaya (Perseroda), dari seluruh klasifikasi.',
+            'description' => 'Daftar Informasi Publik dilingkungan PT Food Station Tjipinang Jaya (Perseroda).',
             'items' => $items,
+            // Ringkasan jumlah per klasifikasi untuk kartu di atas daftar.
+            'kelompok' => collect($items)->groupBy('kategori')->map->count()->all(),
             'db_offline' => $this->dbOffline,
         ];
 
@@ -298,8 +308,8 @@ class PpidController extends Controller
 
             return [
                 'no' => $i + 1,
-                'name' => $row->judul,
-                'ringkasan' => $row->ringkasan,
+                'name' => $row->teks('judul'),
+                'ringkasan' => $row->teks('ringkasan'),
                 'file' => $url,
                 'jenis' => $berkas ? 'berkas' : ($row->tautan ? 'tautan' : null),
             ];
@@ -323,7 +333,7 @@ class PpidController extends Controller
             )
             : collect();
 
-        $nama = $kategori->nama ?? $bawaan[$key][0];
+        $nama = $kategori?->teks('nama') ?? $bawaan[$key][0];
 
         $data = [
             'title' => $nama,
@@ -332,9 +342,9 @@ class PpidController extends Controller
             'heading_dokumen' => $bawaan[$key][1] ?? $nama,
             'items' => $items,
             'subkategori' => $subkategori->map(fn ($k) => [
-                'nama' => $k->nama,
+                'nama' => $k->teks('nama'),
                 'slug' => $k->slug,
-                'deskripsi' => $k->deskripsi,
+                'deskripsi' => $k->teks('deskripsi'),
                 'jumlah' => (int) ($k->jumlah_dokumen ?? 0),
             ])->all(),
             'db_offline' => $this->dbOffline,
@@ -498,7 +508,65 @@ class PpidController extends Controller
 
         $data = $standardData[$key];
 
+        // Maklumat tayang sebagai dokumen: berkas yang diunggah petugas lewat
+        // modul Maklumat dibaca langsung di halaman ini. Teks di `$standardData`
+        // hanya cadangan bila belum ada maklumat terbit / DB sedang bermasalah.
+        if ($key === 'maklumat-pelayanan') {
+            $data = $this->lengkapiMaklumat($data);
+        }
+
         return view('ppid.service_standard', compact('data', 'slug'));
+    }
+
+    /**
+     * Tambahkan dokumen maklumat terbit ke data halaman Standar Pelayanan.
+     *
+     * Yang dipakai adalah satu maklumat berstatus `published` dengan tanggal
+     * terbit terbaru. Bila tidak ada — atau berkasnya belum diunggah — kunci
+     * `dokumen` tidak diisi dan halaman kembali memakai teks bawaannya.
+     */
+    private function lengkapiMaklumat(array $data): array
+    {
+        $baris = $this->fromDatabase(
+            fn () => Maklumat::published()
+                ->with('penerbit')
+                ->orderByDesc('tanggal_terbit')
+                ->orderByDesc('id')
+                ->first(),
+            null,
+            'maklumat'
+        );
+
+        $data['db_offline'] = $this->dbOffline;
+
+        if (!$baris) {
+            return $data;
+        }
+
+        $judul = $baris->teks('judul');
+
+        if (filled($judul)) {
+            $data['title'] = $judul;
+        }
+
+        $url = $this->fileUrl($baris->file_dokumen);
+
+        if (blank($url)) {
+            return $data;
+        }
+
+        $ekstensi = strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?: '', PATHINFO_EXTENSION));
+
+        $data['dokumen'] = [
+            'url' => $url,
+            'ext' => $ekstensi,
+            'judul' => filled($judul) ? $judul : $data['title'],
+            'ringkasan' => $baris->teks('ringkasan'),
+            'tanggal' => $baris->tanggal_terbit ? \App\Support\Cms::tanggal($baris->tanggal_terbit) : null,
+            'pengunggah' => $baris->penerbit->name ?? null,
+        ];
+
+        return $data;
     }
 
 
@@ -575,25 +643,34 @@ class PpidController extends Controller
                 ->orderBy('judul')
                 ->get()
                 ->values()
+                // Keterangan penetapan (alasan, dasar hukum, jangka waktu,
+                // tanggal) tidak lagi ditampilkan publik, jadi tidak dikirim
+                // ke view sama sekali.
                 ->map(fn ($row, $i) => [
-                    'no'           => $i + 1,
-                    'judul'        => $row->judul,
-                    'ringkasan'    => $row->ringkasan,
-                    'alasan'       => $row->alasan_pengecualian,
-                    'dasar_hukum'  => $row->dasar_hukum_pengecualian,
-                    'jangka_waktu' => $row->jangka_waktu_pengecualian,
-                    'tanggal'      => optional($row->tanggal_penetapan)->translatedFormat('d F Y'),
-                    'file'         => $this->fileUrl($row->file_surat_penetapan),
+                    'no'        => $i + 1,
+                    'judul'     => $row->teks('judul'),
+                    'ringkasan' => $row->teks('ringkasan'),
+                    'file'      => $this->fileUrl($row->file_surat_penetapan),
                 ])
                 ->all(),
             [],
             'informasi_dikecualikan'
         );
 
+        // Penyajiannya disamakan dengan Daftar Informasi Publik: kartu ringkasan
+        // di atas daftar yang sekaligus jadi penyaring. Daftar ini tidak punya
+        // klasifikasi, jadi yang dikelompokkan adalah ketersediaan surat
+        // penetapannya.
+        $adaSurat = count(array_filter($items, fn ($item) => !empty($item['file'])));
+
         $data = [
             'title'       => 'Daftar Informasi Dikecualikan',
-            'description' => 'Informasi yang dikecualikan dari keterbukaan informasi publik berdasarkan hasil uji konsekuensi, lengkap dengan alasan pengecualian, dasar hukum, dan jangka waktu pengecualiannya.',
+            'description' => __('Informasi yang dikecualikan dari keterbukaan informasi publik di lingkungan PT Food Station Tjipinang Jaya (Perseroda) berdasarkan hasil uji konsekuensi.'),
             'items'       => $items,
+            'kelompok'    => [
+                'ada'   => $adaSurat,
+                'belum' => count($items) - $adaSurat,
+            ],
             'db_offline'  => $this->dbOffline,
         ];
 
@@ -623,6 +700,13 @@ class PpidController extends Controller
         }
 
         $meta = $tipeMap[$slug];
+
+        // Laporan Pelayanan Informasi isinya berkas PDF per tahun yang diunggah
+        // petugas, bukan rekap angka. Penyajiannya karena itu mengikuti modul
+        // Regulasi: kartu bersampul halaman pertama dokumen + halaman detail.
+        if ($slug === 'pelayanan-informasi') {
+            return $this->halamanLaporanPelayanan($meta);
+        }
 
         $reports = $this->fromDatabase(
             fn () => LaporanLayanan::published()
@@ -675,6 +759,100 @@ class PpidController extends Controller
     }
 
     /**
+     * Daftar Laporan Pelayanan Informasi — berkas per tahun yang diunggah dari
+     * be-ppid. Bentuk kartunya sama dengan modul Regulasi.
+     *
+     * @param  array{tipe: string, title: string, description: string}  $meta
+     */
+    private function halamanLaporanPelayanan(array $meta)
+    {
+        $laporan = $this->fromDatabase(
+            fn () => $this->mapLaporanPelayanan(
+                LaporanLayanan::published()
+                    ->tipe($meta['tipe'])
+                    ->with('penerbit')
+                    ->orderByDesc('tahun')
+                    ->orderByDesc('id')
+                    ->get()
+            ),
+            [],
+            'laporan_pelayanan'
+        );
+
+        return view('ppid.service_report', ['data' => [
+            'title'       => $meta['title'],
+            'description' => $meta['description'],
+            'reports'     => $laporan,
+            'db_offline'  => $this->dbOffline,
+        ]]);
+    }
+
+    /**
+     * Halaman detail satu Laporan Pelayanan Informasi. Dokumennya digambar di
+     * halaman ini juga (pdf.js), tidak membuka tab baru.
+     */
+    public function showServiceReportDetail(int $laporan)
+    {
+        $baris = $this->fromDatabase(
+            fn () => LaporanLayanan::published()
+                ->tipe('pelayanan_informasi')
+                ->with('penerbit')
+                ->find($laporan),
+            null,
+            'laporan_pelayanan_detail'
+        );
+
+        abort_if(!$baris, 404, 'Laporan Pelayanan Informasi tidak ditemukan.');
+
+        $lainnya = $this->fromDatabase(
+            fn () => $this->mapLaporanPelayanan(
+                LaporanLayanan::published()
+                    ->tipe('pelayanan_informasi')
+                    ->with('penerbit')
+                    ->where('id', '!=', $baris->id)
+                    ->orderByDesc('tahun')
+                    ->orderByDesc('id')
+                    ->limit(6)
+                    ->get()
+            ),
+            [],
+            'laporan_pelayanan_lain'
+        );
+
+        return view('ppid.service_report_show', [
+            'data' => $this->satuLaporanPelayanan($baris) + ['db_offline' => $this->dbOffline],
+            'lainnya' => $lainnya,
+        ]);
+    }
+
+    private function mapLaporanPelayanan($rows): array
+    {
+        return $rows->values()->map(fn ($row, $i) => $this->satuLaporanPelayanan($row, $i + 1))->all();
+    }
+
+    /** Satu laporan pelayanan dalam bentuk yang dipakai daftar maupun detail. */
+    private function satuLaporanPelayanan($row, int $nomorUrut = 1): array
+    {
+        return [
+            'no'        => $nomorUrut,
+            'id'        => $row->id,
+            'title'     => $row->judul,
+            'ringkasan' => $row->ringkasan,
+            'year'      => $row->tahun,
+            'periode'   => $row->periode ?: __('Tahunan'),
+            // Tanggal terbit di situs publik memakai waktu baris dibuat di CMS,
+            // sama seperti modul Regulasi.
+            'published' => $row->created_at,
+            // Dipakai view untuk memilih cara menampilkan berkas: PDF digambar
+            // lewat pdf.js, gambar ditampilkan apa adanya.
+            'ext'        => strtolower(pathinfo((string) $row->file_laporan, PATHINFO_EXTENSION)),
+            'pengunggah' => $row->penerbit->name ?? null,
+            'link'       => $this->fileUrl($row->file_laporan),
+            'url'        => route('ppid.report.show', $row->id),
+        ];
+    }
+
+    /**
      * Empat angka ringkas: pemohon, dokumen, regulasi, kepuasan.
      * Sebelumnya tampil di Beranda (HomeController@statistik).
      */
@@ -682,7 +860,11 @@ class PpidController extends Controller
     {
         $angka = $this->fromDatabase(
             function () {
-                $rating = \Illuminate\Support\Facades\DB::table('survey_kepuasan')->avg('rating');
+                // Query mentah, jadi filter soft delete-nya ditulis sendiri:
+                // survei yang dihapus petugas tidak boleh ikut menarik rata-rata.
+                $rating = \Illuminate\Support\Facades\DB::table('survey_kepuasan')
+                    ->whereNull('deleted_at')
+                    ->avg('rating');
 
                 return [
                     'pemohon'  => PermohonanInformasi::count(),
@@ -793,8 +975,8 @@ class PpidController extends Controller
         return [
             'no'        => $nomorUrut,
             'id'        => $row->id,
-            'title'     => $row->judul,
-            'ringkasan' => $row->ringkasan,
+            'title'     => $row->teks('judul'),
+            'ringkasan' => $row->teks('ringkasan'),
             'number'    => $row->nomor_peraturan ?: ($row->tahun ? 'Tahun '.$row->tahun : null),
             'date'      => optional($row->tanggal_berlaku)->format('Y-m-d'),
             // Tanggal terbit di situs publik memakai waktu baris dibuat di CMS.

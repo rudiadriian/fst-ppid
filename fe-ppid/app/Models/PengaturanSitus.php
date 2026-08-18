@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PengaturanSitus extends Model
 {
-    protected $table = 'pengaturan_situs';
+    use SoftDeletes;
 
-    public $timestamps = false;
+    protected $table = 'pengaturan_situs';
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\KeberatanFile;
 use App\Models\KeberatanInformasi;
 use App\Models\PermohonanInformasi;
+use App\Support\EmailPemohon;
 use App\Support\NotifikasiAdmin;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
@@ -47,9 +48,17 @@ class KeberatanController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
         $pemohon = Auth::guard('pemohon')->user();
+
+        // Sama seperti Permohonan: identitas harus jelas sebelum berkas
+        // keberatan diproses. Pembatasan ditegakkan di server, bukan hanya
+        // dengan menyembunyikan tombol.
+        if (!$pemohon->dataTerverifikasi()) {
+            return redirect()->route('akun.data-pemohon')
+                ->with('status', __('Lengkapi dan verifikasi Data Pemohon dulu sebelum mengajukan keberatan.'));
+        }
 
         return view('akun.keberatan.create', [
             'pemohon' => $pemohon,
@@ -62,6 +71,11 @@ class KeberatanController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $pemohon = Auth::guard('pemohon')->user();
+
+        if (!$pemohon->dataTerverifikasi()) {
+            return redirect()->route('akun.data-pemohon')
+                ->with('status', __('Lengkapi dan verifikasi Data Pemohon dulu sebelum mengajukan keberatan.'));
+        }
 
         $data = $request->validate([
             'permohonan_id' => ['required', 'integer'],
@@ -124,6 +138,11 @@ class KeberatanController extends Controller
         // Di luar transaksi: notifikasi ke panel admin tidak boleh menggagalkan
         // keberatan yang sudah tersimpan.
         NotifikasiAdmin::keberatanBaru($keberatan, $permohonan, $pemohon);
+
+        // Tanda terima ke pemohon; relasi permohonan diisi lebih dulu supaya
+        // nomor registrasinya bisa dicetak di email tanpa query tambahan.
+        $keberatan->setRelation('permohonan', $permohonan);
+        EmailPemohon::pengajuanDikirim($keberatan, $pemohon);
 
         return redirect()->route('akun.keberatan.index')
             ->with('status', __('Keberatan Anda sudah kami terima.'));

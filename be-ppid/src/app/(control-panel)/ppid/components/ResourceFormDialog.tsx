@@ -8,10 +8,12 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import { useSnackbar } from 'notistack';
+import { useTranslation } from 'react-i18next';
 import { ppidApi, PpidApiError } from '../api/ppidApi';
 import { useCreateResource, useResourceItem, useUpdateResource } from '../api/useResource';
 import { apiPathOf, FieldConfig, ResourceConfig } from '../lib/types';
 import ResourceField from './ResourceField';
+import JejakDokumen from './JejakDokumen';
 
 type ResourceFormDialogProps = {
 	config: ResourceConfig;
@@ -61,6 +63,7 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 	const apiPath = apiPathOf(config);
 	const modeUbah = recordId !== null;
 	const { enqueueSnackbar } = useSnackbar();
+	const { t } = useTranslation();
 
 	const { data: record, isLoading: memuat } = useResourceItem<Record<string, unknown>>(
 		apiPath,
@@ -105,7 +108,7 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 
 			if (nilai === undefined || nilai === null || nilai === '') {
 				const label = config.fields.find((f) => f.name === nama)?.label ?? nama;
-				enqueueSnackbar(`Isi dulu ${label} sebelum menghitung otomatis.`, { variant: 'warning' });
+				enqueueSnackbar(`${t('Isi dulu')} ${t(label)} ${t('sebelum menghitung otomatis.')}`, { variant: 'warning' });
 				return;
 			}
 
@@ -123,10 +126,10 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 				}
 			});
 
-			enqueueSnackbar('Angka rekap diperbarui dari data permohonan.', { variant: 'success' });
+			enqueueSnackbar(t('Angka rekap diperbarui dari data permohonan.'), { variant: 'success' });
 		} catch (error) {
 			enqueueSnackbar(
-				error instanceof PpidApiError ? error.message : 'Gagal menghitung rekap otomatis.',
+				error instanceof PpidApiError ? error.message : t('Gagal menghitung rekap otomatis.'),
 				{ variant: 'error' }
 			);
 		} finally {
@@ -142,6 +145,10 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 			return hasil;
 		}, {});
 
+		// Kolom yang dikunci modul (mis. `tipe_laporan`) diisi di sini, bukan
+		// lewat formulir, supaya operator tidak bisa salah memilih.
+		Object.assign(payload, config.nilaiTetap ?? {});
+
 		try {
 			if (modeUbah) {
 				await ubah.mutateAsync({ id: recordId, payload });
@@ -149,7 +156,7 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 				await buat.mutateAsync(payload);
 			}
 
-			enqueueSnackbar(`${config.singular} ${modeUbah ? 'diperbarui' : 'ditambahkan'}`, { variant: 'success' });
+			enqueueSnackbar(`${t(config.singular)} ${modeUbah ? t('diperbarui') : t('ditambahkan')}`, { variant: 'success' });
 			onClose();
 		} catch (error) {
 			if (error instanceof PpidApiError) {
@@ -162,7 +169,7 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 				return;
 			}
 
-			enqueueSnackbar('Data gagal disimpan', { variant: 'error' });
+			enqueueSnackbar(t('Data gagal disimpan'), { variant: 'error' });
 		}
 	}
 
@@ -175,7 +182,7 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 			scroll="paper"
 		>
 			<DialogTitle>
-				{modeUbah ? `Ubah ${config.singular}` : `Tambah ${config.singular}`}
+				{modeUbah ? `${t('Ubah')} ${t(config.singular)}` : `${t('Tambah')} ${t(config.singular)}`}
 			</DialogTitle>
 
 			<DialogContent dividers>
@@ -204,12 +211,14 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 					</form>
 				)}
 
+				{modeUbah && !memuat && <JejakDokumen record={record} />}
+
 				{config.aksiIsiOtomatis?.help && (
 					<Alert
 						severity="info"
 						className="mt-4"
 					>
-						{config.aksiIsiOtomatis.help}
+						{t(config.aksiIsiOtomatis.help)}
 					</Alert>
 				)}
 
@@ -218,7 +227,7 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 						severity="info"
 						className="mt-4"
 					>
-						Modul ini hanya dapat dibaca.
+						{t('Modul ini hanya dapat dibaca.')}
 					</Alert>
 				)}
 			</DialogContent>
@@ -231,14 +240,14 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 						startIcon={menghitung ? <CircularProgress size={16} /> : undefined}
 						className="mr-auto"
 					>
-						{config.aksiIsiOtomatis.label}
+						{t(config.aksiIsiOtomatis.label)}
 					</Button>
 				)}
 				<Button
 					onClick={onClose}
 					disabled={menyimpan}
 				>
-					Batal
+					{t('Batal')}
 				</Button>
 				<Button
 					type="submit"
@@ -248,7 +257,7 @@ export function ResourceFormDialog({ config, recordId, open, onClose }: Resource
 					disabled={menyimpan || memuat}
 					startIcon={menyimpan ? <CircularProgress size={16} /> : undefined}
 				>
-					Simpan
+					{t('Simpan')}
 				</Button>
 			</DialogActions>
 		</Dialog>

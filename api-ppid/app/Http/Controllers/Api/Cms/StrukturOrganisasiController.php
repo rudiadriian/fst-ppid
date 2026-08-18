@@ -32,14 +32,17 @@ class StrukturOrganisasiController extends CrudController
         return [
             'nama' => [$wajib, 'string', 'max:150'],
             'jabatan' => [$wajib, 'string', 'max:150'],
+            'jabatan_en' => ['nullable', 'string', 'max:150'],
             'foto' => ['nullable', 'string', 'max:500'],
             'urutan' => ['nullable', 'integer', 'min:0'],
             'deskripsi' => ['nullable', 'string'],
+            'deskripsi_en' => ['nullable', 'string'],
             'is_active' => ['boolean'],
             // Pembentuk Bagan Struktur Organisasi di situs publik.
             'parent_id' => ['nullable', 'integer', 'exists:struktur_organisasi,id'],
             'tipe_node' => ['nullable', 'in:utama,samping,grup'],
             'poin' => ['nullable', 'string'],
+            'poin_en' => ['nullable', 'string'],
         ];
     }
 }

@@ -4,18 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\MencatatPelaku;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InformasiDikecualikan extends Model
 {
-    use SoftDeletes;
+    use MencatatPelaku, SoftDeletes;
 
     protected $table = 'informasi_dikecualikan';
 
     protected $fillable = [
         'judul',
+        'judul_en',
         'slug',
         'ringkasan',
+        'ringkasan_en',
         'alasan_pengecualian',
         'dasar_hukum_pengecualian',
         'jangka_waktu_pengecualian',

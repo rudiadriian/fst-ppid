@@ -9,12 +9,14 @@ import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { useSnackbar } from 'notistack';
+import { useTranslation } from 'react-i18next';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import DataTable from '@/components/data-table/DataTable';
 import { ApiRecord, PpidApiError } from '../api/ppidApi';
 import { useDeleteManyResource, useDeleteResource, useRelationOptions, useResourceList } from '../api/useResource';
 import { useAksesModul } from '../api/useNavigasi';
 import { apiPathOf, ColumnConfig, FilterConfig, ResourceConfig } from '../lib/types';
+import { FILTER_TERHAPUS, kolomDenganJejak, punyaJejak, visibilitasAwalJejak } from '../lib/jejak';
 import ResourceFormDialog from './ResourceFormDialog';
 import { urlMedia } from './UploadField';
 
@@ -49,6 +51,7 @@ function formatTanggal(nilai: unknown, denganJam: boolean): string {
 }
 
 function SelPerKolom({ kolom, baris }: { kolom: ColumnConfig; baris: ApiRecord }) {
+	const { t } = useTranslation();
 	const nilai = nilaiKolom(baris, kolom.key);
 
 	switch (kolom.type) {
@@ -56,7 +59,7 @@ function SelPerKolom({ kolom, baris }: { kolom: ColumnConfig; baris: ApiRecord }
 			return (
 				<Chip
 					size="small"
-					label={nilai ? 'Aktif' : 'Nonaktif'}
+					label={nilai ? t('Aktif') : t('Nonaktif')}
 					color={nilai ? 'success' : 'default'}
 					variant="outlined"
 				/>
@@ -68,7 +71,7 @@ function SelPerKolom({ kolom, baris }: { kolom: ColumnConfig; baris: ApiRecord }
 			return (
 				<Chip
 					size="small"
-					label={info?.label ?? String(nilai ?? '—')}
+					label={info?.label ? t(info.label) : String(nilai ?? '—')}
 					color={info?.color ?? 'default'}
 				/>
 			);
@@ -93,7 +96,7 @@ function SelPerKolom({ kolom, baris }: { kolom: ColumnConfig; baris: ApiRecord }
 					rel="noreferrer noopener"
 					className="underline"
 				>
-					Lihat berkas
+					{t('Lihat berkas')}
 				</a>
 			) : (
 				<span>—</span>
@@ -118,6 +121,7 @@ function FilterRelasi({
 	value: string;
 	onChange: (nilai: string) => void;
 }) {
+	const { t } = useTranslation();
 	const { data: opsi } = useRelationOptions(
 		filter.relation?.resource ?? '',
 		filter.relation?.labelKey ?? 'nama',
@@ -128,12 +132,12 @@ function FilterRelasi({
 		<TextField
 			select
 			size="small"
-			label={filter.label}
+			label={t(filter.label)}
 			value={value}
 			onChange={(event) => onChange(event.target.value)}
 			sx={{ minWidth: 170 }}
 		>
-			<MenuItem value="">Semua</MenuItem>
+			<MenuItem value="">{t('Semua')}</MenuItem>
 			{(opsi ?? []).map((item) => (
 				<MenuItem
 					key={String(item.value)}
@@ -165,6 +169,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 	const apiPath = apiPathOf(config);
 	const { akses } = useAksesModul(config.modul);
 	const { enqueueSnackbar } = useSnackbar();
+	const { t } = useTranslation();
 
 	const [pagination, setPagination] = useState<MRT_PaginationState>({ pageIndex: 0, pageSize: 15 });
 	const [sorting, setSorting] = useState<MRT_SortingState>([]);
@@ -199,20 +204,40 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 			per_page: pagination.pageSize,
 			search: pencarian || undefined,
 			sort: paramSort,
-			...nilaiFilter
+			// Nilai terkunci modul selalu ikut sebagai filter dan tidak bisa
+			// ditimpa filter pilihan operator.
+			...nilaiFilter,
+			...(config.nilaiTetap ?? {})
 		}),
-		[pagination, pencarian, paramSort, nilaiFilter]
+		[pagination, pencarian, paramSort, nilaiFilter, config.nilaiTetap]
 	);
 
 	const { data, isLoading, isFetching, error } = useResourceList<ApiRecord>(apiPath, params);
 	const hapus = useDeleteResource(apiPath);
 	const hapusBanyak = useDeleteManyResource(apiPath);
 
+	// Data terhapus hanya bisa dilihat, bukan disunting atau dihapus lagi.
+	const melihatTerhapus = (nilaiFilter.terhapus ?? '') !== '';
+
+	const kolomTampil = useMemo(
+		() => kolomDenganJejak(config, melihatTerhapus),
+		[config, melihatTerhapus]
+	);
+
+	const daftarFilter = useMemo<FilterConfig[]>(
+		() => [...(config.filters ?? []), ...(punyaJejak(config) ? [FILTER_TERHAPUS] : [])],
+		[config]
+	);
+
+	// Dihitung sekali saat tabel dipasang: MRT hanya membaca `initialState` pada
+	// render pertama, dan setelah itu visibilitas kolom milik operator.
+	const [visibilitasAwal] = useState(() => visibilitasAwalJejak(config));
+
 	const kolom = useMemo<MRT_ColumnDef<ApiRecord>[]>(
 		() =>
-			config.columns.map((kol) => ({
+			kolomTampil.map((kol) => ({
 				accessorKey: kol.key,
-				header: kol.label,
+				header: t(kol.label),
 				size: kol.size,
 				enableSorting: !kol.noSort,
 				enableColumnFilter: false,
@@ -224,28 +249,30 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 					/>
 				)
 			})),
-		[config.columns]
+		[kolomTampil, t]
 	);
 
 	const jalankanHapus = useCallback(
 		async (id: number) => {
 			// eslint-disable-next-line no-alert
-			if (!window.confirm('Hapus data ini? Tindakan ini tidak dapat dibatalkan.')) {
+			if (!window.confirm(t('Hapus data ini? Tindakan ini tidak dapat dibatalkan.'))) {
 				return;
 			}
 
 			try {
 				await hapus.mutateAsync(id);
-				enqueueSnackbar('Data dihapus', { variant: 'success' });
+				enqueueSnackbar(t('Data dihapus'), { variant: 'success' });
 			} catch (err) {
-				const pesan = err instanceof PpidApiError ? (Object.values(err.errors)[0]?.[0] ?? err.message) : 'Gagal menghapus data';
+				const pesan = err instanceof PpidApiError ? (Object.values(err.errors)[0]?.[0] ?? err.message) : t('Gagal menghapus data');
 				enqueueSnackbar(pesan, { variant: 'error' });
 			}
 		},
-		[hapus, enqueueSnackbar]
+		[hapus, enqueueSnackbar, t]
 	);
 
-	const bolehTulis = !config.readOnly;
+	// Saat daftar menampilkan data terhapus, aksi tulis dimatikan: barisnya
+	// tinggal arsip jejak, bukan data yang masih dipakai.
+	const bolehTulis = !config.readOnly && !melihatTerhapus;
 
 	return (
 		<div className="flex w-full flex-col">
@@ -255,14 +282,14 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 						variant="h5"
 						className="font-semibold"
 					>
-						{config.title}
+						{t(config.title)}
 					</Typography>
 					{config.description && (
 						<Typography
 							variant="body2"
 							color="text.secondary"
 						>
-							{config.description}
+							{t(config.description)}
 						</Typography>
 					)}
 					{headerExtra}
@@ -278,7 +305,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 							setFormTerbuka(true);
 						}}
 					>
-						Tambah {config.singular}
+						{t('Tambah')} {t(config.singular)}
 					</Button>
 				)}
 			</div>
@@ -288,7 +315,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 					severity="error"
 					className="mx-4 mb-4 md:mx-6"
 				>
-					{error instanceof PpidApiError ? error.message : 'Data gagal dimuat.'}
+					{error instanceof PpidApiError ? error.message : t('Data gagal dimuat.')}
 				</Alert>
 			)}
 
@@ -300,6 +327,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 					columns={kolom}
 					data={data?.data ?? []}
 					getRowId={(baris) => String(baris.id)}
+					initialState={{ columnVisibility: visibilitasAwal }}
 					manualPagination
 					manualSorting
 					manualFiltering
@@ -318,13 +346,18 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 					onSortingChange={setSorting}
 					onGlobalFilterChange={(nilai: unknown) => setPencarianTertunda(String(nilai ?? ''))}
 					muiSearchTextFieldProps={{
-						placeholder: config.searchPlaceholder ?? `Cari ${config.title.toLowerCase()}…`,
+						placeholder: config.searchPlaceholder
+							? t(config.searchPlaceholder)
+							: `${t('Cari')} ${t(config.title).toLowerCase()}…`,
 						sx: { minWidth: '260px' },
 						variant: 'outlined',
 						size: 'small'
 					}}
 					enableRowSelection={bolehTulis && akses.delete}
-					enableRowActions={bolehTulis && (akses.edit || akses.delete)}
+					// Kolom aksi juga muncul untuk modul baca-saja yang punya
+					// aksi khusus — mis. Pemohon, yang datanya tidak boleh
+					// disunting tetapi berkasnya perlu diverifikasi petugas.
+					enableRowActions={Boolean(aksiBaris) || (bolehTulis && (akses.edit || akses.delete))}
 					renderTopToolbarCustomActions={({ table }) => (
 						<div className="flex flex-wrap items-center gap-2">
 							{akses.delete && table.getSelectedRowModel().rows.length > 0 && (
@@ -336,27 +369,27 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 										const terpilih = table.getSelectedRowModel().rows;
 
 										// eslint-disable-next-line no-alert
-										if (!window.confirm(`Hapus ${terpilih.length} data terpilih?`)) {
+										if (!window.confirm(`${t('Hapus')} ${terpilih.length} ${t('data terpilih?')}`)) {
 											return;
 										}
 
 										try {
 											await hapusBanyak.mutateAsync(terpilih.map((r) => Number(r.original.id)));
 											table.resetRowSelection();
-											enqueueSnackbar('Data terpilih dihapus', { variant: 'success' });
+											enqueueSnackbar(t('Data terpilih dihapus'), { variant: 'success' });
 										} catch (err) {
 											enqueueSnackbar(
-												err instanceof PpidApiError ? err.message : 'Gagal menghapus data',
+												err instanceof PpidApiError ? err.message : t('Gagal menghapus data'),
 												{ variant: 'error' }
 											);
 										}
 									}}
 								>
-									Hapus {table.getSelectedRowModel().rows.length} data
+									{t('Hapus')} {table.getSelectedRowModel().rows.length} {t('data')}
 								</Button>
 							)}
 
-							{(config.filters ?? []).map((filter) =>
+							{daftarFilter.map((filter) =>
 									filter.type === 'relation' ? (
 										<FilterRelasi
 											key={filter.name}
@@ -371,7 +404,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 											key={filter.name}
 											type="date"
 											size="small"
-											label={filter.label}
+											label={t(filter.label)}
 											value={nilaiFilter[filter.name] ?? ''}
 											slotProps={{ inputLabel: { shrink: true } }}
 											onChange={(event) =>
@@ -386,7 +419,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 											key={filter.name}
 											select
 											size="small"
-											label={filter.label}
+											label={t(filter.label)}
 											value={nilaiFilter[filter.name] ?? ''}
 											onChange={(event) =>
 												setNilaiFilter((lama) => ({
@@ -396,13 +429,13 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 											}
 											sx={{ minWidth: 170 }}
 										>
-											<MenuItem value="">Semua</MenuItem>
+											<MenuItem value="">{t(filter.labelKosong ?? 'Semua')}</MenuItem>
 											{(filter.options ?? []).map((opsi) => (
 												<MenuItem
 													key={String(opsi.value)}
 													value={String(opsi.value)}
 												>
-													{opsi.label}
+													{t(opsi.label)}
 												</MenuItem>
 											))}
 									</TextField>
@@ -425,7 +458,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 									<ListItemIcon>
 										<FuseSvgIcon size={18}>lucide:pencil</FuseSvgIcon>
 									</ListItemIcon>
-									Ubah
+									{t('Ubah')}
 								</MenuItem>
 							) : null,
 							akses.delete ? (
@@ -444,7 +477,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 											lucide:trash
 										</FuseSvgIcon>
 									</ListItemIcon>
-									Hapus
+									{t('Hapus')}
 								</MenuItem>
 							) : null
 						].filter(Boolean)

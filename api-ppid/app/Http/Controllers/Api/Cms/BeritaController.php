@@ -36,10 +36,13 @@ class BeritaController extends CrudController
         return [
             'kategori_berita_id' => ['nullable', Rule::exists('kategori_berita', 'id')],
             'judul' => [$wajib, 'string', 'max:255'],
+            'judul_en' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'thumbnail' => ['nullable', 'string', 'max:500'],
             'ringkasan' => ['nullable', 'string'],
+            'ringkasan_en' => ['nullable', 'string'],
             'konten' => ['nullable', 'string'],
+            'konten_en' => ['nullable', 'string'],
             'tanggal_publikasi' => ['nullable', 'date'],
             'status' => ['sometimes', Rule::in(['draft', 'published', 'archived'])],
         ];

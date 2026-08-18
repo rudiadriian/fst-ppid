@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Verifikasi Email | PPID FSTJ')
-
+@section('title', __('Verifikasi Email') . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     <section class="relative fs-gradient overflow-hidden">
@@ -22,6 +21,15 @@
                     {{ __('Kami sudah mengirim tautan verifikasi ke') }}
                     <span class="font-semibold text-gray-900 dark:text-white">{{ $email }}</span>.
                     {{ __('Email wajib diverifikasi sebelum akun bisa dipakai masuk.') }}
+                    {{ __('Tautannya berlaku :jam jam; setelah itu mintalah tautan baru di bawah ini.', ['jam' => (int) (config('auth.verification.expire', 1440) / 60)]) }}
+                </p>
+
+                @error('email')
+                    <p class="mt-3 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                @enderror
+
+                <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('Satu tautan dapat dikirim setiap :menit menit. Periksa folder Spam bila belum tampak di kotak masuk.', ['menit' => (int) config('ppid.akun.jeda_kirim_tautan_menit', 30)]) }}
                 </p>
 
                 <div class="mt-6 flex flex-wrap items-center gap-3">

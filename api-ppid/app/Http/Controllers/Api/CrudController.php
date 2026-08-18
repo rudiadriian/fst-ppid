@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Concerns\MencatatPelaku;
 use App\Support\AuditLogger;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -75,8 +77,9 @@ abstract class CrudController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = $this->baseQuery()->with($this->withList);
+        $query = $this->baseQuery()->with($this->relasiDaftar());
 
+        $this->applyTerhapus($query, (string) $request->query('terhapus', ''));
         $this->applySearch($query, (string) $request->query('search', ''));
         $this->applyFilters($query, $request);
         $this->applySort($query, (string) $request->query('sort', $this->defaultSort));
@@ -99,7 +102,7 @@ abstract class CrudController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $record = $this->baseQuery()->with($this->withDetail ?: $this->withList)->findOrFail($id);
+        $record = $this->baseQuery()->with($this->relasiDetail())->findOrFail($id);
 
         return response()->json(['data' => $record]);
     }
@@ -131,7 +134,7 @@ abstract class CrudController extends Controller
         );
 
         return response()->json([
-            'data' => $record->fresh($this->withDetail ?: $this->withList),
+            'data' => $record->fresh($this->relasiDetail()),
         ], 201);
     }
 
@@ -162,7 +165,7 @@ abstract class CrudController extends Controller
         );
 
         return response()->json([
-            'data' => $record->fresh($this->withDetail ?: $this->withList),
+            'data' => $record->fresh($this->relasiDetail()),
         ]);
     }
 
@@ -251,6 +254,93 @@ abstract class CrudController extends Controller
     }
 
     // ---------------------------------------------------------------------
+    // Jejak dokumen (traceability)
+    // ---------------------------------------------------------------------
+
+    /** Model ini mencatat pelaku perubahan? */
+    protected function punyaJejak(): bool
+    {
+        return in_array(MencatatPelaku::class, class_uses_recursive($this->model), true);
+    }
+
+    /** Model ini memakai penghapusan lunak? */
+    protected function punyaSoftDelete(): bool
+    {
+        return in_array(SoftDeletes::class, class_uses_recursive($this->model), true);
+    }
+
+    /**
+     * Relasi pelaku yang selalu ikut dimuat.
+     *
+     * Hanya `id` dan `name` yang diambil supaya kolom "Dibuat/Diubah/Dihapus
+     * oleh" bisa ditampilkan tanpa membocorkan data pengguna lainnya.
+     */
+    protected function relasiJejak(): array
+    {
+        if (!$this->punyaJejak()) {
+            return [];
+        }
+
+        $relasi = ['pembuat:id,name', 'pengubah:id,name'];
+
+        if ($this->punyaSoftDelete()) {
+            $relasi[] = 'penghapus:id,name';
+        }
+
+        return $relasi;
+    }
+
+    protected function relasiDaftar(): array
+    {
+        return array_merge($this->withList, $this->relasiJejak());
+    }
+
+    protected function relasiDetail(): array
+    {
+        return array_merge($this->withDetail ?: $this->withList, $this->relasiJejak());
+    }
+
+    /**
+     * Tampilkan baris terhapus.
+     *
+     * `terhapus=hanya` untuk arsip penghapusan (siapa menghapus dan kapan),
+     * `terhapus=semua` untuk gabungan. Tanpa parameter, baris terhapus tidak
+     * ikut — perilaku lama tetap sama.
+     */
+    protected function applyTerhapus(Builder $query, string $mode): void
+    {
+        if (!$this->punyaSoftDelete()) {
+            return;
+        }
+
+        match ($mode) {
+            'hanya' => $query->onlyTrashed(),
+            'semua' => $query->withTrashed(),
+            default => null,
+        };
+    }
+
+    /**
+     * Kolom jejak selalu boleh dipakai mengurutkan, tanpa perlu didaftarkan
+     * ulang di tiap modul.
+     */
+    protected function kolomSortable(): array
+    {
+        if (!$this->punyaJejak()) {
+            return $this->sortable;
+        }
+
+        $jejak = ['created_at', 'updated_at', 'created_by', 'updated_by'];
+
+        if ($this->punyaSoftDelete()) {
+            $jejak[] = 'deleted_at';
+            $jejak[] = 'deleted_by';
+        }
+
+        return array_unique(array_merge($this->sortable, $jejak));
+    }
+
+    // ---------------------------------------------------------------------
     // Internal
     // ---------------------------------------------------------------------
 
@@ -304,7 +394,7 @@ abstract class CrudController extends Controller
         $arah = str_starts_with($sort, '-') ? 'desc' : 'asc';
         $kolom = ltrim($sort, '-');
 
-        if (!in_array($kolom, $this->sortable, true)) {
+        if (!in_array($kolom, $this->kolomSortable(), true)) {
             $kolom = ltrim($this->defaultSort, '-');
             $arah = str_starts_with($this->defaultSort, '-') ? 'desc' : 'asc';
         }

@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\TanpaCapUbahSaatDibuat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Penilaian pemohon atas layanan informasi.
@@ -14,9 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class SurveyKepuasan extends Model
 {
-    protected $table = 'survey_kepuasan';
+    use SoftDeletes, TanpaCapUbahSaatDibuat;
 
-    public const UPDATED_AT = null;
+    protected $table = 'survey_kepuasan';
 
     protected $fillable = [
         'permohonan_id',

@@ -1,14 +1,13 @@
 @extends('layouts.app')
 
-@section('title', $berita->judul . ' | PPID FSTJ')
-
+@section('title', $berita->teks('judul') . ' | ' . __('PPID FSTJ'))
 @section('content')
 
     <section class="relative fs-gradient overflow-hidden">
         <div class="absolute inset-0 opacity-[0.07]" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 28px 28px;"></div>
         <div class="relative z-10 max-w-6xl mx-auto px-6 lg:px-8 py-16 lg:py-20">
             <p class="text-sm font-semibold tracking-widest uppercase text-white/70 mb-4">{{ $kategori }}</p>
-            <h1 class="text-3xl lg:text-4xl font-bold text-white leading-tight">{{ $berita->judul }}</h1>
+            <h1 class="text-3xl lg:text-4xl font-bold text-white leading-tight">{{ $berita->teks('judul') }}</h1>
             <p class="mt-4 text-sm font-normal text-white/70">{{ $tanggal }}</p>
         </div>
     </section>
@@ -20,17 +19,17 @@
 
             <article class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-10 dark:border-white/10 dark:bg-[#0B2A1D]">
                 @if ($gambar)
-                    <img src="{{ $gambar }}" alt="{{ $berita->judul }}" class="mb-8 w-full rounded-xl object-cover">
+                    <img src="{{ $gambar }}" alt="{{ $berita->teks('judul') }}" class="mb-8 w-full rounded-xl object-cover">
                 @endif
 
-                @if ($berita->ringkasan)
-                    <p class="mb-6 text-lg font-normal leading-relaxed text-gray-700 dark:text-gray-200">{{ $berita->ringkasan }}</p>
+                @if ($berita->teks('ringkasan'))
+                    <p class="mb-6 text-lg font-normal leading-relaxed text-gray-700 dark:text-gray-200">{{ $berita->teks('ringkasan') }}</p>
                 @endif
 
                 {{-- Isi berita ditulis lewat editor CMS. Hanya tag aman yang
                      dirender agar konten tidak bisa menyisipkan skrip. --}}
                 <div class="fs-rte">
-                    {!! strip_tags($berita->konten ?? '', '<p><br><strong><em><u><ul><ol><li><h2><h3><h4><blockquote><a><img><table><thead><tbody><tr><th><td>') !!}
+                    {!! strip_tags($berita->teks('konten') ?? '', '<p><br><strong><em><u><ul><ol><li><h2><h3><h4><blockquote><a><img><table><thead><tbody><tr><th><td>') !!}
                 </div>
             </article>
 

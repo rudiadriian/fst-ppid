@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LaporanLayanan extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'laporan_layanan';
 
     protected $casts = [
@@ -26,5 +30,14 @@ class LaporanLayanan extends Model
     public function scopeTipe($query, string $tipe)
     {
         return $query->where('tipe_laporan', $tipe);
+    }
+
+    /**
+     * Petugas yang menerbitkan laporan; namanya tampil di situs publik sebagai
+     * pengunggah, sejajar dengan kolom `uploaded_by` pada modul Regulasi.
+     */
+    public function penerbit(): BelongsTo
+    {
+        return $this->belongsTo(PenggunaPanel::class, 'published_by');
     }
 }

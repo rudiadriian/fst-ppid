@@ -8,6 +8,7 @@ use App\Models\PermohonanInformasi;
 use App\Models\PermohonanLogStatus;
 use App\Models\PermohonanTanggapanFile;
 use App\Support\AuditLogger;
+use App\Support\EmailPemohon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -154,6 +155,10 @@ class PermohonanController extends CrudController
                 'catatan' => $data['catatan'] ?? null,
                 'changed_by' => Auth::guard('api')->id(),
             ]);
+
+            // Email ke pemohon menunggu commit: transaksi yang batal tidak
+            // boleh menyisakan pemberitahuan atas status yang tidak jadi.
+            DB::afterCommit(fn () => EmailPemohon::statusBerubah($permohonan, $statusLama, $statusBaru));
         });
 
         AuditLogger::record(

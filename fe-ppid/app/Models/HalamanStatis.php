@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PunyaVersiInggris;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class HalamanStatis extends Model
 {
-    protected $table = 'halaman_statis';
+    use PunyaVersiInggris, SoftDeletes;
 
-    /** Tabel halaman_statis hanya punya updated_at. */
-    const CREATED_AT = null;
+    protected $table = 'halaman_statis';
 
     protected $casts = [
         'is_active' => 'boolean',

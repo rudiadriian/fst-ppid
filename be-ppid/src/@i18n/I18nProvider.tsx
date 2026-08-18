@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import _ from 'lodash';
 import useFuseSettings from '@fuse/core/FuseSettings/hooks/useFuseSettings';
-import i18n from './i18n';
+import i18n, { BAHASA_TERSIMPAN } from './i18n';
 import I18nContext from './I18nContext';
 import { LanguageType } from './I18nContext';
 
@@ -10,25 +10,34 @@ type I18nProviderProps = {
 	children: React.ReactNode;
 };
 
+/**
+ * Panel PPID hanya melayani dua bahasa. Bawaan template (Turki, Arab) dilepas
+ * karena tidak ada terjemahannya — menampilkannya hanya membuat pengalih
+ * bahasa terlihat rusak.
+ */
 const languages: LanguageType[] = [
-	{ id: 'en', title: 'English', flag: 'US' },
-	{ id: 'tr', title: 'Turkish', flag: 'TR' },
-	{ id: 'ar', title: 'Arabic', flag: 'SA' }
+	{ id: 'id', title: 'Indonesia', flag: 'ID' },
+	{ id: 'en', title: 'English', flag: 'GB' }
 ];
 
 export function I18nProvider(props: I18nProviderProps) {
 	const { children } = props;
 	const { data: settings, setSettings } = useFuseSettings();
 	const settingsThemeDirection = useMemo(() => settings.direction, [settings]);
-	const [languageId, setLanguageId] = useState(i18n.options.lng);
+	const [languageId, setLanguageId] = useState(i18n.language ?? i18n.options.lng);
 
 	const changeLanguage = async (languageId: string) => {
 		setLanguageId(languageId);
 		await i18n.changeLanguage(languageId);
+
+		// Pilihan bahasa bertahan setelah halaman dimuat ulang.
+		if (typeof window !== 'undefined') {
+			window.localStorage.setItem(BAHASA_TERSIMPAN, languageId);
+		}
 	};
 
 	useEffect(() => {
-		if (languageId !== i18n.options.lng) {
+		if (languageId !== i18n.language) {
 			i18n.changeLanguage(languageId);
 		}
 

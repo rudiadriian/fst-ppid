@@ -29,8 +29,11 @@ class FaqController extends CrudController
 
         return [
             'pertanyaan' => [$wajib, 'string'],
+            'pertanyaan_en' => ['nullable', 'string'],
             'jawaban' => [$wajib, 'string'],
+            'jawaban_en' => ['nullable', 'string'],
             'kategori' => ['nullable', 'string', 'max:100'],
+            'kategori_en' => ['nullable', 'string', 'max:100'],
             'urutan' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['boolean'],
         ];

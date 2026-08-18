@@ -34,9 +34,13 @@ class InformasiDikecualikanController extends CrudController
 
         return [
             'judul' => [$wajib, 'string', 'max:255'],
+            'judul_en' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'ringkasan' => ['nullable', 'string'],
-            'alasan_pengecualian' => [$wajib, 'string'],
+            'ringkasan_en' => ['nullable', 'string'],
+            // Situs publik hanya menampilkan judulnya, jadi keterangan penetapan
+            // di bawah ini semuanya opsional — diisi hanya bila diperlukan.
+            'alasan_pengecualian' => ['nullable', 'string'],
             'dasar_hukum_pengecualian' => ['nullable', 'string', 'max:255'],
             'jangka_waktu_pengecualian' => ['nullable', 'string', 'max:100'],
             'tanggal_penetapan' => ['nullable', 'date'],

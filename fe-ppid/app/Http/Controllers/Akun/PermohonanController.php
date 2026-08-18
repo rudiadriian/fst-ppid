@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Akun;
 use App\Http\Controllers\Controller;
 use App\Models\PermohonanInformasi;
 use App\Support\Cms;
+use App\Support\EmailPemohon;
 use App\Support\NotifikasiAdmin;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
@@ -154,6 +155,10 @@ class PermohonanController extends Controller
         // Di luar transaksi: notifikasi ke panel admin tidak boleh menggagalkan
         // permohonan yang sudah tersimpan.
         NotifikasiAdmin::permohonanBaru($permohonan, $pemohon);
+
+        // Tanda terima ke pemohon. Pemberitahuan berikutnya (diterima &
+        // selesai) dikirim dari panel admin saat statusnya berpindah.
+        EmailPemohon::pengajuanDikirim($permohonan, $pemohon);
 
         return redirect()->route('akun.permohonan.index')
             ->with('status', __('Permohonan terkirim dengan nomor registrasi :kode.', ['kode' => $permohonan->kode_permohonan]));

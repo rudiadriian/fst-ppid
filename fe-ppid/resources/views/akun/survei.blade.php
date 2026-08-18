@@ -1,7 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', 'Survei Kepuasan Layanan | PPID FSTJ')
-
+@section('title', __('Survei Kepuasan Layanan') . ' | ' . __('PPID FSTJ'))
 @section('portal-judul', __('Survei Kepuasan Layanan'))
 
 @section('portal')

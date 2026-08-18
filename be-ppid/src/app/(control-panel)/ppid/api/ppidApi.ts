@@ -146,6 +146,34 @@ export const ppidApi = {
 		}
 	},
 
+	/**
+	 * Unduh berkas dari endpoint yang menuntut token, mis. KTP pemohon.
+	 *
+	 * Tidak bisa dipasang langsung sebagai `src` gambar/iframe karena peramban
+	 * tidak menyertakan header Authorization pada permintaan subresource —
+	 * berkasnya diambil dulu sebagai blob, lalu dipakai lewat object URL.
+	 * Pemanggil wajib memanggil `URL.revokeObjectURL` setelah selesai.
+	 */
+	async berkas(path: string): Promise<{ objectUrl: string; tipe: string }> {
+		try {
+			const respons = await api.get(`v1/${path}`);
+			const blob = await respons.blob();
+
+			return { objectUrl: URL.createObjectURL(blob), tipe: blob.type };
+		} catch (error) {
+			return toPpidError(error);
+		}
+	},
+
+	/** Simpan (PUT) endpoint non-CRUD, mis. `role/3/akses`. */
+	async simpan<T = unknown>(path: string, payload: unknown): Promise<T> {
+		try {
+			return await api.put(`v1/${path}`, { json: payload }).json<T>();
+		} catch (error) {
+			return toPpidError(error);
+		}
+	},
+
 	/** Aksi non-CRUD (transisi status, approval, rekap, simpan massal). */
 	async action<T = unknown>(path: string, payload?: unknown): Promise<T> {
 		try {

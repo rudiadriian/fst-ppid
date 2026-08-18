@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PunyaVersiInggris;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Berita extends Model
 {
+    use PunyaVersiInggris;
+
     use SoftDeletes;
 
     protected $table = 'berita';
