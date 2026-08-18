@@ -261,15 +261,19 @@
                             </button>
 
                             <div id="panel-waktu-layanan" x-show="waktuTerbuka" x-collapse x-cloak>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {{-- Satu kartu per baris jam; jam istirahat hanya
+                                 tampil bila memang diumumkan. --}}
+                            <div class="grid grid-cols-1 {{ count($data['hours']) > 1 ? 'sm:grid-cols-2' : '' }} gap-4">
                                 @foreach ($data['hours'] as $schedule)
                                     <div class="rounded-xl bg-white dark:bg-[#0B2A1D] border border-gray-100 dark:border-white/10 p-5 shadow-sm">
                                         <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-[#10462F] dark:text-[#3E9C6C]">{{ __($schedule['days']) }}</p>
                                         <p class="mt-2 text-lg sm:text-xl font-bold text-gray-900 dark:text-white tabular-nums break-words">{{ $schedule['time'] }}</p>
-                                        <p class="mt-2 flex items-start gap-1.5 text-xs font-normal text-gray-500 dark:text-gray-400">
-                                            <svg class="w-4 h-4 mt-px flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8h2a2 2 0 012 2v2a2 2 0 01-2 2h-2M5 8h12v7a4 4 0 01-4 4H9a4 4 0 01-4-4V8zM3 21h18"></path></svg>
-                                            <span class="tabular-nums">{{ __('Istirahat') }} {{ $schedule['break'] }}</span>
-                                        </p>
+                                        @if (!empty($schedule['break']))
+                                            <p class="mt-2 flex items-start gap-1.5 text-xs font-normal text-gray-500 dark:text-gray-400">
+                                                <svg class="w-4 h-4 mt-px flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8h2a2 2 0 012 2v2a2 2 0 01-2 2h-2M5 8h12v7a4 4 0 01-4 4H9a4 4 0 01-4-4V8zM3 21h18"></path></svg>
+                                                <span class="tabular-nums">{{ __('Istirahat') }} {{ $schedule['break'] }}</span>
+                                            </p>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>

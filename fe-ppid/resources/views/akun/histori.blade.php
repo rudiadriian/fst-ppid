@@ -5,11 +5,42 @@
 
 @section('portal')
 
+    {{-- Pencarian berlaku untuk kedua daftar sekaligus: satu nomor permohonan
+         memunculkan permohonannya beserta keberatan yang menunjuk ke sana. --}}
+    <div class="bg-white dark:bg-[#0B2A1D] rounded-2xl border border-gray-100 dark:border-white/10 p-5 sm:p-6">
+        <form method="GET" class="flex flex-wrap items-center gap-2">
+            <label for="cari-histori" class="sr-only">{{ __('Cari nomor pengajuan') }}</label>
+            <input id="cari-histori" type="search" name="cari" value="{{ $cari }}"
+                   placeholder="{{ __('Cari nomor permohonan atau keberatan…') }}"
+                   class="flex-1 min-w-[240px] px-4 py-2.5 bg-gray-50 border border-gray-200 dark:border-white/10 dark:bg-[#082217] rounded-xl text-sm outline-none focus:border-[#10462F] focus:ring-2 focus:ring-[#10462F]/15">
+
+            <button type="submit" class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5">
+                {{ __('Cari') }}
+            </button>
+
+            @if ($cari !== '')
+                <a href="{{ route('akun.histori') }}" class="text-sm font-semibold text-[#E87317] hover:underline">{{ __('Reset') }}</a>
+            @endif
+        </form>
+
+        @if ($cari !== '')
+            <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                {{ __('Hasil pencarian :kata: :permohonan permohonan, :keberatan keberatan.', [
+                    'kata' => $cari,
+                    'permohonan' => $permohonan->count(),
+                    'keberatan' => $keberatan->count(),
+                ]) }}
+            </p>
+        @endif
+    </div>
+
     <div class="bg-white dark:bg-[#0B2A1D] rounded-2xl border border-gray-100 dark:border-white/10 p-6 sm:p-8">
         <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">{!! $judulDua(__('Riwayat Permohonan Informasi'), 1) !!}</h2>
 
         @if ($permohonan->isEmpty())
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Belum ada permohonan.') }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ $cari !== '' ? __('Tidak ada permohonan yang cocok dengan pencarian.') : __('Belum ada permohonan.') }}
+            </p>
         @else
             <div class="space-y-4">
                 @foreach ($permohonan as $item)
@@ -78,7 +109,9 @@
         <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-5">{!! $judulDua(__('Riwayat Keberatan'), 1) !!}</h2>
 
         @if ($keberatan->isEmpty())
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Belum ada keberatan yang diajukan.') }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ $cari !== '' ? __('Tidak ada keberatan yang cocok dengan pencarian.') : __('Belum ada keberatan yang diajukan.') }}
+            </p>
         @else
             <ul class="divide-y divide-gray-100 dark:divide-white/10">
                 @foreach ($keberatan as $item)

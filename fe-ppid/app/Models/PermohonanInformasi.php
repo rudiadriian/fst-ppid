@@ -35,6 +35,26 @@ class PermohonanInformasi extends Model
     /** Kelompok status yang dipakai grafik & legend dashboard. */
     public const KELOMPOK = ['Dalam Proses', 'Revisi', 'Menunggu Persetujuan', 'Tolak', 'Selesai'];
 
+    /**
+     * Tab filter pada daftar Portal Pemohon — sengaja lebih ringkas daripada
+     * `KELOMPOK`.
+     *
+     * Bagi pemohon yang penting cuma "masih berjalan" atau "sudah tuntas";
+     * Revisi, Menunggu Persetujuan, dan Tolak adalah tahapan internal yang
+     * kalau dijadikan tab justru menyembunyikan barisnya di tempat yang tidak
+     * ia duga. Status lengkapnya tetap tampil sebagai label di tiap baris.
+     */
+    public const KELOMPOK_PORTAL = ['Dalam Proses', 'Selesai'];
+
+    /**
+     * Label kelompok besar → label status rinci yang masuk ke dalamnya.
+     * Segala yang berakhir (termasuk yang ditolak) dihitung tuntas.
+     */
+    private const PETA_PORTAL = [
+        'Dalam Proses' => ['Dalam Proses', 'Revisi', 'Menunggu Persetujuan'],
+        'Selesai' => ['Selesai', 'Tolak'],
+    ];
+
     /** Cara memperoleh informasi (Perki 1/2010). */
     public const CARA_MEMPEROLEH = [
         'melihat' => 'Melihat',
@@ -107,10 +127,26 @@ class PermohonanInformasi extends Model
 
     /**
      * Status mentah yang termasuk satu kelompok label ("Dalam Proses", dst).
-     * Dipakai tab filter pada portal pengguna.
+     * Dipakai grafik dashboard.
      */
     public static function statusKelompok(string $label): array
     {
         return array_keys(array_filter(self::STATUS_LABEL, fn ($nilai) => $nilai === $label));
+    }
+
+    /**
+     * Status mentah untuk satu tab Portal Pemohon.
+     *
+     * Diturunkan dari `STATUS_LABEL`, bukan didaftar ulang: status baru yang
+     * kelak ditambahkan cukup diberi label, dan tab-nya ikut sendiri.
+     */
+    public static function statusKelompokPortal(string $label): array
+    {
+        $rinci = self::PETA_PORTAL[$label] ?? [];
+
+        return array_keys(array_filter(
+            self::STATUS_LABEL,
+            fn ($nilai) => in_array($nilai, $rinci, true)
+        ));
     }
 }

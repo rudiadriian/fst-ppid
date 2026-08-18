@@ -183,7 +183,7 @@ class PermohonanController extends Controller
 
         return PermohonanInformasi::with('survei')
             ->where('pemohon_id', $pemohonId)
-            ->when($kelompok !== '', fn ($q) => $q->whereIn('status', PermohonanInformasi::statusKelompok($kelompok)))
+            ->when($kelompok !== '', fn ($q) => $q->whereIn('status', PermohonanInformasi::statusKelompokPortal($kelompok)))
             ->when($cari !== '', function ($q) use ($cari) {
                 $q->where(function ($sub) use ($cari) {
                     $sub->where('kode_permohonan', 'ilike', '%'.$cari.'%')
@@ -207,7 +207,7 @@ class PermohonanController extends Controller
     {
         $nilai = $request->string('status')->toString();
 
-        return in_array($nilai, PermohonanInformasi::KELOMPOK, true) ? $nilai : '';
+        return in_array($nilai, PermohonanInformasi::KELOMPOK_PORTAL, true) ? $nilai : '';
     }
 
     /** Jumlah baris per tab, supaya angkanya tampil di sebelah nama tab. */
@@ -220,8 +220,8 @@ class PermohonanController extends Controller
 
         $hasil = ['' => (int) $mentah->sum()];
 
-        foreach (PermohonanInformasi::KELOMPOK as $label) {
-            $hasil[$label] = collect(PermohonanInformasi::statusKelompok($label))
+        foreach (PermohonanInformasi::KELOMPOK_PORTAL as $label) {
+            $hasil[$label] = collect(PermohonanInformasi::statusKelompokPortal($label))
                 ->sum(fn ($status) => (int) ($mentah[$status] ?? 0));
         }
 

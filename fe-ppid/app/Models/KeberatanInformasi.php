@@ -77,9 +77,29 @@ class KeberatanInformasi extends Model
         return __(self::STATUS_LABEL[$this->status] ?? $this->status);
     }
 
-    /** Status mentah yang termasuk satu kelompok label; dipakai tab filter. */
+    /** Status mentah yang termasuk satu kelompok label; dipakai grafik dashboard. */
     public static function statusKelompok(string $label): array
     {
         return array_keys(array_filter(self::STATUS_LABEL, fn ($nilai) => $nilai === $label));
+    }
+
+    /**
+     * Status mentah untuk satu tab Portal Pemohon.
+     *
+     * Pengelompokannya dipinjam dari Permohonan Informasi supaya kedua daftar
+     * di portal memakai tab yang sama persis: Semua, Dalam Proses, Selesai.
+     */
+    public static function statusKelompokPortal(string $label): array
+    {
+        $rinci = PermohonanInformasi::statusKelompokPortal($label);
+        $labelRinci = array_map(
+            fn ($status) => PermohonanInformasi::STATUS_LABEL[$status] ?? $status,
+            $rinci
+        );
+
+        return array_keys(array_filter(
+            self::STATUS_LABEL,
+            fn ($nilai) => in_array($nilai, $labelRinci, true)
+        ));
     }
 }

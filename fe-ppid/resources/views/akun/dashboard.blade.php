@@ -6,15 +6,30 @@
 @section('portal')
 
     @php
-        /* Warna per kelompok status, dipakai kartu ringkasan, legend, dan grafik. */
+        /* Warna per kelompok status pada kartu ringkasan. */
         $warna = [
             'Dalam Proses' => '#FD8B02',
-            'Revisi' => '#FFA849',
-            'Menunggu Persetujuan' => '#3E9C6C',
-            'Tolak' => '#C2410C',
             'Selesai' => '#10462F',
         ];
-        $maks = max(1, collect($grafik)->max('total'));
+
+        /*
+         * Warna seri grafik, satu per tahun, dari yang terbaru. Empat cukup:
+         * grafik membandingkan tahun berjalan dengan paling banyak tiga tahun
+         * sebelumnya.
+         */
+        $warnaTahun = ['#10462F', '#FD8B02', '#3E9C6C', '#D9CBAD'];
+        $warnaSeri = [];
+
+        foreach ($tahunGrafik as $i => $th) {
+            $warnaSeri[$th] = $warnaTahun[$i] ?? '#5B6660';
+        }
+
+        // Skala sumbu Y: batang tertinggi di seluruh bulan & tahun.
+        $maks = 1;
+
+        foreach ($grafik as $kolom) {
+            $maks = max($maks, ...array_values($kolom['nilai']));
+        }
     @endphp
 
     @include('akun.partials.alert-verifikasi')
@@ -56,48 +71,58 @@
         @endforeach
     </div>
 
-    {{-- Grafik pengajuan per bulan (batang bertumpuk, tanpa pustaka luar) --}}
+    {{-- Grafik pengajuan: 12 bulan × satu batang per tahun, tanpa pustaka luar.
+         Bulan yang sama berdiri sejajar antar tahun — itu inti perbandingannya. --}}
     <div class="bg-white dark:bg-[#0B2A1D] rounded-2xl border border-gray-100 dark:border-white/10 p-6">
         <div class="flex flex-wrap items-baseline justify-between gap-2 mb-1">
             <h2 class="text-base font-bold text-gray-900 dark:text-white">{!! $judulDua(__('Grafik Data Pengajuan'), 1) !!}</h2>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $bulan }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ __('Perbandingan per bulan, :jumlah tahun terakhir', ['jumlah' => count($tahunGrafik)]) }}
+            </p>
         </div>
 
         <div class="flex flex-wrap gap-x-5 gap-y-2 mt-4 mb-6">
-            @foreach ($warna as $label => $hex)
+            @foreach ($tahunGrafik as $th)
                 <span class="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-300">
-                    <span class="w-3 h-3 rounded-sm" style="background: {{ $hex }}"></span>{{ __($label) }}
+                    <span class="w-3 h-3 rounded-sm" style="background: {{ $warnaSeri[$th] }}"></span>
+                    {{ $th }}
+                    <span class="text-gray-400 dark:text-gray-500">({{ $totalPerTahun[$th] ?? 0 }})</span>
                 </span>
             @endforeach
         </div>
 
         <div class="overflow-x-auto">
-            <div class="flex items-end gap-3 min-w-[640px] h-56 border-b border-gray-100 dark:border-white/10 pb-1">
+            <div class="flex items-end gap-3 min-w-[720px] h-56 border-b border-gray-100 dark:border-white/10 pb-1">
                 @foreach ($grafik as $kolom)
-                    <div class="flex-1 flex flex-col justify-end items-center gap-1.5 h-full">
-                        <span class="text-xs font-bold text-gray-700 dark:text-gray-200">{{ $kolom['total'] ?: '' }}</span>
-                        <div class="w-full flex flex-col-reverse rounded-t-md overflow-hidden"
-                             style="height: {{ $kolom['total'] ? round($kolom['total'] / $maks * 100) : 0 }}%"
-                             title="{{ $kolom['label'] }}: {{ $kolom['total'] }}">
-                            @foreach ($kolom['nilai'] as $label => $jumlah)
+                    <div class="flex-1 flex items-end justify-center gap-1 h-full">
+                        @foreach ($tahunGrafik as $th)
+                            @php $jumlah = $kolom['nilai'][$th] ?? 0; @endphp
+                            {{-- Batang nol tetap dirender setipis garis supaya
+                                 urutan tahunnya terbaca sama di tiap bulan. --}}
+                            <div class="flex-1 flex flex-col justify-end items-center h-full"
+                                 title="{{ $kolom['label'] }} {{ $th }}: {{ $jumlah }}">
                                 @if ($jumlah > 0)
-                                    <div style="height: {{ round($jumlah / max(1, $kolom['total']) * 100) }}%; background: {{ $warna[$label] }}"
-                                         aria-label="{{ __($label) }}: {{ $jumlah }}"></div>
+                                    <span class="text-[10px] font-bold text-gray-700 dark:text-gray-200">{{ $jumlah }}</span>
                                 @endif
-                            @endforeach
-                        </div>
+                                <div class="w-full rounded-t-sm"
+                                     style="height: {{ $jumlah > 0 ? max(2, round($jumlah / $maks * 100)) : 1 }}%; background: {{ $jumlah > 0 ? $warnaSeri[$th] : '#E9DFC9' }}"
+                                     aria-label="{{ $kolom['label'] }} {{ $th }}: {{ $jumlah }}"></div>
+                            </div>
+                        @endforeach
                     </div>
                 @endforeach
             </div>
-            <div class="flex gap-3 min-w-[640px] mt-2">
+            <div class="flex gap-3 min-w-[720px] mt-2">
                 @foreach ($grafik as $kolom)
                     <span class="flex-1 text-center text-[11px] text-gray-500 dark:text-gray-400">{{ $kolom['label'] }}</span>
                 @endforeach
             </div>
         </div>
 
-        @if (collect($grafik)->sum('total') === 0)
-            <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ __('Belum ada pengajuan dalam 12 bulan terakhir.') }}</p>
+        @if (array_sum($totalPerTahun) === 0)
+            <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                {{ __('Belum ada pengajuan pada rentang tahun yang ditampilkan.') }}
+            </p>
         @endif
     </div>
 

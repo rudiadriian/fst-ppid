@@ -500,9 +500,14 @@ class PpidController extends Controller
                     ['label' => 'Online', 'desc' => 'Melalui Formulir Permohonan di website resmi PPID.', 'recommended' => true, 'aksi' => 'masuk'],
                     ['label' => 'Langsung', 'desc' => 'Datang ke meja layanan PPID pada jam operasional.', 'recommended' => false, 'aksi' => 'waktu'],
                 ],
+                /*
+                 * Satu baris jam layanan untuk seluruh hari kerja (langkah 70).
+                 * Sebelumnya Senin–Kamis dan Jum'at dipisah beserta jam
+                 * istirahatnya masing-masing; sekarang jamnya seragam dan
+                 * istirahat tidak lagi diumumkan, jadi kunci `break` dilepas.
+                 */
                 'hours' => [
-                    ['days' => 'Senin s.d. Kamis', 'time' => '08.00 – 15.00 WIB', 'break' => '12.00 – 13.00 WIB'],
-                    ['days' => 'Jum’at', 'time' => '08.00 – 15.00 WIB', 'break' => '11.30 – 13.30 WIB'],
+                    ['days' => 'Senin - Jum\'at', 'time' => '08:00 - 17:00 WIB'],
                 ],
                 'note' => 'Permohonan di luar jam kerja akan diproses pada hari kerja berikutnya.'
             ]

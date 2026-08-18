@@ -2,8 +2,11 @@
      Butuh: $status (tab aktif, '' = Semua) dan $jumlahStatus (peta label → jumlah).
      Filter lain (cari, urut, per) ikut dibawa lewat query string. --}}
 @php
+    // Portal Pemohon hanya memakai dua kelompok besar (+ Semua); tahapan
+    // internal seperti Revisi & Menunggu Persetujuan tetap tampil sebagai
+    // label status di tiap baris, bukan sebagai tab tersendiri.
     $tab = array_merge([['label' => '', 'teks' => __('Semua')]],
-        array_map(fn ($l) => ['label' => $l, 'teks' => __($l)], \App\Models\PermohonanInformasi::KELOMPOK));
+        array_map(fn ($l) => ['label' => $l, 'teks' => __($l)], \App\Models\PermohonanInformasi::KELOMPOK_PORTAL));
 
     $tabOff = 'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-emerald-50 hover:text-[#10462F] transition-colors dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-[#3E9C6C]';
     $tabOn = 'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold fs-gradient-accent text-white shadow-lg shadow-emerald-900/20';

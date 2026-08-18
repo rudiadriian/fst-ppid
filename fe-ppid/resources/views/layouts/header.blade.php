@@ -179,9 +179,7 @@
                 @if ($akun)
                     <div class="relative hidden sm:block" x-data="{ open_akun: false }" @click.outside="open_akun = false">
                         <button @click="open_akun = !open_akun" class="hdr-ctl flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#10462F] hover:bg-emerald-50 transition duration-200 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5">
-                            <span class="w-7 h-7 rounded-full fs-gradient-accent text-white text-xs font-bold flex items-center justify-center">
-                                {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($akun->nama, 0, 1)) }}
-                            </span>
+                            @include('akun.partials.avatar', ['pemohon' => $akun, 'ukuran' => 'w-7 h-7'])
                             <span class="text-sm font-semibold max-w-[110px] truncate">{{ $akun->nama }}</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
@@ -314,7 +312,12 @@
                 <a href="{{ route('ppid.status') }}" class="block w-full text-center py-3 font-semibold rounded-xl transition {{ $isStatus ? 'bg-emerald-50 text-[#10462F] border border-[#10462F] dark:bg-white/5 dark:text-[#3E9C6C] dark:border-[#3E9C6C]' : 'border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5' }}">{{ __('Cek Status Tiket') }}</a>
 
                 @if ($akun)
-                    <a href="{{ route('akun.dashboard') }}" class="block w-full text-center py-3 font-semibold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5">{{ __('Akun Saya') }}</a>
+                    {{-- Avatar ikut tampil di menu mobile supaya foto profil
+                         terlihat sama di kedua tampilan header. --}}
+                    <a href="{{ route('akun.dashboard') }}" class="flex items-center justify-center gap-2.5 w-full py-3 font-semibold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5">
+                        @include('akun.partials.avatar', ['pemohon' => $akun, 'ukuran' => 'w-7 h-7'])
+                        {{ __('Akun Saya') }}
+                    </a>
                     <form method="POST" action="{{ route('akun.logout') }}">
                         @csrf
                         <button type="submit" class="block w-full text-center py-3 font-semibold rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-white/5">{{ __('Keluar') }}</button>

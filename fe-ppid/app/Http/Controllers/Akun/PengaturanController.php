@@ -22,31 +22,40 @@ class PengaturanController extends Controller
 {
     public function profil(): View
     {
-        return view('akun.pengaturan.profil', ['pemohon' => Auth::guard('pemohon')->user()]);
+        $pemohon = Auth::guard('pemohon')->user();
+
+        return view('akun.pengaturan.profil', [
+            'pemohon' => $pemohon,
+            // Dipakai tab Aktivitas; dihitung di sini supaya view tidak
+            // menembak query sendiri.
+            'jumlahPermohonan' => $pemohon->permohonan()->count(),
+            'jumlahKeberatan' => $pemohon->keberatan()->count(),
+        ]);
     }
 
+    /**
+     * Satu-satunya isian profil yang boleh diubah sendiri: foto avatar.
+     *
+     * Nama, email, nomor telepon, dan seluruh data diri lain ikut dipakai
+     * sebagai identitas pada permohonan yang sudah diverifikasi petugas —
+     * mengubahnya diam-diam berarti mengubah identitas di berkas yang sudah
+     * terlanjur diproses. Perubahannya karena itu harus lewat petugas PPID.
+     */
     public function perbaruiProfil(Request $request): RedirectResponse
     {
         $pemohon = Auth::guard('pemohon')->user();
 
-        $data = $request->validate([
-            'nama' => ['required', 'string', 'max:255'],
-            'no_hp' => ['required', 'string', 'max:20'],
-            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+        $request->validate([
+            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ]);
 
-        if ($request->hasFile('foto')) {
-            $this->hapusBerkas($pemohon->foto);
-            $data['foto'] = $this->simpanBerkas($request->file('foto'), 'uploads/avatar');
-        } else {
-            unset($data['foto']);
-        }
+        $this->hapusBerkas($pemohon->foto);
 
-        // Email sengaja tidak bisa diubah sendiri: menggantinya berarti
-        // memindahkan kepemilikan akun, jadi harus lewat petugas PPID.
-        $pemohon->fill($data)->save();
+        $pemohon->forceFill([
+            'foto' => $this->simpanBerkas($request->file('foto'), 'uploads/avatar'),
+        ])->save();
 
-        return back()->with('status', __('Profil berhasil diperbarui.'));
+        return back()->with('status', __('Foto profil berhasil diperbarui.'));
     }
 
     public function dataPemohon(): View
@@ -57,6 +66,18 @@ class PengaturanController extends Controller
     public function simpanDataPemohon(Request $request): RedirectResponse
     {
         $pemohon = Auth::guard('pemohon')->user();
+
+        /*
+         * Data yang sudah disetujui petugas terkunci. Permohonan yang berjalan
+         * memakai identitas itu sebagai dasar verifikasinya; mengubahnya sendiri
+         * berarti berkas lama diproses atas nama data yang sudah tidak ada.
+         * Perubahan setelah ini harus lewat petugas PPID.
+         */
+        if ($pemohon->dataTerverifikasi()) {
+            throw ValidationException::withMessages([
+                'nik' => __('Data Pemohon Anda sudah terverifikasi sehingga tidak dapat diubah sendiri. Hubungi petugas PPID bila ada data yang perlu diperbaiki.'),
+            ]);
+        }
 
         // Sudah ditolak sampai batas: pengiriman ulang ditutup di sisi server,
         // bukan hanya dengan menyembunyikan tombolnya.

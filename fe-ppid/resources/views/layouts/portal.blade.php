@@ -43,13 +43,13 @@
                 <h1 class="text-2xl lg:text-3xl font-bold text-white leading-tight">@yield('portal-judul', __('Dashboard'))</h1>
             </div>
             <div class="flex items-center gap-3">
-                @if ($akun?->foto)
-                    <img src="{{ route('media.show', ['path' => $akun->foto]) }}" alt="" class="w-12 h-12 rounded-full object-cover ring-2 ring-white/40">
-                @else
-                    <span class="w-12 h-12 rounded-full bg-white/15 text-white text-lg font-bold flex items-center justify-center ring-2 ring-white/30">
-                        {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($akun?->nama ?? '?', 0, 1)) }}
-                    </span>
-                @endif
+                @include('akun.partials.avatar', [
+                    'pemohon' => $akun,
+                    'ukuran' => 'w-12 h-12',
+                    'teks' => 'text-lg',
+                    'cincin' => 'ring-2 ring-white/40',
+                    'latar' => 'bg-white/15 text-white',
+                ])
                 <div class="text-white">
                     <p class="font-semibold leading-tight">{{ $akun?->nama }}</p>
                     <p class="text-xs text-white/70">{{ $akun?->email }}</p>

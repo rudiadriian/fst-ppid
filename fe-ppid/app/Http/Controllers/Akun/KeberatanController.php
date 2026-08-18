@@ -155,7 +155,7 @@ class KeberatanController extends Controller
 
         return KeberatanInformasi::with(['permohonan', 'berkas'])
             ->where('pemohon_id', $pemohonId)
-            ->when($kelompok !== '', fn ($q) => $q->whereIn('status', KeberatanInformasi::statusKelompok($kelompok)))
+            ->when($kelompok !== '', fn ($q) => $q->whereIn('status', KeberatanInformasi::statusKelompokPortal($kelompok)))
             ->when($cari !== '', function ($q) use ($cari) {
                 $q->where(function ($sub) use ($cari) {
                     $sub->where('kasus_posisi', 'ilike', '%'.$cari.'%')
@@ -180,7 +180,7 @@ class KeberatanController extends Controller
     {
         $nilai = $request->string('status')->toString();
 
-        return in_array($nilai, PermohonanInformasi::KELOMPOK, true) ? $nilai : '';
+        return in_array($nilai, PermohonanInformasi::KELOMPOK_PORTAL, true) ? $nilai : '';
     }
 
     private function jumlahPerStatus(int $pemohonId): array
@@ -192,8 +192,8 @@ class KeberatanController extends Controller
 
         $hasil = ['' => (int) $mentah->sum()];
 
-        foreach (PermohonanInformasi::KELOMPOK as $label) {
-            $hasil[$label] = collect(KeberatanInformasi::statusKelompok($label))
+        foreach (PermohonanInformasi::KELOMPOK_PORTAL as $label) {
+            $hasil[$label] = collect(KeberatanInformasi::statusKelompokPortal($label))
                 ->sum(fn ($status) => (int) ($mentah[$status] ?? 0));
         }
 

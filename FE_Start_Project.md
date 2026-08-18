@@ -336,8 +336,18 @@ Tolong jalankan langkah untuk menyesuaikan/ modifikasi halaman frontend aplikasi
     - hapus bagian Jalur Pelayanan CARD SURAT - Mengirimkan surat permohonan ke alamat kantor PPID.
     - ketika diklik CARD ONLINE, mengarah ke halaman Login Pemohon
     - ketika bagian Waktu Pelayanan dibuat minimize, jadi ketika bagian Jalur Pelayanan CARD LANGSUNG diklik maximize Waktu Pelayanan (tambahkan peta lokasi google.com/maps/search/pt+food+station+tjipinang+jaya/@-6.213053,106.881272,17z?entry=s&sa=X&ved=1t%3A199789) berlakukan juga Peta lokasi pada modul Beranda dibagian Hubungi Kami Kontak PPID Food Station
-
-
+    - diubah dan disesuaikan seperti ini saja Waktu Pelayanan :
+        - Senin - Jum'at
+        - 08:00 - 17:00
+71. pada bagian fe-ppid tolong disesuaikan :
+    -[x]  dibagian /akun/permohonan status permohonannya tampilkan Semua, Dalam Proses, dan Selesai
+    -[x]  dibagian /akun/keberatan status permohonannya tampilkan Semua, Dalam Proses, dan Selesai
+    -[x]  dibagian /akun/histori tambahkan fitur pencarian id Permohonan Informasi maupun Keberatan
+    -[x] dibagian profil tambahkan semua infromasi pemohon, secara detail dan dipisahkan dengan nav tabs sesuai dengan informasinya dan tidak bisa diubah kecuali foto Avatar profile saja.
+    -[x] dibagian Data Pemohon & Berkas, jika sudah terverifikasi semua informasi tidak dapat diubah-ubah dan foto ktp bisa di view saja
+    -[x] dibagian Header ada icon foto avatar profile user, saat ini bagian tersebut tidak update menyesuaikan dengan avatar dihalaman profile
+    -[x] dibagian Dashboard (/akun) statistiknya hanya diberikan informasi status permohonan Dalam Proses dan Selesai saja dan pada Grafik Data 
+    -[x]Pengajuan dibuat perbulan tapi dibuat perbandingan pertahun jadi 1 grafik bisa menampilkan 12 bulan dengan maksimal perbandingan 3 tahun sebelumnya
 
 pada portal pemohon atau http://localhost:8000/akun tolong buatkan lonceng notifikasi jika ada upadate dari feedback yang diberikan oleh admin
 
@@ -346,6 +356,106 @@ pada portal pemohon atau http://localhost:8000/akun tolong buatkan lonceng notif
 
 
 ---
+
+
+## Status Pengerjaan (putaran 51 — langkah 71)
+
+### Tab status Portal Pemohon tinggal tiga
+
+`/akun/permohonan` dan `/akun/keberatan` sebelumnya punya enam tab (Semua, Dalam Proses, Revisi, Menunggu Persetujuan, Tolak, Selesai). Sekarang tinggal **Semua, Dalam Proses, Selesai**.
+
+Pemetaannya **tidak** dibuat dengan membuang tab begitu saja — kalau tab "Tolak" hilang tanpa penggantinya, permohonan berstatus `ditolak` tidak akan muncul di tab mana pun kecuali "Semua", dan pemohon kehilangan barisnya di tempat yang tidak ia duga. Karena itu ditambahkan `KELOMPOK_PORTAL` beserta `statusKelompokPortal()`:
+
+| Tab | Status permohonan | Status keberatan |
+| --- | --- | --- |
+| Dalam Proses | `diajukan`, `diverifikasi`, `diproses`, `revisi`, `menunggu_approval` | `diajukan`, `diproses`, `revisi`, `menunggu_approval` |
+| Selesai | `disetujui`, `selesai`, `ditolak`, `ditolak_sebagian`, `kedaluwarsa` | `ditolak`, `selesai` |
+
+Segala yang berakhir dihitung tuntas, termasuk yang ditolak. Daftarnya diturunkan dari `STATUS_LABEL`, bukan ditulis ulang, sehingga status baru cukup diberi label dan tab-nya ikut menyesuaikan sendiri. `KeberatanInformasi` meminjam pengelompokan dari `PermohonanInformasi` supaya kedua daftar memakai tab yang persis sama.
+
+**`KELOMPOK` yang lama tidak diubah** — grafik dan legend di Dashboard portal masih memerlukan lima kelompok itu. Label status rinci juga tetap tampil di tiap baris; yang hilang hanya tab-nya.
+
+### Pencarian di Histori
+
+`/akun/histori` mendapat satu kotak pencarian yang menyaring **kedua** daftar sekaligus:
+
+- **Permohonan** dicari lewat `kode_permohonan`.
+- **Keberatan** dicari lewat nomor permohonan induknya — keberatan tidak punya nomor registrasi sendiri, di seluruh portal ia memang dirujuk begitu. Nomor urut barisnya ikut dicocokkan bila yang diketik berupa angka, supaya nomor pada tautan notifikasi tetap ketemu.
+
+Satu nomor permohonan karena itu memunculkan permohonannya beserta keberatan yang menunjuk ke sana. Di bawah kotaknya ada ringkasan jumlah hasil, dan pesan kosong tiap daftar berubah dari "Belum ada …" menjadi "Tidak ada … yang cocok dengan pencarian" saat kata kuncinya terisi — dua keadaan yang berbeda dan tidak boleh terbaca sama.
+
+### Profil jadi halaman baca
+
+`/akun/pengaturan/profil` dulu berupa formulir yang bisa mengubah nama dan nomor telepon. Sekarang seluruh data pemohon ditampilkan lengkap, dipisah **empat tab**, dan **satu-satunya yang bisa diubah sendiri adalah foto avatar**:
+
+| Tab | Isi |
+| --- | --- |
+| Akun | nama, email (+ keterangan terverifikasi), nomor telepon, terdaftar sejak |
+| Data Diri | jenis pemohon, NIK, pekerjaan, nama lembaga, alamat |
+| Verifikasi & Berkas | status, tanggal diperiksa, catatan petugas, sisa kesempatan kirim ulang, tautan lihat berkas KTP |
+| Aktivitas | jumlah permohonan & keberatan yang diajukan, tautan ke Histori |
+
+Alasan penguncian ditulis di halamannya: nama, email, dan nomor telepon melekat pada permohonan yang sudah diverifikasi petugas — mengubahnya diam-diam berarti mengubah identitas pada berkas yang sudah terlanjur diproses.
+
+Penguncian **bukan sekadar menghapus input**: `perbaruiProfil()` kini hanya memvalidasi dan menyimpan `foto`, dengan `forceFill` pada satu kolom itu saja. Mengirim `nama` atau `no_hp` lewat request buatan tidak berpengaruh — ada tesnya.
+
+Baris keterangannya dipisah ke `akun/partials/baris-info.blade.php` karena dipakai berulang di empat tab dan di halaman Data Pemohon. Nilai yang kosong tetap dicetak sebagai "—", bukan barisnya dihilangkan: pemohon perlu tahu isian itu memang belum diisi, bukan hilang dari halaman.
+
+### Data Pemohon terkunci setelah terverifikasi
+
+Bila `status_verifikasi` sudah `terverifikasi`, `/akun/pengaturan/data-pemohon` **tidak lagi merender formulir sama sekali** — diganti tampilan baca berisi seluruh isian, dan berkas KTP hanya bisa dibuka lewat tautan "Lihat berkas KTP". Tidak ada input, tidak ada tombol kirim, jadi tidak ada kesan masih bisa disunting.
+
+Sisi server ikut dijaga: `simpanDataPemohon()` menolak dengan galat validasi begitu datanya sudah terverifikasi, sebelum apa pun disimpan. Ini melengkapi penjagaan yang sudah ada untuk pemohon yang ditolak tiga kali.
+
+Pemohon yang **belum** terverifikasi — termasuk yang berkasnya ditolak dan masih punya kesempatan — tetap melihat formulir seperti sebelumnya.
+
+Teks statusnya ikut diperbaiki: kalimat "Mengubah data di bawah akan membuat status kembali menunggu pemeriksaan" sudah tidak benar lagi, diganti arahan menghubungi petugas PPID.
+
+### Avatar akhirnya seragam di semua tempat
+
+Foto yang diunggah di Profil tidak pernah muncul di header situs: blok akun pada `layouts/header.blade.php` **selalu** menggambar inisial nama, tidak pernah menyentuh kolom `foto`. Akibatnya foto baru seolah gagal tersimpan padahal sudah masuk.
+
+Penggambaran avatar dipindah ke `akun/partials/avatar.blade.php` dan dipakai empat tempat: header desktop, menu mobile (yang sebelumnya bahkan tidak punya avatar sama sekali), sapaan Portal Pemohon, dan halaman Profil. Ukuran, cincin, dan warna latar inisial diatur lewat variabel, jadi tampilannya tetap berbeda-beda sesuai tempatnya sementara sumber datanya satu. Bila `foto` kosong, tampilannya jatuh ke inisial nama seperti semula.
+
+### Dashboard: dua angka status, grafik jadi perbandingan tahun
+
+Kartu **Statistik Permohonan Informasi** dan **Statistik Permohonan Keberatan** dulu memecah angkanya jadi lima kelompok. Sekarang memakai `KELOMPOK_PORTAL` yang sama dengan tab daftar — **Dalam Proses** dan **Selesai** saja. Tidak ada angka yang hilang: Revisi dan Menunggu Persetujuan melebur ke Dalam Proses, Tolak melebur ke Selesai, jadi jumlah keduanya tetap sama dengan total.
+
+**Grafik Data Pengajuan** dulu memuat 12 bulan terakhir sebagai batang bertumpuk per status — bentuk itu tidak bisa dipakai membandingkan tahun karena sumbunya bergerak mengikuti bulan berjalan. Sekarang sumbu X-nya tetap **Januari–Desember**, dan tiap tahun jadi satu batang berdampingan di tiap bulan, sehingga Maret satu tahun berdiri sejajar dengan Maret tahun lain.
+
+- Tahun yang digambar: tahun berjalan + **paling banyak tiga tahun sebelumnya** (4 seri), dan hanya tahun yang benar-benar punya pengajuan. Data lebih tua dari itu tidak ikut.
+- **Tahun berjalan selalu ikut walau masih kosong** — grafik yang kehilangan seluruh sumbunya lebih membingungkan daripada grafik yang datar.
+- Legend memuat tahun beserta total setahun penuhnya; batang bernilai nol tetap digambar setipis garis supaya urutan tahun terbaca sama di setiap bulan.
+- Masih HTML/CSS murni, tanpa pustaka grafik.
+
+### Verifikasi
+
+Ditambahkan `tests/Feature/PortalDashboardTest.php` — 4 tes, semuanya lulus:
+
+- Blok ringkasan hanya memuat "Dalam Proses" dan "Selesai"; "Revisi", "Menunggu Persetujuan", dan "Tolak" tidak ada di sana meski datanya berstatus `menunggu_approval` dan `ditolak`.
+- Tiga pengajuan di tiga tahun berbeda → legend memuat ketiga tahunnya, label bulan tetap 12, dan batang Maret tahun ini maupun tahun lalu masing-masing bernilai 1.
+- Pengajuan berumur lima tahun tidak ikut digambar; batas tiga tahun ke belakang ikut.
+- Akun tanpa pengajuan tetap memunculkan tahun berjalan beserta pesan kosongnya.
+
+Ditambahkan `tests/Feature/PortalPengaturanTest.php` — 8 tes, semuanya lulus:
+
+- Avatar: pemohon berfoto → URL fotonya muncul di header Beranda **dan** di Portal; pemohon tanpa foto → tidak ada `uploads/avatar/` di halaman, inisialnya yang tampil.
+
+- Profil memuat keempat tab beserta data dari semua tab (NIK, pekerjaan, alamat, telepon) dalam satu render.
+- Profil hanya punya `name="foto"`; `name="nama"` dan `name="no_hp"` tidak ada.
+- `PUT` profil yang menyertakan `nama` & `no_hp` tetap tidak mengubah keduanya, sementara fotonya tersimpan ke `uploads/avatar/`.
+- Data Pemohon terverifikasi: tanpa `name="nik"`, tanpa `name="file_ktp"`, tanpa tombol "Kirim untuk Verifikasi", ada tautan "Lihat berkas KTP".
+- Data Pemohon berstatus `ditolak` tetap memunculkan formulirnya.
+- `PUT` data pemohon pada akun terverifikasi ditolak (`assertSessionHasErrors`) dan NIK di basis data tidak berubah.
+
+Ditambahkan `tests/Feature/PortalDaftarTest.php` — 6 tes, **semuanya lulus** (22 asersi). Memakai `DatabaseTransactions`, jadi seluruh baris ujinya di-rollback; basis data setelahnya tetap berisi data nyata saja (1 pemohon, 1 permohonan milik akun sungguhan, nol sisa `@example.test`).
+
+- Blok `role="tablist"` hanya memuat Semua / Dalam Proses / Selesai; "Revisi", "Menunggu Persetujuan", dan "Tolak" tidak ada di sana — tetapi tetap tampil sebagai label status baris, yang juga diperiksa.
+- Penyaringan tab benar: 4 permohonan (`diajukan`, `menunggu_approval`, `selesai`, `ditolak`) → Semua 4, Dalam Proses 2, Selesai 2. Keberatan: 3 baris → Semua 3, Dalam Proses 1, Selesai 2.
+- Histori: mencari satu nomor memunculkan permohonan itu dan menyembunyikan yang lain; nomor asing memunculkan kedua pesan "tidak cocok"; tanpa kata kunci semuanya tampil.
+- Total **18 tes portal lulus** (84 asersi). Keduanya memakai `DatabaseTransactions`, jadi seluruh baris ujinya di-rollback — basis data setelahnya nol sisa `@example.test`.
+- `lang/en.json`: 23 kunci baru; 7 kunci yang kehilangan pemakainya setelah Profil jadi hanya-baca (`Username`, `Simpan Perubahan`, `Profil berhasil diperbarui.`, dan seterusnya) dilepas. JSON tetap sah.
+- `php -l` bersih; `npm run build` sukses.
 
 
 ## Status Pengerjaan (putaran 50 — langkah 70)
@@ -359,6 +469,12 @@ Halaman **Standar Layanan → Jalur & Waktu Layanan** (`/standar-layanan/jalur-w
 - **Kartu Langsung kini tombol** yang membuka panel Waktu Layanan, lalu menggulirkan halaman ke panel itu.
 
 Kedua kartu memakai penanda baru `aksi` (`masuk` / `waktu`) di data channel, bukan dicocokkan lewat label — label bisa berubah kata, penanda tidak. Isi kartunya dipindah ke `partials/jalur_layanan_isi.blade.php` karena pembungkusnya kini berbeda (`<a>` vs `<button>`) sedangkan isinya harus tetap sama persis. Keduanya juga mendapat baris petunjuk di kaki kartu ("Masuk ke Portal Pemohon" / "Lihat waktu layanan & lokasi") supaya jelas kartunya bisa diklik.
+
+### Jam layanan disederhanakan
+
+Dua baris jadwal (Senin–Kamis `08.00 – 15.00` istirahat `12.00 – 13.00`, dan Jum'at `08.00 – 15.00` istirahat `11.30 – 13.30`) diganti satu baris: **Senin - Jum'at, 08:00 - 17:00 WIB**. Jam istirahat tidak lagi diumumkan, jadi kunci `break` dilepas dari datanya dan blok istirahat di view dibuat kondisional (`@if (!empty($schedule['break']))`) — bukan dihapus, supaya jadwal yang memang punya istirahat masih bisa ditulis kembali tanpa menyentuh view. Gridnya juga menyesuaikan: dua kolom hanya bila barisnya lebih dari satu.
+
+Angka ini sudah sejalan dengan kartu Kontak di Beranda yang memang memakai `Senin–Jumat, 08.00–17.00 WIB`.
 
 ### Waktu Layanan jadi panel lipat
 
@@ -377,7 +493,8 @@ Beranda **sudah** punya iframe peta sebelumnya, tetapi titiknya berbeda dari yan
 - `/standar-layanan/jalur-waktu-layanan` **200**: dua kartu (`Online`, `Langsung`), nol kemunculan `Surat`; kartu Online menaut ke `/akun/masuk`; penanda `waktuTerbuka` terpasang; peta memakai koordinat baru.
 - Tiga halaman Standar Layanan lain (`maklumat-pelayanan`, `prosedur-permohonan`, `prosedur-keberatan`) tetap **200**, nol `Undefined variable`/`Whoops`.
 - Beranda memuat peta dari partial yang sama beserta tautan Google Maps-nya.
-- `lang/en.json`: enam kunci baru ditambahkan, tiga kunci sisa jalur Surat dilepas, JSON tetap sah. Versi Inggris halaman itu menampilkan `Sign in to the Applicant Portal`, `View service hours & location`, `PPID Office Location`, `Open in Google Maps` — nol teks Indonesia yang tertinggal.
+- Jam layanan tampil satu kartu: `Senin - Jum'at` / `08:00 - 17:00 WIB`, tanpa baris istirahat; versi Inggrisnya `Monday - Friday`.
+- `lang/en.json`: tujuh kunci baru ditambahkan; tiga kunci sisa jalur Surat dan sembilan kunci sisa jadwal lama (Senin s.d. Kamis, Jum'at, seluruh varian `08.00 – 15.00`) dilepas — semuanya sudah nol pemakai. JSON tetap sah. Versi Inggris halaman itu menampilkan `Sign in to the Applicant Portal`, `View service hours & location`, `PPID Office Location`, `Open in Google Maps` — nol teks Indonesia yang tertinggal.
 - `npm run build` sukses.
 
 

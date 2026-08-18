@@ -17,6 +17,9 @@ use Illuminate\View\View;
  */
 class DashboardController extends Controller
 {
+    /** Tahun berjalan dibandingkan dengan paling banyak tiga tahun sebelumnya. */
+    private const TAHUN_PEMBANDING = 3;
+
     public function __invoke(): View
     {
         $pemohon = Auth::guard('pemohon')->user();
@@ -24,27 +27,47 @@ class DashboardController extends Controller
         $permohonan = PermohonanInformasi::where('pemohon_id', $pemohon->id)->get();
         $keberatan = KeberatanInformasi::where('pemohon_id', $pemohon->id)->get();
 
+        $tahun = $this->tahunDibandingkan($permohonan);
+
         return view('akun.dashboard', [
             'pemohon' => $pemohon,
             'ringkasanPermohonan' => $this->ringkasan($permohonan, PermohonanInformasi::STATUS_LABEL),
             'ringkasanKeberatan' => $this->ringkasan($keberatan, KeberatanInformasi::STATUS_LABEL),
             'totalPermohonan' => $permohonan->count(),
             'totalKeberatan' => $keberatan->count(),
-            'grafik' => $this->grafikBulanan($permohonan),
-            'bulan' => $this->labelBulan(),
+            'grafik' => $this->grafikBulanan($permohonan, $tahun),
+            'tahunGrafik' => $tahun,
+            'totalPerTahun' => $this->totalPerTahun($permohonan, $tahun),
         ]);
     }
 
-    /** Hitung jumlah per kelompok status ("Dalam Proses", "Revisi", …). */
+    /**
+     * Jumlah pengajuan per kelompok status Portal: Dalam Proses & Selesai.
+     *
+     * Memakai `KELOMPOK_PORTAL`, bukan lima kelompok penuh — tahapan internal
+     * seperti Revisi dan Menunggu Persetujuan tidak berarti apa-apa bagi
+     * pemohon, dan angkanya sudah tercakup di "Dalam Proses". Pengelompokannya
+     * sama persis dengan tab pada daftar Permohonan & Keberatan.
+     */
     private function ringkasan($baris, array $peta): array
     {
-        $hasil = array_fill_keys(PermohonanInformasi::KELOMPOK, 0);
+        $hasil = array_fill_keys(PermohonanInformasi::KELOMPOK_PORTAL, 0);
+
+        // Label status rinci → kelompok portal, dihitung sekali di muka.
+        $keKelompok = [];
+
+        foreach (PermohonanInformasi::KELOMPOK_PORTAL as $kelompok) {
+            foreach (PermohonanInformasi::statusKelompokPortal($kelompok) as $status) {
+                $keKelompok[PermohonanInformasi::STATUS_LABEL[$status] ?? $status] = $kelompok;
+            }
+        }
 
         foreach ($baris as $item) {
             $label = $peta[$item->status] ?? null;
+            $kelompok = $label ? ($keKelompok[$label] ?? null) : null;
 
-            if ($label && array_key_exists($label, $hasil)) {
-                $hasil[$label]++;
+            if ($kelompok !== null) {
+                $hasil[$kelompok]++;
             }
         }
 
@@ -52,21 +75,46 @@ class DashboardController extends Controller
     }
 
     /**
-     * Data grafik batang bertumpuk: 12 bulan terakhir × 5 kelompok status.
-     * Digambar langsung dengan HTML/CSS di view, tanpa pustaka luar.
+     * Tahun yang ikut digambar: tahun berjalan + paling banyak tiga tahun
+     * sebelumnya, dan hanya tahun yang benar-benar punya pengajuan.
+     *
+     * Tahun berjalan selalu ikut walau masih kosong — grafik yang hilang
+     * seluruh sumbunya lebih membingungkan daripada grafik yang datar.
      */
-    private function grafikBulanan($permohonan): array
+    private function tahunDibandingkan($permohonan): array
     {
-        $mulai = Carbon::now()->startOfMonth()->subMonths(11);
+        $sekarang = (int) Carbon::now()->format('Y');
+        $terawal = $sekarang - self::TAHUN_PEMBANDING;
 
+        $adaData = $permohonan
+            ->map(fn ($item) => optional($item->tanggal_permohonan ?? $item->created_at)->format('Y'))
+            ->filter()
+            ->map(fn ($tahun) => (int) $tahun)
+            ->filter(fn ($tahun) => $tahun >= $terawal && $tahun <= $sekarang)
+            ->all();
+
+        $tahun = array_unique(array_merge([$sekarang], $adaData));
+
+        rsort($tahun);
+
+        return array_values($tahun);
+    }
+
+    /**
+     * Data grafik: 12 bulan (Januari–Desember) × satu seri per tahun.
+     *
+     * Sumbu bulannya tetap, jadi Januari satu tahun berdiri sejajar dengan
+     * Januari tahun lain — itu inti perbandingannya. Digambar dengan HTML/CSS
+     * di view, tanpa pustaka luar.
+     */
+    private function grafikBulanan($permohonan, array $tahun): array
+    {
         $kerangka = [];
 
-        for ($i = 0; $i < 12; $i++) {
-            $bulan = $mulai->copy()->addMonths($i);
-            $kerangka[$bulan->format('Y-m')] = [
-                'label' => $bulan->translatedFormat('M y'),
-                'nilai' => array_fill_keys(PermohonanInformasi::KELOMPOK, 0),
-                'total' => 0,
+        for ($bulan = 1; $bulan <= 12; $bulan++) {
+            $kerangka[$bulan] = [
+                'label' => Carbon::create(null, $bulan, 1)->translatedFormat('M'),
+                'nilai' => array_fill_keys($tahun, 0),
             ];
         }
 
@@ -77,26 +125,31 @@ class DashboardController extends Controller
                 continue;
             }
 
-            $kunci = $tanggal->format('Y-m');
+            $th = (int) $tanggal->format('Y');
+            $bl = (int) $tanggal->format('n');
 
-            if (!isset($kerangka[$kunci])) {
-                continue; // di luar 12 bulan terakhir
-            }
-
-            $label = PermohonanInformasi::STATUS_LABEL[$item->status] ?? null;
-
-            if ($label && isset($kerangka[$kunci]['nilai'][$label])) {
-                $kerangka[$kunci]['nilai'][$label]++;
-                $kerangka[$kunci]['total']++;
+            if (isset($kerangka[$bl]['nilai'][$th])) {
+                $kerangka[$bl]['nilai'][$th]++;
             }
         }
 
         return array_values($kerangka);
     }
 
-    private function labelBulan(): string
+    /** Total setahun penuh per tahun, dipakai legend grafik. */
+    private function totalPerTahun($permohonan, array $tahun): array
     {
-        return Carbon::now()->startOfMonth()->subMonths(11)->translatedFormat('F Y')
-            .' – '.Carbon::now()->translatedFormat('F Y');
+        $hasil = array_fill_keys($tahun, 0);
+
+        foreach ($permohonan as $item) {
+            $tanggal = $item->tanggal_permohonan ?? $item->created_at;
+            $th = $tanggal ? (int) $tanggal->format('Y') : null;
+
+            if ($th !== null && isset($hasil[$th])) {
+                $hasil[$th]++;
+            }
+        }
+
+        return $hasil;
     }
 }
