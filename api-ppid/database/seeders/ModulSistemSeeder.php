@@ -32,6 +32,7 @@ class ModulSistemSeeder extends Seeder
         'halaman-statis' => ['Halaman Statis', 'heroicons-outline:template', '/ppid/halaman-statis', 13],
         'regulasi' => ['Regulasi & Dasar Hukum', 'heroicons-outline:scale', '/ppid/regulasi', 14],
         'menu-navigasi' => ['Menu Navigasi', 'heroicons-outline:menu', '/ppid/menu-navigasi', 16],
+        'alur-approval' => ['Alur Persetujuan', 'heroicons-outline:adjustments-horizontal', '/ppid/alur-approval', 16],
         'pengguna' => ['Pengguna & Role', 'heroicons-outline:user-group', '/ppid/pengguna', 17],
         'pengaturan-situs' => ['Pengaturan Situs', 'heroicons-outline:cog', '/ppid/pengaturan-situs', 18],
         'audit-log' => ['Audit Log', 'heroicons-outline:clipboard-list', '/ppid/audit-log', 19],
@@ -79,6 +80,14 @@ class ModulSistemSeeder extends Seeder
             ['name' => 'PPID Utama', 'description' => 'Menyetujui konten dan tanggapan permohonan']
         );
 
+        // Jenjang teratas pada bagan struktur organisasi PPID. Perlu punya role
+        // sendiri sejak alur persetujuan berjenjang dipakai: tanpa itu tahap
+        // "Atasan PPID" tidak punya pemegang dan berkasnya berhenti di sana.
+        $atasanPpid = Role::firstOrCreate(
+            ['slug' => 'atasan-ppid'],
+            ['name' => 'Atasan PPID', 'description' => 'Pengesahan akhir permohonan dan putusan keberatan']
+        );
+
         $penuh = [
             'can_view' => true, 'can_create' => true, 'can_edit' => true,
             'can_delete' => true, 'can_approve' => true, 'can_export' => true,
@@ -97,17 +106,38 @@ class ModulSistemSeeder extends Seeder
         foreach (ModulSistem::all() as $modul) {
             $this->setAkses($superAdmin->id, $modul->id, $penuh);
 
-            $aksesPelaksana = in_array($modul->slug, ['pengguna', 'audit-log', 'pengaturan-situs'], true)
-                ? ['can_view' => false, 'can_create' => false, 'can_edit' => false, 'can_delete' => false, 'can_approve' => false, 'can_export' => false]
-                : $operasional;
+            // Susunan alur persetujuan hanya boleh diubah super admin: ia yang
+            // menentukan siapa menyetujui siapa, jadi role yang berada di dalam
+            // alur itu tidak boleh bisa menyusun ulang jenjangnya sendiri.
+            // Keduanya tetap boleh melihat susunannya — jenjang yang berjalan
+            // harus bisa dibaca oleh yang menjalaninya.
+            $hanyaLihat = ['can_view' => true, 'can_create' => false, 'can_edit' => false, 'can_delete' => false, 'can_approve' => false, 'can_export' => false];
+            $tanpaAkses = ['can_view' => false, 'can_create' => false, 'can_edit' => false, 'can_delete' => false, 'can_approve' => false, 'can_export' => false];
+
+            $aksesPelaksana = match (true) {
+                in_array($modul->slug, ['pengguna', 'audit-log', 'pengaturan-situs'], true) => $tanpaAkses,
+                $modul->slug === 'alur-approval' => $hanyaLihat,
+                default => $operasional,
+            };
 
             $this->setAkses($ppidPelaksana->id, $modul->id, $aksesPelaksana);
 
-            $aksesUtama = $modul->slug === 'pengguna'
-                ? ['can_view' => true, 'can_create' => false, 'can_edit' => false, 'can_delete' => false, 'can_approve' => false, 'can_export' => false]
-                : $persetujuan;
+            $aksesUtama = match ($modul->slug) {
+                'pengguna', 'alur-approval' => $hanyaLihat,
+                default => $persetujuan,
+            };
 
             $this->setAkses($ppidUtama->id, $modul->id, $aksesUtama);
+
+            // Atasan PPID hanya berurusan dengan layanan: ia mengesahkan
+            // permohonan dan memutus keberatan, bukan menyunting konten situs.
+            $aksesAtasan = match ($modul->slug) {
+                'dashboard', 'permohonan', 'keberatan', 'laporan-layanan' => $persetujuan,
+                'alur-approval' => $hanyaLihat,
+                default => $tanpaAkses,
+            };
+
+            $this->setAkses($atasanPpid->id, $modul->id, $aksesAtasan);
         }
     }
 

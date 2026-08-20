@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AnalitikController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Cms\AlurApprovalController;
 use App\Http\Controllers\Api\Cms\AuditLogController;
 use App\Http\Controllers\Api\Cms\BannerSliderController;
 use App\Http\Controllers\Api\Cms\BeritaController;
@@ -75,6 +76,9 @@ Route::prefix('v1')->group(function () {
 
         // Notifikasi pribadi pengguna; tidak terikat modul mana pun.
         Route::get('notifikasi', [NotifikasiController::class, 'index']);
+        // Didaftarkan sebelum pola `/{id}` supaya tidak tertangkap olehnya.
+        Route::post('notifikasi/baca-semua', [NotifikasiController::class, 'bacaSemua']);
+        Route::post('notifikasi/{id}/baca', [NotifikasiController::class, 'baca'])->whereNumber('id');
         Route::get('notifikasi/{id}', [NotifikasiController::class, 'show'])->whereNumber('id');
         Route::delete('notifikasi/{id}', [NotifikasiController::class, 'destroy'])->whereNumber('id');
         Route::delete('notifikasi', [NotifikasiController::class, 'destroyMany']);
@@ -91,13 +95,26 @@ Route::prefix('v1')->group(function () {
         // Route khusus didaftarkan sebelum CrudRoute agar tidak tertangkap pola /{id}.
         Route::post('permohonan/{id}/status', [PermohonanController::class, 'ubahStatus'])
             ->middleware('akses:permohonan,edit')->whereNumber('id');
-        Route::post('permohonan/{id}/approval', [PermohonanController::class, 'putusanApproval'])
+        // Jenjang persetujuan satu permohonan: `view` cukup untuk melihat
+        // susunannya, memutuskan menuntut `approve`.
+        Route::get('permohonan/{id}/approval', [PermohonanController::class, 'daftarPersetujuan'])
+            ->middleware('akses:permohonan,view')->whereNumber('id');
+        Route::post('permohonan/{id}/approval', [PermohonanController::class, 'putuskanPersetujuan'])
             ->middleware('akses:permohonan,approve')->whereNumber('id');
         Route::post('permohonan/{id}/tanggapan-files', [PermohonanController::class, 'tambahTanggapanFile'])
             ->middleware('akses:permohonan,edit')->whereNumber('id');
         Route::delete('permohonan/{id}/tanggapan-files/{fileId}', [PermohonanController::class, 'hapusTanggapanFile'])
             ->middleware('akses:permohonan,edit')->whereNumber('id')->whereNumber('fileId');
-        CrudRoute::register('permohonan', PermohonanController::class, 'permohonan');
+        /*
+         * Tanpa `store`, `update`, dan `destroy`: isi permohonan ditulis
+         * pemohon sendiri lewat portal, jadi petugas tidak boleh membuatnya,
+         * menyuntingnya, maupun menghapusnya — termasuk mencatatkan permohonan
+         * baru atas nama orang lain (langkah 78). Yang tersisa untuk petugas
+         * adalah perpindahan status, putusan persetujuan berjenjang, dan berkas
+         * tanggapan — semuanya lewat endpoint khusus di atas, yang tercatat di
+         * `permohonan_log_status` / `approval_pengajuan` / `audit_log`.
+         */
+        CrudRoute::register('permohonan', PermohonanController::class, 'permohonan', ['store', 'update', 'destroy']);
         // Pemohon hanya bisa dibaca dari panel. Akunnya dibuat dan disunting
         // sendiri oleh pengunjung lewat portal pemohon, jadi tidak ada jalur
         // tambah/ubah/hapus dari sisi petugas.
@@ -113,7 +130,19 @@ Route::prefix('v1')->group(function () {
         // petugas memang menyetujui/menolak berkas, bukan menyunting datanya.
         Route::post('pemohon/{id}/verifikasi', [PemohonController::class, 'verifikasi'])
             ->middleware('akses:permohonan,approve')->whereNumber('id');
-        CrudRoute::register('keberatan', KeberatanController::class, 'keberatan');
+        /*
+         * Sama seperti permohonan: isinya milik pemohon. Bedanya keberatan
+         * tidak punya endpoint status tersendiri, jadi satu-satunya jalur
+         * tulis petugas dipisah ke `tanggapan` — hanya menerima `status` dan
+         * `tanggapan_atasan_ppid`, tidak bisa menyentuh alasan keberatan.
+         */
+        Route::post('keberatan/{id}/tanggapan', [KeberatanController::class, 'ubahTanggapan'])
+            ->middleware('akses:keberatan,edit')->whereNumber('id');
+        Route::get('keberatan/{id}/approval', [KeberatanController::class, 'daftarPersetujuan'])
+            ->middleware('akses:keberatan,view')->whereNumber('id');
+        Route::post('keberatan/{id}/approval', [KeberatanController::class, 'putuskanPersetujuan'])
+            ->middleware('akses:keberatan,approve')->whereNumber('id');
+        CrudRoute::register('keberatan', KeberatanController::class, 'keberatan', ['store', 'update', 'destroy']);
         // Penilaian pemohon atas layanan; dibaca panel lewat modul Survei.
         CrudRoute::register('survey-kepuasan', SurveyKepuasanController::class, 'permohonan');
 
@@ -139,6 +168,17 @@ Route::prefix('v1')->group(function () {
         CrudRoute::register('menu-navigasi', MenuNavigasiController::class, 'menu-navigasi');
 
         // --- Administrasi sistem ---
+        /*
+         * Alur persetujuan berjenjang. Modulnya sendiri yang menjaga siapa
+         * boleh menyusunnya: seeder hanya memberi hak tulis kepada super admin,
+         * role lain sebatas melihat susunannya.
+         */
+        Route::get('alur-approval/{id}/tahap', [AlurApprovalController::class, 'tahap'])
+            ->middleware('akses:alur-approval,view')->whereNumber('id');
+        Route::put('alur-approval/{id}/tahap', [AlurApprovalController::class, 'simpanTahap'])
+            ->middleware('akses:alur-approval,edit')->whereNumber('id');
+        CrudRoute::register('alur-approval', AlurApprovalController::class, 'alur-approval');
+
         Route::get('role/{id}/akses', [RoleController::class, 'akses'])
             ->middleware('akses:pengguna,view')->whereNumber('id');
         Route::put('role/{id}/akses', [RoleController::class, 'simpanAkses'])

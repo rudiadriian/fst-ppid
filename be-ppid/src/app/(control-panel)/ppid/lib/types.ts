@@ -94,6 +94,19 @@ export type ResourceConfig = {
 	/** Modul yang hanya bisa dibaca (mis. audit log). */
 	readOnly?: boolean;
 	/**
+	 * Barisnya tidak bisa ditambah / disunting / dihapus dari panel.
+	 *
+	 * Dipakai modul berisi kiriman pemohon (Permohonan, Keberatan): datanya
+	 * pernyataan pemohon, jadi petugas menanggapinya lewat aksi khusus —
+	 * perpindahan status, persetujuan berjenjang, berkas tanggapan — bukan
+	 * dengan menulis atau menyunting isinya. Endpoint `store`/`update`/
+	 * `destroy`-nya juga tidak ada di api-ppid, jadi ini menyembunyikan tombol
+	 * yang memang tidak punya tujuan.
+	 */
+	tanpaTambah?: boolean;
+	tanpaUbah?: boolean;
+	tanpaHapus?: boolean;
+	/**
 	 * Modul tanpa kolom jejak dokumen.
 	 *
 	 * Dipakai Audit Log: tabelnya memang catatan perubahan, jadi tidak punya

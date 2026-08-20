@@ -6,16 +6,24 @@ import Masonry from '@mui/lab/Masonry';
 import _ from 'lodash';
 import { useDeleteNotification } from '../../api/hooks/useDeleteNotification';
 import { useGetAllNotifications } from '../../api/hooks/useGetAllNotifications';
+import { useReadNotification } from '../../api/hooks/useReadNotification';
 import NotificationCard from '../ui/NotificationCard';
 import NotificationsAppHeader from '../ui/NotificationsAppHeader';
 
 function NotificationsAppView() {
 	const { mutate: deleteNotification } = useDeleteNotification();
+	const { mutate: readNotification } = useReadNotification();
 
-	const { data: notifications, isLoading } = useGetAllNotifications();
+	// Halaman ini arsipnya, jadi yang sudah dibaca ikut ditarik — beda dengan
+	// lonceng, yang hanya memuat yang belum dibaca.
+	const { data: notifications, isLoading } = useGetAllNotifications(true);
 
 	function handleDismiss(id: string) {
 		deleteNotification(id);
+	}
+
+	function handleOpen(id: string) {
+		readNotification(id);
 	}
 
 	if (isLoading) {
@@ -42,9 +50,12 @@ function NotificationsAppView() {
 						{_.orderBy(notifications, ['time'], ['desc']).map((notification) => (
 							<NotificationCard
 								key={notification.id}
-								className=""
+								// Yang sudah dibaca diredupkan supaya yang baru tetap menonjol
+								// walau keduanya berdampingan di arsip.
+								className={notification.read ? 'opacity-60' : ''}
 								item={notification}
 								onClose={handleDismiss}
+								onOpen={handleOpen}
 							/>
 						))}
 					</Masonry>
@@ -55,7 +66,7 @@ function NotificationsAppView() {
 								className="text-center text-xl"
 								color="text.secondary"
 							>
-								There are no notifications for now.
+								Belum ada notifikasi.
 							</Typography>
 						</div>
 					)}

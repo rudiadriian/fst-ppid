@@ -17,6 +17,11 @@
              'ikon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z'],
             ['label' => __('Histori Permohonan'), 'route' => 'akun.histori', 'aktif' => ['akun.histori'],
              'ikon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
+            ['label' => __('Notifikasi'), 'route' => 'akun.notifikasi', 'aktif' => ['akun.notifikasi'],
+             'ikon' => 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
+             'lencana' => $akun
+                ? \App\Models\NotifikasiPemohon::milik((int) $akun->id)->where('is_read', false)->count()
+                : 0],
         ];
 
         $menuPengaturan = [
@@ -67,7 +72,12 @@
                     @foreach ($menu as $item)
                         <a href="{{ route($item['route']) }}" class="{{ request()->routeIs(...$item['aktif']) ? $itemOn : $itemOff }}">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $item['ikon'] }}"/></svg>
-                            {{ $item['label'] }}
+                            <span class="flex-1">{{ $item['label'] }}</span>
+                            @if (($item['lencana'] ?? 0) > 0)
+                                <span class="min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center rounded-full bg-[#E87317] text-white text-[11px] font-bold">
+                                    {{ $item['lencana'] > 9 ? '9+' : $item['lencana'] }}
+                                </span>
+                            @endif
                         </a>
                     @endforeach
 

@@ -41,6 +41,23 @@ const BADGE_PERMOHONAN = {
 	kedaluwarsa: { label: 'Kedaluwarsa', color: 'default' as const }
 };
 
+/**
+ * Status keberatan; nilainya dari `KeberatanInformasi::TRANSISI` di api-ppid.
+ *
+ * Sebelum alur persetujuan berjenjang dipakai, daftar ini hanya memuat tiga
+ * status. `revisi`, `menunggu_approval`, dan `ditolak` sudah lama diterima
+ * CHECK constraint tabelnya tetapi tidak punya label di panel — barisnya
+ * tampil sebagai nilai mentah.
+ */
+const BADGE_KEBERATAN = {
+	diajukan: { label: 'Diajukan', color: 'info' as const },
+	diproses: { label: 'Diproses', color: 'warning' as const },
+	revisi: { label: 'Revisi', color: 'warning' as const },
+	menunggu_approval: { label: 'Menunggu Persetujuan', color: 'warning' as const },
+	ditolak: { label: 'Ditolak', color: 'error' as const },
+	selesai: { label: 'Selesai', color: 'success' as const }
+};
+
 export const resources: ResourceConfig[] = [
 	// ------------------------------------------------------------------
 	// Informasi publik
@@ -287,8 +304,14 @@ export const resources: ResourceConfig[] = [
 		modul: 'permohonan',
 		title: 'Permohonan',
 		singular: 'Permohonan',
-		description: 'Permohonan masuk beserta status penanganannya.',
+		description:
+			'Permohonan masuk beserta status penanganannya. Isinya ditulis pemohon lewat portal, jadi tidak bisa ditambah, disunting, atau dihapus dari panel — tindakan petugas berupa perpindahan status dan putusan persetujuan berjenjang lewat aksi baris, yang tercatat di riwayat status. Buka Detail untuk melihat pengajuan selengkapnya.',
 		icon: 'lucide:inbox',
+		// Data kiriman pemohon: tanpa tambah, ubah, dan hapus. Endpoint
+		// `store`/`update`/`destroy`-nya juga tidak didaftarkan di api-ppid.
+		tanpaTambah: true,
+		tanpaUbah: true,
+		tanpaHapus: true,
 		defaultSort: '-tanggal_permohonan',
 		searchPlaceholder: 'Cari kode permohonan atau rincian…',
 		columns: [
@@ -299,55 +322,9 @@ export const resources: ResourceConfig[] = [
 			{ key: 'tanggal_permohonan', label: 'Diajukan', type: 'datetime', size: 160 },
 			{ key: 'batas_waktu_tanggapan', label: 'Batas waktu', type: 'datetime', size: 160 }
 		],
-		fields: [
-			{
-				name: 'pemohon_id',
-				label: 'Pemohon',
-				type: 'relation',
-				required: true,
-				relation: { resource: 'pemohon', labelKey: 'nama' }
-			},
-			{
-				name: 'kategori_id',
-				label: 'Kategori informasi',
-				type: 'relation',
-				relation: { resource: 'kategori-informasi', labelKey: 'nama' }
-			},
-			{ name: 'rincian_informasi', label: 'Rincian informasi diminta', type: 'textarea', required: true, span: 2, rows: 3 },
-			{ name: 'tujuan_penggunaan', label: 'Tujuan penggunaan', type: 'textarea', span: 2, rows: 2 },
-			{
-				name: 'format_informasi',
-				label: 'Format informasi',
-				type: 'select',
-				options: [
-					{ value: 'softcopy', label: 'Softcopy' },
-					{ value: 'hardcopy', label: 'Hardcopy' }
-				]
-			},
-			{
-				name: 'cara_pengiriman',
-				label: 'Cara pengiriman',
-				type: 'select',
-				options: [
-					{ value: 'email', label: 'Email' },
-					{ value: 'ambil_langsung', label: 'Ambil langsung' },
-					{ value: 'pos', label: 'Pos' }
-				]
-			},
-			{ name: 'batas_waktu_tanggapan', label: 'Batas waktu tanggapan', type: 'date' },
-			{
-				name: 'ditangani_oleh',
-				label: 'Petugas penanggung jawab',
-				type: 'relation',
-				relation: { resource: 'pengguna', labelKey: 'name' }
-			},
-			{
-				name: 'tampil_di_register_publik',
-				label: 'Tampilkan di register permohonan publik',
-				type: 'boolean',
-				span: 2
-			}
-		],
+		// Tanpa formulir: modul ini tidak punya jalur tambah maupun ubah.
+		// Seluruh isian pengajuan dibaca lewat aksi baris "Lihat detail".
+		fields: [],
 		filters: [
 			{
 				name: 'status',
@@ -368,80 +345,30 @@ export const resources: ResourceConfig[] = [
 		modul: 'keberatan',
 		title: 'Keberatan',
 		singular: 'Keberatan',
-		description: 'Keberatan atas layanan informasi dan tanggapan atasan PPID.',
+		description:
+			'Keberatan atas layanan informasi. Alasan dan kasus posisinya pernyataan pemohon, jadi tidak bisa ditambah, disunting, atau dihapus dari panel — petugas mengisi status dan tanggapan atasan lewat aksi baris. Buka Detail untuk melihat keberatan selengkapnya.',
 		icon: 'lucide:triangle-alert',
+		tanpaTambah: true,
+		tanpaUbah: true,
+		tanpaHapus: true,
 		defaultSort: '-tanggal_keberatan',
 		columns: [
 			{ key: 'permohonan', label: 'Kode permohonan', type: 'relation', relationKey: 'kode_permohonan', noSort: true },
 			{ key: 'pemohon', label: 'Pemohon', type: 'relation', relationKey: 'nama', noSort: true },
 			{ key: 'jenis_keberatan', label: 'Jenis', size: 220 },
-			{
-				key: 'status',
-				label: 'Status',
-				type: 'badge',
-				size: 120,
-				badgeMap: {
-					diajukan: { label: 'Diajukan', color: 'info' },
-					diproses: { label: 'Diproses', color: 'warning' },
-					selesai: { label: 'Selesai', color: 'success' }
-				}
-			},
+			{ key: 'status', label: 'Status', type: 'badge', size: 170, badgeMap: BADGE_KEBERATAN },
 			{ key: 'tanggal_keberatan', label: 'Diajukan', type: 'datetime', size: 160 }
 		],
-		fields: [
-			{
-				name: 'permohonan_id',
-				label: 'Permohonan terkait',
-				type: 'relation',
-				required: true,
-				relation: { resource: 'permohonan', labelKey: 'kode_permohonan' }
-			},
-			{
-				name: 'pemohon_id',
-				label: 'Pemohon',
-				type: 'relation',
-				required: true,
-				relation: { resource: 'pemohon', labelKey: 'nama' }
-			},
-			{
-				name: 'jenis_keberatan',
-				label: 'Jenis keberatan',
-				type: 'select',
-				required: true,
-				span: 2,
-				options: [
-					{ value: 'permohonan_ditolak', label: 'Permohonan ditolak' },
-					{ value: 'informasi_tidak_disediakan', label: 'Informasi tidak disediakan' },
-					{ value: 'permintaan_tidak_ditanggapi', label: 'Permintaan tidak ditanggapi' },
-					{ value: 'informasi_tidak_sesuai', label: 'Informasi tidak sesuai' },
-					{ value: 'biaya_tidak_wajar', label: 'Biaya tidak wajar' },
-					{ value: 'melebihi_jangka_waktu', label: 'Melebihi jangka waktu' }
-				]
-			},
-			{ name: 'alasan_keberatan', label: 'Alasan keberatan', type: 'textarea', required: true, span: 2, rows: 4 },
-			{
-				name: 'status',
-				label: 'Status',
-				type: 'select',
-				options: [
-					{ value: 'diajukan', label: 'Diajukan' },
-					{ value: 'diproses', label: 'Diproses' },
-					{ value: 'selesai', label: 'Selesai' }
-				],
-				defaultValue: 'diajukan'
-			},
-			{ name: 'tanggapan_atasan_ppid', label: 'Tanggapan atasan PPID', type: 'textarea', span: 2, rows: 4 }
-		],
+		// Tanpa formulir: jenis, alasan, kasus posisi, dan penguasaan adalah
+		// pernyataan pemohon. Petugas menanggapinya lewat aksi baris
+		// "Tanggapan & status" dan membacanya lewat "Lihat detail".
+		fields: [],
 		filters: [
 			{
 				name: 'status',
 				label: 'Status',
 				type: 'select',
-				options: [
-					{ value: 'diajukan', label: 'Diajukan' },
-					{ value: 'diproses', label: 'Diproses' },
-					{ value: 'selesai', label: 'Selesai' }
-				]
+				options: Object.entries(BADGE_KEBERATAN).map(([value, info]) => ({ value, label: info.label }))
 			}
 		]
 	},
@@ -1104,6 +1031,65 @@ export const resources: ResourceConfig[] = [
 			{ name: 'key', label: 'Kunci', type: 'text', required: true, maxLength: 100, help: 'Huruf kecil, angka, titik, dan garis bawah.' },
 			{ name: 'group_name', label: 'Grup', type: 'text', maxLength: 50 },
 			{ name: 'value', label: 'Nilai', type: 'textarea', span: 2, rows: 3 }
+		]
+	},
+	{
+		slug: 'alur-approval',
+		modul: 'alur-approval',
+		title: 'Alur Persetujuan',
+		singular: 'Alur Persetujuan',
+		description:
+			'Susunan persetujuan berjenjang untuk Permohonan dan Keberatan Informasi. Tiap jenjang menunjuk satu role penyetuju dan kotak pada Struktur Organisasi yang diwakilinya, jadi perubahan struktur cukup diikuti dari sini tanpa mengubah aplikasi. Satu jenis pengajuan hanya boleh punya satu alur aktif; mengaktifkan yang baru menonaktifkan yang lama. Jenjangnya diatur lewat aksi baris "Atur tahap".',
+		icon: 'lucide:git-merge',
+		defaultSort: 'jenis',
+		columns: [
+			{
+				key: 'jenis',
+				label: 'Jenis pengajuan',
+				type: 'badge',
+				size: 190,
+				badgeMap: {
+					permohonan: { label: 'Permohonan Informasi', color: 'info' },
+					keberatan: { label: 'Keberatan Informasi', color: 'warning' }
+				}
+			},
+			{ key: 'nama', label: 'Nama alur' },
+			{ key: 'tahap_jumlah', label: 'Jumlah tahap', type: 'number', size: 130, noSort: true },
+			{ key: 'is_active', label: 'Aktif', type: 'boolean', size: 110 }
+		],
+		fields: [
+			{
+				name: 'jenis',
+				label: 'Jenis pengajuan',
+				type: 'select',
+				required: true,
+				options: [
+					{ value: 'permohonan', label: 'Permohonan Informasi' },
+					{ value: 'keberatan', label: 'Keberatan Informasi' }
+				],
+				help: 'Alur ini dipakai saat pengajuan jenis tersebut masuk status Menunggu Persetujuan.'
+			},
+			{ name: 'nama', label: 'Nama alur', type: 'text', required: true, maxLength: 150 },
+			{ name: 'keterangan', label: 'Keterangan', type: 'textarea', span: 2, rows: 2 },
+			{
+				name: 'is_active',
+				label: 'Aktifkan alur ini',
+				type: 'boolean',
+				span: 2,
+				defaultValue: true,
+				help: 'Mengaktifkan alur ini otomatis menonaktifkan alur lain pada jenis yang sama.'
+			}
+		],
+		filters: [
+			{
+				name: 'jenis',
+				label: 'Jenis',
+				type: 'select',
+				options: [
+					{ value: 'permohonan', label: 'Permohonan Informasi' },
+					{ value: 'keberatan', label: 'Keberatan Informasi' }
+				]
+			}
 		]
 	},
 	{

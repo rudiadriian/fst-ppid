@@ -65,12 +65,19 @@ return [
     |--------------------------------------------------------------------------
     |
     | Here you may specify the default timezone for your application, which
-    | will be used by the PHP date and date-time functions. We have gone
-    | ahead and set this to a sensible default for you out of the box.
+    | will be used by the PHP date and date-time functions.
+    |
+    | Diisi Asia/Jakarta, bukan UTC bawaan Laravel. Situs ini berbagi satu
+    | basis data dengan api-ppid, jadi nilainya harus sama persis di kedua
+    | aplikasi — beda zona berarti satu aplikasi menulis jam yang dibaca
+    | aplikasi lain sebagai jam yang berbeda.
+    |
+    | Harus sama pula dengan `connections.pgsql.timezone` di
+    | `config/database.php`.
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
 
     /*
     |--------------------------------------------------------------------------

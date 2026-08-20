@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Berita;
 use App\Models\InformasiPublik;
 use App\Models\KeberatanInformasi;
+use App\Models\Pemohon;
 use App\Models\PermohonanInformasi;
 use App\Models\SurveyKepuasan;
 use Illuminate\Http\JsonResponse;
@@ -73,6 +74,11 @@ class AnalitikController extends Controller
         $keberatan = fn () => KeberatanInformasi::query()
             ->when($tahun, fn ($q) => $q->whereYear('tanggal_keberatan', $tahun));
 
+        // Pemohon disaring lewat tanggal pendaftaran akunnya — itu yang berarti
+        // "mendaftar pada tahun ini".
+        $pemohon = fn () => Pemohon::query()
+            ->when($tahun, fn ($q) => $q->whereYear('created_at', $tahun));
+
         $total = (clone $permohonan())->count();
         $tuntas = (clone $permohonan())->whereIn('status', self::STATUS_TUNTAS)->count();
         $selesai = (clone $permohonan())->where('status', 'selesai')->count();
@@ -82,6 +88,7 @@ class AnalitikController extends Controller
         $kepuasan = $this->kepuasan($tahun);
         $jumlahKeberatan = (clone $keberatan())->count();
         $perStatus = $this->sebaranStatus($permohonan);
+        $perStatusKeberatan = $this->sebaranStatus($keberatan);
 
         return response()->json([
             'data' => [
@@ -104,6 +111,18 @@ class AnalitikController extends Controller
                     'menunggu_approval' => (int) ($perStatus['menunggu_approval'] ?? 0),
                 ],
 
+                /*
+                 * Pemohon — siapa yang memakai layanan, bukan berapa banyak
+                 * pengajuannya. Dipisah dari `ringkasan` karena satuannya
+                 * berbeda: satu pemohon bisa punya banyak permohonan, jadi
+                 * angka di sini tidak boleh dijumlahkan dengan angka layanan.
+                 */
+                'pemohon' => [
+                    'total' => (clone $pemohon())->count(),
+                    'per_jenis' => $this->sebaran($pemohon, 'jenis_pemohon'),
+                    'verifikasi' => $this->verifikasiPemohon($pemohon),
+                ],
+
                 // Jumlah konten tidak ikut disaring tahun: yang relevan adalah
                 // keadaan pustaka informasi sekarang, bukan per periode.
                 'konten' => [
@@ -115,10 +134,21 @@ class AnalitikController extends Controller
 
                 'sla' => $sla,
 
+                /*
+                 * Sebaran pengajuan, selalu berpasangan permohonan + keberatan.
+                 * Keduanya dihitung dengan cara yang sama supaya bisa dibaca
+                 * berdampingan tanpa catatan kaki.
+                 */
                 'analisa' => [
                     'tren' => $this->tren($tahun),
-                    'per_status' => $perStatus,
-                    'kategori_teratas' => $this->kategoriTeratas($permohonan),
+                    'per_status' => [
+                        'permohonan' => $perStatus,
+                        'keberatan' => $perStatusKeberatan,
+                    ],
+                    'per_jenis_pemohon' => [
+                        'permohonan' => $this->perJenisPemohon($permohonan, 'permohonan_informasi'),
+                        'keberatan' => $this->perJenisPemohon($keberatan, 'keberatan_informasi'),
+                    ],
                     'cara_pengiriman' => $this->sebaran($permohonan, 'cara_pengiriman'),
                 ],
 
@@ -215,8 +245,14 @@ class AnalitikController extends Controller
         ];
     }
 
-    /** Berapa tahun yang ikut dibandingkan pada tren bulanan, termasuk tahun utama. */
-    private const TAHUN_PEMBANDING = 3;
+    /**
+     * Berapa tahun yang ikut dibandingkan pada tren bulanan, termasuk tahun
+     * utama: tahun berjalan + paling banyak tiga tahun sebelumnya.
+     *
+     * Samakan dengan grafik Portal Pemohon supaya satu peristiwa tidak terbaca
+     * beda rentang di dua tempat.
+     */
+    private const TAHUN_PEMBANDING = 4;
 
     /**
      * Tren bulanan permohonan masuk vs ditanggapi, dengan pembanding tahun lalu.
@@ -224,7 +260,7 @@ class AnalitikController extends Controller
      * Bentuknya ringkasan per bulan (Januari–Desember), bukan 12 bulan terakhir,
      * supaya bulan yang sama antar tahun berdiri sejajar dan bisa dibandingkan.
      * Tahun utama adalah tahun yang dipilih penyaring; tanpa penyaring dipakai
-     * tahun berjalan. Dua tahun sebelumnya ikut ditarik sebagai pembanding —
+     * tahun berjalan. Tiga tahun sebelumnya ikut ditarik sebagai pembanding —
      * hanya yang benar-benar punya data.
      */
     private function tren(?int $tahun): array
@@ -295,9 +331,10 @@ class AnalitikController extends Controller
         ];
     }
 
-    private function sebaranStatus(callable $permohonan): array
+    /** Dipakai permohonan maupun keberatan — keduanya punya kolom `status`. */
+    private function sebaranStatus(callable $kueri): array
     {
-        return (clone $permohonan())
+        return (clone $kueri())
             ->select('status', DB::raw('count(*) as jumlah'))
             ->groupBy('status')
             ->orderByDesc('jumlah')
@@ -306,9 +343,9 @@ class AnalitikController extends Controller
             ->all();
     }
 
-    private function sebaran(callable $permohonan, string $kolom): array
+    private function sebaran(callable $kueri, string $kolom): array
     {
-        return (clone $permohonan())
+        return (clone $kueri())
             ->whereNotNull($kolom)
             ->select($kolom, DB::raw('count(*) as jumlah'))
             ->groupBy($kolom)
@@ -318,17 +355,47 @@ class AnalitikController extends Controller
             ->all();
     }
 
-    /** Lima kategori informasi yang paling sering diminta. */
-    private function kategoriTeratas(callable $permohonan): array
+    /**
+     * Hasil Verifikasi Data Diri para pemohon.
+     *
+     * Keempat keadaannya dikembalikan lengkap — termasuk `ditolak`, yang tidak
+     * diminta secara khusus — supaya jumlahnya tetap sama dengan total pemohon.
+     * Angka yang tidak menutup adalah angka yang tidak bisa dipercaya.
+     */
+    private function verifikasiPemohon(callable $pemohon): array
     {
-        return (clone $permohonan())
-            ->join('kategori_informasi as k', 'k.id', '=', 'permohonan_informasi.kategori_id')
-            ->select('k.nama', DB::raw('count(*) as jumlah'))
-            ->groupBy('k.nama')
+        $sebaran = $this->sebaran($pemohon, 'status_verifikasi');
+
+        return [
+            // Sudah mengirim berkas, menunggu diperiksa petugas.
+            'menunggu' => (int) ($sebaran['menunggu'] ?? 0),
+            'terverifikasi' => (int) ($sebaran['terverifikasi'] ?? 0),
+            // Belum mengirim berkas sama sekali.
+            'belum' => (int) ($sebaran['belum'] ?? 0),
+            'ditolak' => (int) ($sebaran['ditolak'] ?? 0),
+        ];
+    }
+
+    /**
+     * Pengajuan menurut jenis pemohonnya.
+     *
+     * Di-join, bukan lewat relasi Eloquent, karena yang dibutuhkan cuma satu
+     * kolom pengelompokan — menarik seluruh baris pemohon untuk itu pemborosan.
+     * Jenis yang kosong dikelompokkan sebagai `tidak_diisi` supaya barisnya
+     * tidak lenyap diam-diam dari total.
+     */
+    private function perJenisPemohon(callable $kueri, string $tabel): array
+    {
+        return (clone $kueri())
+            ->join('pemohon as p', 'p.id', '=', $tabel.'.pemohon_id')
+            ->select(
+                DB::raw("coalesce(p.jenis_pemohon, 'tidak_diisi') as jenis"),
+                DB::raw('count(*) as jumlah')
+            )
+            ->groupBy('jenis')
             ->orderByDesc('jumlah')
-            ->limit(5)
-            ->get()
-            ->map(fn ($baris) => ['nama' => $baris->nama, 'jumlah' => (int) $baris->jumlah])
+            ->pluck('jumlah', 'jenis')
+            ->map(fn ($n) => (int) $n)
             ->all();
     }
 

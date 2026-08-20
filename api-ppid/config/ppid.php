@@ -24,8 +24,12 @@ return [
     'situs_url' => env('PPID_SITUS_URL', 'http://localhost:8000'),
 
     /*
-     * Zona waktu untuk tanggal & jam pada email. Waktu tersimpan dalam UTC,
-     * jadi harus digeser dulu sebelum diberi label "WIB".
+     * Zona waktu untuk tanggal & jam pada email.
+     *
+     * Sejak `app.timezone` ikut Asia/Jakarta, pergeseran di kelas email tidak
+     * lagi mengubah apa pun — tetapi tetap dipasang: label "WIB" yang dicetak
+     * di sebelahnya baru dijamin benar kalau zonanya disebut, bukan diwarisi
+     * dari setelan aplikasi yang bisa berubah.
      */
     'zona_waktu' => env('PPID_ZONA_WAKTU', 'Asia/Jakarta'),
 

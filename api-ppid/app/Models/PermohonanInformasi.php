@@ -85,9 +85,29 @@ class PermohonanInformasi extends Model
         return $this->hasMany(PermohonanLogStatus::class, 'permohonan_id')->orderByDesc('created_at');
     }
 
+    /**
+     * Arsip putusan sebelum alur persetujuan berjenjang dipakai.
+     *
+     * Tabelnya tidak ditulis lagi; isinya riwayat yang sudah terjadi dan tetap
+     * ditampilkan pada rincian permohonan lama.
+     */
     public function approval(): HasMany
     {
         return $this->hasMany(ApprovalPermohonan::class, 'permohonan_id');
+    }
+
+    /**
+     * Jenjang persetujuan berjalan.
+     *
+     * `approval_pengajuan` melayani permohonan dan keberatan sekaligus, jadi
+     * relasinya wajib menyaring `jenis` — tanpa itu id yang sama pada dua tabel
+     * berbeda akan saling meminjam langkah.
+     */
+    public function approvalLangkah(): HasMany
+    {
+        return $this->hasMany(ApprovalPengajuan::class, 'pengajuan_id')
+            ->where('jenis', 'permohonan')
+            ->orderBy('id');
     }
 
     public function keberatan(): HasMany

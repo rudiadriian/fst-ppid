@@ -1,6 +1,7 @@
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
+import { formatWaktu } from '../lib/waktu';
 
 type Pelaku = { name?: string } | null | undefined;
 
@@ -14,24 +15,9 @@ function namaPelaku(nilai: unknown): string | null {
 	return pelaku?.name ? String(pelaku.name) : null;
 }
 
+/** Baris jejak tanpa waktu tidak dicetak sama sekali, jadi kosongnya `null`. */
 function waktu(nilai: unknown): string | null {
-	if (!nilai) {
-		return null;
-	}
-
-	const tanggal = new Date(String(nilai));
-
-	if (Number.isNaN(tanggal.getTime())) {
-		return null;
-	}
-
-	return tanggal.toLocaleString('id-ID', {
-		day: '2-digit',
-		month: 'short',
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit'
-	});
+	return nilai ? formatWaktu(nilai, '') || null : null;
 }
 
 function Baris({

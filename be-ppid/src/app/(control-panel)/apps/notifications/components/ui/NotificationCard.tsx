@@ -16,6 +16,8 @@ type NotificationCardProps = {
 	item: Notification;
 	className?: string;
 	onClose: (T: string) => void;
+	/** Kartunya dibuka — dipakai menandainya sudah dibaca. */
+	onOpen?: (T: string) => void;
 };
 
 const variantBgColors = {
@@ -30,7 +32,7 @@ const variantBgColors = {
  * The notification card.
  */
 function NotificationCard(props: NotificationCardProps) {
-	const { item, className, onClose } = props;
+	const { item, className, onClose, onOpen } = props;
 	const theme = useTheme();
 
 	const defaultBgColor = theme.palette.background.paper;
@@ -71,6 +73,9 @@ function NotificationCard(props: NotificationCardProps) {
 				component={item.link ? NavLinkAdapter : 'div'}
 				to={item.link || ''}
 				role={item.link && 'button'}
+				// Kartu tanpa tautan pun tetap "dibuka" saat diklik: itu tanda
+				// petugas sudah membacanya, dan lonceng hanya memuat yang belum.
+				onClick={() => onOpen?.(item?.id)}
 			>
 				{item.icon && !item.image && (
 					<Box

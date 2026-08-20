@@ -7,22 +7,31 @@ import Chip from '@mui/material/Chip';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import LinearProgress from '@mui/material/LinearProgress';
+import { useTheme } from '@mui/material/styles';
 import FuseLoading from '@fuse/core/FuseLoading';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useTranslation } from 'react-i18next';
+import { ApexOptions } from 'apexcharts';
+import ReactApexChart from 'react-apexcharts';
 import api from '@/utils/api';
 
 /**
  * Dashboard PPID — satu halaman untuk seluruh gambaran layanan.
  *
- * Isinya empat lapis yang sengaja disusun berurutan dari "apa keadaannya"
- * sampai "apa yang harus dikerjakan":
+ * Urutannya sengaja dari "siapa yang dilayani" sampai "apa yang harus
+ * dikerjakan hari ini":
  *
- *   1. Ringkasan   — beban kerja dan angka pokok layanan;
- *   2. SLA         — kepatuhan batas waktu menurut UU No. 14 Tahun 2008;
- *   3. KPI         — capaian tiap indikator terhadap targetnya;
- *   4. Analisa     — tren, sebaran status, kategori paling diminta;
- *   5. Tindakan    — permohonan yang harus segera ditangani.
+ *   1. Pemohon     — jumlah, jenis, dan keadaan Verifikasi Data Dirinya;
+ *   2. Pengajuan   — Permohonan Informasi dan Keberatan Informasi;
+ *   3. Sebaran     — status tiap jenis pengajuan, dan jenis pemohonnya;
+ *   4. Konten      — pustaka informasi publik dan berita;
+ *   5. Tindakan    — permohonan yang harus segera ditangani;
+ *   6. SLA & KPI   — kepatuhan batas waktu dan capaian indikator;
+ *   7. Tren        — permohonan masuk vs ditanggapi per bulan.
+ *
+ * Permohonan dan Keberatan selalu ditampilkan berpasangan: keduanya layanan
+ * yang sama-sama diatur batas waktunya, dan membaca salah satunya saja
+ * memberi gambaran yang timpang.
  *
  * Semua angkanya datang dari satu endpoint (`v1/dashboard/analitik`) supaya
  * tidak ada dua bagian halaman yang menampilkan hitungan berbeda.
@@ -55,6 +64,11 @@ type Analitik = {
 			perlu_tindakan: number;
 			menunggu_approval: number;
 		};
+		pemohon: {
+			total: number;
+			per_jenis: Record<string, number>;
+			verifikasi: { menunggu: number; terverifikasi: number; belum: number; ditolak: number };
+		};
 		konten: {
 			informasi_publik: number;
 			informasi_publik_published: number;
@@ -85,8 +99,8 @@ type Analitik = {
 				}[];
 				total: Record<string, { masuk: number; ditanggapi: number }>;
 			};
-			per_status: Record<string, number>;
-			kategori_teratas: { nama: string; jumlah: number }[];
+			per_status: { permohonan: Record<string, number>; keberatan: Record<string, number> };
+			per_jenis_pemohon: { permohonan: Record<string, number>; keberatan: Record<string, number> };
 			cara_pengiriman: Record<string, number>;
 		};
 		kpi: IndikatorKpi[];
@@ -105,6 +119,7 @@ const LABEL_STATUS: Record<string, string> = {
 	diajukan: 'Diajukan',
 	diverifikasi: 'Diverifikasi',
 	diproses: 'Diproses',
+	revisi: 'Revisi',
 	menunggu_approval: 'Menunggu Persetujuan',
 	disetujui: 'Disetujui',
 	ditolak: 'Ditolak',
@@ -112,6 +127,79 @@ const LABEL_STATUS: Record<string, string> = {
 	selesai: 'Selesai',
 	kedaluwarsa: 'Kedaluwarsa'
 };
+
+/**
+ * Jenis pemohon.
+ *
+ * Empat nilai pertama dipakai formulir portal sekarang; `pribadi` dan
+ * `instansi` peninggalan data lama yang belum dipetakan ulang, dan tetap
+ * diberi label supaya tidak muncul sebagai kode mentah di dashboard.
+ */
+const LABEL_JENIS: Record<string, string> = {
+	perorangan: 'Perorangan',
+	mahasiswa: 'Mahasiswa',
+	lembaga: 'Lembaga / Organisasi / Perusahaan',
+	kelompok: 'Kelompok Orang',
+	pribadi: 'Pribadi',
+	instansi: 'Instansi',
+	tidak_diisi: 'Belum diisi'
+};
+
+/**
+ * Daftar sebaran: label, batang sepanjang porsinya, lalu angkanya.
+ *
+ * Batangnya diskala terhadap nilai terbesar di daftar itu sendiri — yang
+ * dibandingkan di sini memang antarbaris dalam satu daftar, bukan antar daftar.
+ */
+function DaftarSebaran({
+	data,
+	label,
+	kosong,
+	warna = 'primary'
+}: {
+	data: Record<string, number>;
+	label: (kunci: string) => string;
+	kosong: string;
+	warna?: 'primary' | 'secondary';
+}) {
+	const baris = Object.entries(data ?? {}).sort((a, b) => b[1] - a[1]);
+	const maks = Math.max(1, ...baris.map(([, jumlah]) => jumlah));
+
+	if (baris.length === 0) {
+		return (
+			<Typography
+				variant="body2"
+				color="text.secondary"
+			>
+				{kosong}
+			</Typography>
+		);
+	}
+
+	return (
+		<div className="flex flex-col gap-2.5">
+			{baris.map(([kunci, jumlah]) => (
+				<div key={kunci}>
+					<div className="mb-1 flex items-baseline justify-between gap-3">
+						<Typography variant="body2">{label(kunci)}</Typography>
+						<Typography
+							variant="body2"
+							className="font-semibold"
+						>
+							{jumlah}
+						</Typography>
+					</div>
+					<LinearProgress
+						variant="determinate"
+						value={(jumlah / maks) * 100}
+						color={warna}
+						className="h-1.5 rounded"
+					/>
+				</div>
+			))}
+		</div>
+	);
+}
 
 function KartuAngka({
 	label,
@@ -165,7 +253,9 @@ function KartuAngka({
 
 function PpidDashboard() {
 	const { t } = useTranslation();
+	const theme = useTheme();
 	const [tahun, setTahun] = useState<string>('');
+	const [seri, setSeri] = useState<'masuk' | 'ditanggapi'>('masuk');
 
 	const { data, isLoading, error } = useQuery({
 		queryKey: ['ppid', 'dashboard', tahun],
@@ -186,19 +276,51 @@ function PpidDashboard() {
 		);
 	}
 
-	const { ringkasan, konten, sla, analisa, kpi, tindakan, tahun_tersedia: tahunTersedia } = data.data;
+	const { ringkasan, pemohon, konten, sla, analisa, kpi, tindakan, tahun_tersedia: tahunTersedia } = data.data;
 	const { tren } = analisa;
 	const tahunUtama = String(tren.tahun_utama);
 	const angka = (nilai: number | null, satuan = '') => (nilai === null ? '—' : `${nilai}${satuan}`);
 
-	// Skala batang tren disamakan lintas tahun supaya perbandingan antar tahun
-	// jujur — bukan tiap tahun dinormalkan ke lebar penuhnya sendiri.
-	const trenMaks = Math.max(
-		1,
-		...tren.bulanan.flatMap((b) =>
-			tren.tahun_dibanding.flatMap((th) => [b.tahun[String(th)]?.masuk ?? 0, b.tahun[String(th)]?.ditanggapi ?? 0])
-		)
-	);
+	/*
+	 * Tren: satu grafik batang, sumbu X tetap Januari–Desember, satu seri per
+	 * tahun (tahun terpilih + paling banyak tiga tahun sebelumnya).
+	 *
+	 * Sumbu bulan yang tetap itu yang membuat grafiknya bisa dipakai
+	 * membandingkan tahun — pada bentuk "12 bulan terakhir", Maret satu tahun
+	 * tidak pernah berdiri sejajar dengan Maret tahun lain.
+	 */
+	const seriTren = tren.tahun_dibanding.map((th) => ({
+		name: String(th),
+		data: tren.bulanan.map((baris) => baris.tahun[String(th)]?.[seri] ?? 0)
+	}));
+
+	const opsiTren: ApexOptions = {
+		chart: {
+			type: 'bar',
+			fontFamily: 'inherit',
+			foreColor: 'inherit',
+			toolbar: { show: false },
+			animations: { enabled: false }
+		},
+		// Tahun terpilih selalu seri pertama, jadi warna paling pekat jatuh ke
+		// tahun yang sedang dibaca.
+		colors: [
+			theme.palette.primary.main,
+			theme.palette.secondary.main,
+			theme.palette.warning.main,
+			theme.palette.info.main
+		],
+		plotOptions: { bar: { columnWidth: '70%', borderRadius: 2 } },
+		dataLabels: { enabled: false },
+		grid: { borderColor: theme.palette.divider, strokeDashArray: 3 },
+		legend: { position: 'top', horizontalAlign: 'left' },
+		tooltip: { theme: theme.palette.mode },
+		xaxis: { categories: tren.bulanan.map((baris) => baris.label) },
+		// Jumlah permohonan selalu bilangan bulat; tanpa ini sumbu Y bisa
+		// menampilkan 0,5 permohonan saat angkanya masih kecil.
+		yaxis: { min: 0, forceNiceScale: true, labels: { formatter: (nilai) => String(Math.round(nilai)) } },
+		noData: { text: t('Belum ada data.') }
+	};
 
 	return (
 		<div className="flex w-full flex-col gap-6 p-4 md:p-6">
@@ -238,14 +360,53 @@ function PpidDashboard() {
 				</TextField>
 			</div>
 
-			{/* --- 1. Beban kerja layanan --- */}
+			{/* --- 1. Pemohon: siapa yang memakai layanan --- */}
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 				<KartuAngka
-					label={t('Total permohonan')}
+					label={t('Total pemohon')}
+					nilai={pemohon.total}
+					keterangan={`${Object.keys(pemohon.per_jenis ?? {}).length} ${t('jenis pemohon')}`}
+					ikon="lucide:users"
+					warna="text-blue-500"
+				/>
+				<KartuAngka
+					label={t('Sudah diverifikasi')}
+					nilai={pemohon.verifikasi.terverifikasi}
+					keterangan={t('Data dirinya disetujui petugas')}
+					ikon="lucide:user-check"
+					warna="text-green-500"
+				/>
+				<KartuAngka
+					label={t('Menunggu diverifikasi')}
+					nilai={pemohon.verifikasi.menunggu}
+					keterangan={`${pemohon.verifikasi.ditolak} ${t('berkas ditolak')}`}
+					ikon="lucide:user-search"
+					warna={pemohon.verifikasi.menunggu > 0 ? 'text-amber-500' : 'text-green-500'}
+				/>
+				<KartuAngka
+					label={t('Belum verifikasi data')}
+					nilai={pemohon.verifikasi.belum}
+					keterangan={t('Belum mengirim berkas sama sekali')}
+					ikon="lucide:user-x"
+					warna="text-slate-500"
+				/>
+			</div>
+
+			{/* --- 2. Beban kerja layanan --- */}
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+				<KartuAngka
+					label={t('Permohonan Informasi')}
 					nilai={ringkasan.permohonan}
 					keterangan={`${ringkasan.perlu_tindakan} ${t('menunggu tindakan')}`}
 					ikon="lucide:inbox"
 					warna="text-blue-500"
+				/>
+				<KartuAngka
+					label={t('Keberatan Informasi')}
+					nilai={ringkasan.keberatan}
+					keterangan={`${ringkasan.keberatan_belum_selesai} ${t('belum selesai')}`}
+					ikon="lucide:scale"
+					warna="text-purple-500"
 				/>
 				<KartuAngka
 					label={t('Menunggu persetujuan')}
@@ -261,17 +422,104 @@ function PpidDashboard() {
 					ikon="lucide:triangle-alert"
 					warna={sla.lewat_batas > 0 ? 'text-red-500' : 'text-green-500'}
 				/>
-				<KartuAngka
-					label={t('Keberatan belum selesai')}
-					nilai={ringkasan.keberatan_belum_selesai}
-					keterangan={`${t('dari')} ${ringkasan.keberatan} ${t('keberatan')}`}
-					ikon="lucide:scale"
-					warna="text-purple-500"
-				/>
 			</div>
 
-			{/* --- 2. Kondisi konten --- */}
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+			{/* --- 3. Sebaran pemohon & pengajuan --- */}
+			<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+				<Paper
+					elevation={0}
+					className="rounded-lg border border-divider p-4"
+				>
+					<Typography className="mb-1 font-medium">{t('Pemohon per jenis')}</Typography>
+					<Typography
+						variant="caption"
+						color="text.secondary"
+						className="mb-3 block"
+					>
+						{t('Dari')} {pemohon.total} {t('pemohon terdaftar')}
+					</Typography>
+
+					<DaftarSebaran
+						data={pemohon.per_jenis}
+						label={(kunci) => t(LABEL_JENIS[kunci] ?? kunci)}
+						kosong={t('Belum ada pemohon terdaftar.')}
+					/>
+				</Paper>
+
+				<Paper
+					elevation={0}
+					className="rounded-lg border border-divider p-4"
+				>
+					<Typography className="mb-3 font-medium">{t('Status Permohonan Informasi')}</Typography>
+					<DaftarSebaran
+						data={analisa.per_status.permohonan}
+						label={(kunci) => t(LABEL_STATUS[kunci] ?? kunci)}
+						kosong={t('Belum ada permohonan.')}
+					/>
+				</Paper>
+
+				<Paper
+					elevation={0}
+					className="rounded-lg border border-divider p-4"
+				>
+					<Typography className="mb-3 font-medium">{t('Status Keberatan Informasi')}</Typography>
+					<DaftarSebaran
+						data={analisa.per_status.keberatan}
+						label={(kunci) => t(LABEL_STATUS[kunci] ?? kunci)}
+						kosong={t('Belum ada keberatan.')}
+						warna="secondary"
+					/>
+				</Paper>
+			</div>
+
+			{/* --- 4. Pengajuan menurut jenis pemohonnya --- */}
+			<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+				<Paper
+					elevation={0}
+					className="rounded-lg border border-divider p-4"
+				>
+					<Typography className="mb-1 font-medium">
+						{t('Permohonan Informasi per jenis pemohon')}
+					</Typography>
+					<Typography
+						variant="caption"
+						color="text.secondary"
+						className="mb-3 block"
+					>
+						{t('Dihitung dari pemohon pada tiap permohonan, bukan dari jumlah pemohonnya.')}
+					</Typography>
+
+					<DaftarSebaran
+						data={analisa.per_jenis_pemohon.permohonan}
+						label={(kunci) => t(LABEL_JENIS[kunci] ?? kunci)}
+						kosong={t('Belum ada permohonan.')}
+					/>
+				</Paper>
+
+				<Paper
+					elevation={0}
+					className="rounded-lg border border-divider p-4"
+				>
+					<Typography className="mb-1 font-medium">{t('Keberatan Informasi per jenis pemohon')}</Typography>
+					<Typography
+						variant="caption"
+						color="text.secondary"
+						className="mb-3 block"
+					>
+						{t('Dihitung dari pemohon pada tiap keberatan, bukan dari jumlah pemohonnya.')}
+					</Typography>
+
+					<DaftarSebaran
+						data={analisa.per_jenis_pemohon.keberatan}
+						label={(kunci) => t(LABEL_JENIS[kunci] ?? kunci)}
+						kosong={t('Belum ada keberatan.')}
+						warna="secondary"
+					/>
+				</Paper>
+			</div>
+
+			{/* --- 5. Kondisi konten --- */}
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<KartuAngka
 					label={t('Informasi publik')}
 					nilai={konten.informasi_publik}
@@ -286,16 +534,9 @@ function PpidDashboard() {
 					ikon="lucide:newspaper"
 					warna="text-indigo-500"
 				/>
-				<KartuAngka
-					label={t('Kepuasan pemohon')}
-					nilai={angka(ringkasan.kepuasan_persen, '%')}
-					keterangan={`${ringkasan.responden_survei} ${t('responden survei')}`}
-					ikon="lucide:smile"
-					warna="text-green-500"
-				/>
 			</div>
 
-			{/* --- 3. Perlu tindakan segera — sengaja disorot: ini satu-satunya
+			{/* --- 6. Perlu tindakan segera — sengaja disorot: ini satu-satunya
 			     bagian yang menuntut petugas berbuat sesuatu hari ini. --- */}
 			<Paper
 				elevation={0}
@@ -373,7 +614,7 @@ function PpidDashboard() {
 				)}
 			</Paper>
 
-			{/* --- 4. Kepatuhan SLA --- */}
+			{/* --- 7. Kepatuhan SLA --- */}
 			<Paper
 				elevation={0}
 				className="rounded-lg border border-divider p-4"
@@ -450,7 +691,7 @@ function PpidDashboard() {
 				)}
 			</Paper>
 
-			{/* --- 5. Capaian KPI --- */}
+			{/* --- 8. Capaian KPI --- */}
 			<Paper
 				elevation={0}
 				className="rounded-lg border border-divider p-4"
@@ -519,21 +760,38 @@ function PpidDashboard() {
 				</div>
 			</Paper>
 
-			{/* --- 6. Tren bulanan + sebaran --- */}
-			<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+			{/* --- 9. Tren bulanan: masuk vs ditanggapi --- */}
+			<div className="grid grid-cols-1 gap-4">
 				<Paper
 					elevation={0}
-					className="rounded-lg border border-divider p-4 lg:col-span-2"
+					className="rounded-lg border border-divider p-4"
 				>
-					<div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-						<Typography className="font-medium">{t('Permohonan masuk vs ditanggapi')}</Typography>
-						<Typography
-							variant="caption"
-							color="text.secondary"
+					<div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+						<div>
+							<Typography className="font-medium">{t('Permohonan masuk vs ditanggapi')}</Typography>
+							<Typography
+								variant="caption"
+								color="text.secondary"
+							>
+								{t('Januari–Desember')} · {tren.tahun_dibanding.length} {t('tahun dibandingkan')}
+							</Typography>
+						</div>
+
+						{/* Keduanya dilihat pada grafik yang sama, bergantian —
+						    menggambar masuk dan ditanggapi sekaligus untuk empat
+						    tahun berarti delapan batang per bulan, dan tidak ada
+						    yang bisa dibaca dari sana. */}
+						<TextField
+							select
+							size="small"
+							label={t('Data')}
+							value={seri}
+							onChange={(event) => setSeri(event.target.value as 'masuk' | 'ditanggapi')}
+							sx={{ minWidth: 160 }}
 						>
-							{t('Ringkasan per bulan')} · {t('pembanding')} {tren.tahun_dibanding.length}{' '}
-							{t('tahun terakhir')}
-						</Typography>
+							<MenuItem value="masuk">{t('Masuk')}</MenuItem>
+							<MenuItem value="ditanggapi">{t('Ditanggapi')}</MenuItem>
+						</TextField>
 					</div>
 
 					{/* Total setahun tiap tahun pembanding. */}
@@ -552,113 +810,21 @@ function PpidDashboard() {
 						})}
 					</div>
 
-					<div className="flex flex-col gap-3">
-						{tren.bulanan.map((baris) => (
-							<div
-								key={baris.bulan}
-								className="flex items-center gap-3"
-							>
-								<span className="w-10 shrink-0 text-sm text-secondary">{baris.label}</span>
-
-								<div className="flex flex-1 flex-col gap-1">
-									{tren.tahun_dibanding.map((th) => {
-										const nilai = baris.tahun[String(th)] ?? { masuk: 0, ditanggapi: 0 };
-										const utama = String(th) === tahunUtama;
-
-										return (
-											<div
-												key={th}
-												className="flex items-center gap-2"
-											>
-												<span className="w-10 shrink-0 text-right text-xs text-secondary">
-													{th}
-												</span>
-												<LinearProgress
-													variant="determinate"
-													value={(nilai.masuk / trenMaks) * 100}
-													color={utama ? 'primary' : 'inherit'}
-													className={utama ? 'h-2 flex-1 rounded' : 'h-1.5 flex-1 rounded opacity-60'}
-												/>
-												<span className="w-14 shrink-0 text-right text-xs font-medium">
-													{nilai.masuk}/{nilai.ditanggapi}
-												</span>
-											</div>
-										);
-									})}
-								</div>
-							</div>
-						))}
-					</div>
+					<ReactApexChart
+						options={opsiTren}
+						series={seriTren}
+						type="bar"
+						height={340}
+					/>
 
 					<Typography
 						variant="caption"
 						color="text.secondary"
-						className="mt-3 block"
+						className="mt-2 block"
 					>
-						{t('Panjang batang mengikuti jumlah permohonan masuk; angka di kanan menunjukkan masuk/ditanggapi. Skala batang sama untuk semua tahun.')}
+						{t('Satu batang per tahun di tiap bulan, jadi bulan yang sama antar tahun berdiri sejajar. Ganti pilihan Data untuk melihat permohonan yang ditanggapi.')}
 					</Typography>
 				</Paper>
-
-				<div className="flex flex-col gap-4">
-					<Paper
-						elevation={0}
-						className="rounded-lg border border-divider p-4"
-					>
-						<Typography className="mb-3 font-medium">{t('Sebaran status')}</Typography>
-
-						<div className="flex flex-wrap gap-2">
-							{Object.entries(analisa.per_status).length === 0 ? (
-								<Typography
-									variant="body2"
-									color="text.secondary"
-								>
-									{t('Belum ada data.')}
-								</Typography>
-							) : (
-								Object.entries(analisa.per_status).map(([status, jumlah]) => (
-									<Chip
-										key={status}
-										size="small"
-										label={`${t(LABEL_STATUS[status] ?? status)}: ${jumlah}`}
-									/>
-								))
-							)}
-						</div>
-					</Paper>
-
-					<Paper
-						elevation={0}
-						className="rounded-lg border border-divider p-4"
-					>
-						<Typography className="mb-3 font-medium">{t('Kategori paling diminta')}</Typography>
-
-						{analisa.kategori_teratas.length === 0 ? (
-							<Typography
-								variant="body2"
-								color="text.secondary"
-							>
-								{t('Belum ada data.')}
-							</Typography>
-						) : (
-							<div className="flex flex-col gap-2">
-								{analisa.kategori_teratas.map((item) => (
-									<div
-										key={item.nama}
-										className="flex items-center justify-between gap-3"
-									>
-										<Typography variant="body2">{t(item.nama)}</Typography>
-										<Typography
-											variant="body2"
-											className="font-semibold"
-										>
-											{item.jumlah}
-										</Typography>
-									</div>
-								))}
-							</div>
-						)}
-					</Paper>
-				</div>
 			</div>
 		</div>
 	);

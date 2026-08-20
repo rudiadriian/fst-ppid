@@ -12,37 +12,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import ppidApi, { PpidApiError } from '../api/ppidApi';
 import { resourceKeys } from '../api/useResource';
-
-/**
- * Alur status permohonan.
- *
- * Daftar ini menyalin aturan transisi milik API supaya pengguna hanya melihat
- * tujuan yang memang sah. Penolakan tetap terjadi di server bila daftar ini
- * ketinggalan zaman — jadi keduanya tidak boleh diandalkan sendirian.
- */
-const TRANSISI: Record<string, string[]> = {
-	diajukan: ['diverifikasi', 'ditolak', 'kedaluwarsa'],
-	diverifikasi: ['diproses', 'ditolak', 'kedaluwarsa'],
-	diproses: ['menunggu_approval', 'ditolak', 'kedaluwarsa'],
-	menunggu_approval: ['disetujui', 'ditolak', 'ditolak_sebagian', 'diproses'],
-	disetujui: ['selesai'],
-	ditolak: ['selesai'],
-	ditolak_sebagian: ['selesai'],
-	selesai: [],
-	kedaluwarsa: []
-};
-
-const LABEL_STATUS: Record<string, string> = {
-	diajukan: 'Diajukan',
-	diverifikasi: 'Diverifikasi',
-	diproses: 'Diproses',
-	menunggu_approval: 'Menunggu Persetujuan',
-	disetujui: 'Disetujui',
-	ditolak: 'Ditolak',
-	ditolak_sebagian: 'Ditolak Sebagian',
-	selesai: 'Selesai',
-	kedaluwarsa: 'Kedaluwarsa'
-};
+import { labelStatus, STATUS_PERMOHONAN, TRANSISI_PERMOHONAN as TRANSISI } from '../lib/statusPengajuan';
 
 type PermohonanStatusDialogProps = {
 	open: boolean;
@@ -50,6 +20,20 @@ type PermohonanStatusDialogProps = {
 	permohonan: { id: number; kode_permohonan?: string; status?: string } | null;
 };
 
+/**
+ * Perpindahan status permohonan.
+ *
+ * Tujuan yang ditawarkan diambil dari {@see TRANSISI_PERMOHONAN}, salinan
+ * aturan milik API supaya pengguna hanya melihat perpindahan yang memang sah.
+ * Penolakan tetap terjadi di server bila salinan itu ketinggalan zaman — jadi
+ * keduanya tidak boleh diandalkan sendirian.
+ *
+ * Sejak persetujuan berjenjang dipakai, dari `menunggu_approval` dialog ini
+ * tidak lagi bisa memasang putusan akhir: selama masih ada tahap yang
+ * menunggu, `disetujui`/`ditolak` milik penyetuju dan server menolaknya di
+ * sini. Yang tersisa dari dialog ini adalah menarik berkas kembali ke
+ * `diproses`.
+ */
 export function PermohonanStatusDialog({ open, onClose, permohonan }: PermohonanStatusDialogProps) {
 	const statusSekarang = permohonan?.status ?? '';
 	const tujuan = TRANSISI[statusSekarang] ?? [];
@@ -88,7 +72,7 @@ export function PermohonanStatusDialog({ open, onClose, permohonan }: Permohonan
 			});
 
 			await queryClient.invalidateQueries({ queryKey: resourceKeys.all('permohonan') });
-			enqueueSnackbar(`Status menjadi ${LABEL_STATUS[statusBaru] ?? statusBaru}`, { variant: 'success' });
+			enqueueSnackbar(`Status menjadi ${labelStatus(STATUS_PERMOHONAN, statusBaru)}`, { variant: 'success' });
 			onClose();
 		} catch (error) {
 			const pesan =
@@ -116,8 +100,16 @@ export function PermohonanStatusDialog({ open, onClose, permohonan }: Permohonan
 			>
 				<Alert severity="info">
 					{permohonan?.kode_permohonan ?? '—'} — status sekarang:{' '}
-					<strong>{LABEL_STATUS[statusSekarang] ?? statusSekarang}</strong>
+					<strong>{labelStatus(STATUS_PERMOHONAN, statusSekarang)}</strong>
 				</Alert>
+
+				{statusSekarang === 'menunggu_approval' && (
+					<Alert severity="warning">
+						Selama masih ada tahap persetujuan yang menunggu, putusan Disetujui/Ditolak hanya bisa dikirim
+						penyetujunya lewat menu Detail → Persetujuan Berjenjang. Dari sini berkasnya hanya bisa ditarik
+						kembali ke Diproses.
+					</Alert>
+				)}
 
 				{tujuan.length === 0 ? (
 					<Alert severity="warning">
@@ -138,7 +130,7 @@ export function PermohonanStatusDialog({ open, onClose, permohonan }: Permohonan
 									key={status}
 									value={status}
 								>
-									{LABEL_STATUS[status] ?? status}
+									{labelStatus(STATUS_PERMOHONAN, status)}
 								</MenuItem>
 							))}
 						</TextField>

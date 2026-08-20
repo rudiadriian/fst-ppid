@@ -53,8 +53,7 @@ const kamusPpid: Record<string, string> = {
 		'Shown to the applicant so they know what to fix.',
 	'Pemohon ini sudah ditolak :batas kali dan tidak dapat mengirim berkas lagi.':
 		'This applicant has been rejected :batas times and can no longer submit documents.',
-	'Sudah ditolak :n kali. Sisa kesempatan kirim ulang: :sisa.':
-		'Rejected :n time(s). Resubmissions left: :sisa.',
+	'Sudah ditolak :n kali. Sisa kesempatan kirim ulang: :sisa.': 'Rejected :n time(s). Resubmissions left: :sisa.',
 	'Jumlah Ditolak': 'Rejections',
 	'Diperiksa oleh': 'Reviewed by',
 	'Detail & Verifikasi Pemohon': 'Applicant Detail & Verification',
@@ -176,7 +175,8 @@ const kamusPpid: Record<string, string> = {
 	'Modul induk': 'Parent module',
 	Ikon: 'Icon',
 	Route: 'Route',
-	'Daftar modul yang menjadi dasar matrix hak akses role.': 'List of modules that the role permission matrix is built on.',
+	'Daftar modul yang menjadi dasar matrix hak akses role.':
+		'List of modules that the role permission matrix is built on.',
 	'Huruf kecil dan tanda hubung. Dipakai sebagai kunci hak akses — mengubahnya membuat hak akses lama tidak lagi cocok.':
 		'Lowercase letters and hyphens. Used as the permission key — changing it makes existing permissions stop matching.',
 	'Kosongkan untuk modul tingkat atas.': 'Leave blank for a top-level module.',
@@ -221,7 +221,8 @@ const kamusPpid: Record<string, string> = {
 
 	'Pengelompokan informasi publik yang tampil di situs.': 'Grouping of public information shown on the site.',
 	'Daftar informasi yang wajib disediakan dan diumumkan.': 'List of information that must be provided and announced.',
-	'Daftar informasi yang dikecualikan beserta dasar hukumnya.': 'List of excluded information along with its legal basis.',
+	'Daftar informasi yang dikecualikan beserta dasar hukumnya.':
+		'List of excluded information along with its legal basis.',
 	'Identitas pemohon informasi, hanya untuk dibaca. Akun pemohon dibuat sendiri oleh pengunjung lewat Registrasi Akun di situs publik. NIK tidak ditampilkan di panel.':
 		'Information applicant identities, read-only. Applicant accounts are created by visitors themselves through Account Registration on the public site. National ID numbers are not shown in the panel.',
 	'Identitas pemohon informasi. NIK tidak ditampilkan di panel.':
@@ -435,8 +436,10 @@ const kamusPpid: Record<string, string> = {
 	'Menentukan URL di situs publik. Kosongkan agar dibuat otomatis.':
 		'Determines the URL on the public site. Leave blank to generate automatically.',
 	'Contoh: Triwulan I, Semester II, Tahunan.': 'For example: Quarter I, Semester II, Annual.',
-	'Situs publik hanya menampilkan entri berstatus "Terbit".': 'The public site only shows entries with the status "Published".',
-	'Situs publik hanya menampilkan laporan berstatus Terbit.': 'The public site only shows reports with the status Published.',
+	'Situs publik hanya menampilkan entri berstatus "Terbit".':
+		'The public site only shows entries with the status "Published".',
+	'Situs publik hanya menampilkan laporan berstatus Terbit.':
+		'The public site only shows reports with the status Published.',
 	'Situs publik hanya menayangkan maklumat berstatus Terbit; maklumat lama cukup diubah jadi Arsip agar tetap tersimpan.':
 		'The public site only shows charters with the status Published; set an older charter to Archived to keep it on record.',
 	'Wajib. PDF atau gambar (JPG/PNG/WEBP) hasil pindai maklumat yang sudah ditandatangani. Isinya ditampilkan utuh di halaman Standar Layanan, bukan diketik ulang di sini.':
@@ -486,9 +489,82 @@ const kamusPpid: Record<string, string> = {
 	'Hanya angka. Tidak ditampilkan kembali setelah disimpan.': 'Digits only. Not shown again after saving.',
 	'Minimal 12 karakter, kombinasi huruf besar-kecil, angka, dan simbol. Kosongkan saat mengubah bila tidak ingin menggantinya.':
 		'At least 12 characters combining upper and lower case letters, digits, and symbols. Leave blank when editing if you do not want to change it.',
-	'Untuk video, unggah berkas MP4/WebM lewat modul yang sama.': 'For video, upload an MP4/WebM file through the same module.',
+	'Untuk video, unggah berkas MP4/WebM lewat modul yang sama.':
+		'For video, upload an MP4/WebM file through the same module.',
 	'Ukuran ideal 1920 × 1080 px (rasio 16:9), minimal 1600 × 900 px. JPG/WEBP, usahakan di bawah 500 KB. Banner mengisi satu layar penuh di beranda, jadi bagian tepi gambar ikut terpotong mengikuti bentuk layar pengunjung — taruh objek penting di tengah, dan hindari teks di 15% tepi kiri/kanan. Sisi kiri juga tertutup judul dan tombol hero.':
 		'Ideal size 1920 × 1080 px (16:9 ratio), minimum 1600 × 900 px. JPG/WEBP, aim for under 500 KB. The banner fills a whole screen on the home page, so its edges are cropped to fit each visitor screen — keep important subjects centred and avoid text within the outer 15% on the left and right. The left side also sits behind the hero heading and buttons.',
+
+	// --- Rincian pengajuan & persetujuan berjenjang ----------------------
+	'Detail Permohonan Informasi': 'Information Request Details',
+	'Detail Keberatan Informasi': 'Information Objection Details',
+	'Isi Permohonan': 'Request Contents',
+	'Isi Keberatan': 'Objection Contents',
+	'Permohonan Terkait': 'Related Request',
+	Penanganan: 'Handling',
+	'Riwayat Status': 'Status History',
+	'Persetujuan Berjenjang': 'Tiered Approval',
+	'Berkas Lampiran Pemohon': 'Applicant Attachments',
+	'Berkas Tanggapan Petugas': 'Officer Response Files',
+	'Tidak ada berkas.': 'No files.',
+	'Belum ada perpindahan status.': 'No status changes yet.',
+	'Catatan internal': 'Internal note',
+	'Rincian informasi yang diminta': 'Details of the information requested',
+	'Cara memperoleh': 'Way of obtaining',
+	'Tanggal tanggapan': 'Response date',
+	'Tampil di register publik': 'Shown in the public register',
+	'Kasus posisi': 'Statement of facts',
+	'Status permohonan': 'Request status',
+	Dikuasakan: 'Represented by proxy',
+	'keberatan terkait': 'related objections',
+	'Giliran sekarang': 'Current turn',
+	'Belum tiba gilirannya': 'Its turn has not come yet',
+	'Role belum ditetapkan': 'No role assigned yet',
+	Diputus: 'Decided',
+	'Putusan Anda': 'Your decision',
+	'Kembalikan untuk diperbaiki': 'Return for correction',
+	Tolak: 'Reject',
+	'Kirim putusan': 'Submit decision',
+	'Putusan persetujuan tersimpan': 'Approval decision saved',
+	'Putusan gagal disimpan': 'The decision could not be saved',
+	'Jenjang persetujuan gagal dimuat.': 'The approval chain could not be loaded.',
+	'Seluruh tahap persetujuan sudah dilalui.': 'Every approval stage has been completed.',
+	'Tahap yang berjalan bukan giliran role Anda, jadi putusannya tidak bisa dikirim dari sini.':
+		'The running stage is not your role turn, so its decision cannot be submitted from here.',
+	'Pengajuan ini belum masuk tahap persetujuan. Jenjangnya dibuat begitu statusnya dipindahkan ke Menunggu Persetujuan.':
+		'This submission has not entered the approval stage. The chain is created as soon as its status moves to Awaiting Approval.',
+	'Wajib diisi. Menjadi alasan penolakan yang dibaca pemohon.':
+		'Required. Becomes the refusal reason the applicant reads.',
+	'Wajib diisi. Menjelaskan apa yang harus diperbaiki petugas.': 'Required. Explains what the officer must correct.',
+	Opsional: 'Optional',
+	'Opsional.': 'Optional.',
+	'Keberatan tidak punya nomor sendiri; di seluruh sistem ia dirujuk lewat nomor permohonan induknya.':
+		'An objection has no number of its own; throughout the system it is referred to by the code of its parent request.',
+
+	// --- Alur persetujuan (modul super admin) ----------------------------
+	'Atur tahap': 'Set stages',
+	'Lihat tahap': 'View stages',
+	Tahap: 'Stage',
+	'Tambah tahap': 'Add stage',
+	'Hapus tahap': 'Remove stage',
+	'Nama tahap': 'Stage name',
+	'Role penyetuju': 'Approving role',
+	'Jabatan pada struktur organisasi': 'Position on the organisational chart',
+	'Batas waktu tahap (hari)': 'Stage deadline (days)',
+	'Boleh menolak pengajuan': 'May reject the submission',
+	'Tahap aktif': 'Stage active',
+	'Simpan jenjang': 'Save chain',
+	'Jenjang persetujuan tersimpan': 'Approval chain saved',
+	'Jenjang gagal disimpan': 'The chain could not be saved',
+	Naikkan: 'Move up',
+	Turunkan: 'Move down',
+	'Tidak ditautkan': 'Not linked',
+	'Hanya pemegang role ini yang bisa memutus tahapnya.': 'Only holders of this role can decide this stage.',
+	'Nama jabatan yang ditampilkan pada jenjang persetujuan.': 'The position name shown on the approval chain.',
+	'Kosongkan bila tahap ini tanpa batas waktu.': 'Leave blank when this stage has no deadline.',
+	'Berkas berjalan dari tahap teratas ke bawah. Satu penolakan menutup seluruh sisa jenjang; "Kembalikan untuk diperbaiki" memulangkan berkas ke petugas.':
+		'A case travels from the topmost stage downwards. One rejection closes the whole remaining chain; "Return for correction" sends the case back to the officer.',
+	'Alur tanpa tahap tidak akan pernah berjalan: pengajuan yang masuk akan menunggu tanpa penyetuju.':
+		'A flow without stages will never run: incoming submissions would wait with no approver.',
 
 	// --- Placeholder pencarian -------------------------------------------
 	'Cari judul atau periode…': 'Search title or period…',

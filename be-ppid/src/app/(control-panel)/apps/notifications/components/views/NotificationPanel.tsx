@@ -10,7 +10,7 @@ import usePathname from '@fuse/hooks/usePathname';
 import NotificationCard from '../ui/NotificationCard';
 import { useGetAllNotifications } from '../../api/hooks/useGetAllNotifications';
 import { useDeleteNotification } from '../../api/hooks/useDeleteNotification';
-import { useDeleteNotifications } from '../../api/hooks/useDeleteNotifications';
+import { useReadAllNotifications, useReadNotification } from '../../api/hooks/useReadNotification';
 import { useNotificationPanelContext } from '../../contexts/NotificationPanelContext/useNotificationPanelContext';
 
 const StyledSwipeableDrawer = styled(SwipeableDrawer)(({ theme }) => ({
@@ -25,9 +25,11 @@ const StyledSwipeableDrawer = styled(SwipeableDrawer)(({ theme }) => ({
  */
 function NotificationPanel() {
 	const pathname = usePathname();
+	// Lonceng hanya memuat yang belum dibaca; riwayatnya di halaman Notifikasi.
 	const { data: notifications } = useGetAllNotifications();
 	const { mutate: deleteNotification } = useDeleteNotification();
-	const { mutate: deleteNotifications } = useDeleteNotifications();
+	const { mutate: readNotification } = useReadNotification();
+	const { mutate: readAllNotifications } = useReadAllNotifications();
 	const { isOpen, close, toggle } = useNotificationPanelContext();
 
 	useEffect(() => {
@@ -45,8 +47,17 @@ function NotificationPanel() {
 		deleteNotification(id);
 	}
 
-	function handleDismissAll() {
-		deleteNotifications(notifications.map((notification) => notification.id));
+	/*
+	 * Membuka kartu menandainya sudah dibaca, bukan menghapusnya: barisnya
+	 * hilang dari lonceng tetapi tetap tersimpan sebagai riwayat di halaman
+	 * Notifikasi. Menghapus tetap tersedia lewat tombol silang.
+	 */
+	function handleOpen(id: string) {
+		readNotification(id);
+	}
+
+	function handleReadAll() {
+		readAllNotifications();
 	}
 
 	return (
@@ -69,13 +80,13 @@ function NotificationPanel() {
 				{notifications && notifications?.length > 0 ? (
 					<div className="flex flex-auto flex-col">
 						<div className="mb-8 flex items-end justify-between pt-34">
-							<Typography className="text-2xl leading-none font-bold">Notifications</Typography>
+							<Typography className="text-2xl leading-none font-bold">Notifikasi</Typography>
 							<Typography
 								className="text-md cursor-pointer underline"
 								color="secondary"
-								onClick={handleDismissAll}
+								onClick={handleReadAll}
 							>
-								dismiss all
+								tandai semua dibaca
 							</Typography>
 						</div>
 						{_.orderBy(notifications, ['time'], ['desc']).map((item) => (
@@ -84,6 +95,7 @@ function NotificationPanel() {
 								className="mb-4"
 								item={item}
 								onClose={handleDismiss}
+								onOpen={handleOpen}
 							/>
 						))}
 					</div>
@@ -93,7 +105,7 @@ function NotificationPanel() {
 							className="text-center text-xl"
 							color="text.secondary"
 						>
-							There are no notifications for now.
+							Tidak ada notifikasi baru.
 						</Typography>
 					</div>
 				)}

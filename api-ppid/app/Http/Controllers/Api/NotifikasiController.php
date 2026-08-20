@@ -17,14 +17,48 @@ use Illuminate\Support\Facades\Auth;
  */
 class NotifikasiController extends Controller
 {
-    public function index(): JsonResponse
+    /**
+     * Daftar lonceng: hanya yang belum dibaca.
+     *
+     * Notifikasi yang sudah dibuka bukan lagi pemberitahuan — kalau ia tetap
+     * tinggal di lonceng, petugas harus mengingat sendiri mana yang sudah
+     * ditangani. Riwayatnya tidak hilang: halaman Notifikasi memuatnya lewat
+     * `?semua=1`.
+     */
+    public function index(Request $request): JsonResponse
     {
         $baris = Notifikasi::where('user_id', Auth::guard('api')->id())
+            ->when(!$request->boolean('semua'), fn ($q) => $q->where('is_read', false))
             ->orderByDesc('created_at')
             ->limit(50)
             ->get();
 
         return response()->json($baris->map(fn (Notifikasi $n) => $this->toFuse($n))->all());
+    }
+
+    /**
+     * Tandai satu notifikasi sudah dibaca.
+     *
+     * Penyaring `user_id` bukan sekadar pembatas tampilan: tanpa itu id milik
+     * pengguna lain ikut bisa ditandai.
+     */
+    public function baca(int $id): JsonResponse
+    {
+        Notifikasi::where('user_id', Auth::guard('api')->id())
+            ->whereKey($id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json(['message' => 'Notifikasi ditandai sudah dibaca']);
+    }
+
+    public function bacaSemua(): JsonResponse
+    {
+        $jumlah = Notifikasi::where('user_id', Auth::guard('api')->id())
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json(['message' => "{$jumlah} notifikasi ditandai sudah dibaca"]);
     }
 
     public function show(int $id): JsonResponse

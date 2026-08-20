@@ -339,7 +339,7 @@ Tolong jalankan langkah untuk menyesuaikan/ modifikasi halaman frontend aplikasi
     - diubah dan disesuaikan seperti ini saja Waktu Pelayanan :
         - Senin - Jum'at
         - 08:00 - 17:00
-71. pada bagian fe-ppid tolong disesuaikan :
+71. [x] pada bagian fe-ppid tolong disesuaikan :
     -[x]  dibagian /akun/permohonan status permohonannya tampilkan Semua, Dalam Proses, dan Selesai
     -[x]  dibagian /akun/keberatan status permohonannya tampilkan Semua, Dalam Proses, dan Selesai
     -[x]  dibagian /akun/histori tambahkan fitur pencarian id Permohonan Informasi maupun Keberatan
@@ -348,12 +348,477 @@ Tolong jalankan langkah untuk menyesuaikan/ modifikasi halaman frontend aplikasi
     -[x] dibagian Header ada icon foto avatar profile user, saat ini bagian tersebut tidak update menyesuaikan dengan avatar dihalaman profile
     -[x] dibagian Dashboard (/akun) statistiknya hanya diberikan informasi status permohonan Dalam Proses dan Selesai saja dan pada Grafik Data 
     -[x]Pengajuan dibuat perbulan tapi dibuat perbandingan pertahun jadi 1 grafik bisa menampilkan 12 bulan dengan maksimal perbandingan 3 tahun sebelumnya
+72. [x] pada fe-ppid pada portal pemohon atau http://localhost:8000/akun tolong buatkan lonceng notifikasi jika ada upadate dari feedback yang diberikan oleh admin
+73. [x] pada be-ppid di modul PEMOHON, PERMOHONAN, dan KEBERATAN dihapus fitur ubah dan delete karena data ini adalah data yang diinput oleh pemohon jadi tidak boleh ada manipulasi aktivitas ataupun datanya.
+74. [x] pada fe-ppid, ketika pemohon sudah login tolong sembunyikan bagian tombol Permohonan karena tombol ini sudah dijadikan modul pada portal pemohon.
+75. [x] pada be-ppid tolong disesuaikan informasi pada modul Dashboard :
+    - Informasi total data Pemohon
+    - Total data pemohon klasifikasi menajdi per Jenis Pemohon
+    - Total data pemohon yang mendaftar :
+        - yang belum diverifikasi
+        - yang sudah diverifikasi
+        - yang belum melakukan verifikasi data pemohon
+    - Total Data berdasarkan Permohonan, baik Permohonan Infomasi dan Keberatan Informasi
+    - Total Data berdasarkan Status Permohonan, baik Permohonan Infomasi dan Keberatan Informasi
+    - Total Data berdasarkan per Jenis Pemohon, baik Permohonan Infomasi dan Keberatan Informasi
+    - Hapus bagian Kepuasan pemohon, Sebaran status dan Kategori paling diminta
+    - Revisi grafik informasi Permohonan masuk vs ditanggapi, dibuat diagram bar saja menjadi 1 grafik bisa menampilkan 12 bulan dengan maksimal perbandingan 3 tahun sebelumnya
+    - revisi label "Pribadi (data lama)" menjadi "Pribadi" saja 
+    dari poin di atas sesuaikan card Total permohonan, Menunggu persetujuan, Lewat batas waktu, dan Keberatan belum selesai 
+76. [x] notifikasi pada ikon bell/lonceng di portal be-ppid ataupun fe-ppid ketika di klik/ diakses datanya, harusnya tidak muncul lagi pada daftar notifikasi di loncengnya (karena sudah dibaca/ read).
+77. [x] sesuaikan tanggal dan waktu pada sistem menjadi waktu Jakarta/ Indonesia 
+78. [x] pada be-ppid di modul PERMOHONAN, dan KEBERATAN :
+    - [x] Hapus fitur Tambah Pengajuan karena data ini adalah data yang diinput oleh pemohon jadi tidak boleh ada manipulasi aktivitas ataupun datanya.
+    - [x] Tambahkan Fitur Detail, agar memudahkan saat melihat pengajuan dari pemohon.
+79. [x] buatkan alur proses dari awal-akhir sesuai dengan struktur organisasi (roles hak akses user disesuaikan dengan struktur organisasi) baik permohonan informasi ataupun keberatan informasi dengan konsep approval yang dinamis dan berjenjang (jika sewaktu berubah, super admin bisa merubahnya melalui be-ppid)
+80. [x] pada fe-ppid dibagian Kategori Informasi Informasi Publik, saya ingin backgroundnya pakai gambar di path ini D:\Project\Ppid\fe-ppid\ppid_foody_dimana_saja.png sehingga tidak polos warna hijau saja. tapi saat ini ukuran sectionnya kurang tinggi menyebabkan gambarnya tidak maksimal dan section itu ga 1 layar tampil full, hasilnya bisa dilihat disini D:\Project\Ppid\fe-ppid\3.png (konsepnya sesuaikan sama banner ukuran tinggi dan lebarnya)
 
-pada portal pemohon atau http://localhost:8000/akun tolong buatkan lonceng notifikasi jika ada upadate dari feedback yang diberikan oleh admin
 
 
+---
 
 
+## Status Pengerjaan (putaran 58 — langkah 80)
+
+### Kenapa terlihat hijau polos
+
+Bagian **Kategori Informasi → Informasi Publik** di beranda sebenarnya sudah punya latar gambar — foto stok Unsplash — tetapi ditutup gradasi hijau beropasitas **0,96**. Praktis tidak ada gambar yang tembus, jadi yang terlihat memang blok hijau. Sekalian ketahuan cacat lain: situs publik menarik gambar itu dari CDN pihak ketiga tiap kali halaman dibuka.
+
+Keduanya diganti sekali jalan: gambar maskot PPID milik sendiri, dengan gradasi yang benar-benar tembus pandang. Tidak ada lagi rujukan `unsplash` di seluruh `resources/views` dan `app/`.
+
+### Gambarnya dikecilkan dulu, bukan dipasang apa adanya
+
+`ppid_foody_dimana_saja.png` aslinya **2,2 MB** (1536 × 1024). Latar halaman tidak boleh seberat itu — beban yang dibayar tiap pengunjung, termasuk yang membuka dari ponsel dengan kuota. Dikonversi ke WebP mutu 82 pada lebar aslinya (tanpa perbesaran): **204 KB**, turun ~91%.
+
+Konversinya memakai GD bawaan PHP (`imagewebp`), karena tidak ada ImageMagick di mesin ini. Hasilnya di `public/assets/images/ppid/ppid-di-mana-saja.webp`. Berkas PNG aslinya dibiarkan di tempatnya sebagai master.
+
+WebP saja, tanpa `<picture>` dan berkas cadangan: seluruh peramban arus utama sudah mendukungnya sejak 2020 (Safari 14 ke atas), dan menggandakan berkas latar hanya untuk peramban yang sudah tidak dipakai justru menambah berat yang tadi dikurangi.
+
+### Satu partial, tiga tempat
+
+`resources/views/partials/latar_informasi.blade.php` — tiga lapis, urutannya menentukan keterbacaan:
+
+1. gambar, diredupkan lewat `filter: brightness()`;
+2. gradasi hijau `fs-gradient` dengan opasitas yang diatur pemanggil;
+3. pola titik tipis, sama seperti hero lain.
+
+Dipakai di tiga tempat, karena ketiganya bagian dari area Informasi Publik yang sama-sama hijau polos:
+
+| Berkas | Bagian | Opasitas hijau | Kecerahan gambar |
+| --- | --- | --- | --- |
+| `ppid/home.blade.php` | section Kategori Informasi | 0,55 | 0,78 |
+| `ppid/information_index.blade.php` | hero Informasi Publik | 0,66 | 0,68 |
+| `ppid/information.blade.php` | hero per kategori | 0,66 | 0,68 |
+
+Section beranda boleh lebih tembus karena isinya kartu berlatar sendiri; hero halaman teksnya duduk langsung di atas latar. Beranda juga memakai `scrim`: gelap tambahan di sisi atas, tepat tempat judul section berada. Hero memakai `loading="eager"` (di atas lipatan), section beranda `lazy`.
+
+Ketiga section tetap diberi `bg-[#08281B]` sebagai dasar — bila gambarnya gagal dimuat, latarnya kembali hijau gelap, bukan jadi putih dengan teks putih di atasnya. Gambarnya `aria-hidden` dan `alt=""`: ini hiasan, pembaca layar tidak punya urusan dengannya.
+
+### Angkanya diukur, bukan dikira-kira
+
+Ilustrasinya punya bidang putih terang (jendela, langit, lingkaran mockup di tengah). Menaruh teks putih di atasnya tanpa diredupkan membuatnya tidak terbaca — dan itu tidak kelihatan dari kode.
+
+Lapisannya karena itu disusun ulang di luar peramban dengan GD, lalu kontras teks putih diukur pada pita tempat judul benar-benar duduk:
+
+| Bagian | Terburuk | Rerata |
+| --- | --- | --- |
+| Beranda — pita judul | **5,49:1** | 9,98:1 |
+| Hero — pita judul | **5,66:1** | 9,47:1 |
+
+Keduanya di atas ambang WCAG AA (4,5:1). Kombinasi pertama yang dicoba (0,68/0,80) sebenarnya lolos jauh — 7,0:1 dan 7,5:1 — tetapi gambarnya nyaris tidak terlihat, yang persis keluhan yang sedang diperbaiki. Angkanya dilonggarkan sampai gambarnya terbaca jelas dan kontrasnya masih aman, lalu dicatat di komentar partial-nya supaya penyunting berikutnya tahu batas itu ada dan dari mana asalnya.
+
+### Tinggi section disamakan dengan hero banner
+
+Putaran pertama masih menyisakan keluhan yang terlihat di `3.png`: gambarnya tampil, tetapi sectionnya hanya setinggi isinya (`py-16 lg:py-24`), sehingga `object-cover` memotong ilustrasinya jadi pita tipis — badge "DI RUMAH"/"DI KANTOR" terpotong separuh dan bagian tengahnya nyaris tak terbaca.
+
+Tingginya kini menyalin hero banner beranda persis:
+
+```
+min-h-[560px] lg:min-h-screen lg:max-h-[1100px]
+```
+
+Isinya dibungkus `flex items-center` supaya terpusat vertikal di ruang yang baru. `pt-[104px]` milik hero **tidak** ikut disalin: jarak itu ada untuk menghindari header melayang, dan header hanya menimpa bagian paling atas beranda, bukan section ini.
+
+Efek sampingnya pada scrim: karena isinya sekarang terpusat, judulnya tidak lagi menempel di atas — gelap tambahannya dipindah dari sisi atas ke pita tengah (`from-transparent via-black/45 to-transparent`). Diukur ulang pada geometri barunya (wadah 1920 × 1080, `object-cover` gambar 1536 × 1024, pita judul 22–42% tinggi):
+
+| Scrim | Terburuk | Rerata |
+| --- | --- | --- |
+| di atas (lama) | 5,09:1 | 9,89:1 |
+| di tengah (baru) | **5,40:1** | 10,36:1 |
+
+Keduanya lolos AA; yang di tengah lebih baik justru karena itulah tempat teksnya sekarang berada.
+
+### Verifikasi
+
+- Ketiga halaman dirender lewat HTTP kernel: `/` **200**, `/informasi` **200**, `/informasi/setiap-saat` **200**; masing-masing memuat `ppid-di-mana-saja.webp`, tidak satu pun memuat `unsplash`.
+- Beranda memuat `min-h-[560px] lg:min-h-screen lg:max-h-[1100px]` **dua kali** — hero banner dan section Kategori Informasi, persis seperti yang diminta.
+- Kelas Tailwind baru (`bg-gradient-to-b`, `from-transparent`, `via-black/45`, `bg-[#08281B]`, `min-h-[560px]`, `max-h-[1100px]`) sempat **tidak ada** di CSS terbangun — Tailwind memangkas kelas yang belum dipakai, jadi tanpa `vite build` ulang scrim dan tinggi barunya tidak akan berlaku sama sekali. Sudah dibangun ulang dan semuanya terbukti ada.
+- Seluruh tes fe-ppid tetap hijau: **33 lulus** (121 asersi).
+
+---
+
+
+## Status Pengerjaan (putaran 57 — langkah 78 & 79)
+
+### Langkah 78 — Permohonan dan Keberatan berhenti bisa ditulis, mulai bisa dibaca
+
+Tombol **Tambah Pengajuan** dilepas dari kedua modul, dan seperti pada langkah 73 penghapusannya dikerjakan **di dua lapis**: `CrudRoute::register(..., ['store', 'update', 'destroy'])` membuat endpoint `POST /v1/permohonan` dan `POST /v1/keberatan` benar-benar tidak ada, bukan sekadar tombolnya disembunyikan. `route:list` sekarang hanya menyisakan `GET` untuk keduanya, ditambah endpoint khusus (status, tanggapan, persetujuan, berkas tanggapan).
+
+Di panel, `ResourceConfig` mendapat `tanpaTambah` yang berdiri sendiri dari `tanpaUbah`/`tanpaHapus`. Sebelumnya keduanya menyandera satu bendera `bolehTulis`, dan komentarnya masih menyebut alasan lama — "modul kiriman pemohon tetap boleh ditambah petugas untuk pencatatan permohonan luring". Alasan itu kini gugur, jadi ikut dibetulkan.
+
+Karena tidak ada lagi jalur tambah maupun ubah, `fields` kedua modul dikosongkan dan `ResourceFormDialog`-nya tidak lagi dipasang. Sepuluh field permohonan dan empat field keberatan yang tinggal di registry hanya akan menyesatkan pembaca berikutnya: formulir yang tidak punya route.
+
+**Yang menggantikannya: rincian pengajuan.** Tanpa formulir, isian yang ditulis pemohon — tujuan penggunaan, cara pengiriman, kasus posisi, berkas lampiran — kehilangan tempat untuk dibaca selain kolom tabel yang terpotong. `PermohonanDetailDialog` dan `KeberatanDetailDialog` mengisi lubang itu: identitas pemohon, isi pengajuan, penanganan, berkas pemohon dan berkas tanggapan, jenjang persetujuan, dan riwayat status dalam satu layar. Potongan yang sama dipakai keduanya (`RincianPengajuan.tsx`) supaya satu perbaikan tampilan tidak hanya sampai ke separuh panel.
+
+Aksi **Lihat detail** sengaja tidak dijaga hak `edit`: membaca rincian pengajuan adalah bagian dari melihat modulnya. Yang menuntut hak tulis tetap dialog status dan dialog tanggapan.
+
+Ikut dibetulkan: label status keberatan di panel hanya memuat tiga nilai (`diajukan`, `diproses`, `selesai`) padahal CHECK constraint tabelnya sudah menerima `revisi`, `menunggu_approval`, dan `ditolak` sejak langkah 65 — barisnya tampil sebagai nilai mentah. Sekarang keenamnya punya label.
+
+### Langkah 79 — persetujuan berjenjang yang datanya, bukan kodenya
+
+Yang ada sebelumnya bukan alur: `approval_permohonan` cuma satu baris bebas — siapa pun yang punya hak `approve` bisa memutus, tidak ada urutan, dan keberatan tidak punya jalur persetujuan sama sekali.
+
+**Tiga tabel memisahkan definisi dari jalannya.**
+
+| Tabel | Isi |
+| --- | --- |
+| `alur_approval` | satu definisi alur per jenis pengajuan |
+| `alur_approval_tahap` | jenjangnya: urutan, `role_id` penyetuju, `struktur_id` kotak bagan yang diwakilinya, SLA, boleh-tolak |
+| `approval_pengajuan` | langkah nyata milik satu pengajuan |
+
+Tabel ketiga **menyalin** nama tahap, role, dan nama jabatannya saat langkah dibuat. Tanpa salinan itu, super admin yang menyusun ulang alur ikut menulis ulang riwayat yang sudah terjadi — persetujuan tahun lalu akan terbaca seolah diputus jabatan yang baru dibuat kemarin.
+
+`approval_permohonan` yang lama tidak dihapus dan tidak ditulis lagi; ia tinggal sebagai arsip putusan sebelum alur berjenjang dipakai, dan tetap ikut pada rincian permohonan lama.
+
+**Pengikat ke struktur organisasi.** Tiap tahap menunjuk satu kotak `struktur_organisasi`, jadi yang tampil pada jenjang adalah nama jabatan yang sama dengan yang dilihat publik pada bagan — bukan slug role teknis. Role `atasan-ppid` ditambahkan ke `ModulSistemSeeder` karena jenjang teratas bagan sebelumnya tidak punya pemegang; tanpa itu tahap "Atasan PPID" akan macet begitu berkas sampai di sana. Hak aksesnya sempit dengan sengaja: hanya Dashboard, Permohonan, Keberatan, dan Laporan — ia mengesahkan layanan, bukan menyunting konten situs.
+
+Susunan awal (seluruhnya bisa diubah dari panel, `AlurApprovalSeeder`):
+
+| Jenis | Tahap 1 | Tahap 2 |
+| --- | --- | --- |
+| Permohonan | Persetujuan PPID — `ppid-utama`, 3 hari | Pengesahan Atasan PPID — `atasan-ppid`, 3 hari |
+| Keberatan | Telaah PPID — `ppid-utama`, 5 hari, **tanpa hak tolak** | Putusan Atasan PPID — `atasan-ppid`, 5 hari |
+
+Keberatan berhenti di Atasan PPID sesuai UU No. 14 Tahun 2008, yang menempatkan putusan keberatan di tangannya.
+
+**Aturan yang dijaga mesinnya** (`App\Support\AlurPersetujuan`):
+
+- Seluruh jenjang dibuat sekaligus saat pengajuan masuk `menunggu_approval`, tetapi hanya langkah pertama yang berstatus `menunggu`. Membuat semuanya di muka membuat sisa perjalanan ikut terlihat, bukan muncul satu per satu; menjalankan satu per satu menjaga urutannya tetap berarti.
+- **Satu langkah `menunggu` per pengajuan.** Dua langkah terbuka sekaligus membuat "berjenjang" kehilangan artinya.
+- Satu penolakan menutup seluruh sisa jenjang — langkah di atasnya ditandai `dilewati`, bukan dibiarkan menggantung.
+- Yang boleh memutus hanya pemegang role tahapnya. Super admin selalu boleh: ia yang menyusun alurnya, dan berkas yang macet karena rolenya kosong atau pemegangnya nonaktif harus bisa dibebaskan tanpa menyunting basis data.
+- SLA tahap baru mulai berjalan saat **gilirannya tiba**, bukan saat berkas masuk antrean.
+
+**Penutup celahnya.** Selama masih ada tahap yang menunggu, dialog status petugas menolak memasang `disetujui`/`ditolak` — putusan akhir milik penyetuju. Yang tersisa dari dialog itu adalah menarik berkas kembali ke `diproses`. Tanpa penjagaan ini seluruh jenjangnya bisa dilangkahi lewat satu dropdown.
+
+**Keberatan akhirnya punya aturan transisi.** Statusnya dulu bisa dipasang bebas, sehingga berkas yang sudah ditutup masih bisa dibuka ulang tanpa jejak. `KeberatanInformasi::TRANSISI` menyusunnya sejajar dengan permohonan: `diajukan → diproses → menunggu_approval → selesai`, dengan `revisi` sebagai jalan pulang dan `selesai`/`ditolak` sebagai status akhir tanpa tujuan lanjutan.
+
+**Penerjemah hasil ke status ada di controller, bukan di mesinnya**, karena kedua modul memakai kosakata berbeda: permohonan berakhir `disetujui`, keberatan langsung `selesai` — keberatan memang tidak mengenal status "disetujui", yang disetujui adalah tanggapan atasan atasnya.
+
+Penyetuju tahap berikutnya mendapat notifikasi panel begitu gilirannya tiba (`approval_menunggu`), menaut ke `/ppid/{modul}?detail={id}` yang kini membuka rincian pengajuannya — tempat jenjangnya berada. Tanpa itu berkas menunggu tanpa ada yang tahu.
+
+**Modul barunya**: `alur-approval` ("Alur Persetujuan") di grup Manajemen Sistem. Hak tulisnya hanya untuk super admin; PPID Pelaksana dan PPID Utama sebatas melihat — role yang berada **di dalam** alur tidak boleh bisa menyusun ulang jenjangnya sendiri. Jenjangnya diatur lewat dialog "Atur tahap": urutan ditentukan posisi baris (tombol naik/turun), bukan angka yang diketik, supaya susunan yang terlihat dan urutan yang dijalankan server tidak bisa berbeda. Seluruh jenjang disimpan dalam satu permintaan — alur yang tersimpan setengah jadi adalah alur yang macet.
+
+### Verifikasi
+
+Basis data produksi tidak punya basis data uji terpisah, jadi seluruh pemeriksaan API dijalankan **di dalam transaksi yang di-`rollBack`**, bukan lewat `RefreshDatabase`.
+
+- Alur permohonan penuh: `diajukan → diverifikasi → diproses → menunggu_approval` membuat 2 langkah; tahap 1 disetujui → `lanjut` dan tahap 2 mendapat jam masuk + batas waktunya sendiri; tahap 2 disetujui → status permohonan `disetujui`.
+- Revisi di tahap 1 → status kembali `diproses`, tahap 2 tercatat `dilewati`.
+- Penolakan di tahap 1 → status `ditolak` dan catatannya masuk sebagai `alasan_penolakan` yang dibaca pemohon; `permohonan_log_status` bertambah setiap kali.
+- Dialog status ditolak saat mencoba melompati persetujuan: *"Permohonan ini sedang menunggu putusan tahap persetujuan…"*.
+- Menolak tanpa catatan ditolak; menolak pada tahap yang `boleh_tolak = false` ditolak (*"Tahap 'Telaah PPID' tidak diberi hak menolak…"*).
+- Alur keberatan penuh: `diajukan → selesai` ditolak sebagai transisi terlarang; `diajukan → diproses → menunggu_approval`, dua tahap disetujui → status `selesai` dengan `tanggal_tanggapan` terisi.
+- `simpanTahap` menyusun ulang jenjang (menambah tahap baru, menghapus yang hilang dari kiriman, membalik urutan) dan menolak tahap aktif tanpa role.
+- `npx tsc --noEmit` bersih; `eslint` pada modul PPID **0 error**; `vite build` sukses.
+- Seluruh tes portal fe-ppid tetap hijau: **33 lulus** (121 asersi) — 30 `Portal*` + 3 `HeaderPermohonan`.
+- `php -l` bersih pada seluruh berkas PHP yang disentuh; migration dan kedua seeder berjalan.
+
+---
+
+
+## Status Pengerjaan (putaran 56 — langkah 76 & 77)
+
+### Langkah 76 — lonceng hanya memuat yang belum dibaca
+
+Kedua lonceng dulu memuat **semua** notifikasi. Yang sudah dibuka tetap tinggal di daftar, hanya berbeda tebal hurufnya — jadi pembacanya harus mengingat sendiri mana yang sudah ditangani, dan lencananya tidak pernah benar-benar kosong.
+
+Penyaringannya dikerjakan **di server**, bukan disembunyikan di klien: daftar yang dikirim memang hanya berisi yang belum dibaca. Kalau penyaringannya di klien, muatannya tetap membesar tanpa batas dan penandaan yang gagal terkirim tetap terlihat berhasil sampai halaman dimuat ulang.
+
+**api-ppid** — `GET /v1/notifikasi` kini hanya mengembalikan `is_read = false`. Riwayat lengkapnya diminta dengan `?semua=1`. Dua endpoint baru:
+
+| Endpoint | Guna |
+| --- | --- |
+| `POST /v1/notifikasi/{id}/baca` | tandai satu |
+| `POST /v1/notifikasi/baca-semua` | tandai semua milik pengguna itu |
+
+Keduanya menyaring `user_id` pemilik token — bukan sekadar pembatas tampilan; tanpa itu id milik pengguna lain ikut bisa ditandai. Didaftarkan **sebelum** pola `/{id}` supaya `baca-semua` tidak tertangkap sebagai id.
+
+**be-ppid** — `useGetAllNotifications(semua = false)`; kunci cache-nya dibedakan (`belum-dibaca` / `semua`) supaya lonceng dan halaman arsip tidak saling menimpa. `NotificationCard` mendapat prop `onOpen`, dipanggil saat kartunya diklik termasuk kartu tanpa tautan — yang dibuka berarti sudah dibaca. Lonceng memakai daftar belum-dibaca (jadi lencananya langsung benar tanpa disaring ulang), halaman Notifikasi memakai `semua = true` dan meredupkan yang sudah dibaca.
+
+Tombol **dismiss all** di lonceng diganti **tandai semua dibaca**: menghapus notifikasi yang belum sempat dibaca adalah kehilangan, bukan kerapian. Menghapus tetap ada lewat tombol silang tiap kartu, dan **Hapus semua** di halaman arsip kini memakai konfirmasi karena riwayatnya tidak bisa dikembalikan.
+
+Ikut dibersihkan di halaman arsip: tombol **Example notification** peninggalan templat Fuse dilepas — ia memanggil `create`, yang di aplikasi ini memang selalu ditolak (`Notifikasi tidak dapat dibuat dari panel admin.`), jadi satu-satunya hasilnya galat. Teks Inggris bawaannya sekalian diterjemahkan.
+
+**fe-ppid** — `GET /akun/notifikasi/daftar` ikut menyaring `is_read = false`. Di lonceng, baris yang diklik **dibuang dari daftar**, bukan diberi tanda; `/akun/notifikasi` tetap memuat semuanya. Karena isi lonceng dijamin belum dibaca, dua gaya baris (dibaca/belum) dilepas — semuanya kini bergaya "baru".
+
+### Langkah 77 — waktu sistem jadi WIB
+
+Ada cacat yang tidak kelihatan sampai jamnya dibaca orang: **`app.timezone` masih `UTC` sementara TimeZone sesi PostgreSQL `Asia/Bangkok` (+07).** Laravel mengirim tanggal sebagai jam dinding tanpa offset (`Y-m-d H:i:s`), dan PostgreSQL-lah yang memberi offset memakai TimeZone sesi. Akibatnya setiap penulisan ke kolom `timestamptz` meleset tujuh jam — tanpa galat.
+
+Terbukti lewat uji pulang-pergi sebelum perbaikan:
+
+```
+Laravel now()   = 2026-08-19T09:42:01+00:00   (= 16:42 WIB)
+tersimpan di PG = 2026-08-19 09:42:02+07      (= 02:42 UTC)
+dibaca Laravel  = 2026-08-19T09:42:02+07:00
+```
+
+Jam yang dimaksud 16:42 WIB, yang tersimpan 09:42 WIB. Persis keluhannya.
+
+Perbaikannya di setelan, bukan di tiap pencetak tanggal:
+
+| Berkas | Isi |
+| --- | --- |
+| `config/app.php` (kedua aplikasi) | `'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta')` |
+| `config/database.php` (kedua aplikasi) | `connections.pgsql.timezone => env('DB_TIMEZONE', 'Asia/Jakarta')` |
+
+Keduanya **harus sama**; itu inti masalahnya, jadi ditulis sebagai komentar di kedua berkas supaya tidak dipisah lagi kelak. Sesudahnya jam pulang-perginya utuh: `16:51:35 WIB` masuk, `16:51:35+07` tersimpan, `16:51:35+07` terbaca.
+
+Efek sampingnya menguntungkan: `whereYear`/`whereDate` kini dihitung dalam WIB. Sebelumnya permohonan yang masuk 1 Januari pukul 06.00 WIB tercatat 31 Desember di UTC, dan penyaring tahun pada dashboard salah menghitungnya.
+
+Pergeseran `->timezone(config('ppid.zona_waktu'))` di kelas email dan model jadi tidak mengubah apa pun, tetapi **tetap dipasang**: label "WIB" yang dicetak di sebelahnya baru dijamin benar kalau zonanya disebut, bukan diwarisi setelan yang bisa berubah. Komentar di kedua `config/ppid.php` yang masih menyebut "waktu tersimpan dalam UTC" dibetulkan.
+
+**Panel be-ppid** mencetak tanggal dengan `toLocaleString('id-ID', …)` tanpa `timeZone`, jadi hasilnya mengikuti setelan mesin petugas. Tiga salinan pencetak yang hampir sama itu disatukan ke `ppid/lib/waktu.ts` dengan zona **dipatok** `Asia/Jakarta` — petugas yang membuka panel dari mesin berzona lain tidak boleh melihat jam berbeda dari rekannya di kantor.
+
+**Koreksi data lama.** Seluruh baris yang ditulis sebelum perbaikan meleset tujuh jam ke arah yang sama, baik pada kolom `timestamptz` (PostgreSQL menstempel jam UTC sebagai +07) maupun `timestamp` polos (berisi jam UTC, kini dibaca sebagai jam Jakarta). Karena arah dan besarnya sama, koreksinya satu: migration `2026_08_19_000002_geser_waktu_lama_ke_jakarta` menambahkan tujuh jam.
+
+Yang menjaganya tetap aman:
+
+- **Batas waktu.** Hanya nilai yang lebih tua dari `2026-08-19 16:45:00` yang digeser; baris yang ditulis setelah setelan dibetulkan sudah benar dan menggesernya justru merusak. Pembandingnya dipasang pada kolomnya sendiri, bukan pada `created_at` tabelnya — baris lama bisa punya kolom yang baru diisi hari ini.
+- **Daftar kolom dibaca dari katalog**, bukan ditulis tangan: kolom waktu tersebar di 103 kolom pada puluhan tabel, dan satu yang terlewat berarti satu tempat yang jamnya tetap meleset. Tabel bawaan kerangka kerja (`migrations`, `failed_jobs`, tabel token) dikecualikan.
+- **`down()` menggeser balik**, jadi keputusannya bisa dibatalkan.
+
+Dijalankan setelah dikonfirmasi, dan diuji dulu di dalam transaksi yang di-`rollBack`. Hasilnya: login terakhir petugas yang tersimpan `09:24+07` jadi `16:24+07` — cocok dengan jam nyata saat login itu terjadi.
+
+### Verifikasi
+
+- `PortalNotifikasiTest` jadi **12 tes** (29 asersi), semuanya lulus. Tiga di antaranya baru: lonceng hanya memuat yang belum dibaca (3 baris, 1 sudah dibaca → daftar berisi 2); baris yang ditandai dibaca hilang dari lonceng; halaman penuh tetap memuat yang sudah dibaca.
+- Endpoint panel diuji langsung ke basis data: 3 belum dibaca → tandai satu → lonceng 2, arsip tetap 3 → tandai semua → lonceng 0, arsip tetap 3.
+- `time` pada response notifikasi kini membawa offset `+07:00`.
+- Seluruh tes portal fe-ppid tetap hijau: **33 lulus** (121 asersi).
+- `php -l` bersih; `npx tsc --noEmit` bersih; `eslint` pada modul PPID dan modul notifikasi **0 error**; `vite build` dan `npm run build` sukses.
+
+---
+
+
+## Status Pengerjaan (putaran 55 — langkah 75)
+
+Dashboard panel disusun ulang: dari halaman yang hampir seluruhnya bicara permohonan, jadi halaman yang bicara **pemohon dulu, baru pengajuannya** — dan setiap angka pengajuan selalu berpasangan Permohonan Informasi + Keberatan Informasi.
+
+### Angka baru di `v1/dashboard/analitik`
+
+Semua tambahan dihitung di `AnalitikController`, satu endpoint yang sama, supaya tidak ada dua bagian halaman yang menampilkan hitungan berbeda:
+
+| Kunci baru | Isi |
+| --- | --- |
+| `pemohon.total` | jumlah pemohon terdaftar |
+| `pemohon.per_jenis` | sebaran menurut `jenis_pemohon` |
+| `pemohon.verifikasi` | `menunggu`, `terverifikasi`, `belum`, `ditolak` |
+| `analisa.per_status` | jadi objek berisi `permohonan` **dan** `keberatan` |
+| `analisa.per_jenis_pemohon` | `permohonan` dan `keberatan`, di-join ke tabel pemohon |
+
+Penyaring tahun ikut berlaku untuk pemohon, lewat `created_at` — itu yang berarti "mendaftar pada tahun ini".
+
+Tiga keadaan verifikasi yang diminta dipetakan ke nilai `status_verifikasi` yang sudah ada: **belum diverifikasi** = `menunggu` (berkas sudah dikirim, menunggu diperiksa), **sudah diverifikasi** = `terverifikasi`, **belum melakukan verifikasi** = `belum` (belum mengirim berkas sama sekali). Keadaan keempat, `ditolak`, ikut dikembalikan meski tidak diminta: tanpa itu jumlah keempat angka tidak akan sama dengan total pemohon, dan angka yang tidak menutup adalah angka yang tidak bisa dipercaya. Di panel ia tampil sebagai keterangan kecil pada kartu "Menunggu diverifikasi".
+
+Sebaran per jenis pemohon di-`join`, bukan lewat relasi Eloquent: yang dibutuhkan cuma satu kolom pengelompokan, menarik seluruh baris pemohon untuk itu pemborosan. Jenis yang kosong dikelompokkan sebagai `tidak_diisi` supaya barisnya tidak lenyap diam-diam dari total.
+
+### Susunan halaman
+
+1. **Pemohon** — Total pemohon · Sudah diverifikasi · Menunggu diverifikasi · Belum verifikasi data.
+2. **Pengajuan** — Permohonan Informasi · Keberatan Informasi · Menunggu persetujuan · Lewat batas waktu.
+3. **Sebaran** — Pemohon per jenis · Status Permohonan Informasi · Status Keberatan Informasi.
+4. **Per jenis pemohon** — Permohonan Informasi dan Keberatan Informasi berdampingan.
+5. Konten · 6. Perlu tindakan · 7. SLA · 8. KPI · 9. Tren.
+
+Kartu lama disesuaikan seperti diminta: "Total permohonan" jadi **Permohonan Informasi**, dan "Keberatan belum selesai" naik jadi kartu **Keberatan Informasi** yang menampilkan totalnya, dengan sisa yang belum selesai sebagai keterangan — dua angka dalam satu kartu, bukan satu angka tanpa pembandingnya. "Menunggu persetujuan" dan "Lewat batas waktu" tetap.
+
+Sebaran ditampilkan sebagai daftar berbatang (label, batang, angka), bukan deretan chip: chip menyembunyikan besaran, dan yang ingin dilihat di sini justru perbandingan antarbaris. Batangnya diskala terhadap nilai terbesar dalam daftar itu sendiri.
+
+### Yang dihapus
+
+- Kartu **Kepuasan pemohon**.
+- Panel **Sebaran status** (deretan chip) — digantikan dua daftar status yang terpisah permohonan/keberatan.
+- Panel **Kategori paling diminta**, beserta method `kategoriTeratas()` di API yang jadi tidak punya pembaca.
+
+Yang **tidak** dihapus: indikator "Kepuasan pemohon" di bagian **Capaian KPI**. Bagian itu tidak disebut pada langkah ini, dan isinya beda peran — capaian terhadap target, bukan angka sesaat. Bila memang ingin kepuasan hilang sepenuhnya dari dashboard, indikator itu tinggal dilepas dari `TARGET_KPI` dan daftar `kpi()`.
+
+### Grafik masuk vs ditanggapi jadi diagram batang
+
+Bentuk lamanya deretan `LinearProgress` mendatar — satu baris per tahun per bulan, 12 × 4 baris. Sekarang **satu diagram batang** (ApexCharts, pustaka yang memang sudah dipakai template panel): sumbu X tetap **Januari–Desember**, satu seri per tahun, batang tahun berdampingan di tiap bulan. Sumbu bulan yang tetap itu yang membuat grafiknya bisa dipakai membandingkan tahun; pada bentuk "12 bulan terakhir", Maret satu tahun tidak pernah berdiri sejajar dengan Maret tahun lain.
+
+`TAHUN_PEMBANDING` dinaikkan dari 3 ke **4** — tahun terpilih + paling banyak **tiga tahun sebelumnya**, sama persis dengan grafik Portal Pemohon (langkah 71) supaya satu peristiwa tidak terbaca beda rentang di dua tempat. Hanya tahun yang benar-benar punya data yang ikut.
+
+Kedua besaran tetap ada, tetapi **bergantian** lewat pilihan **Data: Masuk / Ditanggapi** di kanan judul. Menggambar keduanya sekaligus untuk empat tahun berarti delapan batang per bulan, dan tidak ada yang bisa dibaca dari sana. Total setahun per tahun tetap tampil sebagai chip di atas grafik dalam bentuk `masuk / ditanggapi`, jadi perbandingan keduanya tidak hilang.
+
+Warna seri pertama selalu jatuh ke tahun terpilih, sumbu Y dipaksa bilangan bulat (jumlah permohonan tidak mengenal 0,5), dan `noData` diisi supaya grafik kosong tetap menjelaskan dirinya.
+
+### Label jenis pemohon
+
+"Pribadi (data lama)" jadi **"Pribadi"**, dan imbuhan yang sama dilepas dari "Instansi" — dua nilai itu berdampingan di daftar yang sama, dan menandai salah satunya saja sebagai data lama justru membingungkan. Keduanya tetap dipetakan (bukan dibiarkan tampil sebagai kode mentah) karena barisnya masih ada di basis data.
+
+### Verifikasi
+
+- Payload `analitik` diuji langsung: dengan satu permohonan + satu keberatan contoh (dibuat di dalam transaksi lalu di-`rollBack`), `per_status` dan `per_jenis_pemohon` mengembalikan `{"permohonan":{"diajukan":1},"keberatan":{"diajukan":1}}` dan `{"permohonan":{"pribadi":1},"keberatan":{"pribadi":1}}`.
+- `pemohon.verifikasi` menutup ke total pemohon.
+- Rentang tren diuji dengan satu permohonan di tiap tahun 2023–2026 (juga di dalam transaksi lalu di-`rollBack`): `tahun_dibanding` mengembalikan keempat tahunnya dan baris Maret terisi 1/1 untuk masing-masing — sumbu bulannya benar-benar sejajar antar tahun.
+- `php -l` bersih; `npx tsc --noEmit` bersih; `eslint` pada `PpidDashboard.tsx` **0 error**; `vite build` sukses.
+
+---
+
+
+## Status Pengerjaan (putaran 54 — langkah 74)
+
+Tombol CTA **Permohonan** di header hilang begitu pemohon masuk. Tautannya (`/permohonan`) hanya `Route::redirect` ke `/akun/permohonan/baru`, dan halaman itu sudah jadi modul tersendiri di Portal Pemohon — bagi yang sudah masuk tombolnya cuma pintu kedua ke tempat yang sama.
+
+Disembunyikan di **dua** tempat, bukan satu: CTA hijau di header desktop dan tombol "Permohonan Informasi" di menu mobile. Keduanya tombol yang sama dengan pembungkus berbeda; menyembunyikan salah satunya saja membuat tombolnya muncul kembali begitu layar mengecil.
+
+Yang **tidak** ikut hilang:
+
+- Tautan **Permohonan Informasi Publik** di menu Layanan. Itu navigasi antarhalaman, bukan tombol ajakan — sama seperti Pengajuan Keberatan dan Laporan Pelayanan yang berdampingan dengannya.
+- Tautan permohonan di badan halaman (Beranda, Standar Layanan, halaman informasi). Konteksnya berbeda: di sana tautannya bagian dari alur baca, bukan tombol tetap yang mengikuti di setiap halaman.
+
+Pengunjung yang belum masuk tetap melihat tombolnya seperti semula — bagi mereka tombol itu justru pintu masuknya, dan pengalihannya berhenti di halaman login.
+
+### Verifikasi
+
+Ditambahkan `tests/Feature/HeaderPermohonanTest.php` — 3 tes, semuanya lulus (8 asersi). Pemeriksaannya memakai kelas khas tombol CTA (`hidden sm:inline-flex … fs-gradient-accent` dan `block w-full text-center py-3 fs-gradient-accent`), bukan URL-nya: URL yang sama juga dipakai menu Layanan dan isi Beranda, jadi `assertDontSee` atas URL akan lulus/gagal karena alasan yang salah.
+
+- Tamu tetap melihat kedua tombol.
+- Pemohon yang sudah masuk tidak melihat keduanya.
+- Menu Layanan-nya tetap memuat tautan permohonan meski sudah masuk.
+
+Seluruh tes portal tetap hijau: 31 lulus (115 asersi) untuk `--filter="Portal|HeaderPermohonan"`. `npm run build` sukses.
+
+---
+
+
+## Status Pengerjaan (putaran 53 — langkah 73)
+
+Modul **Pemohon**, **Permohonan**, dan **Keberatan** tidak lagi punya jalur ubah maupun hapus. Ketiganya berisi data yang ditulis pemohon sendiri lewat portal; petugas menanggapinya, bukan menyuntingnya.
+
+### Dihapus di dua lapis, bukan hanya tombolnya
+
+Menyembunyikan menu di panel saja tidak cukup — endpoint-nya tetap hidup dan masih bisa dipanggil langsung dengan token petugas. Karena itu jalurnya dilepas di api-ppid lebih dulu:
+
+- `CrudRoute::register()` mendapat parameter `$kecuali`. `permohonan` dan `keberatan` didaftarkan dengan `['update', 'destroy']`, sehingga `PUT`, `PATCH`, `DELETE /{id}`, dan `POST /hapus-massal` **tidak ada** di daftar route. `php artisan route:list` untuk keduanya kini hanya menyisakan `index`, `show`, `store`, dan endpoint alur kerja.
+- Modul **Pemohon** sudah sejak awal begitu: hanya `index`, `show`, `berkas-ktp`, dan `verifikasi`. Yang berubah di sini sisi panelnya (lihat bawah).
+
+Tambah (`store`) sengaja **tetap ada**: permohonan yang masuk lewat meja layanan tetap perlu dicatat petugas, dan pencatatan itu sudah menuliskan barisnya sendiri di `permohonan_log_status`.
+
+### Keberatan mendapat endpoint alur kerja sendiri
+
+Keberatan tidak punya endpoint status seperti permohonan — status dan tanggapan atasan selama ini diisi lewat `update` CRUD biasa. Melepas `update` begitu saja akan membuat keberatan tidak bisa diproses sama sekali.
+
+Penggantinya `POST /v1/keberatan/{id}/tanggapan` (`akses:keberatan,edit`), yang **hanya** memvalidasi `status` dan `tanggapan_atasan_ppid`. Jenis keberatan, alasan, kasus posisi, dan penguasaan tidak pernah tersentuh meski ikut dikirim. Endpoint ini juga mengerjakan yang dulu tersebar di `beforeSave`/`afterSave`: mengisi `ditangani_oleh` begitu keberatan mulai ditangani, menstempel `tanggal_tanggapan` saat selesai, mencatat `audit_log`, lalu mengirim email dan notifikasi lonceng setelah commit.
+
+### Panel: `tanpaUbah` / `tanpaHapus`
+
+`ResourceConfig` mendapat dua flag baru. Keduanya **hanya bisa mempersempit** — hak role tetap diperiksa lebih dulu, jadi flag ini tidak pernah memberi hak baru:
+
+```
+const bolehUbah = bolehTulis && akses.edit && !config.tanpaUbah;
+const bolehHapus = bolehTulis && akses.delete && !config.tanpaHapus;
+```
+
+Keduanya dipakai di **empat** tempat yang sebelumnya masing-masing memeriksa `akses.edit`/`akses.delete` sendiri: menu Ubah, menu Hapus, kotak centang pilih-baris, dan tombol hapus massal di toolbar.
+
+Ini sekaligus menutup celah lama: `renderRowActionMenuItems` dulu hanya melihat `akses.edit`/`akses.delete` tanpa `bolehTulis`, sehingga **modul `readOnly` pun tetap memunculkan menu Ubah dan Hapus** — termasuk Pemohon, dan termasuk saat daftar sedang menampilkan data terhapus. Menunya ada, endpoint-nya tidak; yang didapat petugas cuma pesan galat.
+
+Aksi baris yang tersisa jadi satu-satunya jalur tulis:
+
+| Modul | Aksi baris | Hak |
+| --- | --- | --- |
+| Pemohon | Detail & verifikasi | `view` untuk melihat, `approve` untuk memutuskan |
+| Permohonan | Ubah status | `edit` |
+| Keberatan | Tanggapan & status | `edit` |
+
+Rantai ternary bertingkat di `PpidResourcePage` yang merakit aksi baris diganti fungsi dengan `return` awal per modul — dengan bertambahnya modul keempat, bentuk lamanya sudah tidak terbaca.
+
+Formulir keberatan ikut dirapikan: `status` dan `tanggapan_atasan_ppid` dilepas dari `fields` karena formulirnya kini hanya dipakai saat menambah, dan kedua kolom itu sudah punya rumahnya sendiri di dialog tanggapan.
+
+### Perbaikan bawaan: catatan internal sempat bocor ke pemohon
+
+Notifikasi lonceng dari langkah 72 mengirimkan `catatan` pada perpindahan status permohonan ke pemohon — padahal kolom itu dilabeli "Catatan internal" di panel, dengan keterangan "tidak ditampilkan ke pemohon". Yang dikirim sekarang `alasan_penolakan`, yang memang ditujukan ke pemohon, dan parameternya diganti nama jadi `$keterangan` supaya tidak tertukar lagi. Teks notifikasinya ikut berubah dari "Catatan petugas:" menjadi "Keterangan petugas:".
+
+### Verifikasi
+
+- `php artisan route:list`: `permohonan` 7 route, `keberatan` 4 route — tanpa `PUT`/`PATCH`/`DELETE`/`hapus-massal` pada keduanya.
+- Endpoint tanggapan diuji langsung ke basis data: keberatan berstatus `diajukan` → `selesai` menghasilkan `tanggapan_atasan_ppid` tersimpan, `ditangani_oleh` terisi, `tanggal_tanggapan` terstempel, dan notifikasi portal "Keberatan atas permohonan … telah selesai ditangani. Tanggapan dapat dilihat di portal. Keterangan petugas: …". Baris ujinya dihapus lagi setelahnya.
+- `npx tsc --noEmit` bersih; `eslint` pada modul PPID **0 error**; `vite build` sukses; `php -l` bersih.
+
+---
+
+
+## Status Pengerjaan (putaran 52 — langkah 72)
+
+Portal Pemohon mendapat **lonceng notifikasi** berisi umpan balik petugas. Sebelumnya satu-satunya pemberitahuan ke pemohon adalah email, dan email hanya dikirim pada dua tahap besar (pengajuan *diterima* dan *selesai*) karena kuota SMTP terbatas — perpindahan status lain, catatan petugas, berkas tanggapan, dan hasil verifikasi data diri hanya terlihat kalau pemohon kebetulan membuka halamannya.
+
+### Tabel `notifikasi_pemohon`
+
+Loncengnya **tidak** dibuat dengan menurunkan peristiwa dari data yang sudah ada (`permohonan_log_status`, `tanggal_tanggapan`, `tanggal_verifikasi`). Cara itu gugur di keberatan: tabelnya tidak punya `updated_at` maupun tabel log, jadi perpindahan ke `diproses` tidak punya cap waktu sama sekali dan tidak bisa diurutkan bersama peristiwa lain.
+
+Yang dipakai kembaran tabel lonceng panel admin — migration `2026_08_19_000001_create_notifikasi_pemohon_table` di **api-ppid** (pemilik skema):
+
+| Kolom | Keterangan |
+| --- | --- |
+| `pemohon_id` | FK ke `pemohon`, cascade on delete |
+| `type` | `permohonan_status`, `keberatan_status`, `permohonan_tanggapan_file`, `verifikasi_pemohon` |
+| `message` | kalimat yang dibaca pemohon, termasuk catatan petugas |
+| `is_read` | penanda sudah dibaca |
+| `data` | `title`, `icon`, `link`, `variant`, id pengajuan — bentuknya sama dengan `notifikasi.data` |
+
+Dipisah dari tabel `notifikasi` milik panel, bukan ditumpuk dengan kolom "jenis penerima", karena kunci asingnya berbeda: satu ke `users`, satu ke `pemohon`. Menyatukannya berarti melepas kedua constraint itu.
+
+### Penulisnya: api-ppid, di tiga titik yang sudah ada
+
+`App\Support\NotifikasiPortal` adalah cerminan `NotifikasiAdmin` di fe-ppid, arah sebaliknya. Pemanggilannya diletakkan persis di sebelah pengiriman email yang sudah ada supaya tidak ada jalur perubahan status baru yang perlu diingat:
+
+- `PermohonanController::ubahStatus()` — di dalam `DB::afterCommit` yang sama dengan `EmailPemohon`, jadi transaksi yang batal tidak menyisakan notifikasi atas status yang tidak jadi. `catatan` petugas ikut dibawa.
+- `PermohonanController::tambahTanggapanFile()` — notifikasi tersendiri; berkasnya kerap menyusul beberapa saat setelah status berpindah, dan tanpa ini pemohon tidak punya penanda kapan dokumennya bisa diunduh.
+- `KeberatanController::afterSave()` — `tanggapan_atasan_ppid` ikut dibawa; keberatan tidak punya tabel log status seperti permohonan.
+- `PemohonController::verifikasi()` — hasil Verifikasi Data Diri beserta catatan dan sisa kesempatan kirim ulang. Yang ditolak diantar ke halaman perbaikannya, kecuali kalau kesempatannya sudah habis — tautan ke formulir yang tidak lagi menerima kiriman cuma bikin pemohon berputar.
+
+Cakupannya sengaja lebih luas daripada email: setiap perpindahan status diberitahukan, bukan hanya dua tahap. Status pembuka (`diajukan`) tidak masuk — itu pengajuan pemohon sendiri, bukan umpan balik. Status yang tidak berubah juga tidak menghasilkan baris; petugas kerap menyimpan ulang satu baris hanya untuk membetulkan kolom lain. Gagal menulis notifikasi dicatat di log lalu diabaikan — tidak boleh membatalkan keputusan yang sudah tersimpan.
+
+### Loncengnya di fe-ppid
+
+`akun/partials/lonceng.blade.php` disisipkan di header, **bukan hanya di Portal** — pemohon jadi tahu pengajuannya sudah ditanggapi tanpa harus membuka `/akun` dulu. Isinya ditarik `fetch` ke `GET /akun/notifikasi/daftar` setiap 60 detik dan setiap tab kembali aktif, bukan disisipkan saat render: portal kerap ditinggalkan terbuka sementara petugas memproses pengajuannya.
+
+- Lencana jingga di atas ikon memuat jumlah belum dibaca (`9+` bila lebih).
+- Mengklik satu baris menandainya dibaca lalu membuka tautannya. Penandaannya dikirim dengan `keepalive` dan tidak ditunggu, jadi perpindahan halamannya tidak tertahan jaringan.
+- "Tandai semua dibaca" mengosongkan lencana di layar lebih dulu, permintaannya menyusul.
+- Daftar di lonceng dibatasi 20 baris terbaru; selebihnya di `/akun/notifikasi`.
+
+Halaman penuh `/akun/notifikasi` bukan sekadar arsip: barisnya dibuka lewat `GET /akun/notifikasi/{id}/buka` yang menandai dibaca **di server** lalu mengalihkan ke tujuannya, jadi loncengnya tetap berfungsi pada peramban yang skripnya gagal dimuat. Menu portal ikut memuat entri Notifikasi beserta lencana jumlah belum dibaca.
+
+**Tautan notifikasi disaring**: hanya path internal yang diawali satu garis miring yang dipakai (`untukLonceng()`); selain itu tautannya dibuang. Tanpa itu satu baris `data.link` cukup untuk melempar pemohon ke domain lain. Setiap endpoint juga menyaring `pemohon_id` pemilik — bukan sekadar penyaring tampilan, tanpa itu id milik akun lain ikut bisa ditandai.
+
+### Verifikasi
+
+Ditambahkan `tests/Feature/PortalNotifikasiTest.php` — 10 tes, semuanya lulus (23 asersi), memakai `DatabaseTransactions`:
+
+- Jumlah belum dibaca dan isi daftarnya benar; tautannya dirender sebagai URL penuh.
+- Notifikasi akun lain tidak ikut terbaca (`belum_dibaca` 0, daftar kosong).
+- Menandai satu baris dan menandai semua bekerja; id milik akun lain **tidak** ikut tertandai.
+- Membuka dari halaman penuh menandai dibaca lalu mengalihkan ke tujuannya.
+- `link` berisi URL domain lain diabaikan — pengalihannya kembali ke halaman notifikasi.
+- Lonceng benar-benar terpasang di header saat pemohon masuk; tamu mendapat 401.
+
+Sisi penulisnya diuji langsung ke basis data: perpindahan `diproses` → `ditolak` menghasilkan pesan bernomor registrasi lengkap beserta `link`, `variant`, dan `permohonan_id` yang benar; `php -l` bersih untuk seluruh berkas baru maupun yang disunting; `lang/en.json` bertambah 8 kunci dan tetap sah; `npm run build` sukses.
+
+**Catatan basis data:** menjalankan `php artisan test` tanpa filter di fe-ppid **mengosongkan `ppiddb`**. Tes bawaan Breeze yang masih tertinggal (`tests/Feature/Auth/*`, `ProfileTest`) memakai `RefreshDatabase`, sementara migration fe-ppid hanya memuat tabel bawaan Laravel — seluruh tabel PPID ikut terhapus dan tidak dibuat ulang. Basis data pengembangan sudah dipulihkan lewat `php artisan migrate` + seluruh seeder di api-ppid, dan akun `admin@foodstation.co.id` (super-admin) dibuat ulang tanpa kata sandi yang bisa dipakai — setel dulu dengan `php artisan ppid:set-password admin@foodstation.co.id`. Data yang tidak berasal dari seeder tidak dapat dipulihkan. Jalankan tes portal dengan `--filter` sampai tes bawaan itu dilepas.
 
 ---
 

@@ -20,6 +20,8 @@ function NotificationPanelToggleButton(props: NotificationPanelToggleButtonProps
 	const { className = '', children = <FuseSvgIcon>lucide:bell</FuseSvgIcon> } = props;
 	const { toggle } = useNotificationPanelContext();
 
+	// Daftarnya sudah hanya berisi yang belum dibaca, jadi jumlahnya langsung
+	// jadi angka lencana — tidak perlu disaring lagi di sini.
 	const { data: notifications } = useGetAllNotifications();
 	const [animate, setAnimate] = useState(false);
 	const prevNotificationCount = useRef(notifications?.length);

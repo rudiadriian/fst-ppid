@@ -4,6 +4,7 @@ use App\Http\Controllers\Akun\DashboardController;
 use App\Http\Controllers\Akun\EmailVerificationController;
 use App\Http\Controllers\Akun\HistoriController;
 use App\Http\Controllers\Akun\KeberatanController;
+use App\Http\Controllers\Akun\NotifikasiController;
 use App\Http\Controllers\Akun\PasswordResetController;
 use App\Http\Controllers\Akun\PengaturanController;
 use App\Http\Controllers\Akun\PermohonanController;
@@ -65,6 +66,20 @@ Route::prefix('akun')->name('akun.')->group(function () {
 
         Route::get('/', DashboardController::class)->name('dashboard');
         Route::get('/histori', HistoriController::class)->name('histori');
+
+        // --- Lonceng notifikasi ---
+        // `daftar` dipanggil berkala oleh lonceng di header; sisanya menandai
+        // sudah dibaca. Halaman penuhnya tetap ada untuk riwayat lama.
+        Route::get('/notifikasi', [NotifikasiController::class, 'halaman'])->name('notifikasi');
+        Route::post('/notifikasi/baca-semua', [NotifikasiController::class, 'bacaSemuaHalaman'])->name('notifikasi.baca-semua');
+        Route::get('/notifikasi/daftar', [NotifikasiController::class, 'index'])->name('notifikasi.daftar');
+        Route::get('/notifikasi/{notifikasi}/buka', [NotifikasiController::class, 'buka'])
+            ->whereNumber('notifikasi')
+            ->name('notifikasi.buka');
+        Route::post('/notifikasi/{notifikasi}/baca', [NotifikasiController::class, 'baca'])
+            ->whereNumber('notifikasi')
+            ->name('notifikasi.baca');
+        Route::post('/notifikasi/tandai-semua', [NotifikasiController::class, 'bacaSemua'])->name('notifikasi.tandai-semua');
 
         // --- Permohonan Informasi ---
         Route::get('/permohonan', [PermohonanController::class, 'index'])->name('permohonan.index');

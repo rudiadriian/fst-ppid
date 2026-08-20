@@ -177,6 +177,11 @@
                 {{-- Akun pengunjung (guard `pemohon`) — terpisah dari akun petugas. --}}
                 @php $akun = auth('pemohon')->user(); @endphp
                 @if ($akun)
+                    {{-- Lonceng umpan balik petugas; ikut tampil di halaman
+                         publik supaya pemohon tidak perlu membuka portal dulu
+                         untuk tahu pengajuannya sudah ditanggapi. --}}
+                    @include('akun.partials.lonceng')
+
                     <div class="relative hidden sm:block" x-data="{ open_akun: false }" @click.outside="open_akun = false">
                         <button @click="open_akun = !open_akun" class="hdr-ctl flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-[#10462F] hover:bg-emerald-50 transition duration-200 dark:text-gray-300 dark:hover:text-[#3E9C6C] dark:hover:bg-white/5">
                             @include('akun.partials.avatar', ['pemohon' => $akun, 'ukuran' => 'w-7 h-7'])
@@ -200,11 +205,17 @@
                     </a>
                 @endif
 
-                {{-- CTA --}}
-                <a href="{{ route('ppid.request') }}" class="hidden sm:inline-flex items-center gap-1.5 fs-gradient-accent text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-900/20 hover:shadow-emerald-900/40 hover:-translate-y-0.5 transition-all duration-200 {{ $isRequest ? 'ring-2 ring-[#10462F] ring-offset-2 ring-offset-white dark:ring-[#3E9C6C] dark:ring-offset-[#071A12]' : '' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                    {{ __('Permohonan') }}
-                </a>
+                {{-- CTA — hanya untuk pengunjung yang belum masuk.
+                     Tautannya mengalihkan ke /akun/permohonan/baru, dan itu
+                     sudah jadi modul tersendiri di Portal Pemohon; bagi yang
+                     sudah masuk tombol ini cuma pintu kedua ke halaman yang
+                     sama. --}}
+                @if (!$akun)
+                    <a href="{{ route('ppid.request') }}" class="hidden sm:inline-flex items-center gap-1.5 fs-gradient-accent text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-900/20 hover:shadow-emerald-900/40 hover:-translate-y-0.5 transition-all duration-200 {{ $isRequest ? 'ring-2 ring-[#10462F] ring-offset-2 ring-offset-white dark:ring-[#3E9C6C] dark:ring-offset-[#071A12]' : '' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        {{ __('Permohonan') }}
+                    </a>
+                @endif
 
                 {{-- Mobile toggle --}}
                 <button @click="open_mobile = !open_mobile" class="hdr-ctl lg:hidden text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition duration-200 dark:text-gray-200 dark:hover:bg-white/5">
@@ -308,7 +319,11 @@
             </div>
 
             <div class="pt-3 space-y-2">
-                <a href="{{ route('ppid.request') }}" class="block w-full text-center py-3 fs-gradient-accent text-white font-semibold rounded-xl shadow-lg {{ $isRequest ? 'ring-2 ring-[#10462F] ring-offset-2 ring-offset-white dark:ring-[#3E9C6C] dark:ring-offset-[#071A12]' : '' }}">{{ __('Permohonan Informasi') }}</a>
+                {{-- Sama seperti CTA di header desktop: disembunyikan setelah
+                     masuk karena sudah ada modulnya di Portal Pemohon. --}}
+                @if (!$akun)
+                    <a href="{{ route('ppid.request') }}" class="block w-full text-center py-3 fs-gradient-accent text-white font-semibold rounded-xl shadow-lg {{ $isRequest ? 'ring-2 ring-[#10462F] ring-offset-2 ring-offset-white dark:ring-[#3E9C6C] dark:ring-offset-[#071A12]' : '' }}">{{ __('Permohonan Informasi') }}</a>
+                @endif
                 <a href="{{ route('ppid.status') }}" class="block w-full text-center py-3 font-semibold rounded-xl transition {{ $isStatus ? 'bg-emerald-50 text-[#10462F] border border-[#10462F] dark:bg-white/5 dark:text-[#3E9C6C] dark:border-[#3E9C6C]' : 'border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5' }}">{{ __('Cek Status Tiket') }}</a>
 
                 @if ($akun)
@@ -317,6 +332,9 @@
                     <a href="{{ route('akun.dashboard') }}" class="flex items-center justify-center gap-2.5 w-full py-3 font-semibold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5">
                         @include('akun.partials.avatar', ['pemohon' => $akun, 'ukuran' => 'w-7 h-7'])
                         {{ __('Akun Saya') }}
+                    </a>
+                    <a href="{{ route('akun.notifikasi') }}" class="block w-full text-center py-3 font-semibold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5">
+                        {{ __('Notifikasi') }}
                     </a>
                     <form method="POST" action="{{ route('akun.logout') }}">
                         @csrf

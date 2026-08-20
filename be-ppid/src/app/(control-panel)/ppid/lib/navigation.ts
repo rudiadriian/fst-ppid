@@ -59,7 +59,7 @@ const GRUP: { id: string; title: string; icon: string; slugs: string[] }[] = [
 		icon: 'lucide:settings',
 		// Daftar modul tidak lagi punya halaman sendiri (langkah 54): isinya
 		// tampil sebagai baris matrix pada dialog "Atur hak akses" di modul Role.
-		slugs: ['pengguna', 'role', 'pengaturan-situs', 'audit-log']
+		slugs: ['pengguna', 'role', 'alur-approval', 'pengaturan-situs', 'audit-log']
 	}
 ];
 

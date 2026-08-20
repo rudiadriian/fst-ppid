@@ -30,6 +30,26 @@ class KeberatanInformasi extends Model
         'tanggal_tanggapan' => 'datetime',
     ];
 
+    /**
+     * Transisi status yang diizinkan.
+     *
+     * Disusun sejajar dengan {@see PermohonanInformasi::TRANSISI}: sebelumnya
+     * status keberatan bisa dipasang bebas, sehingga berkas yang sudah ditutup
+     * masih bisa dibuka ulang tanpa jejak. `selesai` dan `ditolak` karena itu
+     * tidak punya tujuan lanjutan.
+     *
+     * `menunggu_approval` adalah pintu masuk alur persetujuan berjenjang;
+     * putusan akhirnya tidak lagi dipasang petugas sendiri.
+     */
+    public const TRANSISI = [
+        'diajukan' => ['diproses', 'ditolak'],
+        'diproses' => ['menunggu_approval', 'revisi', 'ditolak'],
+        'revisi' => ['diproses', 'ditolak'],
+        'menunggu_approval' => ['selesai', 'ditolak', 'diproses'],
+        'selesai' => [],
+        'ditolak' => [],
+    ];
+
     public function permohonan(): BelongsTo
     {
         return $this->belongsTo(PermohonanInformasi::class, 'permohonan_id');
@@ -48,5 +68,19 @@ class KeberatanInformasi extends Model
     public function files(): HasMany
     {
         return $this->hasMany(KeberatanFile::class, 'keberatan_id');
+    }
+
+    /**
+     * Jenjang persetujuan berjalan.
+     *
+     * `approval_pengajuan` melayani permohonan dan keberatan sekaligus, jadi
+     * relasinya wajib menyaring `jenis` — tanpa itu id yang sama pada dua tabel
+     * berbeda akan saling meminjam langkah.
+     */
+    public function approvalLangkah(): HasMany
+    {
+        return $this->hasMany(ApprovalPengajuan::class, 'pengajuan_id')
+            ->where('jenis', 'keberatan')
+            ->orderBy('id');
     }
 }

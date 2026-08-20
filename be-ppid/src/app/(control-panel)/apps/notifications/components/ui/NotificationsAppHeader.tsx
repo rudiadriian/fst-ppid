@@ -1,45 +1,36 @@
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import { useSnackbar } from 'notistack';
 import PageBreadcrumb from 'src/components/PageBreadcrumb';
-import { useCreateNotification } from '../../api/hooks/useCreateNotification';
 import { useDeleteNotifications } from '../../api/hooks/useDeleteNotifications';
 import { useGetAllNotifications } from '../../api/hooks/useGetAllNotifications';
-import NotificationModel from '../../api/models/NotificationModel';
-import NotificationTemplate from './NotificationTemplate';
+import { useReadAllNotifications } from '../../api/hooks/useReadNotification';
 
 /**
- * The Notifications app header.
+ * Kepala halaman Notifikasi.
+ *
+ * Dua tindakan massal, dan keduanya berbeda akibat: menandai dibaca hanya
+ * mengosongkan lonceng, menghapus membuang riwayatnya untuk selamanya.
  */
 function NotificationsAppHeader() {
-	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+	// Halaman ini arsip, jadi hitungannya termasuk yang sudah dibaca.
+	const { data: notifications } = useGetAllNotifications(true);
 
-	const { data: notifications } = useGetAllNotifications();
-
-	const { mutate: addNotification } = useCreateNotification();
 	const { mutate: deleteNotifications } = useDeleteNotifications();
+	const { mutate: readAllNotifications } = useReadAllNotifications();
 
-	function handleDismissAll() {
-		deleteNotifications(notifications.map((notification) => notification.id));
+	const belumDibaca = (notifications ?? []).filter((item) => !item.read).length;
+
+	function handleReadAll() {
+		readAllNotifications();
 	}
 
-	function demoNotification() {
-		const item = NotificationModel({ title: 'Great Job! this is awesome.' });
+	function handleDeleteAll() {
+		if (!window.confirm('Hapus semua notifikasi? Riwayatnya tidak dapat dikembalikan.')) {
+			return;
+		}
 
-		enqueueSnackbar(item.title, {
-			key: item.id,
-			content: (
-				<NotificationTemplate
-					item={item}
-					onClose={() => {
-						closeSnackbar(item.id);
-					}}
-				/>
-			)
-		});
-
-		addNotification(item);
+		deleteNotifications((notifications ?? []).map((notification) => notification.id));
 	}
 
 	return (
@@ -49,33 +40,36 @@ function NotificationsAppHeader() {
 					<PageBreadcrumb className="mb-2" />
 
 					<Typography className="mb-1 text-3xl leading-none font-extrabold tracking-tight">
-						Notifications
+						Notifikasi
 					</Typography>
 					<Typography
 						className="font-medium tracking-tight"
 						color="text.secondary"
 					>
-						Lists all notifications
+						Seluruh notifikasi, termasuk yang sudah dibaca.
 					</Typography>
 				</div>
 				<div className="mt-3 flex items-center gap-2 sm:mx-2 sm:mt-0">
-					<Button
-						className="whitespace-nowrap"
-						onClick={demoNotification}
-						variant="contained"
-						color="primary"
-					>
-						Example notification
-					</Button>
+					{belumDibaca > 0 && (
+						<Button
+							className="whitespace-nowrap"
+							variant="contained"
+							color="secondary"
+							onClick={handleReadAll}
+							startIcon={<FuseSvgIcon>lucide:bell</FuseSvgIcon>}
+						>
+							Tandai semua dibaca ({belumDibaca})
+						</Button>
+					)}
 
 					<Button
 						className="whitespace-nowrap"
-						variant="contained"
-						color="secondary"
-						onClick={handleDismissAll}
-						startIcon={<FuseSvgIcon>lucide:bell</FuseSvgIcon>}
+						variant="outlined"
+						color="error"
+						onClick={handleDeleteAll}
+						startIcon={<FuseSvgIcon>lucide:trash</FuseSvgIcon>}
 					>
-						Dissmiss All
+						Hapus semua
 					</Button>
 				</div>
 			</div>

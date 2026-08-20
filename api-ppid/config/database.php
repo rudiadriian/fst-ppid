@@ -76,6 +76,16 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'prefer',
+            /*
+             * Wajib sama dengan `app.timezone`.
+             *
+             * Laravel mengirim tanggal sebagai jam dinding tanpa offset
+             * ('Y-m-d H:i:s'); PostgreSQL-lah yang memberinya offset, memakai
+             * TimeZone sesi ini. Bila keduanya berbeda, setiap penulisan ke
+             * kolom `timestamptz` bergeser sebesar selisih zonanya — tanpa
+             * galat, jadi baru ketahuan saat jamnya dibaca orang.
+             */
+            'timezone' => env('DB_TIMEZONE', 'Asia/Jakarta'),
         ],
 
         'sqlsrv' => [

@@ -17,6 +17,7 @@ import { useDeleteManyResource, useDeleteResource, useRelationOptions, useResour
 import { useAksesModul } from '../api/useNavigasi';
 import { apiPathOf, ColumnConfig, FilterConfig, ResourceConfig } from '../lib/types';
 import { FILTER_TERHAPUS, kolomDenganJejak, punyaJejak, visibilitasAwalJejak } from '../lib/jejak';
+import { formatTanggal as formatTanggalWib, formatWaktu } from '../lib/waktu';
 import ResourceFormDialog from './ResourceFormDialog';
 import { urlMedia } from './UploadField';
 
@@ -32,22 +33,7 @@ function nilaiKolom(baris: ApiRecord, kunci: string): unknown {
 }
 
 function formatTanggal(nilai: unknown, denganJam: boolean): string {
-	if (!nilai) {
-		return '—';
-	}
-
-	const tanggal = new Date(String(nilai));
-
-	if (Number.isNaN(tanggal.getTime())) {
-		return String(nilai);
-	}
-
-	return tanggal.toLocaleString('id-ID', {
-		day: '2-digit',
-		month: 'short',
-		year: 'numeric',
-		...(denganJam ? { hour: '2-digit', minute: '2-digit' } : {})
-	});
+	return denganJam ? formatWaktu(nilai) : formatTanggalWib(nilai);
 }
 
 function SelPerKolom({ kolom, baris }: { kolom: ColumnConfig; baris: ApiRecord }) {
@@ -219,10 +205,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 	// Data terhapus hanya bisa dilihat, bukan disunting atau dihapus lagi.
 	const melihatTerhapus = (nilaiFilter.terhapus ?? '') !== '';
 
-	const kolomTampil = useMemo(
-		() => kolomDenganJejak(config, melihatTerhapus),
-		[config, melihatTerhapus]
-	);
+	const kolomTampil = useMemo(() => kolomDenganJejak(config, melihatTerhapus), [config, melihatTerhapus]);
 
 	const daftarFilter = useMemo<FilterConfig[]>(
 		() => [...(config.filters ?? []), ...(punyaJejak(config) ? [FILTER_TERHAPUS] : [])],
@@ -254,7 +237,6 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 
 	const jalankanHapus = useCallback(
 		async (id: number) => {
-			// eslint-disable-next-line no-alert
 			if (!window.confirm(t('Hapus data ini? Tindakan ini tidak dapat dibatalkan.'))) {
 				return;
 			}
@@ -263,7 +245,10 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 				await hapus.mutateAsync(id);
 				enqueueSnackbar(t('Data dihapus'), { variant: 'success' });
 			} catch (err) {
-				const pesan = err instanceof PpidApiError ? (Object.values(err.errors)[0]?.[0] ?? err.message) : t('Gagal menghapus data');
+				const pesan =
+					err instanceof PpidApiError
+						? (Object.values(err.errors)[0]?.[0] ?? err.message)
+						: t('Gagal menghapus data');
 				enqueueSnackbar(pesan, { variant: 'error' });
 			}
 		},
@@ -273,6 +258,15 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 	// Saat daftar menampilkan data terhapus, aksi tulis dimatikan: barisnya
 	// tinggal arsip jejak, bukan data yang masih dipakai.
 	const bolehTulis = !config.readOnly && !melihatTerhapus;
+
+	// Tambah, ubah, dan hapus dipisah dari `bolehTulis` supaya satu modul bisa
+	// mematikannya sendiri-sendiri. Hak role tetap ikut diperiksa — flag ini
+	// hanya bisa mempersempit, tidak pernah memberi hak baru.
+	const bolehTambah = bolehTulis && akses.create && !config.tanpaTambah;
+	const bolehUbah = bolehTulis && akses.edit && !config.tanpaUbah;
+	const bolehHapus = bolehTulis && akses.delete && !config.tanpaHapus;
+	// Formulirnya hanya ada gunanya bila salah satu jalur tulisnya hidup.
+	const adaFormulir = bolehTambah || bolehUbah;
 
 	return (
 		<div className="flex w-full flex-col">
@@ -295,7 +289,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 					{headerExtra}
 				</div>
 
-				{bolehTulis && akses.create && (
+				{bolehTambah && (
 					<Button
 						variant="contained"
 						color="secondary"
@@ -321,7 +315,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 
 			<Paper
 				elevation={0}
-				className="mx-4 mb-6 flex flex-auto flex-col overflow-hidden rounded-lg border border-divider md:mx-6"
+				className="border-divider mx-4 mb-6 flex flex-auto flex-col overflow-hidden rounded-lg border md:mx-6"
 			>
 				<DataTable<ApiRecord>
 					columns={kolom}
@@ -353,14 +347,14 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 						variant: 'outlined',
 						size: 'small'
 					}}
-					enableRowSelection={bolehTulis && akses.delete}
+					enableRowSelection={bolehHapus}
 					// Kolom aksi juga muncul untuk modul baca-saja yang punya
 					// aksi khusus — mis. Pemohon, yang datanya tidak boleh
 					// disunting tetapi berkasnya perlu diverifikasi petugas.
-					enableRowActions={Boolean(aksiBaris) || (bolehTulis && (akses.edit || akses.delete))}
+					enableRowActions={Boolean(aksiBaris) || bolehUbah || bolehHapus}
 					renderTopToolbarCustomActions={({ table }) => (
 						<div className="flex flex-wrap items-center gap-2">
-							{akses.delete && table.getSelectedRowModel().rows.length > 0 && (
+							{bolehHapus && table.getSelectedRowModel().rows.length > 0 && (
 								<Button
 									variant="contained"
 									color="error"
@@ -368,8 +362,9 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 									onClick={async () => {
 										const terpilih = table.getSelectedRowModel().rows;
 
-										// eslint-disable-next-line no-alert
-										if (!window.confirm(`${t('Hapus')} ${terpilih.length} ${t('data terpilih?')}`)) {
+										if (
+											!window.confirm(`${t('Hapus')} ${terpilih.length} ${t('data terpilih?')}`)
+										) {
 											return;
 										}
 
@@ -390,63 +385,69 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 							)}
 
 							{daftarFilter.map((filter) =>
-									filter.type === 'relation' ? (
-										<FilterRelasi
-											key={filter.name}
-											filter={filter}
-											value={nilaiFilter[filter.name] ?? ''}
-											onChange={(nilai) =>
-												setNilaiFilter((lama) => ({ ...lama, [filter.name]: nilai }))
-											}
-										/>
-									) : filter.type === 'date' ? (
-										<TextField
-											key={filter.name}
-											type="date"
-											size="small"
-											label={t(filter.label)}
-											value={nilaiFilter[filter.name] ?? ''}
-											slotProps={{ inputLabel: { shrink: true } }}
-											onChange={(event) =>
-												setNilaiFilter((lama) => ({
-													...lama,
-													[filter.name]: event.target.value
-												}))
-											}
-										/>
-									) : (
-										<TextField
-											key={filter.name}
-											select
-											size="small"
-											label={t(filter.label)}
-											value={nilaiFilter[filter.name] ?? ''}
-											onChange={(event) =>
-												setNilaiFilter((lama) => ({
-													...lama,
-													[filter.name]: event.target.value
-												}))
-											}
-											sx={{ minWidth: 170 }}
-										>
-											<MenuItem value="">{t(filter.labelKosong ?? 'Semua')}</MenuItem>
-											{(filter.options ?? []).map((opsi) => (
-												<MenuItem
-													key={String(opsi.value)}
-													value={String(opsi.value)}
-												>
-													{t(opsi.label)}
-												</MenuItem>
-											))}
+								filter.type === 'relation' ? (
+									<FilterRelasi
+										key={filter.name}
+										filter={filter}
+										value={nilaiFilter[filter.name] ?? ''}
+										onChange={(nilai) =>
+											setNilaiFilter((lama) => ({ ...lama, [filter.name]: nilai }))
+										}
+									/>
+								) : filter.type === 'date' ? (
+									<TextField
+										key={filter.name}
+										type="date"
+										size="small"
+										label={t(filter.label)}
+										value={nilaiFilter[filter.name] ?? ''}
+										slotProps={{ inputLabel: { shrink: true } }}
+										onChange={(event) =>
+											setNilaiFilter((lama) => ({
+												...lama,
+												[filter.name]: event.target.value
+											}))
+										}
+									/>
+								) : (
+									<TextField
+										key={filter.name}
+										select
+										size="small"
+										label={t(filter.label)}
+										value={nilaiFilter[filter.name] ?? ''}
+										onChange={(event) =>
+											setNilaiFilter((lama) => ({
+												...lama,
+												[filter.name]: event.target.value
+											}))
+										}
+										sx={{ minWidth: 170 }}
+									>
+										<MenuItem value="">{t(filter.labelKosong ?? 'Semua')}</MenuItem>
+										{(filter.options ?? []).map((opsi) => (
+											<MenuItem
+												key={String(opsi.value)}
+												value={String(opsi.value)}
+											>
+												{t(opsi.label)}
+											</MenuItem>
+										))}
 									</TextField>
 								)
 							)}
 						</div>
 					)}
-					renderRowActionMenuItems={({ row, closeMenu }: { row: MRT_Row<ApiRecord>; closeMenu: () => void }) =>
+					renderRowActionMenuItems={({
+						row,
+						closeMenu
+					}: {
+						row: MRT_Row<ApiRecord>;
+						closeMenu: () => void;
+					}) =>
 						[
 							...(aksiBaris?.(row.original, closeMenu) ?? []),
-							akses.edit ? (
+							bolehUbah ? (
 								<MenuItem
 									key="ubah"
 									onClick={() => {
@@ -461,7 +462,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 									{t('Ubah')}
 								</MenuItem>
 							) : null,
-							akses.delete ? (
+							bolehHapus ? (
 								<MenuItem
 									key="hapus"
 									onClick={() => {
@@ -485,7 +486,7 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 				/>
 			</Paper>
 
-			{bolehTulis && (
+			{adaFormulir && (
 				<ResourceFormDialog
 					config={config}
 					recordId={idTerpilih}

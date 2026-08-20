@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import ppidApi, { PpidApiError } from '../api/ppidApi';
 import { resourceKeys, useResourceItem } from '../api/useResource';
+import { formatWaktu } from '../lib/waktu';
 
 /** Sesuai `Pemohon::BATAS_DITOLAK` di API. */
 const BATAS_DITOLAK = 3;
@@ -42,25 +43,7 @@ const LABEL_JENIS: Record<string, string> = {
 	kelompok: 'Kelompok Orang'
 };
 
-function waktu(nilai: unknown): string {
-	if (!nilai) {
-		return '—';
-	}
-
-	const tanggal = new Date(String(nilai));
-
-	if (Number.isNaN(tanggal.getTime())) {
-		return String(nilai);
-	}
-
-	return tanggal.toLocaleString('id-ID', {
-		day: '2-digit',
-		month: 'short',
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit'
-	});
-}
+const waktu = formatWaktu;
 
 function Baris({ label, nilai }: { label: string; nilai: unknown }) {
 	const { t } = useTranslation();

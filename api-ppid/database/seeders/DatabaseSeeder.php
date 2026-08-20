@@ -10,6 +10,10 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             ModulSistemSeeder::class,
+            // Menyusul ModulSistemSeeder: tahapnya menunjuk role yang dibuat
+            // di sana, dan kotak bagan yang dibuat BaganStrukturPpidSeeder.
+            BaganStrukturPpidSeeder::class,
+            AlurApprovalSeeder::class,
         ]);
     }
 }

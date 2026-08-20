@@ -36,11 +36,12 @@ return [
     'bahasa_email' => env('PPID_BAHASA_EMAIL', 'id'),
 
     /*
-     * Zona waktu yang dipakai mencetak tanggal & jam pada email.
+     * Zona waktu yang dipakai mencetak tanggal & jam pada email dan portal.
      *
-     * Aplikasi menyimpan waktu dalam UTC (config app.timezone), jadi nilainya
-     * harus digeser dulu sebelum diberi label "WIB" — tanpa ini pemohon
-     * membaca jam yang meleset tujuh jam.
+     * Sejak `app.timezone` ikut Asia/Jakarta (langkah 77), pergeserannya tidak
+     * lagi mengubah apa pun — tetapi tetap dipasang: label "WIB" yang dicetak
+     * di sebelahnya baru dijamin benar kalau zonanya disebut, bukan diwarisi
+     * dari setelan aplikasi yang bisa berubah.
      */
     'zona_waktu' => env('PPID_ZONA_WAKTU', 'Asia/Jakarta'),
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CrudController;
 use App\Models\Pemohon;
 use App\Support\AuditLogger;
 use App\Support\EmailPemohon;
+use App\Support\NotifikasiPortal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -167,9 +168,11 @@ class PemohonController extends CrudController
             ]
         );
 
-        // Keputusan diberitahukan lewat email; kegagalan kirim tidak boleh
-        // membatalkan keputusan yang sudah tersimpan (lihat EmailPemohon).
+        // Keputusan diberitahukan lewat email dan lonceng portal; kegagalan
+        // keduanya tidak boleh membatalkan keputusan yang sudah tersimpan
+        // (lihat EmailPemohon dan NotifikasiPortal).
         EmailPemohon::hasilVerifikasiData($pemohon);
+        NotifikasiPortal::hasilVerifikasiData($pemohon);
 
         return response()->json([
             'message' => $data['status'] === 'terverifikasi'

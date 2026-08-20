@@ -217,36 +217,54 @@
     {{-- =====================================================================
          4. INFORMASI PUBLIK
          ===================================================================== --}}
-    <section class="relative py-16 lg:py-24 overflow-hidden">
-        {{-- Background gambar --}}
-        <div class="absolute inset-0">
-            <img src="https://images.unsplash.com/photo-1607113256158-56a934936ef1?q=80&w=1600&auto=format&fit=crop" alt="" class="w-full h-full object-cover">
-            <div class="absolute inset-0 fs-gradient opacity-[0.96]"></div>
-            <div class="absolute inset-0 fs-dot-pattern opacity-25"></div>
-        </div>
-        <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center max-w-2xl mx-auto mb-14">
-                <span class="text-sm font-bold text-white/70 uppercase tracking-widest">{{ __('Kategori Informasi') }}</span>
-                <h2 class="text-3xl lg:text-4xl font-extrabold text-white mt-3">{!! $judulDua(__('Informasi Publik'), 1, 'fs-title-accent-soft') !!}</h2>
-                <p class="text-white/80 mt-4 leading-relaxed">{{ __('Tiga klasifikasi informasi publik yang dapat diakses masyarakat sesuai peraturan keterbukaan informasi.') }}</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                @foreach ($infoPublik as $i => $ip)
-                    <div class="group {{ $cardTier($i) }} rounded-3xl p-8 shadow-xl shadow-black/20 hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="w-14 h-14 bg-white text-[#E87317] rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+    <section class="relative overflow-hidden bg-[#08281B]">
+        {{-- Latar bergambar.
+
+             Sebelumnya foto stok dari Unsplash yang ditutup gradasi hijau
+             beropasitas 0,96 — praktis tak terlihat, jadi bagian ini terbaca
+             sebagai blok hijau polos, sekaligus membuat situs publik
+             bergantung pada CDN pihak ketiga. Keduanya diganti sekali jalan:
+             gambar maskot PPID milik sendiri, dengan gradasi yang benar-benar
+             tembus pandang.
+
+             `$scrim` menggelapkan pita tengah, tempat judul section duduk
+             langsung di atas latar; kartu berlatar sendiri jadi tidak
+             memerlukannya. --}}
+        @include('partials.latar_informasi', ['opasitas' => 0.55, 'terang' => 0.78, 'scrim' => true])
+
+        {{-- Tinggi section mengikuti hero banner: satu layar penuh, dibatasi
+             1100 px supaya di layar yang sangat jangkung tidak jadi terlalu
+             panjang. Sebelumnya tingginya hanya sebesar isinya (`py-16`),
+             sehingga `object-cover` memotong gambarnya jadi pita tipis —
+             ilustrasinya tidak pernah terlihat utuh.
+
+             Tanpa `pt-[104px]` seperti hero: header melayang hanya menimpa
+             bagian paling atas beranda, bukan section ini. --}}
+        <div class="relative z-10 flex items-center min-h-[560px] lg:min-h-screen lg:max-h-[1100px] py-16 lg:py-24">
+            <div class="w-full max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-14">
+                    <span class="text-sm font-bold text-white/70 uppercase tracking-widest">{{ __('Kategori Informasi') }}</span>
+                    <h2 class="text-3xl lg:text-4xl font-extrabold text-white mt-3">{!! $judulDua(__('Informasi Publik'), 1, 'fs-title-accent-soft') !!}</h2>
+                    <p class="text-white/80 mt-4 leading-relaxed">{{ __('Tiga klasifikasi informasi publik yang dapat diakses masyarakat sesuai peraturan keterbukaan informasi.') }}</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    @foreach ($infoPublik as $i => $ip)
+                        <div class="group {{ $cardTier($i) }} rounded-3xl p-8 shadow-xl shadow-black/20 hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="w-14 h-14 bg-white text-[#E87317] rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                </div>
+                                <span class="text-3xl font-extrabold text-white">{{ $ip['count'] }}</span>
                             </div>
-                            <span class="text-3xl font-extrabold text-white">{{ $ip['count'] }}</span>
+                            <p class="text-xl font-bold text-white mb-2">{{ __($ip['title']) }}</p>
+                            <p class="text-sm text-white/90 leading-relaxed mb-6">{{ __($ip['desc']) }}</p>
+                            <a href="{{ route('ppid.information', $ip['slug']) }}" class="inline-flex items-center gap-1.5 text-white font-semibold text-sm underline-offset-4 hover:underline">
+                                {{ __('Lihat') }} {{ $ip['count'] }} {{ __('Dokumen') }}
+                                <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                            </a>
                         </div>
-                        <p class="text-xl font-bold text-white mb-2">{{ __($ip['title']) }}</p>
-                        <p class="text-sm text-white/90 leading-relaxed mb-6">{{ __($ip['desc']) }}</p>
-                        <a href="{{ route('ppid.information', $ip['slug']) }}" class="inline-flex items-center gap-1.5 text-white font-semibold text-sm underline-offset-4 hover:underline">
-                            {{ __('Lihat') }} {{ $ip['count'] }} {{ __('Dokumen') }}
-                            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                        </a>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
             </div>
         </div>
     </section>

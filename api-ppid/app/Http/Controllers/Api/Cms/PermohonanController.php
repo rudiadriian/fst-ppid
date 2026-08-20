@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\Api\Cms;
 
+use App\Http\Controllers\Api\Concerns\MenanganiPersetujuan;
 use App\Http\Controllers\Api\CrudController;
-use App\Models\ApprovalPermohonan;
 use App\Models\PermohonanInformasi;
 use App\Models\PermohonanLogStatus;
 use App\Models\PermohonanTanggapanFile;
+use App\Support\AlurPersetujuan;
 use App\Support\AuditLogger;
 use App\Support\EmailPemohon;
+use App\Support\NotifikasiPortal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,12 +22,22 @@ use Illuminate\Validation\ValidationException;
 /**
  * Modul permohonan informasi.
  *
- * Kolom `status` sengaja tidak ikut jalur update biasa: perpindahan status
- * hanya lewat endpoint `ubahStatus()` supaya setiap perubahan pasti tercatat
- * di `permohonan_log_status` dan mengikuti alur yang diizinkan.
+ * Modul ini tidak punya jalur tulis biasa sama sekali: `store`, `update`, dan
+ * `destroy` tidak didaftarkan di `routes/api.php`. Isi permohonan ditulis
+ * pemohon sendiri lewat portal, jadi petugas tidak boleh membuat, menyunting,
+ * maupun menghapusnya dari panel — termasuk mencatatkan permohonan baru atas
+ * nama orang lain. Yang tersisa untuk petugas ada empat, semuanya lewat
+ * endpoint khusus dan semuanya meninggalkan jejak:
+ *
+ *   - `ubahStatus()`            → `permohonan_log_status` + `audit_log`
+ *   - `putuskanPersetujuan()`   → `approval_pengajuan` + `audit_log`
+ *   - `tambahTanggapanFile()`   → `permohonan_tanggapan_files`
+ *   - `hapusTanggapanFile()`
  */
 class PermohonanController extends CrudController
 {
+    use MenanganiPersetujuan;
+
     protected string $model = PermohonanInformasi::class;
 
     protected string $modulSlug = 'permohonan';
@@ -45,6 +57,10 @@ class PermohonanController extends CrudController
         'files',
         'tanggapanFiles',
         'logStatus.petugas:id,name',
+        // Jenjang persetujuan berjalan; `approval` yang lama tetap ikut sebagai
+        // arsip putusan sebelum alur berjenjang dipakai.
+        'approvalLangkah.role:id,name',
+        'approvalLangkah.pemutus:id,name',
         'approval.penyiap:id,name',
         'approval.penyetuju:id,name',
         'keberatan',
@@ -58,46 +74,17 @@ class PermohonanController extends CrudController
         'tampil_di_register_publik' => 'boolean',
     ];
 
-    /** Batas waktu tanggapan bawaan (hari kalender) sesuai SOP layanan. */
-    private const SLA_HARI = 10;
-
+    /**
+     * Tidak ada endpoint tulis yang memakainya.
+     *
+     * `CrudController` menuntut metode ini ada; membiarkannya kosong lebih
+     * jujur daripada menyimpan aturan validasi untuk formulir yang sudah tidak
+     * punya route — aturan yang tidak pernah dijalankan cepat menyimpang dari
+     * kenyataan skema.
+     */
     protected function rules(string $mode, ?Model $record): array
     {
-        $wajib = $mode === 'create' ? 'required' : 'sometimes';
-
-        return [
-            'pemohon_id' => [$wajib, Rule::exists('pemohon', 'id')],
-            'kategori_id' => ['nullable', Rule::exists('kategori_informasi', 'id')],
-            'rincian_informasi' => [$wajib, 'string'],
-            'tujuan_penggunaan' => ['nullable', 'string'],
-            'format_informasi' => ['nullable', Rule::in(['softcopy', 'hardcopy'])],
-            'cara_pengiriman' => ['nullable', Rule::in(['email', 'ambil_langsung', 'pos'])],
-            'batas_waktu_tanggapan' => ['nullable', 'date'],
-            'ditangani_oleh' => ['nullable', Rule::exists('users', 'id')],
-            'tampil_di_register_publik' => ['boolean'],
-        ];
-    }
-
-    protected function beforeSave(array $data, Request $request, ?Model $record): array
-    {
-        if ($record === null) {
-            $data['batas_waktu_tanggapan'] = $data['batas_waktu_tanggapan'] ?? now()->addDays(self::SLA_HARI);
-        }
-
-        return $data;
-    }
-
-    protected function afterSave(Model $record, Request $request, string $mode): void
-    {
-        if ($mode === 'create') {
-            PermohonanLogStatus::create([
-                'permohonan_id' => $record->getKey(),
-                'status_sebelumnya' => null,
-                'status_baru' => $record->status,
-                'catatan' => 'Permohonan dicatat lewat panel admin.',
-                'changed_by' => Auth::guard('api')->id(),
-            ]);
-        }
+        return [];
     }
 
     /**
@@ -130,35 +117,29 @@ class PermohonanController extends CrudController
             ]);
         }
 
-        DB::transaction(function () use ($permohonan, $data, $statusLama, $statusBaru) {
-            $permohonan->status = $statusBaru;
-
-            if (array_key_exists('alasan_penolakan', $data) && $data['alasan_penolakan'] !== null) {
-                $permohonan->alasan_penolakan = $data['alasan_penolakan'];
-            }
-
-            // Status yang menutup layanan sekaligus menandai waktu tanggapan.
-            if (in_array($statusBaru, ['disetujui', 'ditolak', 'ditolak_sebagian', 'selesai'], true)) {
-                $permohonan->tanggal_tanggapan = $permohonan->tanggal_tanggapan ?? now();
-            }
-
-            if ($permohonan->ditangani_oleh === null) {
-                $permohonan->ditangani_oleh = Auth::guard('api')->id();
-            }
-
-            $permohonan->save();
-
-            PermohonanLogStatus::create([
-                'permohonan_id' => $permohonan->id,
-                'status_sebelumnya' => $statusLama,
-                'status_baru' => $statusBaru,
-                'catatan' => $data['catatan'] ?? null,
-                'changed_by' => Auth::guard('api')->id(),
+        /*
+         * Persetujuan berjenjang hanya boleh dilewati kalau alurnya memang
+         * belum disusun. Selama masih ada tahap yang menunggu, putusan
+         * akhirnya milik penyetuju — bukan petugas yang mengubah status
+         * sendiri lewat dialog status.
+         */
+        if ($statusLama === 'menunggu_approval'
+            && in_array($statusBaru, ['disetujui', 'ditolak', 'ditolak_sebagian'], true)
+            && AlurPersetujuan::berjalan(AlurPersetujuan::JENIS_PERMOHONAN, $id) !== null) {
+            throw ValidationException::withMessages([
+                'status_baru' => 'Permohonan ini sedang menunggu putusan tahap persetujuan; '
+                    .'selesaikan tahapnya lewat menu Persetujuan Berjenjang.',
             ]);
+        }
 
-            // Email ke pemohon menunggu commit: transaksi yang batal tidak
-            // boleh menyisakan pemberitahuan atas status yang tidak jadi.
-            DB::afterCommit(fn () => EmailPemohon::statusBerubah($permohonan, $statusLama, $statusBaru));
+        DB::transaction(function () use ($permohonan, $data, $statusLama, $statusBaru) {
+            $this->terapkanStatus(
+                $permohonan,
+                $statusLama,
+                $statusBaru,
+                $data['catatan'] ?? null,
+                $data['alasan_penolakan'] ?? null
+            );
         });
 
         AuditLogger::record(
@@ -177,39 +158,101 @@ class PermohonanController extends CrudController
     }
 
     /**
-     * Ajukan / putuskan persetujuan berjenjang.
+     * Simpan status baru beserta seluruh jejak dan pemberitahuannya.
+     *
+     * Dipakai dua pemanggil: dialog status petugas dan hasil akhir alur
+     * persetujuan. Keduanya harus meninggalkan jejak yang sama persis, jadi
+     * jalurnya satu — bukan disalin di dua tempat yang lambat laun berbeda.
+     *
+     * Harus dijalankan di dalam transaksi.
      */
-    public function putusanApproval(Request $request, int $id): JsonResponse
-    {
-        $permohonan = PermohonanInformasi::findOrFail($id);
+    private function terapkanStatus(
+        PermohonanInformasi $permohonan,
+        string $statusLama,
+        string $statusBaru,
+        ?string $catatan,
+        ?string $alasanPenolakan
+    ): void {
+        $permohonan->status = $statusBaru;
 
-        $data = $request->validate([
-            'status_approval' => ['required', Rule::in(['pending', 'disetujui', 'ditolak', 'revisi'])],
-            'catatan_approval' => ['nullable', 'string', 'max:2000'],
-        ]);
+        if ($alasanPenolakan !== null) {
+            $permohonan->alasan_penolakan = $alasanPenolakan;
+        }
 
-        $userId = Auth::guard('api')->id();
+        // Status yang menutup layanan sekaligus menandai waktu tanggapan.
+        if (in_array($statusBaru, ['disetujui', 'ditolak', 'ditolak_sebagian', 'selesai'], true)) {
+            $permohonan->tanggal_tanggapan = $permohonan->tanggal_tanggapan ?? now();
+        }
 
-        $approval = ApprovalPermohonan::create([
+        if ($permohonan->ditangani_oleh === null) {
+            $permohonan->ditangani_oleh = Auth::guard('api')->id();
+        }
+
+        $permohonan->save();
+
+        PermohonanLogStatus::create([
             'permohonan_id' => $permohonan->id,
-            'disiapkan_oleh' => $permohonan->ditangani_oleh ?? $userId,
-            'tanggal_diajukan' => now(),
-            'disetujui_oleh' => $data['status_approval'] === 'pending' ? null : $userId,
-            'status_approval' => $data['status_approval'],
-            'catatan_approval' => $data['catatan_approval'] ?? null,
-            'tanggal_approval' => $data['status_approval'] === 'pending' ? null : now(),
+            'status_sebelumnya' => $statusLama,
+            'status_baru' => $statusBaru,
+            'catatan' => $catatan,
+            'changed_by' => Auth::guard('api')->id(),
         ]);
+
+        // Berkasnya baru masuk antrean persetujuan: jenjangnya dibuat di sini
+        // supaya penyetuju tahap pertama langsung mendapat pemberitahuan.
+        if ($statusBaru === 'menunggu_approval') {
+            AlurPersetujuan::mulai($permohonan);
+        }
+
+        // Email dan lonceng portal menunggu commit: transaksi yang batal tidak
+        // boleh menyisakan pemberitahuan atas status yang tidak jadi.
+        //
+        // Yang ikut ke pemohon adalah `alasan_penolakan`, bukan `catatan`:
+        // catatan itu keterangan internal petugas dan memang dilabeli begitu
+        // di panel.
+        DB::afterCommit(function () use ($permohonan, $statusLama, $statusBaru, $alasanPenolakan) {
+            EmailPemohon::statusBerubah($permohonan, $statusLama, $statusBaru);
+            NotifikasiPortal::statusPengajuan($permohonan, $statusLama, $statusBaru, $alasanPenolakan);
+        });
+    }
+
+    // -----------------------------------------------------------------
+    // Persetujuan berjenjang
+    // -----------------------------------------------------------------
+
+    protected function pengajuanPersetujuan(int $id): Model
+    {
+        return PermohonanInformasi::findOrFail($id);
+    }
+
+    /**
+     * Status permohonan setelah alur persetujuan berakhir.
+     *
+     * `revisi` mengembalikan berkas ke `diproses`, bukan ke status `revisi`
+     * milik skema: yang perlu diperbaiki adalah pekerjaan petugas, dan dari
+     * `diproses` ia bisa mengajukan ulang ke persetujuan tanpa jalan memutar.
+     */
+    protected function terapkanHasilPersetujuan(Model $pengajuan, string $hasil, ?string $catatan): void
+    {
+        /** @var PermohonanInformasi $pengajuan */
+        $statusLama = (string) $pengajuan->status;
+
+        [$statusBaru, $alasan] = match ($hasil) {
+            AlurPersetujuan::HASIL_DISETUJUI => ['disetujui', null],
+            AlurPersetujuan::HASIL_DITOLAK => ['ditolak', $catatan],
+            default => ['diproses', null],
+        };
+
+        $this->terapkanStatus($pengajuan, $statusLama, $statusBaru, $catatan, $alasan);
 
         AuditLogger::record(
-            $userId,
-            'approval',
-            ApprovalPermohonan::class,
-            $approval->id,
-            null,
-            ['permohonan_id' => $permohonan->id, 'status_approval' => $data['status_approval']]
+            Auth::guard('api')->id(),
+            'update_status',
+            PermohonanInformasi::class,
+            $pengajuan->id,
+            ['status' => $statusLama],
+            ['status' => $statusBaru]
         );
-
-        return response()->json(['data' => $approval], 201);
     }
 
     /**
@@ -235,6 +278,10 @@ class PermohonanController extends CrudController
                 'uploaded_by' => Auth::guard('api')->id(),
             ]);
         }
+
+        // Berkasnya sudah bisa diunduh pemohon begitu barisnya tersimpan, jadi
+        // loncengnya diberi tahu di sini — bukan menunggu status berpindah.
+        NotifikasiPortal::berkasTanggapan($permohonan, count($dibuat));
 
         return response()->json(['data' => $dibuat], 201);
     }

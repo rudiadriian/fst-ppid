@@ -8,8 +8,21 @@ import type { Notification } from '../types';
  * Fuse (`/api/mock/notifications`) sudah tidak ada sejak data tiruan dilepas.
  */
 export const notificationsApiService = {
-	getAll: async (): Promise<Notification[]> => {
-		return api.get('v1/notifikasi').json();
+	/**
+	 * Tanpa `semua`, API hanya mengembalikan yang belum dibaca — itu isi
+	 * lonceng. Halaman Notifikasi memintanya dengan `semua = true` supaya
+	 * riwayatnya tetap bisa dilihat.
+	 */
+	getAll: async (semua = false): Promise<Notification[]> => {
+		return api.get('v1/notifikasi', { searchParams: semua ? { semua: 1 } : undefined }).json();
+	},
+
+	markAsRead: async (notificationId: string): Promise<void> => {
+		await api.post(`v1/notifikasi/${notificationId}/baca`);
+	},
+
+	markAllAsRead: async (): Promise<void> => {
+		await api.post('v1/notifikasi/baca-semua');
 	},
 
 	create: async (_notification: Notification): Promise<Notification> => {
