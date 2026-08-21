@@ -43,6 +43,37 @@ class User extends Authenticatable implements JWTSubject
         'password' => 'hashed',
     ];
 
+    /**
+     * Email selalu disimpan huruf kecil.
+     *
+     * Perbandingan `=` di PostgreSQL membedakan huruf besar-kecil, sedangkan
+     * seluruh jalur auth membakukan email yang diketik ke huruf kecil sebelum
+     * mencarinya. Tanpa pembakuan di sisi tulis, akun yang dibuat sebagai
+     * "Budi@Foodstation.co.id" tidak akan pernah ditemukan oleh jalur lupa
+     * password — gagal diam-diam, tanpa galat, sampai ada yang membutuhkannya.
+     */
+    public function setEmailAttribute(?string $nilai): void
+    {
+        $this->attributes['email'] = $nilai === null ? null : \Illuminate\Support\Str::lower(trim($nilai));
+    }
+
+    /**
+     * Cari akun tanpa membedakan huruf besar-kecil.
+     *
+     * Dipakai jalur auth dan lupa password. Baris lama yang terlanjur tersimpan
+     * dengan huruf besar tetap ketemu, walau tulisan barunya sudah dibakukan.
+     */
+    public static function denganEmail(?string $email): ?self
+    {
+        if (blank($email)) {
+            return null;
+        }
+
+        return static::query()
+            ->whereRaw('lower(email) = ?', [\Illuminate\Support\Str::lower(trim($email))])
+            ->first();
+    }
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
@@ -86,5 +117,18 @@ class User extends Authenticatable implements JWTSubject
             'shortcuts' => $this->shortcuts ?? [],
             'settings' => $this->settings ?? new \stdClass(),
         ];
+    }
+
+    /**
+     * Kirim tautan atur ulang password lewat surat kita sendiri.
+     *
+     * Notifikasi bawaan Laravel menyusun tautannya dari `route('password.reset')`
+     * — rute halaman web yang tidak ada di API ini. Yang harus dibuka petugas
+     * adalah halaman di panel admin (aplikasi terpisah), jadi penyusunan
+     * tautannya diambil alih `EmailAkunAdmin`.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        \App\Support\EmailAkunAdmin::tautanReset($this, $token);
     }
 }

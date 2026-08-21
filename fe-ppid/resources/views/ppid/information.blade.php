@@ -111,22 +111,7 @@
                                                 <span class="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-accent-50 text-[#9E470D]">{{ __($data['title']) }}</span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                                @if (!empty($item['file']))
-                                                    {{-- Tautan ke halaman lain memakai label "Selengkapnya";
-                                                         berkas unggahan memakai "Lihat". --}}
-                                                    <a href="{{ $item['file'] }}" target="_blank" rel="noopener"
-                                                       class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg text-white fs-gradient-accent hover:brightness-110 transition-all duration-200">
-                                                        @if ($item['jenis'] === 'tautan')
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.5 6H18a2 2 0 012 2v4.5M20 8l-7.5 7.5M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4"></path></svg>
-                                                            {{ __('Selengkapnya') }}
-                                                        @else
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                                            {{ __('Lihat') }}
-                                                        @endif
-                                                    </a>
-                                                @else
-                                                    <span class="text-sm font-normal text-gray-400 dark:text-gray-500">{{ __('Belum tersedia') }}</span>
-                                                @endif
+                                                @include('partials.informasi_aksi', ['item' => $item])
                                             </td>
                                         </tr>
                                     @endforeach
@@ -148,5 +133,7 @@
 
         </div>
     </section>
+
+    @include('partials.informasi_dialog')
 
 @endsection

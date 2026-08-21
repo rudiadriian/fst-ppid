@@ -47,6 +47,27 @@ class RouteServiceProvider extends ServiceProvider
             ];
         });
 
+        /*
+         * Menggambar captcha memakai GD — jauh lebih mahal daripada menjawab
+         * JSON. Kuotanya per IP saja: endpoint ini terbuka, belum ada identitas
+         * yang bisa dipakai sebagai kunci.
+         */
+        RateLimiter::for('captcha', function (Request $request) {
+            return Limit::perMinute(30)->by('captcha:'.$request->ip());
+        });
+
+        /*
+         * Rem lapis pertama untuk lupa/reset password. Tangga bertingkat yang
+         * sebenarnya ada di `KunciTautanAdmin`; yang ini sekadar menahan
+         * banjir dalam hitungan detik sebelum tangga itu sempat menghitung.
+         */
+        RateLimiter::for('tautan-akun', function (Request $request) {
+            return [
+                Limit::perMinute(5)->by(strtolower((string) $request->input('email')).'|'.$request->ip()),
+                Limit::perMinute(15)->by('tautan:'.$request->ip()),
+            ];
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

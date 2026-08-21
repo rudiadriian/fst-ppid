@@ -372,8 +372,587 @@ Tolong jalankan langkah untuk menyesuaikan/ modifikasi halaman frontend aplikasi
     - [x] Tambahkan Fitur Detail, agar memudahkan saat melihat pengajuan dari pemohon.
 79. [x] buatkan alur proses dari awal-akhir sesuai dengan struktur organisasi (roles hak akses user disesuaikan dengan struktur organisasi) baik permohonan informasi ataupun keberatan informasi dengan konsep approval yang dinamis dan berjenjang (jika sewaktu berubah, super admin bisa merubahnya melalui be-ppid)
 80. [x] pada fe-ppid dibagian Kategori Informasi Informasi Publik, saya ingin backgroundnya pakai gambar di path ini D:\Project\Ppid\fe-ppid\ppid_foody_dimana_saja.png sehingga tidak polos warna hijau saja. tapi saat ini ukuran sectionnya kurang tinggi menyebabkan gambarnya tidak maksimal dan section itu ga 1 layar tampil full, hasilnya bisa dilihat disini D:\Project\Ppid\fe-ppid\3.png (konsepnya sesuaikan sama banner ukuran tinggi dan lebarnya)
+81. [x] masih ada masalah dan kekurangan project ini seperti :
+    - [x] Lambat ketika login (fitur auth), mengakses modul, perpindahan ke modul lain, CRUD data, serta mengakses semua fitur yang ada didalam modul terasa lambat sekali, tolong diperbaiki prosesnya agar cepat dan ringan.
+    - [x] Tidak adanya alert error, misalnya ketika fitur auth berjalan (seperti ketika api tidak berjalan atau server bermasalah atau ada proses yang salah)
+    - [x] Belum ada fitur lupa password untuk be-ppid, buatkan konsepnya yang perlu verifikasi ke email
+    - [x] Buat sistem keamanan pada fitur auth untuk menghindari spam ataupun hal lainnya seperti contoh :
+        - [x] Captcha di login, verifikasi lupa password, dan di konfirmasi pembuatan password baru
+        - [x] Maxmimal salah password saat login, 3 kali = 1 jam baru bisa lagi, 3 kali ke 2 = 1 hari, 3 kali ke 3 = 14 hari, 3 kali ke 4 = suspend akun, berikan informasi untuk menghubungi administrator
+        - [x] Pastikan yang bisa menjalankan fitur auth hanya email yang terdaftar
+        - [x] Maxmimal untuk lupa password verifikasi ke email 3 kali = 1 jam baru bisa lagi, 3 kali ke 2 = 1 hari, 3 kali ke 3 = 14 hari, 3 kali ke 4 = suspend akun, berikan informasi untuk menghubungi administrator
+    - [x] email (rudiadriian@gmail.com) yang bukan sebagai user admin, masih bisa direspon saat lupa password :
+        Permintaan diterima
+        Jika email tersebut terdaftar sebagai akun panel, tautan atur ulang password sudah kami kirim. Periksa juga folder Spam.
+82. [x] Ubah Informasi Kontak PPID Food Station, Jam Layanan agar menjadi lebih rapi tampilannya:
+    - Senin - Jumat 
+    - Pukul 08:00 - 15:00 WIB
+    - Istirahat Pukul 12:00 - 13:00 WIB
+83. [x] Untuk Daftar Informasi Publik, Informasi Berkala, Infromasi Serta Merta, dan Infromasi Setiap Saat, tolong dibuatkan konsep tombolnya memiliki fitur 2 pilihan. Jadi, ketika di klik muncul POP UP modal dialog dengan 2 tombol. Di lihat Saja (Preview only) diinput tautan dan  jika ingin di Download harus login dan mengajukan Permohonan Informasi.
+84. [x] Saya ini ketika publik mengakses fe-ppid ada backsound lagu, setiap kali akses atau refresh halaman D:\Project\Ppid\Jingle_Food_Station_Vocal.mp4
 
 
+
+---
+
+
+## Status Pengerjaan (putaran 64 — langkah 83 diperluas & langkah 84)
+
+### Langkah 83 — dari satu dokumen jadi empat daftar
+
+Putaran 63 memasang dialog dua pilihan hanya untuk dokumen yang penandanya menyala — praktisnya cuma Annual Report. Permintaan sekarang memberlakukannya pada **Daftar Informasi Publik, Informasi Berkala, Serta Merta, dan Setiap Saat**, dengan pratinjau memakai tautan yang diisikan petugas.
+
+#### Yang menentukan keputusan tanpa perlu bertanya
+
+Sebelum mengubah apa pun, isi daftarnya dihitung:
+
+| | Jumlah |
+| --- | --- |
+| Dokumen terbit | 24 |
+| Punya tautan baca | 10 |
+| **Punya berkas terunggah** | **0** |
+| Tidak punya keduanya | 14 |
+
+Tidak satu pun dokumen punya berkas. Artinya tidak ada satu pun unduhan yang tersedia hari ini, dan menjadikan seluruh unduhan bergerbang **tidak menutup apa pun yang sekarang terbuka** — yang selama ini bisa dibuka publik adalah tautan bacanya, dan itu tetap terbuka. Kekhawatiran "24 dokumen mendadak terkunci" tidak berlaku, jadi tidak ada yang perlu dikonfirmasi.
+
+#### Dua salinan aturan disatukan
+
+Ketahuan saat mengerjakan: keputusan tombol ada **dua kali**. `partials/informasi_aksi.blade.php` dipakai halaman indeks, sedangkan `information.blade.php` menyimpan salinan inline-nya sendiri — yang putaran 63 saya sunting. Dua salinan aturan yang sama pada satu daftar akan berpisah cepat atau lambat; putaran 63 sudah membuktikannya, karena dialognya hanya masuk ke salah satu.
+
+Sekarang satu jalur:
+
+- `partials/informasi_aksi.blade.php` — tombol satu baris. Dipakai keempat daftar.
+- `partials/informasi_dialog.blade.php` — dialognya, dimuat sekali per halaman.
+
+`information.blade.php` menyusut dari 220-an baris jadi 139.
+
+#### Penandanya jadi bawaan, bukan pengecualian
+
+`unduhan_terbatas` sekarang bernilai `true` secara bawaan, dan 24 baris yang ada ikut dinyalakan. Membiarkan yang lama `false` berarti dokumen lama diam-diam berperilaku lain dari dokumen yang dibuat besok — dua aturan pada satu daftar, tanpa apa pun di layar yang menjelaskan bedanya.
+
+Penandanya **tidak dihapus**. Ia tetap jadi jalan keluar: dokumen yang memang boleh diunduh siapa saja cukup dimatikan penandanya, tanpa perubahan program.
+
+#### Perilaku akhirnya
+
+Satu pintu untuk semua entri di keempat daftar. Tombol **Lihat** membuka dialog:
+
+| Isi dialog | Kapan |
+| --- | --- |
+| **Di Lihat Saja** → tautan dokumen, tab baru, tanpa masuk | Bila tautannya diisi |
+| "Tautan untuk dibaca belum tersedia" | Bila belum diisi |
+| **Unduh Dokumen** → rute bergerbang | Bila berkas salinannya diunggah |
+| "Salinan untuk diunduh belum tersedia" | Bila belum (keadaan seluruh 24 dokumen saat ini) |
+
+Entri yang tidak punya tautan maupun berkas tidak membuka dialog sama sekali — tombolnya tetap **Mohon Dokumen** seperti sebelumnya.
+
+Bantuan isian di be-ppid ikut diperbarui, karena artinya berubah: **Tautan halaman** sekarang alamat tempat dokumen **dibaca** (terbuka untuk umum), **Lampiran dokumen** untuk salinan yang **diunduh** (menuntut permohonan disetujui).
+
+---
+
+### Langkah 84 — backsound jingle
+
+Dipasang, dengan tiga hal yang perlu Anda ketahui sebelum menilai hasilnya.
+
+**Peramban memblokir suara yang menyala sendiri.** Chrome, Safari, dan Firefox menolak `play()` sebelum pengunjung pernah menyentuh halamannya. Jadi "berbunyi setiap kali akses atau refresh" tidak bisa dijanjikan pada kunjungan pertama — bukan karena tidak dikerjakan, melainkan karena kebijakan peramban sejak 2018 dan tidak ada cara sah melewatinya. Yang dipasang: dicoba dulu; kalau ditolak, dijalankan pada sentuhan, klik, atau tekan tombol pertama. Sesudah itu setiap muat halaman berbunyi seperti yang diminta.
+
+**Harus ada cara mematikannya.** WCAG 2.1 kriteria 1.4.2 mewajibkan suara yang berbunyi otomatis lebih dari tiga detik punya mekanisme penghenti — dan untuk situs badan publik ini bukan saran. Tombol bulat di pojok kiri bawah itulah mekanismenya. Pilihannya disimpan di `localStorage`, jadi pengunjung yang mematikannya tidak perlu mematikannya lagi di setiap halaman. Volumenya 0,35, bukan penuh.
+
+**Portal pengguna dikecualikan.** Halaman `/akun/*` adalah tempat orang mengetik permohonan, data diri, dan password. Musik latar di sana mengganggu pekerjaan, bukan menyambut tamu.
+
+**Soal berkasnya.** `Jingle_Food_Station_Vocal.mp4` adalah video H.264 dengan audio AAC, 972 KB. Elemen `<audio>` memainkan trek audionya dan mengabaikan videonya — tetapi videonya tetap ikut terunduh. Setiap pengunjung membayar ~970 KB untuk suara yang mungkin puluhan KB saja. Tidak ada ffmpeg di mesin ini untuk mengekstraknya; bila nanti ada, mengubahnya ke `.m4a` memangkas beban itu tanpa mengubah satu baris kode pun — cukup ganti berkasnya dan nama di `partials/backsound.blade.php`.
+
+### Verifikasi
+
+- **14 tes** `DokumenTerbatasTest` (dua baru: dialog tampil di indeks **dan** halaman kategori; entri tanpa isi tetap menawarkan Mohon Dokumen). Tes pertama itu yang menahan kedua daftar agar tidak berpisah lagi seperti di putaran 63.
+- **4 tes** `BacksoundTest`: terpasang di halaman publik, tidak ada di portal pengguna, tombol penghenti beserta penyimpan pilihannya ada, berkasnya ada.
+- Berkas jingle dilayani HTTP **200**, 995.539 byte.
+- Migrasi backfill: 24 dari 24 dokumen terbit kini `unduhan_terbatas = true`.
+- Suite penuh: fe-ppid **53 lulus** (195 asersi), api-ppid **29 lulus**. `npm run build` sukses.
+
+### Yang perlu Anda lakukan
+
+**Unggah berkas salinan** pada dokumen yang memang ingin bisa diunduh — lewat be-ppid → Informasi Publik → pilih dokumen → Lampiran dokumen. Selama belum ada, dialognya tetap berfungsi tetapi hanya menawarkan Di Lihat Saja.
+
+**Isi Tautan halaman** pada 14 dokumen yang belum punya keduanya, bila memang ada halaman tempat isinya bisa dibaca. Sekarang tombolnya masih Mohon Dokumen.
+
+### Yang belum dikerjakan
+
+Tidak berubah: tombol buka suspend akun panel, dan kolom dokumen yang diminta pada modul Permohonan di be-ppid.
+
+---
+
+
+## Status Pengerjaan (putaran 63 — langkah 82 & 83 direvisi)
+
+Keduanya ditulis ulang setelah putaran 62. Yang berubah bukan tambahan, melainkan arah.
+
+### Langkah 82 — jamnya sudah benar, tampilannya yang belum
+
+Angka jamnya diperbaiki putaran 62. Permintaan sekarang soal **tampilan** di bagian Kontak beranda, dan alasannya terlihat begitu dibaca ulang:
+
+> Senin–Jumat, 08.00–15.00 WIB (istirahat 12.00–13.00 WIB)
+
+Satu kalimat panjang berkurung. Orang yang cuma ingin tahu "tutup jam berapa" harus membaca seluruhnya. Sekarang tiga baris:
+
+- Senin–Jumat
+- Pukul 08.00–15.00 WIB
+- Istirahat Pukul 12.00–13.00 WIB
+
+Baris pertama ditebalkan sedikit sebagai kepala, dua sisanya `tabular-nums` supaya angkanya sejajar.
+
+**Sumbernya tetap satu.** Nilai `kontak.jam_layanan` di CMS tidak dipecah jadi tiga kolom — pemecahannya dilakukan saat menampilkan, dari nilai yang sama. Bila petugas menggantinya dengan kalimat lain yang tidak dikenali polanya, hasil pemecahannya `null` dan tampilannya kembali memakai kalimat apa adanya. Menebak-nebak struktur dari teks bebas hanya akan memotongnya di tempat yang salah.
+
+### Langkah 83 — arahnya dibalik
+
+Putaran 62 dibangun dari dua jawaban Anda: unduh terbuka setelah permohonan **disetujui**, dan pratinjau membaca **berkas terunggah**. Yang kedua sekarang dibatalkan:
+
+> Di lihat Saja (Preview only) **tautan tetap yang sekarang**
+
+Jadi "lihat" memakai tautan `foodstation.id/laporan-tahunan-fstj/` yang memang sudah ada pada barisnya — bukan PDF yang harus diunggah ulang. Dan pilihannya muncul lewat **dialog**, bukan halaman.
+
+Yang dibongkar dari putaran 62:
+
+- Penampil pdf.js di halaman dokumen — dilepas. Pratinjaunya bukan lagi berkas kita.
+- Rute `ppid.dokumen.berkas` (penyaji berkas `inline`) — dihapus. Tidak ada lagi yang memakainya, dan pintu yang tidak dipakai tetap pintu.
+- Tes `test_isi_berkas_pratinjau_terbuka_untuk_tamu` — ikut dilepas bersama rutenya.
+
+Yang **tetap dipakai** dari putaran 62, karena bagian itu tidak berubah: kolom `unduhan_terbatas` dan `informasi_publik_id`, pemindahan berkas ke disk privat, seluruh aturan `AksesDokumen`, dan gerbang unduhnya.
+
+#### Dialognya satu untuk seluruh tabel
+
+Tombol tiap baris tidak membawa markup dialognya sendiri — ia mengirim event `buka-dialog-dokumen` berisi judul, tautan pratinjau, dan alamat rute unduh. Satu dialog di bawah tabel yang menangkapnya. Kalau tiap baris punya dialognya sendiri, tabel berisi 24 dokumen akan mencetak 24 salinan markup yang sama.
+
+Isi dialognya:
+
+| Tombol | Perilaku |
+| --- | --- |
+| **Di Lihat Saja** | Membuka tautan dokumen di tab baru. Tanpa masuk, tanpa permohonan |
+| **Unduh Dokumen** | Menuju rute unduh, yang memeriksa apakah permohonan orangnya sudah disetujui |
+
+Bila berkas salinannya belum diunggah petugas, tombol Unduh **tidak dipasang** — diganti keterangan "Salinan untuk diunduh belum tersedia". Tombol yang berujung 404 lebih buruk daripada tidak ada tombol.
+
+#### Halaman dokumen berubah peran
+
+`/informasi/dokumen/{id}` bukan lagi penampil berkas. Ia sekarang halaman yang menjelaskan **apa yang kurang** ketika unduhannya belum terbuka, dan menyediakan langkah berikutnya — ke situlah rute unduh mengalihkan orang yang belum berhak. Isinya: tautan baca di atas, panel keadaan unduh di bawah.
+
+Karena tidak lagi menyajikan berkas, halaman itu juga tidak lagi menuntut berkas: dokumen yang baru punya tautan tetap membukanya dengan keterangan yang jujur, bukan 404.
+
+### Verifikasi
+
+- **12 tes** `DokumenTerbatasTest`, semuanya lulus. Dua baru: dialog memuat tautan baca **dan** alamat rute unduh; halaman akses tetap terbuka tanpa berkas.
+- Keempat status yang belum diputus, permohonan ditolak, pemohon lain, dan persetujuan atas dokumen lain — semuanya tetap tertutup, sama seperti putaran 62.
+- Diuji pada baris Annual Report sungguhan (terbatas, punya tautan, belum punya berkas): tombol dialog ada, tautan `foodstation.id` tertanam, `unduh: null` — tombol unduhnya memang tidak dipasang.
+- Satu jebakan tes yang perlu dicatat: alamat ditanam lewat `@js()`, jadi Blade mencetaknya sebagai literal JavaScript dan garis miringnya lolos menjadi `\/`. Membandingkannya sebagai URL mentah selalu gagal walau halamannya benar. Pembandingnya dibungkus `sepertiDiJs()`.
+- Beranda: ketiga baris jam layanan tampil, kalimat berkurung lama tidak ada lagi.
+- Suite penuh: fe-ppid **47 lulus**, api-ppid **29 lulus**. `npm run build` sukses.
+
+### Yang perlu Anda lakukan
+
+**Unggah PDF Annual Report** lewat be-ppid → Informasi Publik → Annual Report → Lampiran dokumen, bila salinan unduhannya memang ingin disediakan. Tanpa itu dialognya tetap berfungsi — tombol Di Lihat Saja bekerja, dan tombol Unduh diganti keterangan bahwa salinannya belum ada.
+
+### Yang belum dikerjakan
+
+Tidak berubah dari putaran 62: tombol buka suspend akun panel, dan kolom dokumen yang diminta pada modul Permohonan di be-ppid.
+---
+
+
+## Status Pengerjaan (putaran 62 — langkah 82 & 83)
+
+### Basis data sempat terhapus di tengah putaran ini
+
+Perlu dibaca lebih dulu, karena mengubah isi basis data.
+
+Saat menjalankan `php artisan test` di fe-ppid untuk memeriksa pekerjaan langkah 83, seluruh tabel `ppiddb` hilang. Tinggal 5 tabel bawaan Laravel, persis seperti kejadian **18 Agustus 2026** yang tercatat di bawah — dan sekarang penyebabnya diketahui.
+
+Tujuh berkas tes peninggalan Breeze (`tests/Feature/Auth/*` dan `ProfileTest.php`) memakai `RefreshDatabase`. Sifat trait itu menjalankan `migrate:fresh` sebelum tesnya jalan. Yang membuatnya berbahaya di proyek ini: `phpunit.xml` **tidak** menunjuk basis data terpisah — baris `DB_CONNECTION=sqlite` dan `DB_DATABASE=:memory:` di sana dikomentari — jadi yang dibangun ulang adalah `ppiddb` yang sedang dipakai.
+
+Tes-tes itu sendiri sudah tidak berguna sejak lama: route, controller, dan view Breeze (`/login`, `/register`, `/dashboard`, `/profile`) sudah dihapus dari situs publik, dan komentarnya masih ada di `routes/web.php`. Tesnya ditinggalkan. Jadi tujuh berkas itu tidak pernah bisa lulus — satu-satunya yang mereka lakukan adalah menghapus basis data setiap kali seseorang menjalankan seluruh suite.
+
+**Pemulihan** mengikuti prosedur 18 Agustus: 20 migrasi, `db:seed`, sepuluh seeder konten, dan akun admin dibuat ulang. Hasilnya 49 tabel; 24 informasi publik, 22 informasi dikecualikan, 8 regulasi, 7 simpul struktur, 5 FAQ, 1 maklumat, 1 halaman profil, 19 modul, 4 role, 76 baris hak akses. Perubahan data langkah 82 dan 83 dipasang ulang di atasnya.
+
+**Yang tidak kembali:** akun pemohon, permohonan, keberatan, dan berita yang pernah diinput sejak pemulihan 18 Agustus. Tidak ada backup di mesin ini. Akun admin dibuat ulang dengan kata sandi sementara — **segera ganti** lewat `php artisan ppid:set-password admin@foodstation.co.id`.
+
+**Lubangnya ditutup, bukan sekadar dibersihkan:**
+
+1. Ketujuh berkas tes Breeze dihapus. Yang diujinya sudah tidak ada.
+2. `tests/TestCase.php` di **kedua** aplikasi kini menggagalkan tes mana pun yang memakai `RefreshDatabase` sementara basis datanya bukan basis data uji. Penjagaannya di kelas induk yang dilewati setiap tes, bukan diserahkan pada ingatan orang yang menulis tes berikutnya. Pesannya menyebutkan apa yang akan hilang dan apa gantinya (`DatabaseTransactions`).
+
+Setelah itu `php artisan test` di fe-ppid: **46 lulus**, dan basis datanya utuh — 49 tabel, 24 informasi publik.
+
+---
+
+### Langkah 82 — jam layanan
+
+Tiga tempat menyimpan jam layanan, dan ketiganya harus sepakat:
+
+| Tempat | Peran |
+| --- | --- |
+| `pengaturan_situs` → `kontak.jam_layanan` | Nilai hidup, disunting petugas lewat CMS. Tampil di bagian Kontak beranda |
+| `HomeController` | Nilai cadangan bila baris CMS-nya belum ada |
+| `PpidController::showServiceStandardPage()` | Tabel Waktu Layanan di halaman Standar Layanan |
+
+Ketiganya diubah, plus `KontenAwalSeeder` supaya pemasangan baru ikut benar sejak awal:
+
+- **Senin–Jumat, 08:00–15:00 WIB, istirahat 12:00–13:00 WIB.**
+
+Kunci `break` pada tabel Waktu Layanan dihidupkan kembali — langkah 70 sempat melepasnya karena istirahat tidak lagi diumumkan. Sekarang justru penting disebut: jendelanya pendek, dan tanpa keterangan itu pemohon yang datang pukul 12:30 mengira layanan masih buka sampai sore.
+
+Terjemahan Inggrisnya ditambahkan ke `lang/en.json`. Tidak ada lagi `17:00` maupun `17.00` yang tersisa di `app/`, `resources/`, atau seeder.
+
+---
+
+### Langkah 83 — Annual Report: lihat bebas, unduh setelah disetujui
+
+Dua keputusan diambil lebih dulu karena keduanya mengubah bentuk pekerjaannya, dan keduanya bukan keputusan teknis:
+
+- **Yang membuka tombol Unduh: permohonan yang sudah disetujui petugas** (status `selesai`), bukan sekadar permohonan terkirim. Keputusan pelepasan salinan tetap di tangan PPID sesuai alur UU KIP; portal hanya menjalankan keputusan yang sudah dibuat.
+- **Pratinjau membaca berkas terunggah**, bukan menyematkan tautan luar. Situs luar tidak bisa dipaksa "preview only", dan banyak menolak ditampilkan dalam bingkai.
+
+#### Dibangun sebagai penanda, bukan daftar nama
+
+`informasi_publik.unduhan_terbatas` menandai dokumen mana yang tunduk pada aturan ini. Annual Report yang diminta, tetapi petugas bisa menerapkannya pada dokumen lain kapan saja tanpa menunggu perubahan program.
+
+`permohonan_informasi.informasi_publik_id` mencatat permohonan ini meminta dokumen yang mana. Tanpa kolom itu tidak ada cara memeriksa "sudah pernah disetujui untuk dokumen ini" — `rincian_informasi` hanya teks bebas, dan mencocokkan judul di dalamnya adalah tebakan, bukan pemeriksaan. Relasinya `nullOnDelete`: menghapus dokumen dari daftar tidak boleh menghapus riwayat bahwa seseorang pernah memintanya dan petugas pernah memutuskannya.
+
+#### Penandanya memindahkan berkasnya
+
+Ini bagian yang hampir salah. Rencana awalnya menaruh pemeriksaan hak di controller dan selesai — dan itu tidak akan menegakkan apa pun.
+
+`public/storage` pada fe-ppid adalah **symlink** ke `storage/app/public`. Apa pun di sana dilayani web server secara langsung, tanpa satu baris PHP pun berjalan. Selama berkasnya di folder itu, seluruh pemeriksaan hak bisa dilewati cukup dengan menyalin alamat berkasnya.
+
+Karena itu penandanya bekerja secara fisik. Disk baru `dokumen_terbatas` (`storage/app/dokumen-terbatas`, di luar symlink) ditambahkan di kedua aplikasi, dan `InformasiPublikController` memindahkan berkasnya setiap kali penandanya berubah:
+
+- dinyalakan → `media` (publik) → `dokumen_terbatas` (privat)
+- dimatikan → `dokumen_terbatas` → `media`
+
+`path_file` tidak berubah; disk tempatnya tinggal selalu disimpulkan dari penandanya. Satu sumber kebenaran, tidak ada kolom kedua yang bisa berbeda isinya.
+
+Terbukti saat penandanya dinyalakan lewat API sungguhan: berkasnya hilang dari `storage/app/public/…` dan muncul di `storage/app/dokumen-terbatas/…`, dan alamat publik lamanya menjawab **404**.
+
+#### Pratinjau memakai pdf.js, bukan bingkai PDF
+
+Halaman `/informasi/dokumen/{id}` menggambar dokumennya ke canvas lewat `sampul-pdf.js` — mesin yang sama yang sudah dipakai halaman Regulasi. Bedanya dengan `<iframe>`: tidak ada penampil PDF bawaan peramban, jadi tidak ada tombol unduh bawaannya.
+
+**Batasnya dikatakan apa adanya**, tidak dijanjikan lebih: berkas yang sudah sampai di peramban selalu bisa disimpan oleh orang yang cukup gigih. Yang benar-benar ditegakkan adalah tidak ada URL berkas yang bisa disebar, dan salinan resmi hanya keluar lewat pintu unduh yang memeriksa keputusan petugas. Mencegah penyimpanan sama sekali menuntut render per halaman jadi gambar — perlu ImageMagick/pdftoppm, yang tidak ada di mesin ini.
+
+#### Empat keadaan tombol
+
+`App\Support\AksesDokumen` memutuskan, dan dipakai bersama oleh daftar, halaman pratinjau, dan penyaji berkasnya — supaya tombol tidak pernah mengatakan satu hal sementara penyajinya melakukan hal lain:
+
+| Keadaan | Tampilan |
+| --- | --- |
+| `masuk` | Belum masuk → "Masuk & Ajukan Permohonan" |
+| `ajukan` | Sudah masuk, belum pernah minta → "Ajukan Permohonan" |
+| `menunggu` | Permohonannya masih diproses → nomor permohonan + tautan ke statusnya |
+| `terbuka` | Sudah disetujui → tombol Unduh, menyebut nomor permohonan yang jadi dasarnya |
+
+Permohonan yang **ditolak** kembali ke `ajukan`, bukan bertahan di `menunggu`: keputusannya sudah ada, dan pemohon boleh mencoba lagi.
+
+Formulir permohonan yang dibuka dari halaman ini membawa nomor dokumennya di isian tersembunyi dan mengisi Rincian Informasi otomatis. Nomor itu **diperiksa ulang di server** — isian tersembunyi bisa disunting siapa pun sebelum dikirim, dan nomor itulah yang nanti membuka tombol unduh.
+
+### Verifikasi
+
+- **11 tes baru** untuk langkah 83 (`DokumenTerbatasTest`), semuanya lulus. Yang diuji termasuk dua hal yang paling mudah salah: persetujuan **tidak** berlaku untuk pemohon lain, dan persetujuan atas dokumen lain **tidak** membuka dokumen ini. Bila salah satu keliru, satu persetujuan akan membuka dokumen itu untuk semua pemegang akun dan keputusan petugas kehilangan artinya.
+- Keempat status yang belum diputus (`diajukan`, `diverifikasi`, `diproses`, `menunggu_approval`) diuji satu per satu — tidak satu pun membuka unduhan.
+- Alur lengkapnya juga dijalankan lewat HTTP sungguhan sebelum dijadikan tes: tamu **200** pratinjau / **302** unduh; belum mengajukan **302**; menunggu **302**; ditolak **302**; disetujui **200**; pemohon lain **302**.
+- Daftar Informasi Publik terbukti tidak memuat alamat berkasnya, dan memuat tautan pratinjaunya.
+- Halaman `/`, `/informasi`, `/informasi/berkala`, `/regulasi`, `/faq`, dan `/standar-layanan/jalur-waktu-layanan`: **200**. Panel be-ppid dan 5 endpoint api-ppid: **200**.
+- Suite penuh: api-ppid **29 lulus**, fe-ppid **46 lulus**.
+
+### Yang perlu Anda lakukan
+
+1. **Ganti kata sandi admin** yang dibuat ulang saat pemulihan.
+2. **Unggah PDF Annual Report** lewat be-ppid → Informasi Publik → Annual Report → Lampiran dokumen. Penanda **Unduhan terbatas** sudah menyala. Sampai berkasnya diunggah, barisnya tetap menampilkan tautan lama ke `foodstation.id` seperti sebelumnya — fiturnya baru terlihat setelah ada berkas yang bisa dipratinjau.
+3. **Pertimbangkan backup berkala `ppiddb`.** Dua kali kehilangan penuh dalam tiga hari, keduanya tanpa backup. Penjagaan yang dipasang hari ini menutup penyebab yang sudah diketahui; ia tidak menolong bila penyebab berikutnya berbeda.
+
+### Yang belum dikerjakan
+
+- **Membuka suspend akun panel** masih belum ada tombolnya (dibawa dari putaran 60 dan 61).
+- **Modul Permohonan di be-ppid belum menampilkan dokumen yang diminta.** Kolomnya sudah terisi dan sudah dipakai memutuskan hak unduh, tetapi petugas yang meninjau permohonan belum melihat judul dokumennya di panel — ia baru terbaca di `rincian_informasi` yang terisi otomatis. Menampilkannya sebagai kolom tersendiri akan membuat keputusan petugas lebih jelas kaitannya.
+
+---
+
+
+## Status Pengerjaan (putaran 61 — langkah 81, email asing di Lupa password)
+
+### Yang dilaporkan bukan kerusakan, melainkan keputusan yang salah
+
+`rudiadriian@gmail.com` bukan akun panel, tetapi formulir Lupa password tetap menjawab "Permintaan diterima — jika email tersebut terdaftar, tautan sudah kami kirim."
+
+Itu perilaku yang sengaja dipasang di putaran 60: jawaban diseragamkan supaya endpoint ini tidak bisa dipakai memastikan alamat mana yang punya akun panel. Kalau jawabannya dibedakan, siapa pun bisa memasukkan alamat satu per satu dan mendaftar seluruh petugas yang ada di sistem.
+
+Yang tidak diperhitungkan waktu itu: alamat yang dilaporkan di atas adalah **salah ketik** dari alamat sungguhan (`rudiadrian16@gmail.com`). Orang yang salah mengetik alamatnya sendiri menerima "periksa juga folder Spam", lalu menunggu email yang tidak akan pernah datang — dan tidak ada apa pun di layar yang memberitahunya bahwa ia sedang menunggu sia-sia. Itu bukan kasus jarang; itu kasus yang paling sering.
+
+Untuk layanan terbuka, jawaban seragam tetap pilihan yang benar. Untuk panel ini, tidak:
+
+- origin-nya sudah dibatasi `ADMIN_ORIGINS`;
+- akunnya segelintir dan alamatnya institusional (`@foodstation.co.id`), jadi bisa ditebak tanpa bantuan endpoint mana pun;
+- sejak putaran 60, permintaan untuk email asing **ikut dihitung** tangga bertingkat.
+
+Poin terakhir yang membuat pertukarannya masuk akal. Penyisiran alamat berhenti sendiri pada percobaan ketiga — satu jam, lalu satu hari, lalu 14 hari. Yang hilang kecil; yang didapat besar.
+
+### Yang berubah
+
+Email yang tidak berhak menerima tautan sekarang ditolak **422** dengan alasannya, dibedakan menjadi tiga karena tindak lanjutnya berbeda:
+
+| Keadaan | Jawaban |
+| --- | --- |
+| Tidak terdaftar (atau sudah dihapus) | "Email ini tidak terdaftar sebagai akun panel. Periksa kembali ejaannya…" |
+| Terdaftar tapi nonaktif | "Akun ini nonaktif… Hubungi administrator." |
+| Terdaftar tapi disuspend | "Akun ini disuspend… Hubungi administrator untuk membukanya kembali." |
+
+Yang berhak tetap menerima **200**, dengan kalimat yang sekarang boleh tegas: "Tautan atur ulang password sudah dikirim ke email tersebut" — bukan lagi "jika email tersebut terdaftar".
+
+Perilaku lamanya tidak dibuang, hanya dipindah ke belakang sakelar `PPID_BERITAHU_EMAIL_ASING`. Diisi `false`, seluruh jawabannya seragam kembali seperti putaran 60. Itu yang harus dipakai bila panel ini suatu saat dapat dijangkau dari internet terbuka, dan catatannya ditulis lengkap di `config/ppid.php` supaya keputusannya bisa ditimbang ulang oleh orang yang tidak ikut percakapan ini.
+
+Halaman panelnya tidak perlu diubah sama sekali: penolakan datang dalam bentuk `[{type: 'email', message}]` yang sama dengan galat lain, jadi spanduk `Alert` dan pesan di bawah kotak email dari putaran 60 langsung menampilkannya.
+
+### Sisi masuk tidak ikut diubah
+
+`sign-in` tetap menjawab "Email atau kata sandi salah" tanpa membedakan email asing dari password salah. Bukan karena itu masih menyembunyikan sesuatu — sekali Lupa password berterus terang, daftar akun bisa disusun dari sana — melainkan karena tidak ada yang didapat dengan mengubahnya. Orang yang mencoba masuk sudah tahu alamat emailnya sendiri; yang tidak tahu adalah alat penyisir password, dan alat itu tidak perlu dibantu membedakan "akun ini ada, lanjutkan menebak" dari "berhenti di sini".
+
+### Verifikasi
+
+- **29 tes hijau** (124 asersi), naik dari 25. Empat tes baru: penolakan email asing, penolakan akun nonaktif dan disuspend, email terdaftar tetap diterima, dan jawaban kembali seragam saat sakelarnya dimatikan.
+- Satu tes khusus memastikan remnya tidak ikut lepas: penolakan email asing **tetap** menaikkan hitungan — dua kali **422**, yang ketiga **429** dengan kunci satu jam terpasang. Tanpa tes ini, hilangnya jawaban seragam akan berarti penyisiran alamat tanpa biaya.
+- Diuji dengan alamat yang dilaporkan, lewat HTTP sungguhan dan captcha yang benar:
+  - `rudiadrian16@gmail.com` → **422** "Email ini tidak terdaftar sebagai akun panel…"
+  - `rudiadriian@gmail.com` → **429**, karena alamat itu sudah dipakai dua kali sebelumnya sehingga percobaan ini yang ketiga. Tangganya bekerja persis seperti seharusnya.
+- Baris hitungan yang tertinggal dari pengujian dihapus; `percobaan_tautan_admin` dan `percobaan_login_admin` kembali kosong.
+
+### Yang belum dikerjakan
+
+Tetap sama seperti putaran 60: **membuka suspend belum ada tombolnya di panel**. Kolom `disuspend_pada` dan `alasan_suspend` terisi dan terbaca, tetapi administrator masih harus mengosongkannya lewat basis data. Sekarang kebutuhannya bertambah nyata — pesan penolakan di atas menyuruh orang "hubungi administrator", dan administratornya belum punya tempat untuk menindaklanjuti.
+
+---
+
+
+## Status Pengerjaan (putaran 60 — langkah 81, poin 2–4)
+
+Poin pertama (lambat) sudah dikerjakan putaran 59. Yang baru disebut di sana adalah **login**, dan itu diperiksa ulang di bawah. Tiga poin sisanya — alert galat, lupa password, dan pengaman auth — dikerjakan di putaran ini.
+
+### Login: sisa waktunya memang bcrypt
+
+Setelah perbaikan putaran 59, satu percobaan masuk yang gagal memakan **360–415 ms**, turun dari ~1.500 ms. Sisanya diukur terpisah dengan memisahkan email terdaftar dan tidak:
+
+| | Waktu |
+| --- | --- |
+| Email tidak terdaftar (tidak sampai ke bcrypt) | 75–95 ms |
+| Email terdaftar (password diperiksa) | 360–415 ms |
+| `password_verify` sendirian, cost 12 | 209 ms |
+
+Selisihnya bcrypt, dan itu **tidak diturunkan**. `BCRYPT_ROUNDS=12` adalah nilai yang disengaja: biaya inilah yang membuat penebakan password mahal bagi penyerang. Menurunkannya ke 10 memang memangkas 150 ms sekali per sesi masuk, dengan imbalan setiap tebakan menjadi empat kali lebih murah untuk siapa pun yang suatu saat memegang salinan tabel `users`. Pertukaran yang salah arah.
+
+Satu hal yang justru dipercepat: akun yang sudah disuspend sekarang ditolak **sebelum** passwordnya diperiksa. Selain menghemat 200 ms yang percuma, pemiliknya jadi mendapat pesan yang benar — "akun disuspend, hubungi administrator" — bukan "kata sandi salah" yang menyesatkan.
+
+### Poin 2 — halaman auth yang diam saat API mati
+
+Formulir masuk hanya membaca `error.data`, yakni galat validasi per isian. Semua kegagalan lain tidak memunculkan apa pun: API belum dinyalakan, proxy menjawab 502, koneksi putus — tombolnya berhenti berputar dan halaman diam saja.
+
+Itu keadaan terburuk yang mungkin untuk halaman masuk. Orang yang tidak melihat pesan apa-apa akan mengira salah ketik, lalu mencoba lagi dengan password berbeda — dan sejak putaran ini, setiap percobaan menaikkan hitungan kunci bertingkat. Bisu ditambah kunci bertingkat sama dengan mengunci orang dari akunnya sendiri karena servernya mati.
+
+`src/@auth/services/jwt/utils/pesanGalat.ts` menerjemahkan galat apa pun menjadi kalimat. Tiap cabangnya wajib menghasilkan kalimat, tidak boleh string kosong:
+
+- `TypeError` dari `fetch` (API mati sama sekali) → "Tidak dapat menghubungi server API. Pastikan layanan api-ppid sedang berjalan."
+- `TimeoutError` → server tidak menjawab dalam waktu wajar.
+- 401/403/404/429/500/502/503/504 masing-masing punya kalimatnya sendiri, dengan angka statusnya ikut dicetak supaya bisa dilaporkan tanpa membuka alat pengembang.
+- Badan JSON `[{type, message}]` dari api-ppid tetap dipakai apa adanya dan ditempelkan ke isiannya.
+
+Hasilnya ditampilkan sebagai spanduk `Alert` di atas formulir — bukan hanya sebagai teks kecil di bawah kotak password. Pesan seperti "coba lagi setelah 1 jam" terlalu penting untuk disembunyikan di sana. Warnanya dibedakan: kuning bila permintaannya tidak pernah sampai ke server (periksa servernya), merah bila server menjawab dan menolak (periksa ketikan).
+
+### Poin 3 — lupa password
+
+Sebelumnya tautan "Forgot password?" mengarah ke `/#`. Sekarang ada dua halaman:
+
+- `/lupa-password` — masukkan email, terima tautan.
+- `/reset-password?token=…&email=…` — dibuka dari email, pasang password baru.
+
+Di sisi API, `PasswordResetController` memakai broker `users` bawaan Laravel dengan tabel `password_reset_tokens`, terpisah dari token akun pengunjung sehingga token satu jenis akun tidak pernah bisa dipakai mengambil alih akun jenis lain.
+
+Notifikasi bawaan Laravel tidak dipakai: ia menyusun tautannya dari `route('password.reset')`, rute halaman web yang tidak ada di API ini. Yang harus dibuka petugas adalah halaman di panel — aplikasi terpisah di port lain — jadi `User::sendPasswordResetNotification()` diambil alih `EmailAkunAdmin`, yang menyusun tautannya dari `PPID_PANEL_URL`.
+
+Empat keputusan yang perlu diketahui:
+
+**Jawabannya selalu sama.** Terdaftar atau tidak, endpoint-nya menjawab kalimat yang sama persis. Kalau dibedakan, tombol "Lupa password" berubah menjadi alat mendaftar email petugas mana saja yang ada di sistem.
+
+**Hitungan permintaan dinaikkan sebelum tahu emailnya terdaftar.** Kalau hanya yang terdaftar yang dihitung, selisih perilakunya sendiri sudah cukup untuk membedakan — pesannya seragam tapi waktunya tidak.
+
+**Umur tautannya satu sumber.** `config/auth.php` sebelumnya memaku `expire => 60`, sementara badan emailnya mencetak angka dari tempat lain. Dua angka yang berdiri sendiri untuk hal yang sama akan berpisah suatu saat, dan yang terjadi adalah surat yang menjanjikan "berlaku 60 menit" untuk tautan yang sudah mati sejak menit ke-15. Keduanya sekarang membaca `PPID_UMUR_TAUTAN_MENIT`.
+
+**Password baru membuka kunci yang sedang berlaku.** Orang yang baru saja membuktikan dirinya pemilik email itu harus bisa langsung masuk. Membiarkan kuncinya berarti fitur ini tidak menyelesaikan apa pun.
+
+Setiap penggantian password juga mengirim pemberitahuan ke pemiliknya. Itu bukan basa-basi: kalau bukan dia yang mengganti, email itulah satu-satunya tanda bahwa akunnya sudah berpindah tangan.
+
+### Poin 4 — pengaman fitur auth
+
+**Captcha.** Gambar GD buatan sendiri, tanpa layanan pihak ketiga — panel tidak boleh bergantung pada jaringan luar saat orang mencoba masuk, dan tidak ada kunci layanan captcha yang tersedia. Konsepnya mengikuti yang sudah ada di portal pemohon, dengan satu perbedaan yang memaksa: **panel adalah SPA tanpa sesi**, jadi jawabannya tidak bisa dititipkan di session seperti di fe-ppid. Sebagai gantinya tiap kode punya `id` sendiri, dan yang disimpan server hanyalah hash-nya di cache dengan masa hidup 5 menit. Sekali diperiksa langsung dibuang — benar atau salah — sehingga satu gambar hanya berlaku untuk satu kali kirim.
+
+Konsekuensinya di sisi panel: setiap kiriman yang gagal harus memuat gambar baru. Tanpa itu, percobaan berikutnya pasti ditolak dengan alasan captcha, dan orangnya akan mengira passwordnya yang salah. Ketiga formulir melakukannya otomatis.
+
+Dipasang di tiga titik sesuai permintaan: masuk, minta tautan lupa password, dan pasang password baru.
+
+**Kunci bertingkat.** Tiap 3 percobaan menaikkan satu tahap:
+
+| Percobaan | Akibat |
+| --- | --- |
+| 3 | Tunggu 1 jam |
+| 6 | Tunggu 1 hari |
+| 9 | Tunggu 14 hari |
+| 12 | **Akun disuspend** — hanya administrator yang membukanya |
+
+Berlaku sama untuk percobaan masuk dan permintaan tautan lupa password, tetapi **hitungannya terpisah**. Menggabungkannya berarti orang yang benar-benar lupa password ikut terkunci dari mencoba masuk hanya karena meminta tautan beberapa kali — dua penyalahgunaan yang berbeda tidak boleh berbagi satu penghitung.
+
+Tangganya sendiri ditaruh di satu kelas (`KunciBertingkat`) justru supaya bisa diuji tanpa basis data, dan supaya tidak ada versi kedua yang tertinggal kalau angkanya digeser suatu saat.
+
+Hitungannya disimpan di basis data, bukan cache: masa kuncinya bisa berminggu-minggu, sedangkan cache berkas bisa terhapus tanpa sengaja dan kuncinya ikut hilang bersamanya.
+
+Kuncinya dipasang per **email + IP**, bukan per email saja. Kalau per email, siapa pun yang tahu alamat seorang petugas bisa menutup akunnya selama 14 hari hanya dengan sengaja salah password sembilan kali — pemblokiran layanan yang lebih merugikan daripada serangan yang hendak dicegah. Suspend pada tahap keempat adalah pengecualiannya, dan memang harus: kalau satu IP sudah gagal 12 kali pada satu akun, itu bukan lagi salah ketik.
+
+Suspend memakai kolom baru `users.disuspend_pada`, sengaja dibedakan dari `users.is_active`. Yang satu hasil pengamanan otomatis, yang satu keputusan administratif — keduanya menutup akses, tetapi hanya yang pertama yang perlu dijelaskan ke pemiliknya sebagai pemblokiran keamanan.
+
+**Hanya email terdaftar.** Dipenuhi dengan menolaknya, bukan dengan mengatakannya. Email asing mendapat jawaban yang sama persis dengan password salah — status maupun bentuk pesannya — dan ikut menaikkan hitungan kunci. Jawaban yang membedakan keduanya akan berubah menjadi alat untuk mendaftar email petugas mana saja yang ada di sistem ini.
+
+### Satu penghitung dibuang, bukan ditambah
+
+`AuthController` sudah punya penghitung kegagalan sendiri sebelum putaran ini: 10 kegagalan per 15 menit lewat cache. Penghitung itu **dihapus**, bukan dibiarkan berdampingan dengan yang baru.
+
+Alasannya ketahuan dari tes yang gagal: dua penghitung untuk pekerjaan yang sama bukan pertahanan berlapis, melainkan saling menutupi. Yang lebih longgar berbunyi lebih dulu — pada kegagalan ke-10 — sehingga tangga yang seharusnya berakhir di suspend pada kegagalan ke-12 tidak akan pernah sampai ke sana. Fitur yang diminta akan terpasang rapi di kode dan tidak pernah berjalan.
+
+Yang bertahan adalah yang lebih kuat: hitungannya di basis data, masa tunggunya naik sampai 14 hari, dan ujungnya menutup akun. `throttle:login` di berkas rute tetap ada dan tidak tumpang-tindih — jendelanya satu menit, tugasnya menahan banjir, bukan menghitung kegagalan sepanjang hari.
+
+### Dua cacat lain yang ikut ketahuan
+
+**Email huruf besar membuat lupa password gagal diam-diam.** PostgreSQL membedakan huruf besar-kecil pada `=`, sedangkan seluruh jalur auth membakukan email yang diketik ke huruf kecil sebelum mencarinya. Akun yang dibuat sebagai `Budi@Foodstation.co.id` tidak akan pernah ditemukan — tanpa galat, tanpa tanda, sampai ada petugas yang benar-benar membutuhkannya. Saat ini belum ada baris seperti itu di `ppiddb`, tetapi tidak ada yang mencegahnya muncul besok lewat modul Pengguna. Ditutup dari dua sisi: mutator di `User` membakukan email pada setiap penulisan, dan `User::denganEmail()` mencari tanpa membedakan huruf besar-kecil untuk baris lama.
+
+**Tautan "Sign up" di halaman masuk mengantar ke formulir yang pasti gagal.** Pendaftaran mandiri sudah ditutup — `authSignUp` menolak setiap panggilan — tetapi tautannya masih ada. Diganti keterangan tentang dari mana akun panel sebenarnya berasal.
+
+### Verifikasi
+
+- **25 tes hijau** (110 asersi), naik dari 2. Delapan menguji tangganya tanpa basis data (`KunciBertingkatTest`), lima belas menguji endpoint-nya sungguhan lewat HTTP (`AuthKeamananTest`, dengan `DatabaseTransactions` sehingga tidak ada yang tertinggal di `ppiddb`).
+- Tangga naiknya diuji berurutan sampai suspend: kegagalan ke-3 → tahap 1 (60 menit), ke-6 → tahap 2 (1.440 menit), ke-9 → tahap 3 (20.160 menit), ke-12 → `disuspend_pada` terisi. Kuncinya dilewati dengan memundurkan waktu berakhirnya, bukan dengan menghapus barisnya, supaya hitungannya tetap berjalan.
+- Percobaan yang ditolak saat sedang terkunci terbukti **tidak** menambah hitungan — ditolak di gerbang tidak boleh mempercepat perjalanan menuju suspend.
+- Jalur captcha diuji lewat HTTP sungguhan, di luar PHPUnit (tempat captcha dimatikan): kode benar diterima, kode yang sama dipakai ulang ditolak **422**, dan `lupa-password` dengan captcha benar menjawab **200** dengan pesan seragam.
+- Login tanpa captcha ditolak **422** di ketiga endpoint.
+- `npx tsc --noEmit` bersih; `eslint` bersih setelah `--fix` merapikan dua baris. Kelima modul baru terbukti dilayani Vite (`200`), dan proxy `:3000 → :8001` untuk `auth/captcha` juga **200**.
+- Tautan reset yang dihasilkan diperiksa isinya: `http://localhost:3000/reset-password?token=…&email=…` — mengarah ke rute panel yang baru didaftarkan, bukan ke API.
+- Baris uji yang sempat tertulis saat pengujian lewat HTTP (`percobaan_login_admin`, `percobaan_tautan_admin`, `pengiriman_tautan_admin`, `password_reset_tokens`, dan 22 baris `audit_log`) dihapus setelahnya.
+
+### Perlu diketahui
+
+- **Satu email sungguhan terkirim** ke `admin@foodstation.co.id` saat pengujian jalur lupa password lewat HTTP, karena `MAIL_MAILER=smtp` di `.env`. Isinya tautan atur ulang password yang sah; tokennya sudah dihapus dari basis data, jadi tautan itu kini tidak berlaku.
+- **`composer test` sekarang membuang cache config lebih dulu.** Selama cache config ada, `<env>` di `phpunit.xml` tidak terbaca sama sekali — `CACHE_DRIVER=array` dan `BCRYPT_ROUNDS=4` diabaikan, sehingga tes saling mewarisi keadaan pembatas laju dan berjalan dengan bcrypt penuh. Ini persis jebakan yang disebut putaran 59; sekarang tertutup di skripnya.
+- **`dev/serve.php` diperbaiki.** Versi putaran 59 memasang OPcache lewat `PHP_INI_SCAN_DIR`, dan itu tidak bekerja saat dijalankan lewat `composer serve`: `ServeCommand` menyaring environment yang diteruskan ke `php -S` memakai daftar-putih `$passthroughVariables`, dan `PHP_INI_SCAN_DIR` tidak ada di daftar itu — nilainya justru dihapus dari proses anak. OPcache mati persis di proses yang melayani permintaan, tanpa tanda apa pun; yang terlihat cuma server yang lambat lagi. Sekarang `php -S` dipanggil langsung dengan opsi `-d`, tanpa perantara. Terverifikasi lewat `opcache_get_status()` dari dalam proses servernya: `enabled=true`, dan `/api/v1/health` kembali ke **22–29 ms**.
+
+### Yang belum dikerjakan
+
+- **Membuka suspend belum ada tombolnya di panel.** Kolom `disuspend_pada` dan `alasan_suspend` sudah terisi dan terbaca, tetapi administrator masih harus mengosongkannya lewat basis data. Modul Pengguna perlu satu aksi "Buka suspend" — pekerjaan sisi panel yang belum diminta di langkah 81.
+- **Captcha gambar GD lebih lemah daripada reCAPTCHA/Turnstile.** Ia menahan skrip sederhana, bukan pemecah captcha sungguhan. Yang menahan serangan serius di sini tetap kunci bertingkat dan pembatas laju; captcha-nya lapis tambahan, bukan lapis utama.
+
+---
+
+
+## Status Pengerjaan (putaran 59 — langkah 81)
+
+### Yang lambat ternyata bukan kode panelnya
+
+Keluhannya ada di be-ppid, tapi penyebabnya tidak satu pun ada di be-ppid. Diukur dulu sebelum diubah: setiap endpoint api-ppid dipanggil lewat HTTP, lalu permintaan yang sama dijalankan ulang di dalam satu proses PHP yang sudah panas.
+
+| Endpoint | Lewat HTTP | Di dalam proses | Query |
+| --- | --- | --- | --- |
+| `me/navigation` | 1.104 ms | 44 ms | 3 |
+| `permohonan` (15 baris) | 1.101 ms | 47 ms | 3 |
+| `berita` (15 baris) | 928 ms | 21 ms | 1 |
+| `dashboard/analitik` | 1.186 ms | 46 ms | 31 |
+
+Selisihnya — sekitar satu detik pada setiap permintaan — tidak dihabiskan oleh kode aplikasi maupun basis data. Bahkan `GET /api/v1/health`, rute yang isinya cuma mengembalikan `{"status":"ok"}` dan tidak menyentuh basis data sama sekali, memakan **340 ms**. Itu harga yang dibayar sebelum baris pertama kode PPID dijalankan.
+
+Ada tiga sumbernya, semuanya di lingkungan, bukan di aplikasi.
+
+### 1. OPcache mati — PHP mengompilasi ulang Laravel tiap permintaan
+
+`php -m` tidak memuat Zend OPcache sama sekali. Tanpa itu PHP membaca, mem-parsing, dan mengompilasi ulang lebih dari 1.500 berkas Laravel dan vendor pada **setiap** permintaan HTTP, lalu membuang hasilnya begitu permintaan selesai. `php_opcache.dll` sudah ada di XAMPP, hanya tidak pernah dinyalakan.
+
+Menyalakannya lewat `C:\xampp\php\php.ini` akan mengubah perilaku semua proyek PHP di mesin ini, jadi bukan itu yang dipakai. `dev/php.ini.d/00-opcache.ini` dimuat lewat variabel lingkungan `PHP_INI_SCAN_DIR`, yang diwarisi proses anak — `artisan serve` menjalankan `php -S` sebagai anak, jadi server dev-nya ikut menyala dengan OPcache tanpa php.ini XAMPP disentuh.
+
+`opcache.validate_timestamps` sengaja dibiarkan hidup (dicek 2 detik sekali) supaya hasil edit kode tetap langsung terlihat; yang dihindari cuma kompilasi ulangnya, bukan pemeriksaan perubahannya.
+
+### 2. PostgreSQL melahirkan satu proses per sambungan
+
+Setelah OPcache menyala, `health` turun ke 40 ms tetapi endpoint yang butuh login masih 280 ms. Selisih 240 ms itu muncul hanya pada permintaan yang menyentuh basis data — dan terukur langsung:
+
+```
+pg_connect  →  ~195 ms
+```
+
+PostgreSQL menangani tiap sambungan dengan satu proses backend terpisah. Di Linux itu `fork()` yang murah; di Windows itu `CreateProcess` penuh. PHP menutup sambungannya di akhir tiap permintaan, jadi ongkos ~120–200 ms itu dibayar ulang terus-menerus.
+
+`DB_PERSISTENT=true` menahan sambungannya tetap terbuka di dalam proses PHP, sehingga permintaan berikutnya memakai yang sudah ada:
+
+| | Buka sambungan + `select 1` |
+| --- | --- |
+| Sambungan baru tiap kali | 120,0 ms |
+| Sambungan dipakai ulang | 24,1 ms |
+
+Bawaannya tetap **mati** di `config/database.php`. Sambungan yang dipakai ulang ikut membawa sisa keadaan sesi kalau sebuah permintaan mati di tengah transaksi, jadi ini keputusan per lingkungan — dinyalakan di `.env` mesin ini, didokumentasikan mati di `.env.example`.
+
+Sekalian: `sslmode` yang tadinya dipaku `prefer` sekarang bisa diatur lewat `DB_SSLMODE`. `prefer` membuat libpq mencoba jalur TLS dulu dan mundur ke sambungan biasa — dua kali jabat tangan untuk sambungan yang tidak pernah meninggalkan mesin ini.
+
+### 3. Konfigurasi dan rute dibaca ulang dari nol
+
+30-an berkas `config/*.php` di-parsing dan seluruh berkas rute didaftarkan ulang tiap permintaan. `config:cache` + `route:cache` menggabungkan masing-masing jadi satu berkas; hasilnya ~25–40 ms lagi.
+
+Cache rute yang tertinggal itu jebakan: rute yang ditambahkan setelahnya diam-diam tidak terdaftar. Karena itu `dev/serve.php` yang mengurusnya — dibangun ulang setiap kali server dinyalakan, dan dibuang lagi lewat `register_shutdown_function` saat server berhenti, sehingga keadaan diam proyek ini tetap "tanpa cache". Jalur yang dipakai jadi `composer serve`, bukan `php artisan serve`.
+
+### Hasilnya
+
+Rata-rata tiga panggilan panas, setelah tiga panggilan pemanasan:
+
+| Endpoint | Sebelum | Sesudah | |
+| --- | --- | --- | --- |
+| `health` | 340 ms | **37 ms** | 9× |
+| `me/navigation` | 1.104 ms | **31 ms** | 36× |
+| `permohonan` (15 baris) | 1.101 ms | **35 ms** | 31× |
+| `pemohon` (15 baris) | 1.076 ms | **33 ms** | 33× |
+| `dashboard/ringkasan` | 1.250 ms | **34 ms** | 37× |
+| `dashboard/analitik` | 1.186 ms | **52 ms** | 23× |
+| `notifikasi` | 1.464 ms | **28 ms** | 52× |
+| 5 permintaan bersamaan | 4.203 ms | **563 ms** | 7× |
+
+Angka HTTP-nya sekarang sama dengan angka di dalam proses. Artinya ongkos di luar aplikasi sudah habis — yang tersisa memang kerja aplikasinya sendiri.
+
+Baris "5 permintaan bersamaan" perlu dibaca terpisah. `artisan serve` melayani satu permintaan pada satu waktu, jadi permintaan yang ditembakkan berbarengan oleh panel mengantre. Dulu antreannya 5 × ~840 ms; sekarang 5 × ~110 ms. Sifat mengantrenya belum hilang — hanya sudah tidak terasa. Kalau suatu saat perlu benar-benar paralel, api-ppid harus dilayani Apache/nginx, bukan server bawaan PHP.
+
+### Email tidak lagi ditunggu petugas
+
+Terpisah dari soal lingkungan, ada satu tempat aplikasi ini memang menahan tanggapan: `App\Support\EmailPemohon` menjalankan percakapan SMTP ke `srv179.niagahoster.com` di tengah permintaan. Sambung + jabat tangan TLS-nya saja sudah 120 ms sebelum AUTH, DATA, dan QUIT.
+
+Akibatnya, saat petugas menekan Simpan pada verifikasi data pemohon atau perubahan status pengajuan, dialognya baru tertutup setelah email selesai terkirim — padahal datanya sudah tersimpan sejak tadi.
+
+Kedua pemanggilan `Mail::to()->send()` sekarang lewat `EmailPemohon::antre()`, yang membungkusnya dengan `dispatch(...)->afterResponse()`. SMTP baru mulai bekerja setelah tanggapan lengkap sampai di peramban. `QUEUE_CONNECTION` tidak diubah dan tidak ada worker yang harus dijalankan.
+
+### Sisi be-ppid
+
+Tiga perubahan, semuanya kecil karena kode panelnya sendiri memang tidak bermasalah:
+
+- **`optimizeDeps.include` dilengkapi.** Pustaka yang cuma dipakai halaman yang dimuat malas — `material-react-table`, `apexcharts`, `notistack`, `react-hook-form`, dan sembilan lainnya — baru ditemukan Vite di tengah sesi, dan penemuan itu memicu optimasi ulang plus **muat ulang halaman penuh** tepat saat operator membuka modulnya. Sekarang semuanya di-prebundle saat dev server menyala.
+- **`refetchOnWindowFocus` dimatikan, `gcTime` 30 menit.** Berpindah tab bukan tanda datanya berubah; tanpa ini setiap panel mendapat fokus semua query basi ditembak serentak ke server yang melayani satu permintaan pada satu waktu. `gcTime` yang panjang membuat kembali ke modul yang tadi dibuka menampilkan tabel dari cache, bukan menunggu API lagi.
+- **`manualChunks` untuk build produksi.** React, MUI, tabel, grafik, dan editor dipisah dari kode panel supaya menambah satu modul CMS tidak membatalkan cache peramban untuk semuanya sekaligus.
+
+### Verifikasi
+
+- Siklus CRUD penuh lewat HTTP pada modul FAQ: create **201**, update **200** (39 ms), show **200**, delete **200** (44 ms). Transaksi dan audit log tetap benar dengan sambungan persisten; baris ujinya dihapus permanen berikut tiga jejak auditnya.
+- Stempel waktu tidak bergeser: baris uji tercatat `2026-08-21T02:31:41Z` untuk 09:31 WIB. `SET TimeZone` tetap dijalankan ulang pada tiap sambungan yang dipakai ulang.
+- `auth/sign-in-with-token` **200** (45 ms). Login dengan kata sandi salah tetap **401** dalam 400 ms — itu bcrypt, dan memang tidak boleh dipercepat.
+- Jalur penuh lewat proxy Vite (`:3000` → `:8001`) diukur terpisah: `permohonan` **29 ms**, `me/navigation` **25 ms**.
+- `npx tsc --noEmit` bersih. Vite menyala dalam 2,1 detik; keempat belas pustaka yang baru ditambahkan terbukti ada di `_metadata.json`, tanpa galat resolusi.
+- Tes api-ppid tetap hijau: **2 lulus**.
+- `php -l` bersih pada `EmailPemohon.php`, `config/database.php`, dan `dev/serve.php`.
+
+### Yang tidak dikerjakan
+
+- **fe-ppid** (situs publik, `:8000`) berjalan di bawah `artisan serve` tanpa OPcache dan menanggung ongkos ~340 ms yang persis sama. Langkah 81 menyebut be-ppid, jadi tidak disentuh — tetapi `dev/serve.php` bisa disalin ke sana apa adanya.
+- **Middleware `CheckModulAkses`** menjalankan tiga query per permintaan. Sempat dipertimbangkan untuk di-cache, lalu tidak: totalnya 6 ms dari permintaan 30-an ms, sementara cache hak akses menuntut invalidasi yang benar setiap kali hak role berubah. Risikonya lebih besar daripada hasilnya.
+- **Indeks basis data** tidak ditambah. Waktu query terukur 1,6–18 ms untuk seluruh endpoint, termasuk `dashboard/analitik` yang menjalankan 31 query dalam 8 ms. Belum ada yang perlu diindeks.
 
 ---
 

@@ -20,6 +20,7 @@ class InformasiPublik extends Model
     protected $hidden = ['search_vector'];
 
     protected $casts = [
+        'unduhan_terbatas' => 'boolean',
         'tanggal_publikasi' => 'date',
         'views_count'       => 'integer',
     ];

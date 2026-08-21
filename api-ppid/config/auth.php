@@ -99,7 +99,14 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => 'password_reset_tokens',
-            'expire' => 60,
+            /*
+             * Diambil dari sumber yang sama dengan angka yang dicetak di badan
+             * emailnya (`EmailAkunAdmin::tautanReset`). Kalau keduanya berdiri
+             * sendiri, suatu saat surat itu akan menjanjikan "berlaku 60 menit"
+             * untuk tautan yang sebenarnya sudah mati sejak menit ke-15 — dan
+             * tidak ada yang akan menyadarinya sampai ada petugas yang gagal.
+             */
+            'expire' => (int) env('PPID_UMUR_TAUTAN_MENIT', 60),
             'throttle' => 60,
         ],
     ],

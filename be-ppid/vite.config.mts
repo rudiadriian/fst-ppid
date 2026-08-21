@@ -28,7 +28,21 @@ export default defineConfig({
 		tailwindcss(),
 	],
 	build: {
-		outDir: 'build'
+		outDir: 'build',
+		// Pustaka besar dipisah dari kode panel supaya kunjungan berikutnya
+		// memakai berkas yang sudah ada di cache peramban: menambah satu modul
+		// CMS tidak lagi membatalkan cache MUI, tabel, dan grafik sekaligus.
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					react: ['react', 'react-dom', 'react-router'],
+					mui: ['@mui/material', '@mui/system', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+					tabel: ['material-react-table'],
+					grafik: ['apexcharts', 'react-apexcharts'],
+					editor: ['@tiptap/react', '@tiptap/starter-kit', '@tiptap/pm']
+				}
+			}
+		}
 	},
 	server: {
 		host: '0.0.0.0',
@@ -63,6 +77,14 @@ export default defineConfig({
 			'app/AppContext': '/src/app/AppContext'
 		}
 	},
+	/*
+	 * Daftar ini menentukan apa yang di-prebundle saat dev server menyala.
+	 *
+	 * Pustaka yang baru ditemukan Vite di tengah sesi — karena hanya dipakai
+	 * modul yang dimuat malas — memicu optimasi ulang plus MUAT ULANG HALAMAN
+	 * penuh tepat saat operator membuka modul itu. Semua pustaka yang dipakai
+	 * halaman CMS karena itu disebut di sini, bukan dibiarkan ditemukan sendiri.
+	 */
 	optimizeDeps: {
 		include: [
 			'@mui/icons-material',
@@ -74,7 +96,22 @@ export default defineConfig({
 			'@emotion/react',
 			'@emotion/styled',
 			'date-fns',
-			'lodash'
+			'lodash',
+			// Dipakai halaman daftar, formulir, dan dashboard modul CMS.
+			'material-react-table',
+			'apexcharts',
+			'react-apexcharts',
+			'notistack',
+			'react-hook-form',
+			'@hookform/resolvers/zod',
+			'zod',
+			'@tanstack/react-query',
+			'react-i18next',
+			'i18next',
+			'react-router',
+			'motion/react',
+			'ky',
+			'qs'
 		],
 		exclude: [],
 		esbuildOptions: {

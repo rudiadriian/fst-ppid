@@ -46,7 +46,18 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "serve": [
+            "@php dev/serve.php"
+        ],
+        "test": [
+            "@php artisan config:clear --ansi",
+            "@php artisan test"
         ]
+    },
+    "scripts-descriptions": {
+        "serve": "Server pengembangan dengan OPcache + cache config/rute (lihat dev/serve.php).",
+        "test": "Jalankan tes. Cache config dibuang dulu — selama ia ada, <env> di phpunit.xml (CACHE_DRIVER=array, BCRYPT_ROUNDS=4) tidak terbaca dan tes saling mewarisi keadaan."
     },
     "extra": {
         "laravel": {

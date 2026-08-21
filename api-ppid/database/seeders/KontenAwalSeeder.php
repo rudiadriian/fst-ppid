@@ -79,7 +79,7 @@ class KontenAwalSeeder extends Seeder
             ['kontak.alamat', 'Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Selatan No. 1, Jakarta Timur 13230', 'kontak'],
             ['kontak.telepon', '(021) 4718011 (Ext. PPID)', 'kontak'],
             ['kontak.email', 'ppid@foodstation.co.id', 'kontak'],
-            ['kontak.jam_layanan', 'Senin–Jumat, 08.00–17.00 WIB', 'kontak'],
+            ['kontak.jam_layanan', 'Senin–Jumat, 08.00–15.00 WIB (istirahat 12.00–13.00 WIB)', 'kontak'],
         ];
 
         foreach ($daftar as [$key, $value, $grup]) {

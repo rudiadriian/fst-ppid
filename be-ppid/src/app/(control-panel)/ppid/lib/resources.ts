@@ -127,6 +127,7 @@ export const resources: ResourceConfig[] = [
 			{ key: 'kategori', label: 'Kategori', type: 'relation', relationKey: 'nama', noSort: true },
 			{ key: 'status', label: 'Status', type: 'badge', badgeMap: BADGE_KONTEN, size: 140 },
 			{ key: 'tanggal_publikasi', label: 'Terbit', type: 'date', size: 130 },
+			{ key: 'unduhan_terbatas', label: 'Unduhan terbatas', type: 'boolean', size: 150, noSort: true },
 			{ key: 'views_count', label: 'Dilihat', type: 'number', size: 100 }
 		],
 		fields: [
@@ -163,7 +164,7 @@ export const resources: ResourceConfig[] = [
 				type: 'text',
 				span: 2,
 				maxLength: 500,
-				help: 'Isi bila informasi ini ada di halaman lain (mis. https://foodstation.id/sejarah-perusahaan/). Tombol "Selengkapnya" di situs akan menuju alamat ini. Kosongkan bila memakai lampiran dokumen.'
+				help: 'Alamat halaman tempat informasi ini dapat DIBACA (mis. https://foodstation.id/laporan-tahunan-fstj/). Di situs, tombol "Di Lihat Saja" pada dialog dokumen menuju alamat ini — terbuka untuk siapa saja tanpa masuk. Lampiran dokumen di bawah dipakai untuk salinan yang DIUNDUH, dan itu menuntut permohonan yang disetujui.'
 			},
 			{ name: 'konten', label: 'Isi informasi', type: 'richtext', span: 2 },
 			{ name: 'konten_en', label: 'Isi informasi (English)', type: 'richtext', span: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
@@ -174,6 +175,14 @@ export const resources: ResourceConfig[] = [
 				span: 2,
 				upload: { folder: 'informasi-publik', jenis: 'dokumen' },
 				help: 'PDF/Office, maksimal 20 MB per berkas. Dipakai bila entri ini berupa berkas, bukan tautan.'
+			},
+			{
+				name: 'unduhan_terbatas',
+				label: 'Unduhan terbatas',
+				type: 'boolean',
+				span: 2,
+				defaultValue: true,
+				help: 'Menyala secara bawaan. Dokumen tetap bisa dibaca siapa saja lewat Tautan halaman, tetapi salinannya hanya bisa diunduh pemohon yang permohonannya atas dokumen ini sudah Anda setujui; berkasnya dipindahkan ke penyimpanan tertutup begitu disimpan. Matikan hanya bila dokumen ini memang boleh diunduh siapa saja tanpa permohonan.'
 			}
 		],
 		filters: [

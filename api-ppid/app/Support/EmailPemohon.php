@@ -53,6 +53,31 @@ class EmailPemohon
     ];
 
     /**
+     * Serahkan surat ke SMTP setelah tanggapan HTTP terkirim.
+     *
+     * Percakapan SMTP ke server surat (sambung, TLS, AUTH, DATA, QUIT) memakan
+     * waktu jauh lebih lama daripada seluruh permintaannya sendiri. Bila
+     * dikerjakan di tengah permintaan, petugas menunggu email selesai terkirim
+     * sebelum dialog verifikasi/status di panel tertutup — padahal datanya
+     * sudah tersimpan sejak tadi.
+     *
+     * `afterResponse()` menjalankannya pada tahap terminate, jadi tanggapan
+     * sudah lengkap di sisi peramban ketika SMTP baru mulai bekerja. Antrean
+     * (`QUEUE_CONNECTION`) tidak perlu diubah dan tidak ada worker yang harus
+     * dijalankan.
+     */
+    protected static function antre(string $email, StatusLayananMail $surat): void
+    {
+        dispatch(function () use ($email, $surat) {
+            try {
+                Mail::to($email)->send($surat);
+            } catch (\Throwable $e) {
+                Log::warning('[PPID] Gagal mengirim email ke '.$email.': '.$e->getMessage());
+            }
+        })->afterResponse();
+    }
+
+    /**
      * Kirim bila perpindahan statusnya memang salah satu pemicu.
      *
      * Perbandingan dengan status lama menjaga email tidak terkirim dua kali
@@ -105,7 +130,7 @@ class EmailPemohon
                 ? 'Data Pemohon Anda telah terverifikasi'
                 : 'Verifikasi Data Pemohon belum dapat disetujui';
 
-            Mail::to($pemohon->email)->send(new StatusLayananMail($subjek, [
+            self::antre((string) $pemohon->email, new StatusLayananMail($subjek, [
                 'judul' => $disetujui ? 'Data Pemohon Terverifikasi' : 'Verifikasi Data Pemohon Ditolak',
                 'nama' => $nama,
                 'paragraf' => self::paragrafVerifikasi($disetujui, $sisa),
@@ -177,7 +202,7 @@ class EmailPemohon
             $nomor = self::nomor($pengajuan, $keberatan);
             $subjek = self::subjek($tahap, $jenis, $nomor);
 
-            Mail::to($pemohon->email)->send(new StatusLayananMail($subjek, [
+            self::antre((string) $pemohon->email, new StatusLayananMail($subjek, [
                 'judul' => ($tahap === self::TAHAP_SELESAI ? 'Pengajuan Selesai' : 'Pengajuan Diterima').' — '.$jenis,
                 'nama' => filled($pemohon->nama) ? $pemohon->nama : 'Pemohon',
                 'paragraf' => self::paragraf($tahap, $jenis, $nomor, $keberatan),

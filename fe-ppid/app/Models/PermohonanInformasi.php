@@ -67,6 +67,10 @@ class PermohonanInformasi extends Model
         'kode_permohonan',
         'pemohon_id',
         'kategori_id',
+        // Dokumen Informasi Publik yang diminta, bila permohonannya berangkat
+        // dari satu dokumen tertentu (langkah 83). Kosong untuk permohonan
+        // biasa, tempat pemohon menuliskan sendiri informasi yang dicarinya.
+        'informasi_publik_id',
         'rincian_informasi',
         'tujuan_penggunaan',
         'cara_memperoleh',
@@ -97,6 +101,12 @@ class PermohonanInformasi extends Model
     public function pemohon(): BelongsTo
     {
         return $this->belongsTo(Pemohon::class, 'pemohon_id');
+    }
+
+    /** Dokumen Informasi Publik yang diminta, bila permohonannya menunjuk satu. */
+    public function dokumen(): BelongsTo
+    {
+        return $this->belongsTo(InformasiPublik::class, 'informasi_publik_id');
     }
 
     public function survei(): HasOne

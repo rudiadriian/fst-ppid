@@ -143,4 +143,6 @@
         </div>
     </section>
 
+    @include('partials.informasi_dialog')
+
 @endsection

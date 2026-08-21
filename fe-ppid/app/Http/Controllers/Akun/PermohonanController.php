@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Akun;
 
 use App\Http\Controllers\Controller;
+use App\Models\InformasiPublik;
 use App\Models\PermohonanInformasi;
 use App\Support\Cms;
 use App\Support\EmailPemohon;
@@ -47,7 +48,7 @@ class PermohonanController extends Controller
         ]);
     }
 
-    public function create(): View|RedirectResponse
+    public function create(Request $request): View|RedirectResponse
     {
         $pemohon = Auth::guard('pemohon')->user();
 
@@ -59,7 +60,29 @@ class PermohonanController extends Controller
         return view('akun.permohonan.create', [
             'pemohon' => $pemohon,
             'ketentuan' => $this->ketentuan(),
+            // Diisi bila pemohon datang dari halaman pratinjau sebuah dokumen
+            // berunduhan terbatas (langkah 83).
+            'dokumen' => $this->dokumenDiminta($request->integer('dokumen')),
         ]);
+    }
+
+    /**
+     * Dokumen Informasi Publik yang jadi asal permohonan, bila ada.
+     *
+     * Hanya dokumen terbit yang berunduhan terbatas yang diterima. Nomor lain
+     * diabaikan diam-diam: parameter ini datang dari query string, dan
+     * permohonan biasa tidak boleh gagal hanya karena seseorang menyunting
+     * alamatnya.
+     */
+    private function dokumenDiminta(?int $id): ?InformasiPublik
+    {
+        if (!$id) {
+            return null;
+        }
+
+        return InformasiPublik::published()
+            ->where('unduhan_terbatas', true)
+            ->find($id);
     }
 
     /**
@@ -109,6 +132,7 @@ class PermohonanController extends Controller
         }
 
         $data = $request->validate([
+            'informasi_publik_id' => ['nullable', 'integer'],
             'rincian_informasi' => ['required', 'string', 'max:2000'],
             'tujuan_penggunaan' => ['required', 'string', 'max:2000'],
             'cara_memperoleh' => ['required', 'in:'.implode(',', array_keys(PermohonanInformasi::CARA_MEMPEROLEH))],
@@ -128,10 +152,20 @@ class PermohonanController extends Controller
             $data['cara_pengiriman'] = 'email';
         }
 
+        /*
+         * Nomor dokumennya diperiksa ulang di sini, tidak dipercaya begitu saja
+         * dari formulir. Isian tersembunyi bisa diubah siapa pun sebelum
+         * dikirim, dan nomor ini yang nanti membuka tombol unduh — menerimanya
+         * mentah-mentah sama saja membiarkan orang memilih sendiri dokumen mana
+         * yang persetujuannya berlaku baginya.
+         */
+        $dokumen = $this->dokumenDiminta($data['informasi_publik_id'] ?? null);
+
         try {
             $permohonan = DB::transaction(fn () => PermohonanInformasi::create([
                 'kode_permohonan' => $this->kodeBaru(),
                 'pemohon_id' => $pemohon->id,
+                'informasi_publik_id' => $dokumen?->id,
                 'rincian_informasi' => $data['rincian_informasi'],
                 'tujuan_penggunaan' => $data['tujuan_penggunaan'],
                 'cara_memperoleh' => $data['cara_memperoleh'],

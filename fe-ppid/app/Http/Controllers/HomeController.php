@@ -153,10 +153,64 @@ class HomeController extends Controller
             ],
             [
                 'label' => 'Jam Layanan',
-                'value' => Cms::pengaturan('kontak.jam_layanan', 'Senin–Jumat, 08.00–17.00 WIB'),
+                /*
+                 * Cadangan bila baris `kontak.jam_layanan` belum ada di CMS.
+                 * Nilainya harus sama dengan tabel Waktu Layanan di
+                 * `PpidController::showServiceStandardPage()` — dua tempat yang
+                 * mengumumkan jam berbeda lebih buruk daripada satu tempat yang
+                 * salah, karena tidak ada yang tahu mana yang benar.
+                 */
+                'value' => Cms::pengaturan(
+                    'kontak.jam_layanan',
+                    'Senin–Jumat, 08.00–15.00 WIB (istirahat 12.00–13.00 WIB)'
+                ),
+                /*
+                 * Hari, jam buka, dan jam istirahat dipecah jadi tiga baris
+                 * (langkah 82).
+                 *
+                 * Satu kalimat panjang berkurung — "Senin–Jumat, 08.00–15.00
+                 * WIB (istirahat 12.00–13.00 WIB)" — memaksa orang membaca
+                 * seluruhnya untuk menemukan satu angka. Dipisah per baris,
+                 * jam buka dan jam istirahat langsung terbaca sekilas.
+                 *
+                 * `value` di atas tetap dipertahankan: ia yang dipakai bila
+                 * petugas menyunting jam layanan lewat CMS menjadi bentuk yang
+                 * tidak dikenali pemecah di bawah.
+                 */
+                'baris' => self::jamLayananPerBaris(),
                 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
             ],
         ];
     }
 
+    /**
+     * Jam layanan sebagai baris-baris terpisah.
+     *
+     * Dibaca dari `kontak.jam_layanan` bila bentuknya masih seperti yang
+     * ditulis seeder; kalau petugas menggantinya dengan kalimat lain, hasilnya
+     * `null` dan view kembali menampilkan `value` apa adanya. Menebak-nebak
+     * struktur dari teks bebas hanya akan memotongnya di tempat yang salah.
+     *
+     * @return array<int, string>|null
+     */
+    private static function jamLayananPerBaris(): ?array
+    {
+        $nilai = (string) Cms::pengaturan(
+            'kontak.jam_layanan',
+            'Senin–Jumat, 08.00–15.00 WIB (istirahat 12.00–13.00 WIB)'
+        );
+
+        // "Senin–Jumat, 08.00–15.00 WIB (istirahat 12.00–13.00 WIB)"
+        $pola = '/^(.+?),\s*(.+?)\s*\(\s*istirahat\s*(.+?)\s*\)$/iu';
+
+        if (!preg_match($pola, trim($nilai), $cocok)) {
+            return null;
+        }
+
+        return [
+            trim($cocok[1]),
+            'Pukul '.trim($cocok[2]),
+            'Istirahat Pukul '.trim($cocok[3]),
+        ];
+    }
 }

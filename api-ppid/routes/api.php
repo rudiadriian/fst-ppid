@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AnalitikController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CaptchaController;
 use App\Http\Controllers\Api\Cms\AlurApprovalController;
 use App\Http\Controllers\Api\Cms\AuditLogController;
 use App\Http\Controllers\Api\Cms\BannerSliderController;
@@ -30,6 +31,7 @@ use App\Http\Controllers\Api\Cms\TautanTerkaitController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\NavigationController;
 use App\Http\Controllers\Api\NotifikasiController;
+use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\UploadController;
 use App\Support\CrudRoute;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +58,17 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('auth')->group(function () {
         Route::post('sign-in', [AuthController::class, 'signIn'])->middleware('throttle:login');
+
+        // Gambar captcha untuk formulir masuk, lupa password, dan password
+        // baru. Terbuka tanpa token — belum ada yang bisa masuk tanpanya —
+        // tetapi tetap direm supaya tidak dipakai memaksa server menggambar
+        // ribuan PNG.
+        Route::get('captcha', CaptchaController::class)->middleware('throttle:captcha');
+
+        Route::post('lupa-password', [PasswordResetController::class, 'minta'])
+            ->middleware('throttle:tautan-akun');
+        Route::post('reset-password', [PasswordResetController::class, 'pasang'])
+            ->middleware('throttle:tautan-akun');
 
         Route::middleware('auth:api')->group(function () {
             Route::get('sign-in-with-token', [AuthController::class, 'signInWithToken']);

@@ -28,6 +28,7 @@ class InformasiPublik extends Model
         'konten',
         'konten_en',
         'tautan',
+        'unduhan_terbatas',
         'nomor_klasifikasi',
         'tanggal_publikasi',
         'status',
@@ -39,6 +40,7 @@ class InformasiPublik extends Model
     protected $hidden = ['search_vector'];
 
     protected $casts = [
+        'unduhan_terbatas' => 'boolean',
         'tanggal_publikasi' => 'date',
         'reviewed_at' => 'datetime',
         'views_count' => 'integer',

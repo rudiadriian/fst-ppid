@@ -357,7 +357,18 @@
                                 </div>
                                 <div>
                                     <dt class="text-sm font-semibold text-gray-900 dark:text-white mb-1">{{ __($c['label']) }}</dt>
-                                    <dd class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{{ $c['value'] }}</dd>
+                                    {{-- Nilai berbaris (mis. Jam Layanan) ditumpuk supaya jam buka
+                                         dan jam istirahat terbaca sekilas, bukan tersembunyi di
+                                         dalam satu kalimat berkurung. --}}
+                                    @if (!empty($c['baris']))
+                                        <dd class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                                            @foreach ($c['baris'] as $garis)
+                                                <span class="block {{ $loop->first ? 'font-medium text-gray-700 dark:text-gray-300' : 'tabular-nums' }}">{{ __($garis) }}</span>
+                                            @endforeach
+                                        </dd>
+                                    @else
+                                        <dd class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{{ $c['value'] }}</dd>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach

@@ -12,6 +12,10 @@ import { HTTPError } from 'ky';
 export type JwtSignInPayload = {
 	email: string;
 	password: string;
+	/** Jawaban captcha; wajib selama `PPID_CAPTCHA_AKTIF` menyala di API. */
+	captcha?: string;
+	/** Id kode captcha yang sedang berlaku. */
+	captcha_id?: string | null;
 };
 
 export type JwtSignUpPayload = {

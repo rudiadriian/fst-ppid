@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CaptchaController;
+use App\Http\Controllers\DokumenInformasiController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KontenController;
 use App\Http\Controllers\PpidController;
@@ -59,6 +60,24 @@ Route::get('/profile/{slug}', [PpidController::class, 'showProfilePage'])->name(
 // Kanal Informasi Publik: Daftar Informasi Dikecualikan sebelum /informasi/{slug}.
 Route::get('/informasi', [PpidController::class, 'showPublicInformationIndex'])->name('ppid.information.index');
 Route::get('/informasi/dikecualikan', [PpidController::class, 'showExcludedInformation'])->name('ppid.excluded');
+
+/*
+ * Dokumen berunduhan terbatas (langkah 83).
+ *
+ * Didaftarkan sebelum `/informasi/{slug}` supaya segmen `dokumen` tidak
+ * tertelan pola slug kategori.
+ *
+ * Melihat terbuka untuk siapa saja; mengunduh diperiksa
+ * `App\Support\AksesDokumen` di dalam controllernya, bukan oleh middleware —
+ * yang menentukan bukan sekadar sudah masuk atau belum, melainkan apakah
+ * permohonan orang ini atas dokumen ini sudah disetujui petugas.
+ */
+Route::prefix('/informasi/dokumen/{dokumen}')->whereNumber('dokumen')->group(function () {
+    Route::get('/', [DokumenInformasiController::class, 'pratinjau'])->name('ppid.dokumen.pratinjau');
+    Route::get('/unduh', [DokumenInformasiController::class, 'unduh'])->name('ppid.dokumen.unduh');
+    Route::get('/ajukan', [DokumenInformasiController::class, 'ajukan'])->name('ppid.dokumen.ajukan');
+});
+
 Route::get('/informasi/{slug}', [PpidController::class, 'showPublicInformation'])->name('ppid.information');
 
 Route::get('/regulasi', [PpidController::class, 'showRegulationPage'])->name('ppid.regulation');

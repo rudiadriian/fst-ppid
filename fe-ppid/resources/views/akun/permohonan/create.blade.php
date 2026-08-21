@@ -19,11 +19,31 @@
               x-data="{ salinan: '{{ old('format_informasi', 'softcopy') }}' }">
             @csrf
 
+            {{-- Permohonan yang berangkat dari satu dokumen berunduhan terbatas
+                 (langkah 83). Nomornya ikut terkirim supaya persetujuan petugas
+                 nanti dikenali sebagai persetujuan atas dokumen ini, bukan
+                 sekadar permohonan yang kebetulan menyebut judulnya. --}}
+            @isset($dokumen)
+                @if ($dokumen)
+                    <input type="hidden" name="informasi_publik_id" value="{{ $dokumen->id }}">
+
+                    <div class="rounded-xl border border-accent-200 bg-accent-50 dark:border-accent-500/30 dark:bg-accent-500/10 p-4">
+                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-[#9E470D] dark:text-accent-300">
+                            {{ __('Permohonan untuk dokumen') }}
+                        </p>
+                        <p class="mt-1 text-base font-semibold text-gray-900 dark:text-white">{{ $dokumen->teks('judul') }}</p>
+                        <p class="mt-1 text-sm font-normal text-gray-600 dark:text-gray-300">
+                            {{ __('Salinan dokumen ini dapat diunduh setelah permohonan Anda disetujui petugas PPID.') }}
+                        </p>
+                    </div>
+                @endif
+            @endisset
+
             <div>
                 <label for="rincian_informasi" class="{{ $fsLabel }}">{{ __('Rincian Informasi') }} <span class="text-red-600">*</span></label>
                 <textarea id="rincian_informasi" name="rincian_informasi" rows="4" required maxlength="2000"
                           placeholder="{{ __('Jelaskan secara spesifik informasi yang Anda butuhkan.') }}"
-                          class="{{ $fsInput }}">{{ old('rincian_informasi') }}</textarea>
+                          class="{{ $fsInput }}">{{ old('rincian_informasi', isset($dokumen) && $dokumen ? __('Salinan dokumen: :judul', ['judul' => $dokumen->teks('judul')]) : '') }}</textarea>
             </div>
 
             <div>

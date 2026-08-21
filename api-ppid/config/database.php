@@ -75,7 +75,31 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => 'prefer',
+            /*
+             * 'prefer' membuat libpq mencoba jalur TLS lebih dulu dan mundur ke
+             * sambungan biasa bila server menolak — dua kali jabat tangan untuk
+             * sambungan yang tidak pernah meninggalkan mesin ini. Di lingkungan
+             * pengembangan nilainya boleh 'disable'; di server produksi biarkan
+             * 'prefer' (atau naikkan ke 'require').
+             */
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            /*
+             * PostgreSQL melahirkan satu proses backend per sambungan. Di
+             * Windows itu berarti CreateProcess penuh: terukur ~120 ms setiap
+             * kali, dibayar ulang pada SETIAP permintaan HTTP karena PHP
+             * menutup sambungannya begitu permintaan selesai.
+             *
+             * Sambungan persisten menahannya tetap terbuka di dalam proses PHP
+             * sehingga permintaan berikutnya memakai yang sudah ada (~24 ms).
+             *
+             * Sengaja dimatikan secara bawaan: sambungan yang dipakai ulang
+             * ikut membawa sisa keadaan sesi bila sebuah permintaan mati di
+             * tengah transaksi. Nyalakan lewat DB_PERSISTENT pada lingkungan
+             * yang jumlah prosesnya terkendali.
+             */
+            'options' => array_filter([
+                PDO::ATTR_PERSISTENT => filter_var(env('DB_PERSISTENT', false), FILTER_VALIDATE_BOOLEAN) ?: null,
+            ], fn ($nilai) => $nilai !== null),
             /*
              * Wajib sama dengan `app.timezone`.
              *

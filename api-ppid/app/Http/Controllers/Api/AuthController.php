@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\CaptchaBenar;
 use App\Support\AuditLogger;
+use App\Support\KunciLoginAdmin;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -22,62 +23,119 @@ use Tymon\JWTAuth\Exceptions\JWTException;
  */
 class AuthController extends Controller
 {
-    /**
-     * Kunci akun sementara setelah sekian kali gagal berturut-turut.
-     *
-     * Melengkapi `throttle:login` yang jendelanya hanya satu menit: pembatas
-     * per menit masih mengizinkan penebakan pelan-pelan sepanjang hari, sedang
-     * hitungan ini memakai jendela panjang sehingga percobaan yang sabar pun
-     * ikut tertahan.
-     */
-    private const GAGAL_MAKSIMUM = 10;
-
-    /** Lama kunci sekaligus lama jendela hitungan, dalam detik. */
-    private const LAMA_KUNCI = 900;
-
     public function signIn(Request $request): JsonResponse
     {
         try {
-            $credentials = $request->validate([
+            $data = $request->validate([
                 'email' => ['required', 'email', 'max:150'],
                 'password' => ['required', 'string', 'max:255'],
+                'captcha_id' => ['nullable', 'string', 'max:64'],
+                'captcha' => [
+                    ...(config('ppid.akun.captcha_aktif') ? ['required'] : ['nullable']),
+                    'string',
+                    'max:16',
+                    new CaptchaBenar($request->input('captcha_id')),
+                ],
+            ], [
+                'captcha.required' => 'Kode captcha wajib diisi.',
+                'email.required' => 'Email wajib diisi.',
+                'email.email' => 'Format email tidak sah.',
+                'password.required' => 'Kata sandi wajib diisi.',
             ]);
         } catch (ValidationException $e) {
             return $this->fieldErrors($e->errors(), 422);
         }
 
-        $kunciGagal = $this->kunciGagal($request, $credentials['email']);
+        $credentials = ['email' => $data['email'], 'password' => $data['password']];
 
-        if (RateLimiter::tooManyAttempts($kunciGagal, self::GAGAL_MAKSIMUM)) {
-            $detik = RateLimiter::availableIn($kunciGagal);
+        /*
+         * Satu-satunya penghitung kegagalan jangka panjang adalah tangga
+         * bertingkat di `KunciLoginAdmin`.
+         *
+         * Sebelumnya ada penghitung kedua di kelas ini — 10 kegagalan per 15
+         * menit lewat cache. Dua penghitung untuk pekerjaan yang sama bukan
+         * pertahanan berlapis melainkan saling menutupi: yang lebih longgar
+         * berbunyi lebih dulu, sehingga tangga yang seharusnya berakhir di
+         * suspend pada kegagalan ke-12 tidak pernah sampai ke sana. Yang
+         * bertahan adalah yang lebih kuat: tangganya menyimpan hitungan di
+         * basis data (tidak hilang bila cache dibersihkan), masa tunggunya naik
+         * sampai 14 hari, dan ujungnya menutup akun.
+         *
+         * `throttle:login` di berkas rute tetap ada dan tidak tumpang-tindih:
+         * jendelanya satu menit dan tugasnya menahan banjir, bukan menghitung
+         * kegagalan sepanjang hari.
+         */
+        $kunci = KunciLoginAdmin::periksa($request, $credentials['email']);
 
+        if ($kunci['terkunci']) {
             AuditLogger::record(null, 'login_locked', null, null, null, [
                 'email' => $credentials['email'],
             ]);
 
-            return response()->json([
-                ['type' => 'password', 'message' => "Terlalu banyak percobaan masuk. Coba lagi dalam {$detik} detik."],
-            ], 429);
+            return response()->json([['type' => 'password', 'message' => $kunci['pesan']]], 429);
+        }
+
+        /*
+         * Akun yang sudah disuspend dihentikan sebelum passwordnya diperiksa.
+         *
+         * Kalau tidak, password yang benar tetap menghabiskan ~230 ms bcrypt
+         * pada akun yang jelas-jelas tidak boleh masuk — dan yang lebih penting,
+         * pemiliknya akan mendapat pesan "kata sandi salah" yang menyesatkan
+         * alih-alih tahu bahwa akunnya perlu dibuka administrator.
+         */
+        $akun = User::denganEmail($credentials['email']);
+
+        if ($akun && $akun->disuspend_pada !== null) {
+            AuditLogger::record(null, 'login_suspended', User::class, $akun->id, null, [
+                'email' => $akun->email,
+            ]);
+
+            return response()->json([[
+                'type' => 'email',
+                'message' => 'Akun ini disuspend karena aktivitas masuk yang mencurigakan. '
+                    .'Hubungi administrator untuk membukanya kembali.',
+            ]], 403);
         }
 
         /** @var string|false $token */
         $token = Auth::guard('api')->attempt($credentials);
 
         if (!$token) {
-            RateLimiter::hit($kunciGagal, self::LAMA_KUNCI);
+            /*
+             * Email yang tidak terdaftar diperlakukan persis sama dengan
+             * password yang salah — termasuk ikut menaikkan hitungan kunci.
+             *
+             * Permintaan "hanya email terdaftar yang bisa menjalankan fitur
+             * auth" dipenuhi dengan menolaknya, bukan dengan mengatakannya:
+             * jawaban yang membedakan keduanya berubah menjadi alat untuk
+             * mendaftar email petugas mana saja yang ada di sistem ini.
+             */
+            $akibat = KunciLoginAdmin::catatGagal($request, $credentials['email']);
 
-            // Pesan sengaja tidak membedakan "email tidak ada" vs "password salah"
-            // agar tidak bisa dipakai untuk enumerasi akun.
             AuditLogger::record(null, 'login_failed', null, null, null, [
                 'email' => $credentials['email'],
+                'terdaftar' => $akun !== null,
             ]);
 
+            /*
+             * Status dibedakan supaya panel tidak perlu membaca kalimatnya
+             * untuk tahu apa yang terjadi: 403 akun ditutup, 429 sedang dalam
+             * masa tunggu, 401 masih boleh mencoba lagi. Kegagalan yang tepat
+             * memicu kunci baru dijawab 429, bukan 401 — pesannya sudah
+             * menyuruh menunggu, jadi statusnya harus mengatakan hal yang sama.
+             */
+            $status = match (true) {
+                $akibat['suspend'] => 403,
+                $akibat['terkunci'] => 429,
+                default => 401,
+            };
+
             return response()->json([
-                ['type' => 'password', 'message' => 'Email atau kata sandi salah.'],
-            ], 401);
+                ['type' => 'password', 'message' => $akibat['pesan']],
+            ], $status);
         }
 
-        RateLimiter::clear($kunciGagal);
+        KunciLoginAdmin::bersihkan($request, $credentials['email']);
 
         /** @var User $user */
         $user = Auth::guard('api')->user();
@@ -205,17 +263,5 @@ class AuthController extends Controller
         }
 
         return response()->json($payload, $status);
-    }
-
-    /**
-     * Kunci hitungan kegagalan: per kombinasi email + IP.
-     *
-     * Dipisah per email supaya satu penyerang tidak bisa mengunci akun orang
-     * lain hanya dengan menghabiskan jatah dari IP-nya sendiri, dan dipisah per
-     * IP supaya kegagalan sah dari kantor yang sama tidak saling menjatuhkan.
-     */
-    private function kunciGagal(Request $request, string $email): string
-    {
-        return 'admin-login|'.Str::transliterate(Str::lower($email)).'|'.$request->ip();
     }
 }

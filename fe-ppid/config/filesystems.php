@@ -44,6 +44,25 @@ return [
             'throw' => false,
         ],
 
+        /*
+ * Berkas dokumen yang unduhannya terbatas (langkah 83).
+ *
+ * Sengaja di luar `storage/app/public`: folder itu ditautkan ke
+ * `public/storage`, sehingga isinya dilayani web server secara langsung dan
+ * tidak ada rute PHP yang sempat memeriksa hak siapa pun. Berkas di sini
+ * hanya keluar lewat `DokumenInformasiController`.
+ *
+ * Root-nya harus menunjuk folder yang sama dengan disk `dokumen_terbatas`
+ * milik api-ppid — di sanalah berkasnya ditulis saat petugas menyalakan
+ * penanda Unduhan Terbatas.
+ */
+        'dokumen_terbatas' => [
+            'driver' => 'local',
+            'root' => env('DOKUMEN_TERBATAS_ROOT', storage_path('app/dokumen-terbatas')),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

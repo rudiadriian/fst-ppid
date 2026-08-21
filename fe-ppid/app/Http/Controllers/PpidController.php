@@ -234,8 +234,7 @@ class PpidController extends Controller
         $items = $rows->values()->map(function ($row, $i) {
             $berkas = $row->files->first();
 
-            // Entri boleh berupa berkas unggahan atau tautan ke halaman lain.
-            $url = $berkas ? $this->fileUrl($berkas->path_file) : ($row->tautan ?: null);
+            $aksi = $this->aksiDokumen($row, $berkas);
 
             return [
                 'no' => $i + 1,
@@ -244,9 +243,7 @@ class PpidController extends Controller
                 'kategori' => $row->kategori?->teks('nama') ?? __('Lainnya'),
                 'kategori_slug' => $row->kategori->slug ?? null,
                 'tahun' => optional($row->tanggal_publikasi)->format('Y'),
-                'file' => $url,
-                'jenis' => $berkas ? 'berkas' : ($row->tautan ? 'tautan' : null),
-            ];
+            ] + $aksi;
         })->all();
 
         $data = [
@@ -302,17 +299,13 @@ class PpidController extends Controller
         $items = $rows->values()->map(function ($row, $i) {
             $berkas = $row->files->first();
 
-            // Entri boleh berupa berkas unggahan atau tautan ke halaman lain.
-            // Berkas didahulukan; kalau tidak ada, dipakai kolom `tautan`.
-            $url = $berkas ? $this->fileUrl($berkas->path_file) : ($row->tautan ?: null);
+            $aksi = $this->aksiDokumen($row, $berkas);
 
             return [
                 'no' => $i + 1,
                 'name' => $row->teks('judul'),
                 'ringkasan' => $row->teks('ringkasan'),
-                'file' => $url,
-                'jenis' => $berkas ? 'berkas' : ($row->tautan ? 'tautan' : null),
-            ];
+            ] + $aksi;
         })->all();
 
         // Sub-kategori (anak dari kategori ini) ditampilkan sebagai kartu
@@ -501,13 +494,16 @@ class PpidController extends Controller
                     ['label' => 'Langsung', 'desc' => 'Datang ke meja layanan PPID pada jam operasional.', 'recommended' => false, 'aksi' => 'waktu'],
                 ],
                 /*
-                 * Satu baris jam layanan untuk seluruh hari kerja (langkah 70).
-                 * Sebelumnya Senin–Kamis dan Jum'at dipisah beserta jam
-                 * istirahatnya masing-masing; sekarang jamnya seragam dan
-                 * istirahat tidak lagi diumumkan, jadi kunci `break` dilepas.
+                 * Satu baris jam layanan untuk seluruh hari kerja (langkah 70),
+                 * dengan jam tutupnya dimajukan ke 15:00 dan jam istirahat
+                 * diumumkan kembali (langkah 82).
+                 *
+                 * Istirahat penting disebut justru karena jendelanya sekarang
+                 * pendek: tanpa keterangan itu, pemohon yang datang pukul 12:30
+                 * mengira layanannya masih buka sampai sore.
                  */
                 'hours' => [
-                    ['days' => 'Senin - Jum\'at', 'time' => '08:00 - 17:00 WIB'],
+                    ['days' => 'Senin - Jum\'at', 'time' => '08:00 - 15:00 WIB', 'break' => '12:00 - 13:00 WIB'],
                 ],
                 'note' => 'Permohonan di luar jam kerja akan diproses pada hari kerja berikutnya.'
             ]
@@ -938,6 +934,52 @@ class PpidController extends Controller
     }
 
     /** Path file di DB -> URL yang bisa dibuka publik. Null bila belum ada file. */
+    /**
+     * Tautan dan jenis aksi untuk satu baris Daftar Informasi Publik.
+     *
+     * Diputuskan di satu tempat supaya keempat daftar — indeks seluruh
+     * dokumen, Informasi Berkala, Serta Merta, dan Setiap Saat — tidak pernah
+     * berbeda perlakuannya atas baris yang sama.
+     *
+     * Dua kemungkinan:
+     *
+     *   - `dialog` → entri yang punya isi (tautan bacanya, berkas salinannya,
+     *     atau keduanya). Tombolnya membuka dialog dua pilihan: membaca lewat
+     *     tautan yang diisikan petugas, atau mengunduh salinannya. Alamat
+     *     berkas unduhannya tidak ikut dicetak — yang dicetak hanya alamat
+     *     rutenya, yang memeriksa dulu apakah permohonan orangnya sudah
+     *     disetujui petugas.
+     *   - `null`   → entri yang belum punya isi sama sekali; daftarnya
+     *     menawarkan Mohon Dokumen seperti sebelumnya.
+     *
+     * Sejak langkah 83 direvisi, membuka langsung tanpa dialog tidak ada lagi:
+     * seluruh entri di keempat daftar itu melewati pintu yang sama, sehingga
+     * tidak ada baris yang diam-diam berperilaku lain.
+     *
+     * @return array{file: ?string, jenis: ?string, pratinjau: ?string, unduh: ?string, id: ?int}
+     */
+    private function aksiDokumen($row, $berkas): array
+    {
+        if (!$row->tautan && !$berkas) {
+            return ['file' => null, 'jenis' => null, 'pratinjau' => null, 'unduh' => null, 'id' => null];
+        }
+
+        return [
+            // `file` diisi penanda supaya baris ini tetap dihitung "punya
+            // aksi" oleh view; yang dipakai membuka dialog kunci di bawahnya.
+            'file' => '#',
+            'jenis' => 'dialog',
+            'pratinjau' => $row->tautan ?: null,
+            /*
+             * Tombol unduh hanya dipasang bila berkas salinannya memang ada.
+             * Memasangnya tanpa berkas berarti mengantar orang melewati login
+             * dan permohonan untuk berakhir di 404.
+             */
+            'unduh' => $berkas ? route('ppid.dokumen.unduh', $row->id) : null,
+            'id' => $row->id,
+        ];
+    }
+
     private function fileUrl(?string $path): ?string
     {
         if (blank($path)) {

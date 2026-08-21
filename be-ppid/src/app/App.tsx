@@ -25,6 +25,16 @@ const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
 			staleTime: 5 * 60 * 1000, // 5 minutes
+			// Data modul yang sudah diambil tetap dipegang 30 menit setelah
+			// halamannya ditinggalkan, jadi berpindah modul lalu kembali
+			// menampilkan tabel dari cache — bukan menunggu API lagi.
+			gcTime: 30 * 60 * 1000,
+			// Berpindah tab/jendela bukan tanda datanya berubah. Tanpa ini,
+			// setiap kali panel mendapat fokus semua query yang basi ditembak
+			// serentak; itu yang membuat panel terasa berat setelah operator
+			// pindah ke aplikasi lain sebentar.
+			refetchOnWindowFocus: false,
+			refetchOnReconnect: false,
 			retry: 1
 		}
 	}
@@ -84,7 +94,7 @@ function App() {
 								</I18nProvider>
 							</FuseSettingsProvider>
 						</Authentication>
-						<ReactQueryDevtools initialIsOpen={false} />
+						{import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
 					</QueryClientProvider>
 				</LocalizationProvider>
 			</AppContext>

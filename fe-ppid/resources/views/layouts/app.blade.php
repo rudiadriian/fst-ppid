@@ -144,6 +144,10 @@
         @include('akun.partials.popup-verifikasi')
     @endauth
 
+    {{-- Backsound jingle Food Station (langkah 84). Bisa dimatikan lewat
+         tombol di pojok; pilihannya diingat antar halaman. --}}
+    @include('partials.backsound')
+
     {{-- Widget aksesibilitas (EqualWeb) --}}
     @include('partials.accessibility')
 

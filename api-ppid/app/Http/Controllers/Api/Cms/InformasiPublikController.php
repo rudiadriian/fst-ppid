@@ -8,6 +8,9 @@ use App\Models\InformasiPublikFile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class InformasiPublikController extends CrudController
@@ -47,6 +50,13 @@ class InformasiPublikController extends CrudController
             'konten_en' => ['nullable', 'string'],
             // Entri bisa menunjuk ke halaman lain, bukan berkas unggahan.
             'tautan' => ['nullable', 'url', 'max:500'],
+            /*
+             * Dokumen boleh dilihat siapa saja, tetapi salinannya hanya keluar
+             * setelah permohonan pemohon disetujui petugas (langkah 83).
+             * Menyalakannya memindahkan berkasnya ke penyimpanan privat —
+             * lihat `selaraskanPenyimpanan()`.
+             */
+            'unduhan_terbatas' => ['sometimes', 'boolean'],
             'nomor_klasifikasi' => ['nullable', 'string', 'max:50'],
             'tanggal_publikasi' => ['nullable', 'date'],
             'status' => ['sometimes', Rule::in(['draft', 'menunggu_review', 'published', 'archived'])],
@@ -83,6 +93,10 @@ class InformasiPublikController extends CrudController
     protected function afterSave(Model $record, Request $request, string $mode): void
     {
         if (!$request->has('files')) {
+            // Penanda unduhan terbatas bisa diubah tanpa menyentuh daftar
+            // berkasnya sama sekali, jadi pemindahannya diperiksa lebih dulu.
+            $this->selaraskanPenyimpanan($record);
+
             return;
         }
 
@@ -110,5 +124,60 @@ class InformasiPublikController extends CrudController
         InformasiPublikFile::where('informasi_publik_id', $record->getKey())
             ->whereNotIn('id', $idDipakai ?: [0])
             ->delete();
+
+        $this->selaraskanPenyimpanan($record);
+    }
+
+    /**
+     * Pindahkan berkas dokumen ke penyimpanan yang sesuai penandanya.
+     *
+     * Penanda `unduhan_terbatas` tidak cukup ditegakkan di kode: folder
+     * `storage/app/public` milik fe-ppid ditautkan ke `public/storage`, jadi
+     * apa pun di sana dilayani web server tanpa satu baris PHP pun berjalan.
+     * Selama berkasnya di sana, pemeriksaan hak unduh bisa dilewati cukup
+     * dengan menyalin alamat berkasnya.
+     *
+     * Karena itu penandanya memindahkan berkasnya:
+     *
+     * - dinyalakan  → `media` (publik)          → `dokumen_terbatas` (privat)
+     * - dimatikan   → `dokumen_terbatas`        → `media`
+     *
+     * `path_file` di basis data tidak berubah; yang berubah hanya disk tempat
+     * ia tinggal, dan itu selalu bisa disimpulkan dari penandanya. Satu sumber
+     * kebenaran, tidak ada kolom kedua yang bisa berbeda isinya.
+     *
+     * Kegagalan memindahkan tidak boleh menggagalkan penyimpanan datanya —
+     * tetapi juga tidak boleh lewat diam-diam, karena akibatnya dokumen yang
+     * dikira terbatas masih terbuka. Karena itu dicatat sebagai `warning`.
+     */
+    private function selaraskanPenyimpanan(Model $record): void
+    {
+        $publik = Storage::disk('media');
+        $privat = Storage::disk('dokumen_terbatas');
+
+        $terbatas = (bool) $record->unduhan_terbatas;
+        $dari = $terbatas ? $publik : $privat;
+        $ke = $terbatas ? $privat : $publik;
+
+        $berkas = InformasiPublikFile::where('informasi_publik_id', $record->getKey())->get();
+
+        foreach ($berkas as $baris) {
+            $path = ltrim(Str::after((string) $baris->path_file, 'storage/'), '/');
+
+            if (blank($path) || !$dari->exists($path) || $ke->exists($path)) {
+                continue;
+            }
+
+            try {
+                $ke->put($path, $dari->get($path));
+                $dari->delete($path);
+            } catch (\Throwable $e) {
+                Log::warning('[PPID] Gagal memindahkan berkas dokumen terbatas: '.$e->getMessage(), [
+                    'informasi_publik_id' => $record->getKey(),
+                    'path' => $path,
+                    'terbatas' => $terbatas,
+                ]);
+            }
+        }
     }
 }

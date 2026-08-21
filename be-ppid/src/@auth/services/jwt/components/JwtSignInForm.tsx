@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,19 +7,23 @@ import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import Link from '@fuse/core/Link';
 import Button from '@mui/material/Button';
 import useJwtAuth from '../useJwtAuth';
+import { bacaGalat } from '../utils/pesanGalat';
+import KolomCaptcha from './KolomCaptcha';
 
 /**
  * Form Validation Schema
  */
 const schema = z.object({
-	email: z.string().email('You must enter a valid email').nonempty('You must enter an email'),
-	password: z
-		.string()
-		.min(4, 'Password is too short - must be at least 4 chars.')
-		.nonempty('Please enter your password.'),
+	email: z.string().email('Format email tidak sah').nonempty('Email wajib diisi'),
+	password: z.string().nonempty('Kata sandi wajib diisi'),
+	// Wajibnya ditegakkan server: saat captcha dimatikan di API, komponen
+	// gambarnya tidak tampil sama sekali dan isian ini memang kosong.
+	captcha: z.string().optional(),
 	remember: z.boolean().optional()
 });
 
@@ -27,39 +32,65 @@ type FormType = z.infer<typeof schema>;
 const defaultValues: FormType = {
 	email: '',
 	password: '',
+	captcha: '',
 	remember: true
 };
 
 function JwtSignInForm() {
 	const { signIn } = useJwtAuth();
 
-	const { control, formState, handleSubmit, setError } = useForm<FormType>({
+	const [captchaId, setCaptchaId] = useState<string | null>(null);
+	const [captchaVersi, setCaptchaVersi] = useState(0);
+	/**
+	 * Spanduk di atas formulir.
+	 *
+	 * Terpisah dari galat per isian karena tidak semua kegagalan punya isian
+	 * yang bersangkutan: API mati, 502 dari proxy, atau akun terkunci bukan
+	 * salah ketikan pada kotak mana pun.
+	 */
+	const [spanduk, setSpanduk] = useState<{ pesan: string; jaringan: boolean } | null>(null);
+
+	const { control, formState, handleSubmit, setError, resetField } = useForm<FormType>({
 		mode: 'onChange',
 		defaultValues,
 		resolver: zodResolver(schema)
 	});
 
-	const { isValid, dirtyFields, errors } = formState;
+	const { isValid, isSubmitting, dirtyFields, errors } = formState;
 
-	function onSubmit(formData: FormType) {
-		const { email, password } = formData;
+	async function onSubmit(formData: FormType) {
+		setSpanduk(null);
 
-		signIn({
-			email,
-			password
-		}).catch((error) => {
-			const errorData = error?.data as {
-				type: 'email' | 'password' | 'remember' | `root.${string}` | 'root';
-				message: string;
-			}[];
-
-			errorData?.forEach?.((err) => {
-				setError(err.type, {
-					type: 'manual',
-					message: err.message
-				});
+		try {
+			await signIn({
+				email: formData.email,
+				password: formData.password,
+				captcha: formData.captcha,
+				captcha_id: captchaId
 			});
-		});
+		} catch (error) {
+			const galat = await bacaGalat(error);
+
+			galat.isian.forEach((item) => {
+				if (item.type === 'email' || item.type === 'password' || item.type === 'captcha') {
+					setError(item.type, { type: 'manual', message: item.message });
+				}
+			});
+
+			// Selalu tampil, juga saat galatnya sudah menempel di isian: pesan
+			// kunci bertingkat ("coba lagi setelah 1 jam") terlalu penting untuk
+			// disembunyikan sebagai teks kecil di bawah kotak password.
+			setSpanduk({ pesan: galat.ringkasan, jaringan: galat.jaringan });
+
+			/*
+			 * Server membuang kode captcha begitu diperiksa — benar atau salah.
+			 * Tanpa memuat gambar baru di sini, percobaan berikutnya pasti
+			 * ditolak dengan alasan captcha, dan orangnya akan mengira
+			 * passwordnya yang salah.
+			 */
+			resetField('captcha');
+			setCaptchaVersi((versi) => versi + 1);
+		}
 	}
 
 	return (
@@ -69,6 +100,17 @@ function JwtSignInForm() {
 			className="flex w-full flex-col justify-center"
 			onSubmit={handleSubmit(onSubmit)}
 		>
+			{spanduk && (
+				<Alert
+					severity={spanduk.jaringan ? 'warning' : 'error'}
+					className="mb-6"
+					onClose={() => setSpanduk(null)}
+				>
+					<AlertTitle>{spanduk.jaringan ? 'Server tidak dapat dihubungi' : 'Gagal masuk'}</AlertTitle>
+					{spanduk.pesan}
+				</Alert>
+			)}
+
 			<Controller
 				name="email"
 				control={control}
@@ -95,13 +137,29 @@ function JwtSignInForm() {
 					<TextField
 						{...field}
 						className="mb-6"
-						label="Password"
+						label="Kata sandi"
 						type="password"
 						error={!!errors.password}
 						helperText={errors?.password?.message}
 						variant="outlined"
 						required
 						fullWidth
+					/>
+				)}
+			/>
+
+			<Controller
+				name="captcha"
+				control={control}
+				render={({ field }) => (
+					<KolomCaptcha
+						value={field.value ?? ''}
+						onChange={field.onChange}
+						onIdChange={setCaptchaId}
+						error={!!errors.captcha}
+						helperText={errors?.captcha?.message}
+						muatUlang={captchaVersi}
+						disabled={isSubmitting}
 					/>
 				)}
 			/>
@@ -113,11 +171,12 @@ function JwtSignInForm() {
 					render={({ field }) => (
 						<FormControl>
 							<FormControlLabel
-								label="Remember me"
+								label="Ingat saya"
 								control={
 									<Checkbox
 										size="small"
 										{...field}
+										checked={!!field.value}
 									/>
 								}
 							/>
@@ -127,9 +186,9 @@ function JwtSignInForm() {
 
 				<Link
 					className="text-md font-medium"
-					to="/#"
+					to="/lupa-password"
 				>
-					Forgot password?
+					Lupa password?
 				</Link>
 			</div>
 
@@ -137,12 +196,12 @@ function JwtSignInForm() {
 				variant="contained"
 				color="secondary"
 				className="mt-4 w-full"
-				aria-label="Sign in"
-				disabled={_.isEmpty(dirtyFields) || !isValid}
+				aria-label="Masuk"
+				disabled={_.isEmpty(dirtyFields) || !isValid || isSubmitting}
 				type="submit"
 				size="large"
 			>
-				Sign in
+				{isSubmitting ? 'Memeriksa…' : 'Masuk'}
 			</Button>
 		</form>
 	);
