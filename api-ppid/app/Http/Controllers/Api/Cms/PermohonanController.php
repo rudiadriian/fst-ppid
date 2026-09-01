@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Cms;
 
 use App\Http\Controllers\Api\Concerns\MenanganiPersetujuan;
 use App\Http\Controllers\Api\CrudController;
+use App\Models\ArsipDokumen;
 use App\Models\PermohonanInformasi;
 use App\Models\PermohonanLogStatus;
 use App\Models\PermohonanTanggapanFile;
@@ -11,11 +12,13 @@ use App\Support\AlurPersetujuan;
 use App\Support\AuditLogger;
 use App\Support\EmailPemohon;
 use App\Support\NotifikasiPortal;
+use App\Support\SlaLayanan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -118,17 +121,24 @@ class PermohonanController extends CrudController
         }
 
         /*
-         * Persetujuan berjenjang hanya boleh dilewati kalau alurnya memang
-         * belum disusun. Selama masih ada tahap yang menunggu, putusan
-         * akhirnya milik penyetuju — bukan petugas yang mengubah status
-         * sendiri lewat dialog status.
+         * Selama satu tahap persetujuan masih menunggu, perpindahan status
+         * bukan lagi milik dropdown ini — milik putusan penyetujunya
+         * (langkah 100). Sebelumnya yang dijaga hanya putusan akhir dari
+         * "Menunggu Persetujuan", sehingga PPID Pelaksana yang sudah
+         * meneruskan berkasnya masih bisa menariknya kembali, menolaknya
+         * sendiri, atau menyatakannya kedaluwarsa — tiga hal yang seluruhnya
+         * melangkahi jenjang di atasnya.
+         *
+         * Super admin dikecualikan dengan alasan yang sama seperti pada
+         * {@see AlurPersetujuan::bolehMemutus()}: berkas yang macet karena
+         * rolenya kosong atau pemegangnya nonaktif harus tetap bisa
+         * dibebaskan tanpa menyunting basis data.
          */
-        if ($statusLama === 'menunggu_approval'
-            && in_array($statusBaru, ['disetujui', 'ditolak', 'ditolak_sebagian'], true)
+        if (!$this->penggunaSuperAdmin()
             && AlurPersetujuan::berjalan(AlurPersetujuan::JENIS_PERMOHONAN, $id) !== null) {
             throw ValidationException::withMessages([
-                'status_baru' => 'Permohonan ini sedang menunggu putusan tahap persetujuan; '
-                    .'selesaikan tahapnya lewat menu Persetujuan Berjenjang.',
+                'status_baru' => 'Permohonan ini sedang berada di jenjang persetujuan; '
+                    .'perpindahannya ditentukan putusan pada panel Persetujuan Berjenjang.',
             ]);
         }
 
@@ -213,6 +223,24 @@ class PermohonanController extends CrudController
         DB::afterCommit(function () use ($permohonan, $statusLama, $statusBaru, $alasanPenolakan) {
             EmailPemohon::statusBerubah($permohonan, $statusLama, $statusBaru);
             NotifikasiPortal::statusPengajuan($permohonan, $statusLama, $statusBaru, $alasanPenolakan);
+
+            /*
+             * Berkas tanggapan baru diberitahukan di sini — saat permohonannya
+             * benar-benar diserahkan (langkah 97).
+             *
+             * Berkasnya dilampirkan petugas jauh sebelum itu, sewaktu menyiapkan
+             * jawaban dan sebelum PPID memutuskan. Memberi tahu pemohon pada
+             * saat pelampiran berarti menjanjikan dokumen yang belum tentu jadi
+             * diberikan, dan portal memang belum menampilkannya sebelum
+             * permohonannya diserahkan.
+             */
+            if (self::statusTerbukaUntukPemohon($statusBaru) && !self::statusTerbukaUntukPemohon($statusLama)) {
+                $jumlah = $permohonan->tanggapanFiles()->count();
+
+                if ($jumlah > 0) {
+                    NotifikasiPortal::berkasTanggapan($permohonan, $jumlah);
+                }
+            }
         });
     }
 
@@ -223,6 +251,45 @@ class PermohonanController extends CrudController
     protected function pengajuanPersetujuan(int $id): Model
     {
         return PermohonanInformasi::findOrFail($id);
+    }
+
+    /** Pengguna yang sedang masuk adalah super admin? */
+    private function penggunaSuperAdmin(): bool
+    {
+        $user = Auth::guard('api')->user();
+        $user?->loadMissing('role');
+
+        return $user?->role?->slug === 'super-admin';
+    }
+
+    /**
+     * Berkas naik ke jenjang berikutnya.
+     *
+     * Statusnya dipasang lewat {@see terapkanStatus()} yang sama dengan jalur
+     * lain, bukan disimpan langsung: perpindahan yang tidak menulis
+     * `permohonan_log_status` adalah perpindahan yang hilang dari riwayat, dan
+     * riwayat itu yang dibaca petugas berikutnya untuk tahu berkas ini sudah
+     * lewat tangan siapa.
+     */
+    protected function terapkanLanjutPersetujuan(Model $pengajuan): void
+    {
+        /** @var PermohonanInformasi $pengajuan */
+        $statusLama = (string) $pengajuan->status;
+
+        if ($statusLama === 'menunggu_approval') {
+            return;
+        }
+
+        $this->terapkanStatus($pengajuan, $statusLama, 'menunggu_approval', null, null);
+
+        AuditLogger::record(
+            Auth::guard('api')->id(),
+            'update_status',
+            PermohonanInformasi::class,
+            $pengajuan->id,
+            ['status' => $statusLama],
+            ['status' => 'menunggu_approval']
+        );
     }
 
     /**
@@ -244,6 +311,17 @@ class PermohonanController extends CrudController
         };
 
         $this->terapkanStatus($pengajuan, $statusLama, $statusBaru, $catatan, $alasan);
+
+        /*
+         * Dikembalikan untuk diperbaiki berarti berkasnya kembali ke tangan
+         * jenjang pertama — bukan berhenti di "Diproses" menunggu seseorang
+         * ingat untuk mengajukannya lagi (langkah 100). Putaran baru dibuat
+         * saat itu juga supaya PPID Pelaksana langsung menerima lonceng
+         * giliran, dan siklusnya bisa berulang sebanyak yang diperlukan.
+         */
+        if ($hasil === AlurPersetujuan::HASIL_REVISI) {
+            AlurPersetujuan::mulai($pengajuan->refresh());
+        }
 
         AuditLogger::record(
             Auth::guard('api')->id(),
@@ -271,19 +349,137 @@ class PermohonanController extends CrudController
         $dibuat = [];
 
         foreach ($data['files'] as $file) {
+            $namaFile = $file['nama_file'] ?? basename($file['path_file']);
+
             $dibuat[] = PermohonanTanggapanFile::create([
                 'permohonan_id' => $permohonan->id,
-                'nama_file' => $file['nama_file'] ?? basename($file['path_file']),
+                'nama_file' => $namaFile,
                 'path_file' => $file['path_file'],
                 'uploaded_by' => Auth::guard('api')->id(),
             ]);
+
+            /*
+             * Apa pun yang dilampirkan ikut tercatat di Arsip Dokumen (langkah
+             * 95), supaya permohonan berikutnya yang meminta dokumen sama bisa
+             * memilihnya tanpa unggahan kedua. Berkas yang memang dipilih dari
+             * arsip tidak menghasilkan baris kedua — pencatatannya dikunci pada
+             * `path_file`.
+             *
+             * Gagal mencatat arsip tidak boleh membatalkan lampirannya: yang
+             * pokok adalah berkasnya sampai ke pemohon.
+             */
+            try {
+                ArsipDokumen::catatSekali((string) $file['path_file'], $namaFile);
+            } catch (\Throwable $e) {
+                Log::warning('[PPID] Gagal mencatat berkas ke arsip: '.$e->getMessage());
+            }
         }
 
-        // Berkasnya sudah bisa diunduh pemohon begitu barisnya tersimpan, jadi
-        // loncengnya diberi tahu di sini — bukan menunggu status berpindah.
-        NotifikasiPortal::berkasTanggapan($permohonan, count($dibuat));
+        /*
+         * Pemohon hanya diberi tahu bila permohonannya memang sudah diserahkan
+         * (langkah 97).
+         *
+         * Selama masih disiapkan — belum diputus PPID — berkasnya tidak tampil
+         * di portal, jadi pemberitahuan pada tahap itu menunjuk sesuatu yang
+         * tidak bisa dibuka pemohon dan menjanjikan jawaban yang belum tentu
+         * jadi diberikan. Untuk berkas yang dilampirkan lebih awal,
+         * pemberitahuannya menyusul saat statusnya berpindah ke Disetujui atau
+         * Selesai (lihat `terapkanStatus()`).
+         */
+        if (self::statusTerbukaUntukPemohon((string) $permohonan->status)) {
+            NotifikasiPortal::berkasTanggapan($permohonan, count($dibuat));
+        }
 
         return response()->json(['data' => $dibuat], 201);
+    }
+
+    /**
+     * Status yang berarti tanggapan sudah diserahkan kepada pemohon.
+     *
+     * Dipakai dua tempat: penentu kapan berkas tanggapan diberitahukan, dan —
+     * di sisi portal — penentu kapan berkasnya boleh diunduh. Keduanya harus
+     * memakai daftar yang sama; berkas yang terlihat tanpa pemberitahuan sama
+     * membingungkannya dengan pemberitahuan atas berkas yang tak bisa dibuka.
+     *
+     * Penolakan tidak termasuk: yang disampaikan pada penolakan adalah
+     * alasannya, dan itu sudah dibawa notifikasi status.
+     */
+    private static function statusTerbukaUntukPemohon(?string $status): bool
+    {
+        return in_array((string) $status, ['disetujui', 'selesai'], true);
+    }
+
+    /**
+     * Perpanjang tenggat tanggapan sekali, paling lama 7 hari kerja.
+     *
+     * UU KIP memberi satu kali perpanjangan dan menuntut alasannya diberitahukan
+     * kepada pemohon, jadi keduanya dijaga di sini: alasan wajib diisi, dan
+     * perpanjangan kedua ditolak. Tenggat awalnya disimpan terpisah supaya
+     * penilaian ketepatan waktu tetap punya pembanding aslinya — tanpa itu,
+     * setiap keterlambatan bisa dihapus dengan cara menggeser tenggatnya.
+     */
+    public function perpanjangTenggat(Request $request, int $id): JsonResponse
+    {
+        /** @var PermohonanInformasi $permohonan */
+        $permohonan = PermohonanInformasi::findOrFail($id);
+
+        $data = $request->validate([
+            'alasan' => ['required', 'string', 'max:2000'],
+        ]);
+
+        if (!SlaLayanan::bolehDiperpanjang($permohonan)) {
+            throw ValidationException::withMessages([
+                'alasan' => filled($permohonan->diperpanjang_pada)
+                    ? 'Permohonan ini sudah pernah diperpanjang. Undang-undang hanya memberi satu kali perpanjangan.'
+                    : 'Permohonan yang sudah ditanggapi atau ditutup tidak dapat diperpanjang.',
+            ]);
+        }
+
+        if (blank($permohonan->batas_waktu_tanggapan)) {
+            throw ValidationException::withMessages([
+                'alasan' => 'Permohonan ini belum punya batas waktu tanggapan, jadi tidak ada yang bisa diperpanjang.',
+            ]);
+        }
+
+        $batasLama = $permohonan->batas_waktu_tanggapan;
+        $batasBaru = SlaLayanan::perpanjang($batasLama);
+
+        DB::transaction(function () use ($permohonan, $batasLama, $batasBaru, $data) {
+            $permohonan->fill([
+                // Diisi hanya kalau masih kosong: perpanjangan boleh sekali,
+                // tetapi baris lama yang tenggat awalnya belum tercatat pun
+                // tidak boleh kehilangan tenggat aslinya.
+                'batas_waktu_awal' => $permohonan->batas_waktu_awal ?? $batasLama,
+                'batas_waktu_tanggapan' => $batasBaru,
+                'diperpanjang_pada' => now(),
+                'alasan_perpanjangan' => $data['alasan'],
+            ])->save();
+
+            PermohonanLogStatus::create([
+                'permohonan_id' => $permohonan->id,
+                'status_lama' => $permohonan->status,
+                'status_baru' => $permohonan->status,
+                'catatan' => 'Tenggat diperpanjang '.SlaLayanan::PERPANJANGAN_HARI_KERJA.' hari kerja. Alasan: '.$data['alasan'],
+                'diubah_oleh' => Auth::guard('api')->id(),
+            ]);
+        });
+
+        EmailPemohon::tenggatDiperpanjang($permohonan, $data['alasan']);
+        NotifikasiPortal::tenggatDiperpanjang($permohonan);
+
+        AuditLogger::record(
+            Auth::guard('api')->id(),
+            'perpanjang_tenggat',
+            PermohonanInformasi::class,
+            $permohonan->id,
+            ['batas_waktu_tanggapan' => $batasLama],
+            ['batas_waktu_tanggapan' => $batasBaru, 'alasan' => $data['alasan']]
+        );
+
+        return response()->json([
+            'data' => $permohonan->fresh(),
+            'message' => 'Tenggat diperpanjang sampai '.$batasBaru->translatedFormat('d F Y').'.',
+        ]);
     }
 
     public function hapusTanggapanFile(int $id, int $fileId): JsonResponse

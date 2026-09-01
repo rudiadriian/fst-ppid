@@ -40,6 +40,27 @@
             @endforeach
         </dl>
 
+        {{-- Dokumen jawaban dari petugas.
+             Baru tampil setelah permohonannya diserahkan: sebelum itu berkasnya
+             masih disiapkan dan belum disetujui PPID. Sebelum langkah 97 berkas
+             ini tidak punya tempat sama sekali di portal, padahal loncengnya
+             sudah memberitahukannya. --}}
+        @if ($permohonan->tanggapanTerbukaUntukPemohon() && $permohonan->tanggapanFiles->isNotEmpty())
+            <div class="mt-6">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">{{ __('Berkas Tanggapan') }}</h3>
+                <ul class="space-y-2">
+                    @foreach ($permohonan->tanggapanFiles as $berkas)
+                        <li class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-100 dark:border-white/10 px-4 py-3">
+                            <span class="text-sm text-gray-900 dark:text-white truncate">{{ $berkas->nama_file ?: __('Berkas') }}</span>
+                            <a href="{{ route('akun.permohonan.berkas-tanggapan', $berkas->id) }}" class="text-sm font-semibold text-[#10462F] dark:text-[#3E9C6C] hover:underline">
+                                {{ __('Unduh') }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         @if ($permohonan->alasan_penolakan)
             <div class="mt-5 p-4 rounded-xl bg-red-50 border border-red-100 text-sm text-red-700">
                 <span class="font-bold">{{ __('Alasan Penolakan') }}:</span> {{ $permohonan->alasan_penolakan }}

@@ -63,6 +63,11 @@ function SelPerKolom({ kolom, baris }: { kolom: ColumnConfig; baris: ApiRecord }
 			);
 		}
 
+		case 'map': {
+			const label = kolom.mapValues?.[String(nilai)];
+			return <span className="line-clamp-2">{label ? t(label) : String(nilai ?? '—')}</span>;
+		}
+
 		case 'date':
 			return <span>{formatTanggal(nilai, false)}</span>;
 
@@ -140,6 +145,15 @@ type ResourceListPageProps = {
 	config: ResourceConfig;
 	/** Aksi tambahan per baris (mis. kelola status permohonan). */
 	aksiBaris?: (baris: ApiRecord, tutupMenu: () => void) => React.ReactNode[];
+	/**
+	 * Dijalankan saat barisnya diklik.
+	 *
+	 * Bila tidak diisi, barisnya membuka formulir Ubah — selama rolenya memang
+	 * boleh menyunting modul itu. Modul yang rinciannya berupa dialog sendiri
+	 * (Permohonan, Keberatan, Pemohon) mengisinya dengan dialog rincian
+	 * masing-masing.
+	 */
+	onRowClick?: (baris: ApiRecord) => void;
 	/** Konten tambahan di bawah judul. */
 	headerExtra?: React.ReactNode;
 };
@@ -151,7 +165,7 @@ type ResourceListPageProps = {
  * hanya menampilkan halaman yang sedang diminta. Ini menjaga panel tetap
  * ringan walau satu modul berisi puluhan ribu baris.
  */
-export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceListPageProps) {
+export function ResourceListPage({ config, aksiBaris, onRowClick, headerExtra }: ResourceListPageProps) {
 	const apiPath = apiPathOf(config);
 	const { akses } = useAksesModul(config.modul);
 	const { enqueueSnackbar } = useSnackbar();
@@ -268,6 +282,21 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 	// Formulirnya hanya ada gunanya bila salah satu jalur tulisnya hidup.
 	const adaFormulir = bolehTambah || bolehUbah;
 
+	/*
+	 * Membuka baris dengan mengkliknya, bukan lewat menu tiga titik.
+	 *
+	 * Menu itu tetap ada — ia menampung tindakan lain (hapus, atur hak akses)
+	 * dan tetap jadi jalan bagi papan ketik. Yang berubah hanya jalan
+	 * tercepatnya: satu klik pada barisnya membuka rinciannya, sama seperti
+	 * daftar surel atau berkas.
+	 */
+	const bukaBaris = onRowClick ?? (bolehUbah ? (baris: ApiRecord) => bukaFormulir(Number(baris.id)) : undefined);
+
+	function bukaFormulir(id: number) {
+		setIdTerpilih(id);
+		setFormTerbuka(true);
+	}
+
 	return (
 		<div className="flex w-full flex-col">
 			<div className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between md:p-6">
@@ -348,6 +377,39 @@ export function ResourceListPage({ config, aksiBaris, headerExtra }: ResourceLis
 						size: 'small'
 					}}
 					enableRowSelection={bolehHapus}
+					muiTableBodyRowProps={({ row }: { row: MRT_Row<ApiRecord> }) => ({
+						hover: Boolean(bukaBaris),
+						sx: {
+							backgroundColor: 'initial',
+							opacity: 1,
+							boxShadow: 'none',
+							cursor: bukaBaris ? 'pointer' : 'default'
+						},
+						onClick: (event: React.MouseEvent<HTMLTableRowElement>) => {
+							if (!bukaBaris) {
+								return;
+							}
+
+							/*
+							 * Sel yang isinya bisa ditekan sendiri tidak boleh ikut
+							 * membuka baris: kotak centang pemilihan, tombol menu
+							 * aksi, dan tautan berkas masing-masing punya maksud
+							 * lain. Tanpa penyaring ini, mencentang satu baris untuk
+							 * dihapus malah membuka dialognya.
+							 */
+							const pemicu = event.target as HTMLElement;
+
+							if (
+								pemicu.closest(
+									'button, a, input, label, [role="button"], .MuiCheckbox-root, .MuiSwitch-root'
+								)
+							) {
+								return;
+							}
+
+							bukaBaris(row.original);
+						}
+					})}
 					// Kolom aksi juga muncul untuk modul baca-saja yang punya
 					// aksi khusus — mis. Pemohon, yang datanya tidak boleh
 					// disunting tetapi berkasnya perlu diverifikasi petugas.

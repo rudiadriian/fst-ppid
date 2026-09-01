@@ -76,9 +76,11 @@ class PermohonanInformasi extends Model
         'cara_memperoleh',
         'format_informasi',
         'cara_pengiriman',
+        'jalur_pelayanan',
         'status',
         'tanggal_permohonan',
         'batas_waktu_tanggapan',
+        'batas_waktu_awal',
         'tampil_di_register_publik',
     ];
 
@@ -87,7 +89,20 @@ class PermohonanInformasi extends Model
         'tanggal_permohonan'        => 'datetime',
         'tanggal_tanggapan'         => 'datetime',
         'batas_waktu_tanggapan'     => 'datetime',
+        'batas_waktu_awal'          => 'datetime',
+        'diperpanjang_pada'         => 'datetime',
+        'jadwal_layanan'            => 'datetime',
     ];
+
+    /**
+     * Status yang berarti permohonannya sudah tuntas ditangani.
+     *
+     * Dipakai portal untuk menentukan permohonan mana yang boleh dikeberatankan
+     * (langkah 89). Penolakan dan kedaluwarsa ikut, bukan kelalaian: keduanya
+     * justru alasan keberatan yang paling sering — permintaan ditolak, dan
+     * permintaan tidak ditanggapi sampai tenggatnya lewat.
+     */
+    public const STATUS_SELESAI = ['selesai', 'disetujui', 'ditolak', 'ditolak_sebagian', 'kedaluwarsa'];
 
     /**
      * Hanya permohonan yang pemohonnya setuju ditampilkan di Register Permohonan publik.
@@ -122,6 +137,29 @@ class PermohonanInformasi extends Model
     public function logStatus(): HasMany
     {
         return $this->hasMany(PermohonanLogStatus::class, 'permohonan_id');
+    }
+
+    /** Dokumen jawaban dari petugas; ditulis panel admin, dibaca portal. */
+    public function tanggapanFiles(): HasMany
+    {
+        return $this->hasMany(PermohonanTanggapanFile::class, 'permohonan_id');
+    }
+
+    /**
+     * Berkas tanggapan sudah boleh dilihat pemohon.
+     *
+     * Petugas melampirkan dokumennya jauh sebelum permohonan diputus — saat
+     * menyiapkan jawaban, sementara PPID belum menyetujui. Menampilkannya sejak
+     * saat itu berarti menyerahkan jawaban yang belum disahkan siapa pun.
+     *
+     * Daftarnya sama persis dengan yang dipakai api-ppid untuk menentukan kapan
+     * pemberitahuan berkas tanggapan dikirim
+     * (`PermohonanController::statusTerbukaUntukPemohon()`). Penolakan tidak
+     * termasuk: yang disampaikan di sana alasannya, bukan dokumennya.
+     */
+    public function tanggapanTerbukaUntukPemohon(): bool
+    {
+        return in_array($this->status, ['disetujui', 'selesai'], true);
     }
 
     /** Permohonan sudah tuntas ditangani, jadi pemohon boleh menilai layanannya. */

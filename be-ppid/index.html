@@ -2,7 +2,7 @@
 <html lang='en'>
     <head>
         <meta charset='utf-8'>
-        <meta name='description' content='PPID Admin - Panel administrasi PPID'>
+        <meta name='description' content='PPID Food Station - Panel administrasi PPID'>
         <meta name='keywords' content='PPID,Admin,Panel,Informasi Publik,Dashboard'>
         <meta name='author' content='PPID'>
         <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no'>
@@ -14,7 +14,16 @@
           homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
         -->
         <link rel='manifest' href='/manifest.json'>
-        <link rel='shortcut icon' href='/favicon.ico'>
+        <!--
+          Ikon tab, taskbar, dan layar utama disamakan dengan portal pemohon
+          (langkah 99). Ketiganya menunjuk berkas yang sama persis dengan
+          fe-ppid; panel dan portal adalah satu layanan, dan ikon yang berbeda
+          membuat keduanya tampak sebagai dua situs yang tidak berhubungan di
+          bilah tab maupun taskbar.
+        -->
+        <link rel='icon' href='/assets/images/logo/favicon.ico' sizes='any'>
+        <link rel='shortcut icon' type='image/x-icon' href='/assets/images/logo/favicon.ico'>
+        <link rel='apple-touch-icon' href='/assets/images/logo/logo_fs.png'>
 
         <!--<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">-->
 
@@ -40,9 +49,9 @@
           work correctly both with client-side routing and a non-root public URL.
           Learn how to configure a non-root public URL by running `npm run build`.
         -->
-        <title>PPID Admin</title>
+        <title>PPID Food Station</title>
 
-        <!-- PPID Admin Splash Screen CSS -->
+        <!-- Splash Screen CSS -->
         <style>
             body #fuse-splash-screen {
                 display: flex;
@@ -54,8 +63,13 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background-color: #121212;
-                color: #E0E0E0;
+                /*
+                  Latar terang, bukan #121212 seperti bawaan template: maskotnya
+                  bergaris putih dan tenggelam di atas latar gelap. Ragam
+                  gelapnya memakai hijau tua yang sama dengan panel.
+                */
+                background-color: #FFFFFF;
+                color: #10462F;
                 z-index: 999999;
                 pointer-events: none;
                 opacity: 1;
@@ -63,62 +77,33 @@
                 transition: opacity 400ms cubic-bezier(0.4, 0, 0.2, 1);
             }
 
-            body #fuse-splash-screen img {
-                width: 120px;
-                max-width: 120px;
-            }
-
-            #spinner {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-top: 40px;
-                width: 56px;
-            }
-
-            #spinner > div {
-                width: 12px;
-                height: 12px;
-                background-color: #00A4EF;
-                border-radius: 100%;
-                display: inline-block;
-                -webkit-animation: fuse-bouncedelay 1s infinite ease-in-out both;
-                animation: fuse-bouncedelay 1s infinite ease-in-out both;
-            }
-
-            #spinner .bounce1 {
-                -webkit-animation-delay: -0.32s;
-                animation-delay: -0.32s;
-            }
-
-            #spinner .bounce2 {
-                -webkit-animation-delay: -0.16s;
-                animation-delay: -0.16s;
-            }
-
-            @-webkit-keyframes fuse-bouncedelay {
-                0%, 80%, 100% {
-                    -webkit-transform: scale(0)
-                }
-                40% {
-                    -webkit-transform: scale(1.0)
+            @media (prefers-color-scheme: dark) {
+                body #fuse-splash-screen {
+                    background-color: #082217;
+                    color: #E0E0E0;
                 }
             }
 
-            @keyframes fuse-bouncedelay {
-                0%, 80%, 100% {
-                    -webkit-transform: scale(0);
-                    transform: scale(0);
-                }
-                40% {
-                    -webkit-transform: scale(1.0);
-                    transform: scale(1.0);
-                }
+            /*
+              Pemuat: satu berkas GIF yang sudah beranimasi sendiri, jadi tidak
+              ada keyframes yang perlu ditulis di sini. Lebarnya dikunci supaya
+              maskotnya tidak melar di layar lebar.
+            */
+            body #fuse-splash-screen .loader {
+                width: 180px;
+                max-width: 60vw;
+                height: auto;
             }
 
-
+            body #fuse-splash-screen .keterangan {
+                margin-top: 20px;
+                font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+                font-size: 13px;
+                letter-spacing: 0.02em;
+                opacity: 0.7;
+            }
         </style>
-        <!-- / PPID Admin Splash Screen CSS -->
+        <!-- / Splash Screen CSS -->
     </head>
     <body id="root">
 
@@ -127,18 +112,12 @@
     </noscript>
 
     <div id='app' class='flex'>
-        <!-- PPID Admin Splash Screen -->
+        <!-- Splash Screen -->
         <div id='fuse-splash-screen'>
-            <div class='logo'>
-                <img width='128' src='assets/images/logo/logo.svg' alt='logo'>
-            </div>
-            <div id='spinner'>
-                <div class='bounce1'></div>
-                <div class='bounce2'></div>
-                <div class='bounce3'></div>
-            </div>
+            <img class='loader' src='/assets/images/logo/loader-fs.gif' alt='Memuat…'>
+            <div class='keterangan'>Memuat…</div>
         </div>
-        <!-- / PPID Admin Splash Screen -->
+        <!-- / Splash Screen -->
     </div>
     <script type="module" src="/src/index.tsx"></script>
     <!--

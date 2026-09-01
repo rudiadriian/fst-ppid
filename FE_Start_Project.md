@@ -390,9 +390,1096 @@ Tolong jalankan langkah untuk menyesuaikan/ modifikasi halaman frontend aplikasi
     - Istirahat Pukul 12:00 - 13:00 WIB
 83. [x] Untuk Daftar Informasi Publik, Informasi Berkala, Infromasi Serta Merta, dan Infromasi Setiap Saat, tolong dibuatkan konsep tombolnya memiliki fitur 2 pilihan. Jadi, ketika di klik muncul POP UP modal dialog dengan 2 tombol. Di lihat Saja (Preview only) diinput tautan dan  jika ingin di Download harus login dan mengajukan Permohonan Informasi.
 84. [x] Saya ini ketika publik mengakses fe-ppid ada backsound lagu, setiap kali akses atau refresh halaman D:\Project\Ppid\Jingle_Food_Station_Vocal.mp4
+85. [x] Yang berhubungan dengan Logo perusahaan pada header dan footer di fe-ppid dan be-ppid diganti menggunakan file ini D:\Project\Ppid\Logo_fstj.png
+86. [x] pada fe-ppid tolong buatkan konsep pada modul Standar layanan - Prosedur Permohonan Informasi karena konsepnya saya ingin menampilkan gambar alur prosesnya sesuai dengan gambar-gambar di folder ini D:\Project\Ppid\standar layanan beserta urutannya. buatkan juga modul untuk CRUD di be-ppid agar konsepnya dinamis. dan Hapus bagian Ringkasan Tahapan dan Rincian Tahapan, dan bagian ini Detail Prosedur Permohonan Informasi
+Alur lengkap dari membuat akun sampai permohonan Anda diproses.
+87. [x] pada fe-ppid tolong buatkan konsep pada modul Standar layanan - Prosedur Permohonan Keberatan (seperti Prosedur Permohonan Informasi ) karena konsepnya saya ingin menampilkan gambar alur prosesnya sesuai dengan gambar-gambar di folder ini D:\Project\Ppid\standar layanan beserta urutannya. buatkan juga modul untuk CRUD di be-ppid agar konsepnya dinamis. dan Hapus bagian Ringkasan Tahapan dan Rincian Tahapan, dan bagian ini Detail Prosedur Permohonan Informasi Alur lengkap dari membuat akun sampai permohonan Anda diproses.
+88. [x] pada fe-ppid tolong buatkan konsep pada modul Standar layanan - Maklumat Pelayanan (seperti Prosedur Permohonan Informasi ) karena konsepnya saya ingin menampilkan gambar alur prosesnya sesuai dengan gambar-gambar dipath ini D:\Project\Ppid\MAKLUMAT PPID.png. buatkan juga modul untuk CRUD di be-ppid agar konsepnya dinamis. saat ini gambarnya terlalu besar.
+89. [x] sekarang buatkan alur proses Permohonan Informasi dan Permohonan Keberatan Informasi dari Pemohon kepada Internal Food Station dengan formasi user sesuai struktur organisasi di path D:\Project\Ppid\struktur organisasi.jpeg. adapun alur persiapannya seperti ini :
+    1. [x] Buatkan user-user untuk Role dengan Kategori :
+        - PPID Pelaksana, terdiri dari :
+            - Pengelola Dokumentasi Informasi (jabatan : Kepala Seksi Humas)
+            - Pengumuman Informasi (jabatan :  Staf Sekretaris Perusahaan & Kepatuhan)
+            - Penyediaan Informasi (jabatan : Staf Seksi Humas)
+        - PPID, (jabatan : Sekretaris Perusahaan & Kepatuhan)
+    2. [x] Sesuaikan Modul Permohonan pada be-ppid :
+        1. [x] Kategori dipisahkan berdasarkan 2 saja yaitu Permohonan Informasi dan Permohonan Keberatan Informasi
+        2. [x] Status tolong disesuaikan pada langkah ke 3 dibawah ini
+        3. [x] Buat kategori Jalur Pelayanan, yaitu Online (dokumen dikirim via email) atau Langsung (kirim email untuk tanggal dan waktu undangan ke pemohon)
+    3. [x] Alur proses Permohonan Informasinya seperti ini :
+        - Pemohon mengajukan form permohonan informasi pada fe-ppid (saat ini sudah), status = Diajukan
+        - PPID Pelaksana, menerima Permohonan (tujuannya untuk didistribusikan ke hierarki yang lebih tinggi yaitu PPID)
+            - Proses penerimaannya, dengan cara klik tombol detail untuk proses verifikasi pada be-ppid (modul Permohonan), terdapat informasi
+              detail beserta kolom menyetujui (tidak bisa menolak).
+            - Jika permintaan secara Online tampilkan modal dialog, field keterangan dan upload dokumen yang diminta.
+            - Jika permintaan secara Langsung tampilkan modal dialog, field keterangan, tanggal dan waktu undangan untuk pemohon bisa hadir sesuai
+              layanan
+            - Jika telah klik tombol Menyetujui, proses selanjutnya ke PPID untuk approval terakhir, Status berubah menjadi = Sedang Diproses
+        - PPID dapat menyetuji dan menolak
+            - Jika PPID Setuju, status berubah menjadi Selesai (Closed). Dokumen langsung didistribusikan (kirim notifikasi), jika Online kirim email, tetapi jika langsung berikan undangan ke email Pemohon dengan menyertakan informasi Keterangan, Tanggal dan Waktu, dan hadir sesuai
+              layanan:
+                Alamat : Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Selatan No. 1, Jakarta Timur 13230
+                Email & Telepon : ppid@foodstation.co.id · (021) 4718011 (Ext. PPID)
+                Jam Layanan : Senin–Jumat Pukul 08.00–15.00 WIB dan Istirahat Pukul 12.00–13.00 WIB
+            - Jika PPID Menolak, Status berubah menjadi Ditolak (Rejected), langsung kirim notifikasi ke portal Pemohon (fe-ppid)
+    4. [x] Alur proses Permohonan Keberatan Informasi seperti ini :
+        - Pemohon mengajukan form Permohonan Keberatan Informasi pada fe-ppid atas dasar permohonan yang sudah diajukan dengan status progress sudah Selesai atau Ditolak oleh PPID. Status => Diajukan
+            Adapun alasan pengajuan keberatan yang nanti di isi oleh pemohon sebagai berikut :
+            - Penolakan atas permintaan informasi
+            - Tidak ditanggapinya permintaan informasi
+            - Penyampaian informasi yang melebihi waktu yang diatur
+            - Permintaan informasi tidak ditanggapi sebagaimana yang diminta
+            - Tidak dipenuhinya permintaan informasi
+            - Pengenaan biaya yang tidak wajar
+            - Tidak disediakannya Informasi berkala 
+            Dan dari alasan ini bisa dijadikan Data analisa di Dashboard
+        - PPID Pelaksana, menerima Permohonan Keberatan (tujuannya untuk didistribusikan ke hierarki yang lebih tinggi yaitu PPID)
+            - Proses penerimaannya, dengan cara klik tombol detail untuk proses verifikasi pada be-ppid (modul Permohonan), terdapat informasi
+              detail beserta kolom menyetujui (tidak bisa menolak).
+            - Jika permintaan secara Online tampilkan modal dialog, field keterangan dan upload dokumen yang diminta.
+            - Jika permintaan secara Langsung tampilkan modal dialog, field keterangan, tanggal dan waktu undangan untuk pemohon bisa hadir sesuai
+              layanan
+            - Jika telah klik tombol Menyetujui, proses selanjutnya ke PPID untuk approval terakhir, Status berubah menjadi = Sedang Diproses
+        - PPID dapat menyetuji dan menolak
+            - Jika PPID Setuju, status berubah menjadi Selesai (Closed). Dokumen langsung didistribusikan (kirim notifikasi), jika Online kirim email, tetapi jika langsung berikan undangan ke email Pemohon dengan menyertakan informasi Keterangan, Tanggal dan Waktu, dan hadir sesuai
+              layanan:
+                Alamat : Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Selatan No. 1, Jakarta Timur 13230
+                Email & Telepon : ppid@foodstation.co.id · (021) 4718011 (Ext. PPID)
+                Jam Layanan : Senin–Jumat Pukul 08.00–15.00 WIB dan Istirahat Pukul 12.00–13.00 WIB
+            - Jika PPID Menolak, status berubah menjadi Ditolak (Rejected), langsung kirim notifikasi ke portal Pemohon (fe-ppid)
+    5. [x] Buatkan konsep SLA untuk proses permohonan pada sistem untuk di informasikan se-detail2nya di  be-ppid dan alert di modul dashboard ataupun modul permohonan seperti :
+        - Permohonan Informasi PPID memberikan atau mengirimkan informasi kepada pemohon paling lambat 10 hari kerja dan dapat memperpanjang paling lambat 7 hari kerja
+        - Permohonan Keberatan Informasi PPID menyampaikan tanggapan keberatan kepada PPID untuk diteruskan kepada pemohon informasi yang mengajukan keberatan paling lambat 30 hari sejak diregistrasinya pengajuan keberatan, Jika pemohon informasi tidak puas terhadap tanggapan keberatan, maka daam waktu 14 hari kerja setelah tanggapan, dapat mengajukan permohonan sengketa informasi publik ke komisi informasi
+    6. [x] Terapkan SLA ini pada alur proses Permohonan Informasi dan Permohonan Keberatan Informasi
+    7. [x] Sertakan notifikasi lonceng pada be-ppid ketika yang terecord, lalu berikan informasi untuk memberikan informasi traceability, dan untuk penomoran dokumen Permohonan Informasi dan Permohonan Keberatan Informasi dibedakan agar lebih terarsip dengan benar.
+90. [x] Banner pada modul beranda di fe-ppid tolong disesuaikan dengan menggunakan path D:\Project\Ppid\HOME 1920 x 1080.png, Judul : Selamat Datang di Portal Resmi PPID Food Station. , dan  Ringkasan : Dikelola oleh Pejabat Pengelola Informasi dan Dokumentasi (PPID) PT Food Station Tjipinang Jaya (Perseroda). Informasi yang disediakan diharapkan dapat digunakan secara bijak dan dimanfaatkan untuk kepentingan masyarakat sesuai dengan ketentuan peraturan perundang-undangan yang berlaku.
+91. [x] Notifikasi verifikasi data pemohon terkirim double, coba anda cek semua fitur notifikasi dan pastikan notifikasi ini sudah menyesuaikan dengan menu akses yang sesuai dengan otorisasi hak akses menu berdasarkan role user.
+92. [x] saya sudah testing dari pemohon yang sudah terdaftar melakukan verifikasi data diri "Data Pemohon terkirim dan menunggu pemeriksaan petugas PPID. Pemeriksaan memerlukan waktu paling lama 14 hari kerja." sudah berhasil. tapi di web admin notifikasinya tidak ada (saya sedang login dengan role PPID Pelaksana)
+93. [x] dari sisi pemohon (fe-ppid) notifikasi verifikasi data diri sudah terkirim jika telah diverifikasi oleh ppid pelaksana di admin ppid, tapi notifikasi tersebut ketika diklik harusnya mengarah ke halaman /akun/pengaturan/data-pemohon di (fe-ppid)
+94. [x] pada modul ppid/permohonan (be-ppid) mekanisme untuk approvalnya sangat ribet, lu buat juga fitur ketika ppid pelaksan cek detail permohonan yang masuk untuk bisa approval/ ubah statusnya. Lalu, tomobl Ubah Status di datatablenya lu hapus aja, mekanisme approval tetap di modal dialog Detail dan Verifikasi, lu buatin juga supaya rownya ketika di klik langsung buka modal dialog Detail dan Verifikasi (ini juga berlaku di modul lainnya di be-ppid).
+95. [x] be-ppid di Modal Dialog Detail Permohonan Informasi, saat gua upload berkas tanggapan (pakai role user ppid pelaksana) tidak bisa terupload, tolong perbaiki dan buatkan semacam penampung dokumen atau semacam arsip, jika dokumen diupload akan diletakan disitu dan sewaktu admin ingin melampirkan dokumen dipermohonan, tanpa harus upload, tinggal buka arsip dan pilih filenya.
+96. [x] tambahkan fitur Survey hasil kepuasan pemohon, setelah permohonan dari pemohon selesai dilakukan, jika tidak dijalankan, berikan highlight saja di dashboard pemohon (fe-ppid)
+97. [x] Ada kesalahan alur proses saat permohonan pemohon ingin ditanggapi oleh user admin (be-ppid) yaitu Ketika modul permohonan di be-ppid diakses melalui tombol Detail & Verifikasi, lalu user upload tanggapi dokumen, belum dilakukan simpan, proses tersebut mengirimkan Notifikasi "Berkas Tanggapan ........... " ke portal pemohon (fe-ppid). coba anda cek kembali semua format yang ada pada alur proses permohonan
+98. [x] logo pada be-ppid dengan label "PPID Admin" di halaman login, maupun sidebar/header/footer dan atau dimanapun jika ada, tolong dihapus. cukup pakai logo yang sudah ada saja.
+99. [x] ubah favicon atau icon taskbar halaman di be-ppid agar sama dengan fe-ppid, dan tolong ubah loader pada be-ppid menggunakan file ini D:\Project\Ppid\loader-fs.gif
+100. [x] Alur proses permohonannya masih error, ketika pemohon telah mengajukan Permohonan Informasi/ Keberatan Informasi :
+    - Data telah masuk ke be-ppid modul Permohonan, tetapi setelah permohonan tersebut dikonfirmasi dengan menyertakan file upload dan keterangan (diubah statusnya menjadi Diproses) oleh Role PPID Pelaksana, permohonan tersebut masih bisa diubah statusnya oleh PPID Pelaksana (harusnya tidak), dan permohonan tersebut notifikasinya tidak terkirim ke role PPID (harusnya terkirim untuk role PPID verifikasi apakah disetujui atau tidak), kalau saat ini role PPID tidak bisa lihat file yang diupload dan status yang tampil pada form adalah Menunggu diproses, Ditolak, dan Kadaluwarsa (harusnya status yang tampil Tolak, Setujui dan Revisi jika revisi permohonan akan balik ke Role PPID pelaksana untuk direvisi begitu seterusnya alur loopingnya) cek lagi langkah ke 89
+
+---
 
 
+## Status Pengerjaan (putaran 80 — langkah 100)
 
+Empat cacat yang dilaporkan berasal dari satu sebab: jenjang persetujuan tidak pernah dimulai.
+
+### Sebabnya
+
+Jenjang baru lahir ketika petugas memindahkan status ke **Menunggu Persetujuan** sendiri, lewat dropdown. Tidak ada satu pun yang melakukannya — dan memang tidak masuk akal untuk dituntut: PPID Pelaksana mengira pekerjaannya selesai setelah mengunggah berkas dan menulis keterangan, dan status berhenti di **Diproses**.
+
+Basis datanya membenarkan laporan itu: `approval_pengajuan` **kosong sama sekali**, sementara ada permohonan berstatus `diproses` dan `diajukan`. Tidak ada jenjang berarti tidak ada giliran, dan tidak ada giliran berarti tidak ada satu pun lonceng yang dikirim ke PPID.
+
+Dari situ ketiga keluhan lainnya mengikuti sendiri: dropdown status masih menawarkan seluruh perpindahan kepada petugas yang sudah selesai bagiannya; PPID tidak menerima pemberitahuan apa pun; dan pilihan yang tampil di formulir memang **Menunggu diproses / Ditolak / Kedaluwarsa** — daftar transisi status, bukan Setujui / Tolak / Revisi milik panel persetujuan yang tidak pernah aktif.
+
+### Empat perbaikan
+
+**1. Berkas yang masuk selalu punya jenjang.** `AlurPersetujuan::pastikanBerjalan()` membuat jenjangnya saat rincian persetujuan pertama kali dibaca — idempoten, dan melewati berkas yang statusnya sudah akhir supaya perkara yang ditutup sebelum alur berjenjang dipakai tidak terbuka lagi hanya karena dibaca orang.
+
+Endpoint baca yang menulis memang tidak lazim, dan itu disengaja: pengajuan lahir di portal pemohon — aplikasi terpisah yang tidak memuat mesin persetujuan ini — jadi jenjangnya tidak bisa dibuat di tempat berkasnya dibuat. Membuatnya saat dibaca berarti tidak ada satu pun langkah manual yang bisa terlewat.
+
+**2. Meneruskan berkas memindahkan statusnya.** Sebelumnya, selama masih ada jenjang di atasnya, putusan tidak mengubah status pengajuan sama sekali. Sekarang `terapkanLanjutPersetujuan()` memasangnya ke **Menunggu Persetujuan** lewat jalur yang sama dengan perpindahan status lain — jadi `permohonan_log_status` tetap terisi dan riwayatnya tidak berlubang.
+
+**3. Dropdown status terkunci selama jenjang berjalan.** Penjagaan lama hanya menutup putusan akhir dari `menunggu_approval`; PPID Pelaksana yang sudah meneruskan berkasnya masih bisa menariknya kembali, menolaknya sendiri, atau menyatakannya kedaluwarsa — tiga hal yang seluruhnya melangkahi PPID. Sekarang **seluruh** perpindahan ditolak selama ada tahap yang menunggu. Super admin dikecualikan dengan alasan yang sama seperti pada `bolehMemutus()`: berkas yang macet karena rolenya kosong harus tetap bisa dibebaskan tanpa menyunting basis data.
+
+Panel di be-ppid mengunci dirinya sendiri dengan aturan yang sama, dan membaca keadaan jenjang dari query yang **sama persis** dengan panel putusannya (`api/usePersetujuan.ts`). Ini bukan kerapian belaka: jenjang dibuat server saat dibaca, jadi `approvalLangkah` pada rincian bisa masih kosong ketika dialognya baru terbuka — dan panel yang menyimpulkan "belum ada jenjang" dari data basi itu akan membuka kunci yang justru seharusnya terpasang.
+
+**4. Revisi mengembalikan berkas, bukan menjatuhkannya.** Dikembalikan untuk diperbaiki kini membuka putaran baru saat itu juga, sehingga PPID Pelaksana langsung menerima lonceng giliran dan siklusnya bisa berulang sebanyak yang diperlukan. Sebelumnya berkasnya berhenti di **Diproses** menunggu seseorang ingat mengajukannya lagi — persis keadaan yang membuat cacat ini tidak terlihat sejak awal.
+
+### Yang PPID lihat sekarang
+
+Rincian permohonan dan keberatan menampilkan **jalur pelayanan**, **jadwal layanan**, dan **keterangan petugas untuk pemohon** — tiga isian yang ditetapkan jenjang penerima. Berkas lampiran pemohon dan berkas tanggapan petugas memang sudah tampil sejak sebelumnya, tetapi tanpa ketiga isian itu penyetuju memutus tanpa tahu jalur mana yang dijanjikan ke pemohon, kapan ia diundang, dan keterangan apa yang sudah dikirimkan.
+
+Formulir putusannya sendiri sudah benar sejak langkah 89 dan tidak diubah: **Setujui**, **Kembalikan untuk diperbaiki**, dan — hanya pada jenjang yang diberi hak menolak — **Tolak**. Jenjang penerima memang tidak diberi hak menolak; penolakan menurut UU KIP harus datang dari pejabat yang berwenang, disertai alasan tertulis.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `Support/AlurPersetujuan.php` | `pastikanBerjalan()`, daftar status akhir, nomor keberatan |
+| api-ppid | `Concerns/MenanganiPersetujuan.php` | Jenjang dibuat saat dibaca; hasil `lanjut` memindahkan status |
+| api-ppid | `Cms/PermohonanController.php` | Kunci dropdown, `terapkanLanjutPersetujuan()`, revisi membuka putaran baru |
+| api-ppid | `Cms/KeberatanController.php` | Sama, untuk keberatan |
+| api-ppid | `Models/PermohonanInformasi.php`, `Models/KeberatanInformasi.php` | `menunggu_approval` jadi tujuan sah dari status awal |
+| api-ppid | `tests/Feature/AlurPersetujuanPermohonanTest.php` | Baru |
+| be-ppid | `api/usePersetujuan.ts` | Baru — satu sumber keadaan jenjang |
+| be-ppid | `components/PersetujuanBerjenjang.tsx` | Memakai hook itu; teks keadaan kosong diperbaiki |
+| be-ppid | `components/PermohonanStatusPanel.tsx`, `components/KeberatanTanggapanPanel.tsx` | Terkunci selama jenjang berjalan |
+| be-ppid | `components/PermohonanDetailDialog.tsx`, `components/KeberatanDetailDialog.tsx` | Jalur, jadwal, keterangan petugas |
+| be-ppid | `lib/statusPengajuan.ts`, `@i18n/kamusPpid.ts` | Transisi disamakan; istilah baru versi Inggris |
+
+### Verifikasi
+
+- **7 tes** `AlurPersetujuanPermohonanTest`: jenjang lahir tanpa langkah manual dan tidak berlipat bila dibaca dua kali; berkas yang sudah tuntas tidak dibuatkan jenjang baru; penerimaan PPID Pelaksana memindahkan status **dan** memberi tahu PPID; Pelaksana tidak bisa menolak, menarik kembali, maupun mengedaluwarsakan berkas yang sudah diteruskan; revisi mengembalikan berkas ke jenjang pertama beserta loncengnya lalu alurnya berjalan sampai putusan akhir; jenjang penerima tidak diberi hak menolak; PPID membaca jalur, jadwal, keterangan, dan kedua wadah berkas.
+- Suite penuh: api-ppid **66 lulus** (298 asersi), fe-ppid **88 lulus** (316 asersi). be-ppid `tsc --noEmit` bersih, `eslint` tanpa galat.
+
+### Catatan
+
+Dua permohonan yang sudah ada di basis data (`diajukan` dan `diproses`) belum punya jenjang. Keduanya akan mendapatkannya sendiri begitu rinciannya dibuka di panel — tidak ada migrasi data yang perlu dijalankan.
+
+---
+
+## Status Pengerjaan (putaran 79 — langkah 99)
+
+Ikon panel disamakan dengan portal pemohon, dan tiga titik pantul bawaan template diganti maskot Food Station.
+
+### Ikon tab dan taskbar
+
+`be-ppid/public/favicon.ico` masih ikon bawaan Fuse (15 KB, tidak pernah diganti sejak template dipasang), sementara portal memakai `fe-ppid/public/assets/images/logo/favicon.ico` (93 KB). Di bilah tab dan taskbar keduanya karena itu tampak sebagai dua situs yang tidak berhubungan.
+
+Berkas portal disalin apa adanya — bukan dibuat ulang — supaya keduanya benar-benar identik, dan tautannya disusun sama persis dengan yang ada di `fe-ppid/resources/views/layouts/app.blade.php`: `icon`, `shortcut icon`, dan `apple-touch-icon`. Yang terakhir menunjuk `logo_fs.png`, juga salinan dari portal.
+
+Nama PWA di `manifest.json` sudah "PPID Food Station" sejak langkah 98 dan ikonnya menunjuk `/favicon.ico` yang kini sudah tergantikan, jadi tidak ada yang perlu diubah di sana.
+
+### Pemuat
+
+`loader-fs.gif` (272×250) dipasang di `public/assets/images/logo/` dan menggantikan tiga titik pantul di **dua** tempat yang harus seragam:
+
+- **`index.html`** — splash yang menutupi jeda sebelum bundel React berjalan.
+- **`FuseSplashScreen.tsx`** — splash yang menutupi jeda sesudahnya.
+
+Keduanya kini memakai markup dan nama kelas yang sama; bentuk yang berbeda akan terlihat sebagai kedipan saat satu berganti ke yang lain. **`FuseLoading.tsx`** — pemuat di dalam halaman, dipakai 68 berkas — ikut memakai gambar yang sama dengan ukuran lebih kecil (112 px) dan tanpa latar sendiri, karena ia muncul di dalam panel yang sudah punya warnanya.
+
+Latar splash diubah dari `#121212` bawaan template menjadi putih, dengan ragam gelap `#082217` mengikuti `prefers-color-scheme`. Maskotnya bergaris putih dan tenggelam di atas latar gelap bawaan itu.
+
+Karena GIF-nya beranimasi sendiri, seluruh keyframes `fuse-bouncedelay` dan aturan `#spinner` dibuang. Ikut dibuang: penimpaan warna `& #spinner > div` di `FuseTheme.tsx`, yang sejak titik ini mewarnai markup yang sudah tidak ada.
+
+`src/styles/splash-screen.css` **tidak diimpor dari mana pun** — `src/styles/index.css` tidak pernah memuatnya, dan memang tidak boleh: splash harus tergaya sebelum lembar gaya React sempat dimuat, jadi gayanya tinggal di `<style>` pada `index.html`. Isinya tetap disamakan supaya siapa pun yang menemukan berkas itu lebih dulu tidak menyalin gaya spinner yang markup-nya sudah dihapus.
+
+### Berkas yang disentuh
+
+| Berkas | Isi |
+| --- | --- |
+| `public/favicon.ico`, `public/assets/images/logo/favicon.ico` | Salinan ikon portal |
+| `public/assets/images/logo/logo_fs.png` | Salinan, untuk `apple-touch-icon` |
+| `public/assets/images/logo/loader-fs.gif` | Baru — maskot pemuat |
+| `index.html` | Tautan ikon, markup & gaya splash |
+| `@fuse/core/FuseSplashScreen/FuseSplashScreen.tsx` | Maskot, seragam dengan `index.html` |
+| `@fuse/core/FuseLoading/FuseLoading.tsx` | Maskot ukuran kecil, tanpa latar |
+| `@fuse/core/FuseTheme/FuseTheme.tsx` | Penimpaan warna spinner dibuang |
+| `src/styles/splash-screen.css` | Disamakan (berkas ini tidak diimpor) |
+
+### Verifikasi
+
+- `npx tsc --noEmit` — bersih.
+- `npx eslint` atas tiga berkas TSX yang diubah — bersih.
+- Tidak ada lagi rujukan `#spinner` maupun `bounce1` di luar folder `documentation`.
+
+### Catatan
+
+Halaman contoh bawaan template di `(control-panel)/pages/authentication/*`, `apps/e-commerce`, dan `coming-soon` masih memakai `logo.svg` bawaan Fuse. Semuanya di luar rute yang dipakai — halaman masuk yang sebenarnya ada di `(public)/(auth)` — jadi dibiarkan. Bilang saja kalau mau ikut dibersihkan atau rutenya dicabut.
+
+---
+
+## Status Pengerjaan (putaran 78 — langkah 89, penyempurnaan)
+
+Langkah 89 sudah berjalan sejak putaran-putaran sebelumnya; putaran ini menutup lima celah yang tersisa dan menandai tiap butirnya.
+
+### Yang sudah benar sebelum putaran ini
+
+- **89.1** — empat akun jabatan (`PenggunaPpidSeeder`), tiga anggota PPID Pelaksana berbagi satu role dan dibedakan `struktur_id`.
+- **89.2** — modul Permohonan memakai endpoint gabungan `pengajuan` dengan dua kategori saja; `jalur_pelayanan` (Online/Langsung) tercatat sebagai kolomnya sendiri, bukan disimpulkan dari `cara_pengiriman`.
+- **89.3** — alur permohonan lengkap sampai surel undangan jalur Langsung beserta alamat, kontak, dan jam layanan.
+- **89.6** — tenggat tersimpan sebagai kolom (`batas_waktu_tanggapan`, `batas_waktu_awal`, `diperpanjang_pada`) dan dinilai `SlaLayanan::keadaan()`.
+
+### Lima celah yang ditutup
+
+**1. Keberatan tidak punya nomor (89.7).** Permohonan lahir dengan `kode_permohonan`; keberatan hanya dikenali lewat id tabelnya, dan di seluruh sistem dirujuk memakai nomor permohonan yang justru sedang dipersoalkan. Dua keberatan atas permohonan yang sama karena itu tampak sebagai baris kembar — di daftar panel, di lonceng, dan di surel.
+
+Kolom `kode_keberatan` ditambahkan beserta trigger `fn_keberatan_kode`, berpola `KBT-FSTJ/<tanggal>/<urutan>`. Awalannya sengaja berbeda dari `PPID-FSTJ/`: keduanya berkas dengan tenggat berbeda (10 hari kerja vs 30 hari kalender), dan satu deret bersama akan menyamarkannya. Baris lama ikut dinomori memakai tanggal pengajuannya sendiri, bukan tanggal migrasi dijalankan. Nomornya kini tampil di daftar panel, rincian keberatan, daftar dan histori portal, lonceng panel, dan surel — serta bisa dicari di ketiganya.
+
+**2. Satu alasan keberatan hilang, enam sisanya salah bunyi (89.4).** Pasal 35 UU KIP menyebut tujuh dasar; tabelnya baru menerima enam. Yang tidak ada — "tidak dipenuhinya permintaan informasi" — justru dasar yang dipakai ketika informasi diberikan sebagian, sehingga keberatan semacam itu terpaksa dititipkan ke alasan lain. Label keenam yang ada pun ringkasan bebas ("Informasi Tidak Disediakan"), bukan bunyi pasalnya ("Tidak Disediakannya Informasi Berkala").
+
+CHECK constraint diperlebar ke tujuh nilai dan daftar labelnya disatukan: `KeberatanInformasi::JENIS` di api-ppid menjadi sumbernya, disalin ke fe-ppid dan be-ppid, dan `EmailPemohon` tidak lagi menyimpan salinan pribadinya.
+
+**3. Alasan keberatan belum jadi data analisa (89.4).** Permintaannya sudah ditulis sejak awal — "dari alasan ini bisa dijadikan Data analisa di Dashboard" — tetapi `AnalitikController` hanya menghitung status dan jenis pemohon. Sebaran `alasan_keberatan` ditambahkan, mengembalikan ketujuh dasar termasuk yang bernilai nol supaya yang kosong terbaca sebagai nol, bukan sebagai belum diukur. Dashboard menampilkannya, dan modul Keberatan mendapat saringan dengan daftar yang sama — sebaran tidak berguna kalau barisnya sendiri tidak bisa disaring.
+
+**4. Batas sengketa tidak pernah diisi (89.5, 89.6).** Kolom `batas_waktu_sengketa` ada sejak putaran sebelumnya tetapi tidak ada satu pun kode yang menulisinya; angka 14 hari kerja hanya disebut di badan surel. Sekarang diisi begitu keberatan ditanggapi (`selesai` atau `ditolak`), dihitung dari tanggal tanggapannya — bukan dari hari ini, supaya perpindahan status susulan tidak memperpanjang hak pemohon diam-diam. Rincian keberatan di panel menampilkannya bersama batas tanggapan.
+
+**5. Satuan waktu keberatan salah di tiga tempat (89.5).** `SlaLayanan` menghitung 30 hari **kalender**, tetapi Dashboard, surel tanda terima, dan halaman Prosedur Keberatan sama-sama menulis "30 hari kerja" — sekitar dua minggu lebih longgar daripada yang sebenarnya berlaku. Ketiganya diperbaiki, dan halaman prosedur publik kini menyebut batas sengketa 14 hari kerja yang sebelumnya tidak ada.
+
+Sekalian: fe-ppid tidak punya `SlaLayanan` sendiri — `addWeekdays(10)` dan `addDays(30)` berdiri sendiri di dua controller, sementara halaman prosedurnya menyebut angka ketiga. Salinan `App\Support\SlaLayanan` dibuat di fe-ppid dan dipakai keduanya.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `migrations/2026_08_31_000002_penomoran_keberatan_dan_alasan.php` | Baru — `kode_keberatan` + trigger, CHECK tujuh alasan |
+| api-ppid | `Models/KeberatanInformasi.php` | `JENIS` (tujuh dasar Pasal 35) |
+| api-ppid | `Cms/KeberatanController.php` | `batas_waktu_sengketa`, nomor ikut dicari & diurutkan |
+| api-ppid | `Cms/PengajuanLayananController.php` | Baris membawa `kode` masing-masing, bukan selalu nomor permohonan |
+| api-ppid | `AnalitikController.php` | Sebaran `alasan_keberatan` |
+| api-ppid | `Support/EmailPemohon.php` | Nomor keberatan, satuan tenggat, label alasan dari satu sumber |
+| api-ppid | `tests/Feature/PenomoranKeberatanTest.php` | Baru |
+| fe-ppid | `Support/SlaLayanan.php` | Baru — tenggat di satu tempat |
+| fe-ppid | `Models/KeberatanInformasi.php` | `JENIS` disamakan |
+| fe-ppid | `Akun/KeberatanController.php` | `refresh()` sebelum lonceng & surel, nomor pada tanda terima, pencarian |
+| fe-ppid | `Akun/PermohonanController.php`, `Akun/HistoriController.php` | SlaLayanan, pencarian nomor keberatan |
+| fe-ppid | `PpidController.php` | Satuan waktu prosedur keberatan + batas sengketa |
+| fe-ppid | `Notifications/StatusLayanan.php`, `Support/NotifikasiAdmin.php` | Nomor keberatan pada pemberitahuan |
+| fe-ppid | `views/akun/keberatan/index.blade.php`, `views/akun/histori.blade.php` | Nomor keberatan + nomor induknya |
+| fe-ppid | `lang/en.json` | Label alasan baru, kalimat prosedur, nomor keberatan |
+| fe-ppid | `tests/Feature/PenomoranKeberatanPortalTest.php` | Baru |
+| be-ppid | `lib/statusPengajuan.ts` | `JENIS_KEBERATAN` tujuh dasar |
+| be-ppid | `lib/resources.ts`, `lib/types.ts`, `components/ResourceListPage.tsx` | Kolom `kode`, kolom & saringan alasan, tipe kolom `map` |
+| be-ppid | `components/KeberatanDetailDialog.tsx` | Nomor keberatan, dua tenggat |
+| be-ppid | `PpidDashboard.tsx` | Sebaran alasan, satuan tenggat keberatan |
+| be-ppid | `@i18n/kamusPpid.ts` | Istilah baru versi Inggris |
+
+### Verifikasi
+
+- **7 tes** `PenomoranKeberatanTest` (api-ppid): nomor lahir berawalan `KBT-FSTJ/` dan berbeda dari nomor permohonan, berderet unik, tampil dan bisa dicari di daftar gabungan, alasan ketujuh diterima, batas sengketa terisi 14 hari kerja sejak tanggapan, analitik memuat ketujuh dasar.
+- **4 tes** `PenomoranKeberatanPortalTest` (fe-ppid): keberatan portal lahir bernomor dan nomornya ikut ke tanda terima, alasan ketujuh diterima sementara alasan di luar daftar ditolak, tenggat dihitung hari kalender, nomor tampil di daftar.
+- `NotifikasiAdminTest` diperluas: lonceng panel memuat kedua nomor.
+- Suite penuh: api-ppid **59 lulus** (245 asersi), fe-ppid **88 lulus** (316 asersi). be-ppid `tsc --noEmit` bersih, `eslint` tanpa galat.
+
+### Catatan
+
+Angka 30 hari untuk tanggapan keberatan diperlakukan sebagai **hari kalender**, mengikuti bunyi permintaan pada butir 89.5 ("paling lambat 30 hari sejak diregistrasinya"). Pasal 36 UU KIP menyebut "30 hari kerja". Perhitungan kalender lebih ketat — petugas ditagih lebih awal, bukan terlambat — jadi dibiarkan demikian; bilang saja kalau mau diubah ke hari kerja, satu tetapan di `SlaLayanan::KEBERATAN_HARI` beserta satuannya yang perlu diganti.
+
+---
+
+## Status Pengerjaan (putaran 77 — langkah 98)
+
+Label teks "PPID Admin" di samping logo dibuang di seluruh be-ppid. Yang tersisa hanya lambang perusahaan yang sudah dipasang pada langkah 85.
+
+### Di mana saja label itu muncul
+
+Tujuh tempat, dan tidak semuanya di sebelah logo:
+
+- **Sidebar/header** — `components/theme-layouts/components/Logo.tsx`. Blok `logo-text` berisi dua baris bertumpuk, "PPID" besar dan "Admin" kecil di bawahnya. Dihapus seluruhnya beserta impor `Typography` yang jadi tak terpakai. Kelas `logo-text` tidak dirujuk CSS mana pun di luar berkas ini (satu-satunya pemakai lain, `DocumentationSidebarHeader.tsx`, punya markup sendiri), jadi tidak ada gaya yang menggantung.
+- **Kop halaman auth** — `JudulAuth.tsx`, `SignInPageTitle.tsx`, `SignOutPageTitle.tsx`, `SignUpPageTitle.tsx`. Keempatnya memuat baris `<Typography>` yang sama persis di samping `<img>` logo. Baris itu dibuang; pembungkus `flex items-center gap-3` dibiarkan supaya penempatan logonya tidak bergeser.
+- **Footer panel** — `AppFooterContent.tsx`. Sisi kiri hanya berisi "PPID Admin". Setelah dibuang, `justify-between` diganti `justify-end` supaya baris hak cipta tidak melompat ke kiri.
+- **Panel sambutan halaman masuk** — `AuthPagesMessageSection.tsx`. Judul besarnya berbunyi "Selamat datang di / PPID Admin". Baris keduanya dibuang dan baris pertama dipendekkan jadi "Selamat datang"; paragraf keterangan di bawahnya tetap.
+
+### Judul tab dan nama PWA
+
+`index.html` dan `public/manifest.json` juga memakai "PPID Admin" — sebagai judul tab, deskripsi meta, dan nama aplikasi bila panelnya dipasang sebagai PWA. Ketiganya tidak boleh kosong, jadi diganti **"PPID Food Station"**, mengikuti penamaan yang sudah dipakai portal pemohon ("Portal Resmi PPID Food Station", langkah 90). Bilang saja kalau mau nama lain.
+
+Sekalian: splash screen di `index.html` masih menunjuk `assets/images/logo/logo.svg`, tanda bawaan template yang sudah diganti di tempat lain pada langkah 85. Diarahkan ke `logo-fstj.png` supaya layar pertama yang dilihat orang tidak berbeda dari logo di dalam panel.
+
+### Berkas yang disentuh
+
+| Berkas | Isi |
+| --- | --- |
+| `components/theme-layouts/components/Logo.tsx` | Blok `logo-text` + impor `Typography` dihapus |
+| `components/theme-layouts/components/AppFooterContent.tsx` | Label kiri dihapus, `justify-end` |
+| `(auth)/components/ui/JudulAuth.tsx` | Baris label dihapus |
+| `(auth)/components/ui/SignInPageTitle.tsx` | Baris label dihapus |
+| `(auth)/components/ui/SignOutPageTitle.tsx` | Baris label dihapus |
+| `(auth)/components/ui/SignUpPageTitle.tsx` | Baris label dihapus |
+| `(auth)/components/ui/AuthPagesMessageSection.tsx` | Judul jadi "Selamat datang" |
+| `index.html` | Judul, deskripsi, komentar, logo splash |
+| `public/manifest.json` | `name` dan `short_name` |
+
+### Verifikasi
+
+- `npx tsc --noEmit` — bersih.
+- `npx eslint` atas tujuh berkas TSX yang diubah — bersih.
+
+---
+
+## Status Pengerjaan (putaran 76 — langkah 97)
+
+Memilih berkas tidak lagi berarti mengirimkannya. Ada langkah Simpan, dan pemohon baru diberi tahu ketika permohonannya benar-benar diserahkan.
+
+### Yang dilaporkan, dan apa yang sebenarnya terjadi
+
+Benar: satu klik unggah sudah mengirim notifikasi. Panel memanggil `tanggapan-files` seketika berkasnya terunggah, dan API menulis notifikasi portal saat baris lampirannya tersimpan. Tidak ada tahap Simpan di antara keduanya — pilih berkas, pemohon diberi tahu.
+
+Menelusuri alurnya memunculkan cacat yang lebih dalam, dan keduanya berasal dari anggapan yang sama:
+
+**Waktunya salah.** Berkas tanggapan dilampirkan PPID Pelaksana pada tahap penerimaan — saat menyiapkan jawaban, sementara PPID belum memutus apa pun. Memberitahukannya pada saat itu berarti menjanjikan dokumen yang belum tentu jadi diberikan; berkasnya bahkan masih bisa dicabut atau permohonannya ditolak setelah itu.
+
+**Tujuannya tidak ada.** Notifikasinya berbunyi "Petugas melampirkan N berkas tanggapan…" dan menaut ke rincian permohonan di portal — padahal halaman itu **tidak pernah menampilkan berkas tanggapan sama sekali**. Tidak ada daftarnya, tidak ada jalur unduhnya. Pemohon diberi tahu tentang dokumen yang tidak bisa ia buka di mana pun, sejak fitur ini ada.
+
+### Tiga perbaikan yang saling mengunci
+
+**1. Ada langkah Simpan (be-ppid).** Berkas yang dipilih naik ke penyimpanan supaya punya alamat, lalu menunggu di daftar "Belum disimpan" — bisa dilepas satu-satu — sampai petugas menekan **Simpan berkas tanggapan**. Sebelum itu tidak ada yang tercatat pada permohonan. Berkas dari Arsip Dokumen masuk ke antrean yang sama, jadi keduanya disimpan sekali jalan.
+
+**2. Pemberitahuannya menunggu penyerahan (api-ppid).** Melampirkan berkas hanya memberi tahu pemohon bila permohonannya memang sudah berstatus **Disetujui** atau **Selesai**. Untuk berkas yang dilampirkan lebih awal, pemberitahuannya menyusul saat status berpindah ke sana — sekali saja, karena Disetujui → Selesai tidak mengulanginya. Penolakan tidak ikut: yang disampaikan di sana alasannya, dan itu sudah dibawa notifikasi status.
+
+**3. Berkasnya kini punya tempat (fe-ppid).** Rincian permohonan di portal mendapat bagian **Berkas Tanggapan** beserta tautan unduhnya, dengan dua penjagaan di server: berkasnya harus milik permohonan akun itu, dan permohonannya harus sudah diserahkan. Tanpa penjagaan kedua, dokumen yang masih disiapkan bisa ditarik dengan menebak nomor berkasnya.
+
+Daftar status "sudah diserahkan" ditulis di dua sisi (`PermohonanController::statusTerbukaUntukPemohon()` dan `PermohonanInformasi::tanggapanTerbukaUntukPemohon()`) dan sengaja sama persis: berkas yang terlihat tanpa pemberitahuan sama membingungkannya dengan pemberitahuan atas berkas yang tak bisa dibuka.
+
+### Sisa alurnya, hasil pemeriksaan
+
+- **Perpindahan status** — surel dan lonceng sudah dijaga tidak berangkat bila statusnya tidak benar-benar berubah, dan keduanya menunggu commit sehingga transaksi yang batal tidak menyisakan pemberitahuan.
+- **Surel jalur pelayanan** pada tahap penerimaan tetap berangkat saat itu juga, dan memang seharusnya: isinya undangan kehadiran (jalur Langsung) atau pemberitahuan cara pelayanan (jalur Online) — bukan penyerahan dokumen. Kalimatnya pun sudah benar: dokumen "dapat diunduh melalui Portal Pemohon setelah tersedia", dan sejak putaran ini kalimat itu tidak lagi menunjuk halaman kosong.
+- **Notifikasi status `selesai`** berbunyi "Tanggapan dapat dilihat di portal" — baru sekarang benar-benar bisa.
+- **Catatan internal** petugas tetap tidak pernah ikut ke pemohon; yang dioper hanya alasan penolakan dan tanggapan atasan.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `Cms/PermohonanController.php` | Pemberitahuan berkas menunggu status terbuka; `statusTerbukaUntukPemohon()` |
+| api-ppid | `tests/Feature/BerkasTanggapanTest.php` | Baru |
+| api-ppid | `tests/Feature/AlurLayananPpidTest.php` | Menyesuaikan aturan baru |
+| be-ppid | `components/BerkasTanggapanPanel.tsx` | Antrean "Belum disimpan" + tombol Simpan |
+| be-ppid | `@i18n/kamusPpid.ts` | Istilah baru versi Inggris |
+| fe-ppid | `Models/PermohonanTanggapanFile.php` | Baru |
+| fe-ppid | `Models/PermohonanInformasi.php` | Relasi berkas + `tanggapanTerbukaUntukPemohon()` |
+| fe-ppid | `Akun/PermohonanController.php` | Unduhan berkas tanggapan milik sendiri |
+| fe-ppid | `routes/akun.php` | Route unduhan |
+| fe-ppid | `views/akun/permohonan/show.blade.php` | Bagian Berkas Tanggapan |
+| fe-ppid | `lang/en.json` | Teks baru versi Inggris |
+| fe-ppid | `tests/Feature/BerkasTanggapanPortalTest.php` | Baru |
+
+### Verifikasi
+
+- **4 tes** `BerkasTanggapanTest` (api-ppid): melampirkan saat masih `diproses` tidak memberi tahu siapa pun; pemberitahuannya menyusul tepat pada putusan akhir dan tidak terulang saat Disetujui → Selesai; berkas yang dilampirkan setelah diserahkan tetap diberitahukan saat itu juga; penolakan tidak memberitahukan berkas.
+- **6 tes** `BerkasTanggapanPortalTest` (fe-ppid): berkas tampil hanya setelah diserahkan, unduhan ditolak selama belum diserahkan, berkas akun lain ditolak, pemiliknya bisa mengunduh, dan berkas yang hilang di disk dijawab 404.
+- Suite penuh: api-ppid **52 lulus** (221 asersi), fe-ppid **84 lulus** (296 asersi).
+- `tsc --noEmit` be-ppid bersih; ESLint 0 error pada berkas yang disentuh.
+
+### Perlu diketahui
+
+Berkas yang sudah terunggah tetapi tidak jadi disimpan tetap tertinggal di penyimpanan — tidak tercatat pada permohonan mana pun dan tidak masuk Arsip Dokumen (pencatatan arsip terjadi saat disimpan). Membersihkannya perlu perintah tersendiri; belum dibuat.
+
+### Yang belum dikerjakan
+
+Tidak berubah: dua baris notifikasi ganda lama di lonceng panel, dua notifikasi verifikasi lama yang tautannya masih ke `/akun`, tombol buka suspend akun panel, kolom dokumen yang diminta pada modul Permohonan, dan hari libur nasional yang belum dikecualikan dari hitungan hari kerja. `npm run build` be-ppid masih tersandung `@tiptap/pm`.
+---
+
+
+## Status Pengerjaan (putaran 75 — langkah 95 & 96)
+
+Arsip Dokumen lahir sebagai modul sendiri: berkas diunggah sekali, lalu dilampirkan ke permohonan mana pun tanpa unggahan kedua. Sorotan survei kepuasan masuk ke beranda Portal Pemohon.
+
+### Langkah 95 — kenapa unggahannya ditolak
+
+Endpoint unggahnya sendiri tidak bermasalah: diuji dengan token akun **PPID Pelaksana**, `POST /v1/uploads` untuk berkas PDF menjawab **201**. Hak aksesnya juga bukan penyebabnya — jalur unggah hanya menuntut token, dan jalur lampirannya (`permohonan/{id}/tanggapan-files`) menuntut hak `Ubah` yang memang sudah dipegang PPID Pelaksana sejak langkah 91.
+
+Yang menolak adalah **daftar jenis berkasnya**. Panel yang dibuat pada langkah 94 mengirim semua unggahan sebagai jenis `dokumen_gambar`, dan jenis itu di API hanya menerima PDF, JPG, PNG, dan WEBP. Tanggapan petugas justru kerap berupa dokumen Office — begitu berkas `.docx` atau `.xlsx` dipilih, server menjawab 422 "Jenis berkas tidak diizinkan" dan yang terlihat hanyalah unggahan yang tidak jadi.
+
+Sekarang jenisnya ditentukan per berkas: PDF dan gambar tetap lewat `dokumen_gambar`, sisanya lewat `dokumen` yang memang menerima doc/docx/xls/xlsx/ppt/pptx/csv/txt. Daftar `accept` pada pemilih berkasnya ikut diperlebar supaya berkas yang sah tidak lagi tersaring sebelum sempat dikirim.
+
+Satu penyebab kedua ikut ditutup: berkas di atas 20 MB ditolak web server sebelum sampai ke Laravel, dan jawabannya bukan JSON — pesannya jadi "gagal" tanpa alasan. Ukurannya kini diperiksa lebih dulu di panel, dengan pesan yang menyebut nama berkas dan batasnya.
+
+Yang tidak bisa dipastikan: peramban Anda tidak ikut diperiksa, jadi bila kegagalannya ternyata bukan salah satu dari dua hal di atas, pesan galat yang sekarang tampil akan menyebutkan alasannya dengan jelas — itu yang sebelumnya tidak ada.
+
+### Langkah 95 — Arsip Dokumen
+
+Modul baru `Arsip Dokumen` (menu **Layanan**), dengan tabelnya sendiri:
+
+- **Semua yang dilampirkan ikut tercatat.** Setiap berkas yang masuk lewat `tanggapan-files` dicatat ke arsip oleh API — bukan oleh panel — sehingga jalur mana pun ikut terkena. Pencatatannya dikunci pada `path_file` yang unik, jadi berkas yang memang berasal dari arsip tidak menghasilkan baris kedua, dan melampirkan berkas yang sama ke sepuluh permohonan tetap menyisakan satu baris arsip.
+- **Melampirkan tanpa mengunggah.** Dialog rincian permohonan mendapat tombol "Pilih dari Arsip": daftar arsip aktif, bisa dicari, pilih beberapa sekaligus, lampirkan. Yang dikirim hanya `path_file`-nya — tidak ada berkas yang berpindah, dan satu berkas fisik dipakai bersama banyak permohonan.
+- **Gagal mencatat arsip tidak membatalkan lampirannya.** Yang pokok adalah berkasnya sampai ke pemohon; kegagalan pencatatan hanya dicatat di log.
+
+Hak aksesnya modul sendiri, bukan menumpang Permohonan: isinya dokumen milik lembaga, dan siapa yang boleh membuang isi arsip tidak sama dengan siapa yang menangani permohonan. PPID Pelaksana boleh melihat, menambah, dan menyunting; menghapus hanya PPID — baris yang hilang membuat dokumennya tidak lagi bisa dipilih petugas lain. Atasan PPID tidak diberi akses.
+
+Menghapus baris arsip **tidak** menghapus berkasnya di disk dan tidak mencabut lampiran yang sudah telanjur diberikan: pemohon yang sudah menerima dokumen berhak tetap bisa mengunduh apa yang dulu diberikan kepadanya.
+
+### Langkah 96 — sorotan survei di beranda pemohon
+
+Fitur surveinya sudah ada sejak lama: formulir 1–5 beserta saran, satu permohonan sekali nilai, dan tombol "Isi Survei" pada daftar serta rincian permohonan. Yang belum ada adalah **sorotannya di beranda** — kalau pemohon tidak kebetulan membuka daftar permohonannya, ajakan menilai itu tidak pernah terlihat.
+
+Beranda portal kini menghitung permohonan yang sudah tuntas tetapi belum dinilai, lalu menampilkannya sebagai satu kartu berisi tiga teratas beserta tombolnya; sisanya dirujuk ke daftar permohonan supaya kartunya tidak memanjang mendorong isi beranda yang lain.
+
+Tidak ada surel maupun lonceng untuk ini, sesuai yang diminta ("highlight saja"): mengejar pemohon dengan pemberitahuan untuk sesuatu yang sukarela hanya menambah bising pada kotak masuk yang sudah dipakai memberitahu jalannya permohonan.
+
+Kata "tuntas" dipakai, bukan "selesai": permohonan yang ditolak pun sudah selesai ditangani dan tetap boleh dinilai — mutu layanan pada kasus itu justru penting diketahui.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `migrations/2026_08_31_000001_create_arsip_dokumen_table.php` | Baru; `path_file` unik |
+| api-ppid | `Models/ArsipDokumen.php` | Baru; `catatSekali()` idempoten |
+| api-ppid | `Cms/ArsipDokumenController.php` | Baru; CRUD modul `arsip-dokumen` |
+| api-ppid | `Cms/PermohonanController.php` | Lampiran tanggapan ikut tercatat ke arsip |
+| api-ppid | `routes/api.php` | Route `arsip-dokumen` |
+| api-ppid | `seeders/ModulSistemSeeder.php` | Modul + hak akses `arsip-dokumen` |
+| api-ppid | `tests/Feature/ArsipDokumenTest.php` | Baru |
+| be-ppid | `components/BerkasTanggapanPanel.tsx` | Jenis unggahan per berkas, batas ukuran, tombol Pilih dari Arsip |
+| be-ppid | `components/ArsipDokumenPicker.tsx` | Baru; pemilih berkas arsip |
+| be-ppid | `ppid/lib/resources.ts` | Modul Arsip Dokumen |
+| be-ppid | `ppid/lib/navigation.ts` | Entri menu pada grup Layanan |
+| be-ppid | `@i18n/kamusPpid.ts` | Istilah baru versi Inggris |
+| fe-ppid | `Akun/DashboardController.php` | Menghitung permohonan tuntas yang belum dinilai |
+| fe-ppid | `views/akun/partials/alert-survei.blade.php` | Baru; kartu sorotan |
+| fe-ppid | `views/akun/dashboard.blade.php` | Memuat kartu sorotan |
+| fe-ppid | `lang/en.json` | Teks sorotan versi Inggris, termasuk bentuk jamaknya |
+| fe-ppid | `tests/Feature/PortalDashboardTest.php` | Empat tes sorotan survei |
+
+### Verifikasi
+
+- **6 tes** `ArsipDokumenTest`: PDF dan `.docx` sama-sama terunggah oleh PPID Pelaksana sedangkan `.docx` lewat jenis `dokumen_gambar` memang ditolak 422 (sebab kegagalan yang dilaporkan), lampiran tanggapan tercatat di arsip, berkas sama tidak menggandakan barisnya, PPID Pelaksana bisa membaca dan menambah arsip, `path_file` kembar ditolak, dan Atasan PPID dijawab 403.
+- **4 tes** sorotan survei di `PortalDashboardTest`: permohonan tuntas yang belum dinilai muncul (yang masih berjalan tidak), permohonan yang sudah dinilai hilang dari sorotan, tanpa permohonan tuntas tidak ada sorotan, dan bentuk jamak versi Inggrisnya benar.
+- Suite penuh: api-ppid **48 lulus** (198 asersi), fe-ppid **78 lulus** (286 asersi).
+- `tsc --noEmit` be-ppid bersih; ESLint 0 error pada berkas yang disentuh.
+- Migrasi dan `ModulSistemSeeder` sudah dijalankan: tabel `arsip_dokumen` ada, dan hak aksesnya tercatat untuk super-admin, PPID Pelaksana, serta PPID.
+
+### Yang belum dikerjakan
+
+Tidak berubah: dua baris notifikasi ganda lama di lonceng panel, dua notifikasi verifikasi lama yang tautannya masih ke `/akun`, tombol buka suspend akun panel, kolom dokumen yang diminta pada modul Permohonan, dan hari libur nasional yang belum dikecualikan dari hitungan hari kerja. `npm run build` be-ppid masih tersandung `@tiptap/pm` seperti dicatat pada putaran 72; pemeriksaan tampilan lewat `npm run dev`.
+---
+
+
+## Status Pengerjaan (putaran 74 — langkah 94)
+
+Menangani satu pengajuan kini terjadi di satu tempat: rinciannya. Menu "Ubah status" di tabel dilepas, dan mengklik barisnya langsung membuka dialog Detail & Verifikasi — berlaku untuk seluruh modul panel.
+
+### Ribetnya datang dari keputusan yang terpisah dari berkasnya
+
+Sebelum ini satu pengajuan punya tiga pintu yang berbeda, semuanya lewat menu tiga titik: "Detail & verifikasi" untuk membaca, "Ubah status" untuk memindahkan status, dan "Tanggapan & status" untuk keberatan. Putusan persetujuan sendiri ada di dalam Detail, sementara perpindahan status ada di dialog lain yang tidak menampilkan apa pun tentang berkasnya — petugas memilih status dari baris tabel, tanpa melihat isi permohonan yang sedang ia pindahkan.
+
+Sekarang tinggal satu pintu. Dialog rincian memuat, berurutan: identitas pemohon, isi permohonan, penanganan, berkas lampiran, **Berkas Tanggapan**, **Persetujuan Berjenjang**, **Ubah Status**, lalu riwayat status. Dialog status dan dialog tanggapan yang berdiri sendiri dihapus — isinya pindah utuh menjadi panel di dalam rincian, jadi tidak ada dua salinan aturan yang harus dijaga tetap sama.
+
+Hak aksesnya ikut pindah, tidak melonggar: panel status dan tanggapan menuntut hak `Ubah`, putusan persetujuan menuntut hak `Setujui`, dan membaca rinciannya tetap cukup dengan hak `Lihat`. Role yang tidak berhak melihat panelnya sebagai keterangan, bukan formulir yang menolak saat disimpan.
+
+### Panel yang selama ini disebut tapi tidak ada
+
+Jenjang penerima yang menyetujui permohonan jalur **Online** selalu diberi tahu: "Unggah dokumen yang diminta lewat panel Berkas Tanggapan pada detail pengajuan ini." Panel itu tidak pernah ada. Dialog rinciannya hanya menampilkan daftar berkas tanggapan, tanpa satu pun jalan mengunggah — endpoint `permohonan/{id}/tanggapan-files` hanya bisa dipanggil langsung ke API.
+
+Panelnya sekarang ada: unggah beberapa berkas sekaligus (PDF/gambar), lihat, dan hapus. Unggahannya dikirim langsung, bukan ditahan sampai tombol simpan, karena API memang menulis notifikasi ke lonceng pemohon begitu barisnya tersimpan — tidak ada keadaan setengah jadi yang perlu dijaga. Berkasnya dikirim satu per satu ke `uploads`, bukan serentak: unggahan besar yang ditembakkan bersamaan lebih sering kena batas ukuran dan waktu di server.
+
+### Baris keberatan di modul Permohonan tidak pernah bisa dibuka
+
+Ketahuan saat merapikan penyusunan dialognya. Sejak langkah 89 daftar Permohonan memuat dua kategori, dan memilih "Detail" pada baris keberatan memang menyetel `detailKeberatan` — tetapi `KeberatanDetailDialog` hanya dirender di cabang `modulKeberatan`. Di modul Permohonan komponennya tidak ada di layar sama sekali, jadi yang terjadi: menu tertutup, tidak ada yang terbuka, tanpa pesan galat.
+
+Ini juga yang membuat tautan notifikasi keberatan dari langkah 92 (`/ppid/permohonan?detail=…&jenis=keberatan`) berujung diam. Dialognya kini ikut dirender di modul Permohonan.
+
+### Klik baris membuka rinciannya
+
+`ResourceListPage` menerima `onRowClick`. Modul yang rinciannya berupa dialog — Permohonan, Keberatan, Pemohon — mengisinya dengan dialog masing-masing; modul lain memakai perilaku bawaannya, yaitu membuka formulir **Ubah** selama rolenya memang boleh menyunting. Modul baca-saja tidak ikut berubah: barisnya tidak bisa diklik dan kursornya tetap biasa.
+
+Klik pada isi yang punya maksud sendiri tidak ikut membuka baris — kotak centang pemilihan, tombol menu aksi, dan tautan berkas disaring lewat `closest()`. Tanpa itu, mencentang satu baris untuk dihapus malah membuka dialognya.
+
+Menu tiga titik tetap ada. Ia menampung tindakan lain (Hapus, Atur hak akses, Atur tahap) dan tetap jadi jalan bagi papan ketik; yang berubah hanya jalan tercepatnya.
+
+### Satu cacat lama yang ikut ditutup
+
+Tabel modul Permohonan dilayani endpoint gabungan `pengajuan` (langkah 89), sedangkan penyimpanan status, putusan persetujuan, dan berkas tanggapan hanya membatalkan cache `permohonan`/`keberatan`. Akibatnya tabel di belakang dialog masih menunjukkan status lama sampai halamannya dimuat ulang. Ketiganya kini ikut membatalkan `pengajuan`.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| be-ppid | `components/PermohonanStatusPanel.tsx` | Baru; isi dialog status lama, jadi panel di dalam rincian |
+| be-ppid | `components/KeberatanTanggapanPanel.tsx` | Baru; isi dialog tanggapan lama, jadi panel di dalam rincian |
+| be-ppid | `components/BerkasTanggapanPanel.tsx` | Baru; unggah, buka, dan hapus berkas tanggapan |
+| be-ppid | `components/PermohonanStatusDialog.tsx` | Dihapus |
+| be-ppid | `components/KeberatanTanggapanDialog.tsx` | Dihapus |
+| be-ppid | `components/PermohonanDetailDialog.tsx` | Memuat panel status dan panel berkas tanggapan |
+| be-ppid | `components/KeberatanDetailDialog.tsx` | Memuat panel tanggapan & status |
+| be-ppid | `components/PersetujuanBerjenjang.tsx` | Ikut menyegarkan daftar gabungan |
+| be-ppid | `components/ResourceListPage.tsx` | `onRowClick` + klik baris membuka rinciannya |
+| be-ppid | `PpidResourcePage.tsx` | Menu baris tinggal "Detail & verifikasi"; dialog keberatan ikut dirender di modul Permohonan |
+| be-ppid | `@i18n/kamusPpid.ts` | Istilah panel baru versi Inggris |
+| api-ppid | `tests/Feature/AlurLayananPpidTest.php` | PPID Pelaksana melampirkan berkas tanggapan |
+
+### Verifikasi
+
+- **1 tes baru** di api-ppid: PPID Pelaksana melampirkan berkas tanggapan lewat `permohonan/{id}/tanggapan-files` — **201**, dan notifikasi `permohonan_tanggapan_file` untuk pemohonnya tertulis satu. Ini menjaga hak `Ubah` yang dipakai panel barunya.
+- Suite penuh: api-ppid **42 lulus** (177 asersi), fe-ppid **74 lulus** (272 asersi).
+- `tsc --noEmit` be-ppid bersih; ESLint pada berkas yang disentuh **0 error** (sisa peringatan format adalah bawaan berkas lama yang tidak ikut diubah).
+
+### Perlu diketahui
+
+Perubahan putaran ini seluruhnya di panel; tidak ada endpoint API yang berubah. Pemeriksaan tampilannya lewat `npm run dev` — `npm run build` masih tersandung `@tiptap/pm` seperti dicatat pada putaran 72.
+
+### Yang belum dikerjakan
+
+Tidak berubah: dua baris notifikasi ganda lama di lonceng panel, dua notifikasi verifikasi lama yang tautannya masih ke `/akun`, tombol buka suspend akun panel, kolom dokumen yang diminta pada modul Permohonan, dan hari libur nasional yang belum dikecualikan dari hitungan hari kerja.
+---
+
+
+## Status Pengerjaan (putaran 73 — langkah 93)
+
+Notifikasi hasil Verifikasi Data Diri kini selalu mengantar ke `/akun/pengaturan/data-pemohon`, apa pun keputusannya.
+
+### Tautannya bercabang tiga, dan dua di antaranya salah tujuan
+
+`NotifikasiPortal::hasilVerifikasiData()` memilih tautan berdasarkan keadaan:
+
+```php
+'link' => $bolehKirimUlang ? '/akun/pengaturan/data-pemohon' : '/akun',
+```
+
+Hanya penolakan yang masih punya sisa kesempatan yang dibawa ke halaman Data Pemohon. Yang **disetujui** dan yang **sudah kehabisan kesempatan** dilempar ke `/akun`. Alasan aslinya masuk akal untuk keadaan kedua — formulir yang tidak lagi menerima kiriman memang tidak perlu dibuka — tetapi akibatnya sama untuk keduanya: pemohon mengklik pemberitahuan lalu mendarat di dasbor yang tidak menyebut hasil pemeriksaannya sama sekali. Isi notifikasi yang baru saja ia buka justru hilang.
+
+Sekarang ketiga keadaan menuju satu halaman yang sama. Halaman itu memang sudah menangani ketiganya sejak awal: lencana status, catatan petugas, sisa kesempatan, formulir perbaikan bila masih boleh dikirim ulang, isian terkunci setelah terverifikasi, dan tombol kirim tertutup setelah kesempatannya habis. Jadi tidak ada cabang yang berujung buntu — yang ada justru satu tempat yang menjawab "lalu bagaimana keadaan saya sekarang".
+
+### Yang tidak ikut diubah
+
+Tombol pada **surel** hasil verifikasi dibiarkan seperti sebelumnya: yang disetujui diberi tombol "Buka Portal Pemohon" ke `/akun`, yang masih boleh memperbaiki diberi "Perbaiki Data Pemohon" ke halaman Data Pemohon. Yang diminta pada langkah ini notifikasi loncengnya, dan label tombol surel itu memang menjanjikan tujuan yang berbeda.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `Support/NotifikasiPortal.php` | Tautan hasil verifikasi selalu ke halaman Data Pemohon |
+| api-ppid | `tests/Feature/NotifikasiPanelTest.php` | Tautan diuji untuk keputusan disetujui dan ditolak |
+| fe-ppid | `tests/Feature/PortalNotifikasiTest.php` | Membuka notifikasinya mengalihkan ke halaman itu, dan halamannya tetap terbuka setelah terverifikasi |
+
+### Verifikasi
+
+- **2 asersi baru** di api-ppid: putusan `terverifikasi` maupun `ditolak` sama-sama menulis `link` `/akun/pengaturan/data-pemohon`.
+- **1 tes baru** di fe-ppid: `akun.notifikasi.buka` mengalihkan ke halaman itu, dan halamannya dijawab **200** oleh pemohon yang datanya sudah terverifikasi — tautan yang benar tidak berguna kalau tujuannya menolak keadaan yang paling sering mengkliknya.
+- Suite penuh: fe-ppid **74 lulus** (272 asersi), api-ppid **41 lulus** (174 asersi).
+
+### Perlu diketahui
+
+Dua baris notifikasi verifikasi yang sudah terlanjur tercatat masih menyimpan tautan lama ke `/akun` (satu di antaranya belum dibaca). Data lama tidak diubah tanpa diminta; pemberitahuan berikutnya sudah memakai tautan yang benar. Bila ingin baris lamanya ikut diperbaiki, katakan saja.
+
+### Yang belum dikerjakan
+
+Tidak berubah dari putaran sebelumnya: dua baris notifikasi ganda lama di lonceng panel, tombol buka suspend akun panel, kolom dokumen yang diminta pada modul Permohonan, dan hari libur nasional yang belum dikecualikan dari hitungan hari kerja.
+---
+
+
+## Status Pengerjaan (putaran 72 — langkah 92)
+
+Notifikasinya sebenarnya sudah tertulis dan sudah bisa dibaca API. Yang tidak ada adalah **halamannya** — dan lonceng yang menampilkannya terlambat menyegarkan diri.
+
+### Yang diperiksa lebih dulu: apakah barisnya ada
+
+Sebelum mengubah apa pun, keadaan basis data dan API dibaca apa adanya:
+
+- Tabel `notifikasi` memuat lima baris `verifikasi_pemohon` dari pengujian tersebut — satu untuk super admin, satu untuk PPID, dan satu untuk masing-masing dari tiga akun PPID Pelaksana. Isinya bertanda `"modul": "permohonan"` dan menaut ke `/ppid/pemohon?detail=…`.
+- `GET /v1/notifikasi` dipanggil langsung dengan token akun PPID Pelaksana: **200**, berisi baris itu.
+
+Jadi sisi penulisan (langkah 91) dan sisi pembacaan sudah benar. Persoalannya di panel.
+
+### Halaman Notifikasi tidak pernah punya route
+
+Komponennya lengkap sejak lama — `NotificationsAppView`, `NotificationsAppHeader`, kartu, hook, semuanya sudah berbahasa Indonesia — tetapi tidak ada satu pun berkas `*Route.tsx` di dalam `apps/notifications`. Route panel dikumpulkan lewat `import.meta.glob('/src/app/**/*Route.tsx')`, jadi tanpa berkas itu halamannya tidak pernah terdaftar. Alamat apa pun ke sana jatuh ke `/404`, dan tidak ada entri menunya.
+
+Akibatnya satu-satunya jalan melihat notifikasi adalah lonceng — padahal lonceng **hanya memuat yang belum dibaca**. Notifikasi yang terlanjur dibuka hilang tanpa tempat untuk melihatnya kembali, persis seperti yang dilaporkan.
+
+Sekarang halamannya terdaftar di `/ppid/notifikasi`, didaftarkan sebelum pola `:resourceSlug` supaya tidak tertangkap sebagai nama modul dan dijawab "Modul tidak dikenal". Entri menunya tidak digantung pada hak modul mana pun: isi notifikasi sudah disaring per pengguna dan per modul di API, jadi menggantungkannya pada satu modul justru menyembunyikan halaman dari role yang notifikasinya ada.
+
+### Lonceng bisa menampilkan keadaan satu menit yang lalu
+
+`QueryClient` panel menyetel `staleTime` lima menit dan mematikan penyegaran saat jendela mendapat fokus. Setelan itu benar untuk daftar modul — berpindah tab bukan tanda datanya berubah — tetapi salah untuk lonceng, karena kejadian yang diberitahukan justru datang dari situs publik saat petugas sedang mengerjakan hal lain.
+
+Ditambah `refetchIntervalInBackground: false`, urutannya jadi begini: petugas membuka portal di tab lain, pengambilan berkala lonceng berhenti, pemohon mengirim berkas, petugas kembali ke panel — tidak ada penyegaran karena fokus, dan detak berikutnya baru satu menit kemudian. Yang terlihat: lonceng kosong padahal barisnya sudah ada.
+
+Query lonceng kini menyimpang dari setelan bawaan itu secara sengaja (`staleTime: 0`, segarkan saat dipasang, saat fokus, dan saat tersambung lagi), dan membuka loncengnya selalu menarik ulang daftarnya. Interval 60 detiknya tetap.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| be-ppid | `ppid/PpidRoute.tsx` | Route `/ppid/notifikasi`, didaftarkan sebelum pola modul |
+| be-ppid | `ppid/lib/navigation.ts` | Entri menu Notifikasi, tanpa gantungan hak modul |
+| be-ppid | `apps/notifications/api/hooks/useGetAllNotifications.ts` | Segarkan saat dipasang/fokus/tersambung lagi |
+| be-ppid | `apps/notifications/components/views/NotificationPanel.tsx` | Tarik ulang saat lonceng dibuka; tautan ke halaman arsip pada kedua keadaan |
+| be-ppid | `apps/notifications/components/views/NotificationsAppView.tsx` | Query gagal tidak menjatuhkan halaman |
+| be-ppid | `@i18n/kamusPpid.ts` | Label menu versi Inggris |
+
+### Verifikasi
+
+- Basis data: lima baris `verifikasi_pemohon` dari pengujian Anda, termasuk untuk ketiga akun PPID Pelaksana.
+- `GET /v1/notifikasi` dengan token PPID Pelaksana: **200**, memuat baris tersebut.
+- `tsc --noEmit` be-ppid bersih. Suite PHP tidak tersentuh putaran ini — tidak ada perubahan di api-ppid maupun fe-ppid.
+
+### Perlu diketahui
+
+`npm run build` be-ppid gagal sebelum sampai ke kode ini: `Failed to resolve entry for package "@tiptap/pm"`. Kerusakan paket pihak ketiga yang sudah ada sebelum putaran ini dan tidak bersinggungan dengan berkas yang disentuh — mode pengembangan (`npm run dev`) tetap jalan. Dicatat supaya tidak tertukar dengan akibat perubahan ini.
+
+### Yang belum dikerjakan
+
+Tidak berubah dari putaran sebelumnya: dua baris notifikasi ganda lama yang sengaja dibiarkan, tombol buka suspend akun panel, kolom dokumen yang diminta pada modul Permohonan, dan hari libur nasional yang belum dikecualikan dari hitungan hari kerja.
+---
+
+
+## Status Pengerjaan (putaran 71 — langkah 91)
+
+Notifikasi verifikasi data pemohon tidak lagi berganda, dan seluruh jalur notifikasi kini mengikuti hak akses modul — termasuk satu hak yang selama ini kurang dan membuat tahap pertama alur persetujuan tidak bisa diputus.
+
+### Gandanya bukan satu kiriman yang dicatat dua kali
+
+Baris di basis data memperlihatkan dua notifikasi `verifikasi_pemohon` untuk pemohon yang sama, berjarak tiga menit. Jadi bukan satu penyimpanan yang menulis dua baris, melainkan pemohon yang memperbaiki lalu mengirim ulang berkasnya — dan tiap kiriman menambah baris baru sementara yang lama masih menggantung belum dibaca.
+
+Bagi petugas keduanya tampil sebagai dua pekerjaan, padahal berkas yang menunggu diperiksa hanya satu. Yang lama malah menyesatkan: teksnya masih menyebut "pengiriman ke-1" saat yang menunggu sudah kiriman berikutnya.
+
+Karena itu `NotifikasiAdmin::kirim()` sekarang mencari notifikasi **belum dibaca** untuk pokok yang sama (`pemohon_id`, `permohonan_id`, `keberatan_id`), lalu menimpa isinya dan menaikkan `created_at` supaya kembali ke atas lonceng. Yang **sudah dibaca** sengaja dibiarkan utuh: petugas menandainya karena sudah menanganinya, jadi kiriman sesudahnya memang pemberitahuan baru.
+
+### Sisi pemohon: putusan yang sama tidak dikirim dua kali
+
+Dari arah sebaliknya, `POST /pemohon/{id}/verifikasi` tidak punya penyaring apa pun terhadap putusan yang tidak berubah. Klik ganda pada tombolnya membuat pemohon menerima dua surel dan dua baris lonceng untuk satu pemeriksaan — dan pada penolakan, klik keduanya ikut menaikkan `jumlah_ditolak`, memakan jatah kirim ulang untuk berkas yang bahkan belum sempat ia perbaiki.
+
+Sekarang putusan yang identik (status dan catatan sama persis) dijawab tanpa menyimpan apa pun. Perubahan yang benar-benar berbeda tetap tercatat dan tetap diberitahukan.
+
+### Hak akses: satu yang kurang, satu yang salah sasaran
+
+Menelusuri seluruh jalur notifikasi memunculkan dua ketimpangan.
+
+**PPID Pelaksana tidak bisa memutus tahapnya sendiri.** Tahap pertama alur persetujuan — penerimaan permohonan dan keberatan — dipegang role `ppid-pelaksana`, tetapi matrix hak aksesnya memberi role itu `can_approve = false` pada modul Permohonan dan Keberatan. Ketiga jalur yang ia butuhkan (`permohonan/{id}/approval`, `keberatan/{id}/approval`, `pemohon/{id}/verifikasi`) dijaga `akses:{modul},approve`, jadi notifikasinya sampai tetapi tombol putusannya dijawab 403 — berkas berhenti di tahap pertama tanpa penjelasan di mana pun. `ModulSistemSeeder` kini memberi hak `approve` untuk kedua modul layanan itu. Hak menolak tidak ikut terbuka: itu ditentukan `boleh_tolak` pada tahap alurnya dan ditegakkan terpisah di `MenanganiPersetujuan`.
+
+**Notifikasi keberatan menaut ke menu yang sudah dilepas.** Sejak langkah 89 modul Keberatan tidak lagi punya entri menu — isinya tampil sebagai kategori di modul Permohonan. Notifikasinya masih menaut ke `/ppid/keberatan` dan penerimanya masih diambil dari hak lihat modul `keberatan`, dua hal yang sudah tidak sejalan dengan menu yang dilihat petugas. Sekarang keduanya mengikuti modul Permohonan, dengan `jenis=keberatan` pada tautannya supaya halaman tahu rincian mana yang dibuka — id 3 bisa berarti permohonan 3 maupun keberatan 3, dan tanpa penanda itu tautannya berpeluang membuka berkas orang lain.
+
+### Penyaring kedua saat notifikasi dibaca
+
+Hak akses bisa berubah setelah notifikasinya ditulis. Karena itu tiap notifikasi kini membawa slug modulnya, dan `GET /v1/notifikasi` menyaring baris yang modulnya tidak lagi boleh dilihat role pembacanya — seperti middleware `akses:`, super admin lolos lebih dulu. Baris lama yang belum punya penanda modul dibiarkan lewat: menyembunyikan riwayat yang sah hanya karena bentuk datanya lebih tua bukan perbaikan.
+
+Penerima di sisi penulisan juga disamakan dengan perilaku panel: super admin ikut menerima tanpa bergantung pada matrix, karena satu modul baru yang belum dicentang akan membuatnya diam-diam berhenti diberi tahu.
+
+### Pemberitahuan giliran persetujuan
+
+`AlurPersetujuan::beriTahuPenyetuju()` memilih penerima hanya dari `role_id` tahapnya. Role yang dipasang di alur tetapi hak modulnya belum dibuka jadi menerima tautan yang berujung "Akses ditolak", jadi hak `view` + `approve` ikut disyaratkan — sama dengan yang dijaga route-nya. Ditambah penyaring agar satu tahap tidak diberitahukan dua kali kalau alurnya dihitung ulang.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| fe-ppid | `Support/NotifikasiAdmin.php` | Timpa notifikasi belum dibaca untuk pokok sama; keberatan ikut modul Permohonan; slug modul dicatat; super admin ikut penerima |
+| fe-ppid | `tests/Feature/NotifikasiAdminTest.php` | Baru |
+| api-ppid | `Cms/PemohonController.php` | Putusan verifikasi yang tidak berubah tidak disimpan dan tidak diberitahukan |
+| api-ppid | `NotifikasiController.php` | Lonceng menyaring modul yang tidak boleh dilihat |
+| api-ppid | `Support/AlurPersetujuan.php` | Penerima disaring hak modul; tautan ikut modul Permohonan; tanpa pemberitahuan ganda per tahap |
+| api-ppid | `seeders/ModulSistemSeeder.php` | PPID Pelaksana diberi `approve` pada modul Permohonan dan Keberatan |
+| api-ppid | `tests/Feature/NotifikasiPanelTest.php` | Baru |
+| be-ppid | `ppid/PpidResourcePage.tsx` | `?jenis=keberatan` membuka rincian keberatan dari modul Permohonan |
+
+### Verifikasi
+
+- **5 tes** `NotifikasiAdminTest`: kiriman ulang data pemohon tidak menggandakan baris, yang sudah dibaca tidak ditimpa, penerima terbatas pada role yang boleh melihat modulnya, slug modul dan tautan pemohon benar, dan notifikasi keberatan menaut ke modul Permohonan.
+- **5 tes** `NotifikasiPanelTest`: putusan verifikasi yang diulang hanya sekali diberitahukan dan tidak memakan jatah penolakan, putusan yang berubah tetap diberitahukan, lonceng menyembunyikan modul tanpa hak lihat, super admin melihat semuanya, dan PPID Pelaksana bisa memutus tahap pertamanya sampai giliran berpindah ke PPID.
+- Suite penuh: fe-ppid **73 lulus** (269 asersi), api-ppid **40 lulus** (169 asersi). `tsc --noEmit` be-ppid bersih.
+- `ModulSistemSeeder` dijalankan ulang; `ppid-pelaksana` kini `approve = true` pada modul Permohonan dan Keberatan.
+
+### Yang belum dikerjakan
+
+Dua baris notifikasi ganda yang terlanjur tercatat sebelum perbaikan ini masih ada di lonceng dan sengaja tidak dihapus — data lama tidak diubah tanpa diminta. Sisanya tidak berubah dari putaran sebelumnya: tombol buka suspend akun panel, kolom dokumen yang diminta pada modul Permohonan, dan hari libur nasional yang belum dikecualikan dari hitungan hari kerja.
+---
+
+
+## Status Pengerjaan (putaran 70 — langkah 90)
+
+Hero beranda memakai gambar resmi `HOME 1920 x 1080.png` beserta judul dan ringkasan barunya.
+
+### Tidak ada kode tampilan yang perlu ditambah
+
+Slider hero sudah membaca gambar, judul, dan ringkasan per slide dari modul Banner sejak lama; yang belum ada hanyalah **isinya** — tabel `banner_slider` kosong, jadi beranda jatuh ke gradasi hijau polos dengan teks bawaan template ("Portal Keterbukaan Informasi Publik").
+
+Jadi yang dikerjakan bukan menulis teks baru ke dalam template, melainkan mengisi datanya lewat `BannerBerandaSeeder`: berkasnya disalin ke disk `media` seperti hasil unggahan biasa, lalu dicatat sebagai satu banner aktif berisi judul dan ringkasan yang diminta. Humas bisa menggantinya lewat modul Banner tanpa deploy — hal yang tidak berlaku kalau kalimatnya ditulis di Blade.
+
+Seedernya berhenti begitu ada banner apa pun. Banner yang sudah disusun petugas tidak boleh tergeser oleh seeder yang kebetulan dijalankan ulang.
+
+### Satu perubahan tampilan: judulnya ikut dua warna
+
+Judul dari CMS sebelumnya tampil satu warna, sedangkan setiap judul lain di situs memakai konsep judul dua warna. Sekarang judul slide dilewatkan `$judulDua(…, 2, 'fs-title-accent-soft')`, jadi dua kata terakhirnya beraksen:
+
+```html
+Selamat Datang di Portal Resmi PPID <span class="fs-title-accent-soft">Food Station.</span>
+```
+
+Helpernya meng-escape isinya, jadi judul dari CMS tetap tidak bisa menyuntikkan markup.
+
+Komposisi gambarnya kebetulan cocok dengan tata letak hero: maskot berada di sepertiga kanan, sisi kirinya bidang hijau kosong — persis tempat judul, ringkasan, dan tombol hero berdiri.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `seeders/BannerBerandaSeeder.php` | Baru; menyalin gambar + judul + ringkasan, idempoten |
+| fe-ppid | `views/ppid/home.blade.php` | Judul slide memakai judul dua warna |
+| fe-ppid | `lang/en.json` | Judul dan ringkasan versi Inggris |
+| fe-ppid | `tests/Feature/BannerBerandaTest.php` | Baru |
+
+### Verifikasi
+
+- **2 tes** `BannerBerandaTest`: hero memakai gambar, judul, dan ringkasan milik banner — bukan teks bawaan — dan banner nonaktif tidak tayang.
+- Beranda diminta langsung dalam dua bahasa: **200**, satu gambar banner terpasang, penanda aksen judul ada pada keduanya. Teks bawaan lama ("Portal Keterbukaan") sudah tidak muncul.
+- Suite penuh: fe-ppid **68 lulus** (257 asersi), api-ppid **35 lulus**.
+
+### Yang belum dikerjakan
+
+Tidak berubah dari putaran sebelumnya: tombol buka suspend akun panel, kolom dokumen yang diminta pada modul Permohonan, dan hari libur nasional yang belum dikecualikan dari hitungan hari kerja.
+---
+
+
+## Status Pengerjaan (putaran 69 — langkah 89)
+
+Alur layanan PPID dari pemohon sampai putusan PPID, keenam sub-bagiannya selesai: akun per jabatan, dua kategori dalam satu daftar, jalur pelayanan, jenjang persetujuan, aturan SLA, dan penerapannya.
+
+**Akun untuk tiap jabatan (sub-1).** Tabel `users` mendapat `struktur_id` yang menunjuk kotak pada bagan struktur organisasi. Role menentukan *boleh apa*, struktur menentukan *siapa dalam bagan* — pembedaan yang baru diperlukan sekarang, karena ketiga anggota PPID Pelaksana berbagi satu role tetapi menempati tiga jabatan berbeda. Memecahnya jadi tiga role hanya menyalin matrix hak akses yang sama tiga kali.
+
+`PenggunaPpidSeeder` membuat empat akun, idempoten dan tidak menimpa kata sandi akun yang sudah dipakai:
+
+| Surel | Jabatan pada bagan | Role |
+| --- | --- | --- |
+| `ppid@foodstation.co.id` | PPID (Sekretaris Perusahaan & Kepatuhan) | `ppid-utama` |
+| `dokumentasi.ppid@foodstation.co.id` | Pengelolaan & Dokumentasi Informasi | `ppid-pelaksana` |
+| `pengumuman.ppid@foodstation.co.id` | Pengumuman Informasi | `ppid-pelaksana` |
+| `penyediaan.ppid@foodstation.co.id` | Penyediaan Informasi | `ppid-pelaksana` |
+
+Kata sandi awal `PpidFood#2026` — akun uji alur, ganti sebelum melayani permohonan nyata.
+
+**Jenjang persetujuannya diperpendek (sub-3, sub-4).** Alur lama berjenjang tiga (PPID → Atasan PPID). Alur yang diminta berhenti di PPID, jadi tahap Atasan PPID dilepas dari kedua alur; rolenya tetap ada dan susunannya masih bisa dikembalikan super admin lewat modul Alur Persetujuan tanpa menyentuh kode.
+
+| Alur | Tahap 1 | Tahap 2 |
+| --- | --- | --- |
+| Permohonan | Penerimaan PPID Pelaksana — SLA 3 hari, **tanpa hak menolak** | Persetujuan PPID — SLA 7 hari, boleh menolak |
+| Keberatan | Penerimaan PPID Pelaksana — SLA 10 hari, **tanpa hak menolak** | Putusan PPID — SLA 20 hari, boleh menolak |
+
+Jenjang pertama sengaja tanpa hak menolak, persis seperti diminta: tugasnya meneruskan, dan menolak permohonan menurut UU KIP harus disertai alasan tertulis dari pejabat berwenang. Pembagian SLA-nya menjumlah tepat ke tenggat undang-undang: 3 + 7 = 10 hari kerja, 10 + 20 = 30 hari.
+
+**Jalur pelayanan (sub-2).** Kolom `jalur_pelayanan` (`online` / `langsung`) ditambahkan ke permohonan **dan** keberatan, beserta `jadwal_layanan` dan `keterangan_petugas`. Endpoint putusan persetujuan sudah memakainya: pada jenjang penerima, jalur wajib dipilih, dan jalur `langsung` wajib disertai tanggal dan jam undangan — undangan tanpa waktu bukan undangan. Dokumen jalur `online` tidak diwajibkan di titik yang sama karena berkasnya punya endpoint unggah tersendiri dan boleh menyusul, sedangkan waktu kunjungan harus sudah pasti saat pemohon diberi tahu.
+
+**Aturan SLA (sub-5).** `App\Support\SlaLayanan` menampung seluruh angkanya di satu tempat: 10 hari kerja tanggapan, 7 hari kerja perpanjangan, 30 hari tanggapan keberatan, 14 hari kerja batas sengketa. Sebelumnya `addWeekdays(10)` berdiri sendiri di controller portal — satu-satunya tempat yang tahu tenggatnya. Kelasnya juga menghitung keadaan tenggat satu pengajuan (aman / segera / lewat tenggat / tepat waktu / terlambat).
+
+Hari libur nasional belum dikecualikan: daftarnya berubah tiap tahun dan belum ada sumbernya di sistem. Tenggat yang dihitung karena itu bisa lebih ketat dari yang sebenarnya — arah yang aman, karena menagih petugas lebih awal, bukan terlambat.
+
+**Perpanjangan tenggat.** Endpoint `POST permohonan/{id}/perpanjang` menggeser tenggat 7 hari kerja, sekali saja, wajib beralasan, mencatat log status, mengirim surel dan lonceng portal. Tenggat awalnya disimpan di kolom terpisah supaya penilaian ketepatan waktu tetap punya pembanding asli — tanpa itu, setiap keterlambatan bisa dihapus dengan menggeser tenggatnya. Hak yang dijaga `approve`, bukan `edit`: perpanjangan menggeser janji resmi kepada pemohon.
+
+### Dua kategori dalam satu daftar (sub-2)
+
+Sub-4 menyebut keberatan pun ditangani "pada be-ppid (modul Permohonan)", jadi keduanya dibaca dari satu daftar dan dibedakan kolom **Kategori**. Petugas menangani keduanya dengan gerak yang sama — buka detail, periksa, teruskan — sedangkan dua menu terpisah memaksanya memeriksa dua tempat untuk menjawab satu pertanyaan: apa yang menunggu saya hari ini.
+
+Endpoint barunya `GET pengajuan` (`PengajuanLayananController`), **hanya baca**. Perubahan tetap lewat endpoint modul masing-masing, karena aturan status, jenjang, dan pencatatan keduanya memang berbeda — menyeragamkannya di sana hanya akan menyembunyikan perbedaan yang penting.
+
+Tiga keputusan kecil yang menentukan bentuknya:
+
+- **Digabung di PHP, bukan `UNION` di basis data.** Kedua tabel punya kolom yang jauh berbeda, dan `UNION` menuntut daftar kolom yang dipaksa sama panjang — bentuk yang mudah salah begitu satu tabel berubah.
+- **Id barisnya dibuat unik lintas tabel** (`permohonan-3`, `keberatan-3`) karena daftarnya memakai id sebagai kunci baris; id asli tetap dibawa sebagai `ref_id` dan itulah yang membuka detail ke endpoint yang benar.
+- **Modul Keberatan dilepas dari menu**, bukan dihapus. Isinya sudah tampil sebagai salah satu kategori; modul, API, dan hak aksesnya tetap ada dan bisa dikembalikan ke menu dengan menambahkan satu slug di `navigation.ts`.
+
+Daftarnya membawa kolom Kategori, Kode, Pemohon, Pokok pengajuan, Status, Jalur, **Tenggat**, Diajukan, dan Batas waktu, dengan penyaring untuk empat yang pertama.
+
+### Verifikasi di panel (sub-3, sub-4)
+
+Formulir putusan pada panel jenjang persetujuan berubah isi mengikuti jenjangnya. **Jenjang penerima dikenali dari haknya, bukan namanya**: tahap yang tidak diberi hak menolak adalah tahap yang tugasnya meneruskan, dan dialah yang berhubungan dengan pemohon. Nama tahap bisa diubah super admin kapan saja; haknya menentukan perannya.
+
+Pada jenjang itu, pilihan "Tolak" tidak ditawarkan sama sekali — menawarkan sesuatu yang pasti ditolak server hanya membuang waktu petugas — dan muncul isian jalur pelayanan:
+
+| Jalur | Yang diminta panel |
+| --- | --- |
+| Online | Petunjuk mengunggah dokumen lewat panel Berkas Tanggapan; berkasnya boleh menyusul |
+| Langsung | Tanggal dan jam undangan (wajib), ditambah alamat, kontak, dan jam layanan untuk disalin ke undangan |
+
+Keterangan untuk pemohon bisa diisi pada kedua jalur. Tombol kirim tetap mati sampai isiannya lengkap, dan server memeriksa hal yang sama lagi — panel yang menuntut isian tidak menggantikan aturan, ia hanya mencegah petugas mengetuk tombol yang akan ditolak.
+
+Alamat meja layanan ditulis di komponennya, bukan diambil dari Pengaturan Situs: petugas membacanya untuk **disalin ke undangan**, dan alamat yang salah pada undangan jauh lebih merugikan daripada alamat yang tertinggal satu versi di halaman kontak.
+
+### Portal pemohon (sub-2, sub-4)
+
+**Jalur pelayanan diturunkan, tidak ditanyakan.** Formulir permohonan sudah menanyakan cara pengiriman, dan cara pengiriman menjawab pertanyaan yang sama: dokumennya dikirim atau pemohonnya datang. Dua isian untuk satu jawaban hanya melahirkan kemungkinan keduanya bertentangan. `ambil_langsung` → Langsung, `email` → Online; petugas tetap bisa mengubahnya saat menerima berkas.
+
+**Keberatan hanya atas permohonan yang sudah tuntas.** Daftar pilihannya disaring, dan aturannya diperiksa ulang di server — isian tersembunyi bisa diubah sebelum dikirim. Penolakan dan kedaluwarsa ikut dianggap tuntas, bukan kelalaian: keduanya justru alasan keberatan yang paling sering, sebagaimana tertulis pada infografis Alasan Pengajuan Keberatan di langkah 87.
+
+**Tenggat keberatan diisi saat pengajuan**: 30 hari kalender sejak diregistrasi — hari kalender, bukan hari kerja, dan itulah yang membedakannya dari tenggat permohonan.
+
+### Surel per jalur (sub-6)
+
+Begitu jenjang penerima meneruskan berkas, pemohon menerima surel yang isinya berbeda per jalur, karena yang perlu ia lakukan memang berbeda: jalur Online cukup ditunggu, jalur Langsung menuntutnya datang pada waktu dan tempat tertentu. Surel jalur Langsung karena itu memuat waktu kunjungan, alamat, kontak, dan jam layanan.
+
+Dikirim di luar transaksi: surel yang gagal tidak boleh membatalkan putusan yang sudah sah.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `migrations/2026_08_27_000002_alur_layanan_ppid` | `users.struktur_id`; `jalur_pelayanan`, `jadwal_layanan`, `keterangan_petugas` pada permohonan & keberatan; kolom perpanjangan dan tenggat keberatan |
+| api-ppid | `Support/SlaLayanan.php` | Seluruh angka tenggat + hitungan keadaannya |
+| api-ppid | `Cms/PengajuanLayananController.php` | Daftar gabungan dua kategori |
+| api-ppid | `Cms/PermohonanController@perpanjangTenggat` | Perpanjangan 7 hari kerja, sekali |
+| api-ppid | `Concerns/MenanganiPersetujuan.php` | Isian jalur pada jenjang penerima + surelnya |
+| api-ppid | `Support/EmailPemohon.php`, `NotifikasiPortal.php` | Surel jalur pelayanan & perpanjangan, lonceng portal |
+| api-ppid | `Api/AnalitikController.php` | Angka SLA dashboard dibaca dari `SlaLayanan` |
+| api-ppid | `seeders/PenggunaPpidSeeder.php`, `AlurApprovalSeeder.php` | Empat akun; jenjang dua tahap |
+| be-ppid | `ppid/lib/resources.ts`, `navigation.ts` | Modul Permohonan jadi daftar gabungan; Keberatan lepas dari menu |
+| be-ppid | `PpidResourcePage.tsx` | Aksi baris memilih dialog menurut kategori |
+| be-ppid | `components/PersetujuanBerjenjang.tsx` | Formulir putusan per jenjang dan per jalur |
+| fe-ppid | `Akun/PermohonanController.php`, `Akun/KeberatanController.php` | Jalur diturunkan; keberatan disaring; tenggat 30 hari |
+| fe-ppid | `Models/PermohonanInformasi.php`, `KeberatanInformasi.php` | Kolom baru + `STATUS_SELESAI` |
+
+### Verifikasi
+
+- **6 tes** `AlurLayananPpidTest` (api-ppid): daftar gabungan memuat dua kategori dengan id yang tidak bertabrakan, penyaring kategori memisahkannya, perpanjangan hanya sekali dan wajib beralasan, tenggat awal tersimpan, angka SLA sesuai undang-undang, dan tenggat yang lewat ditandai.
+- **2 tes** `AlurLayananPortalTest` (fe-ppid): daftar status tuntas memuat penolakan dan kedaluwarsa tetapi bukan yang masih berjalan, dan pemetaan jalur ↔ cara pengiriman tidak terbalik.
+- Suite penuh: api-ppid **35 lulus** (147 asersi), fe-ppid **66 lulus** (250 asersi).
+- `tsc --noEmit` bersih; `eslint` pada keempat berkas be-ppid yang disunting tidak menyisakan peringatan baru (sisanya prettier bawaan `resources.ts`).
+- Migrasi dan ketiga seeder dijalankan; cache route dan config dibangun ulang.
+
+### Yang belum dikerjakan
+
+Tidak berubah: tombol buka suspend akun panel, dan kolom dokumen yang diminta pada modul Permohonan di be-ppid. Satu catatan baru: **hari libur nasional belum dikecualikan** dari hitungan hari kerja — perlu sumber daftarnya lebih dulu.
+---
+
+
+## Status Pengerjaan (putaran 68 — langkah 88)
+
+**Maklumat Pelayanan** kini tayang seperti kedua halaman prosedur: dokumennya mengisi halaman, judul "Detail Maklumat Pelayanan Informasi Publik" dihapus.
+
+### Modul CRUD-nya sudah ada sejak awal — yang rusak isinya
+
+Permintaannya menyebut "buatkan juga modul untuk CRUD di be-ppid agar konsepnya dinamis". Modul itu sudah ada dan sudah dipakai: **Maklumat**, di grup Standar Layanan, dengan unggahan berkas, tanggal terbit, dan status Draft/Terbit/Arsip. Membuat modul kedua untuk halaman yang sama hanya melahirkan dua sumber yang bisa berbeda isinya, jadi tidak dibuat.
+
+Yang membuat halamannya terlihat "belum dinamis" adalah cacat data, bukan cacat modul: baris maklumat terbit ada di basis data, tetapi `file_dokumen`-nya **kosong**. Halamannya diam-diam memakai teks cadangan yang ditulis di template, dan tidak ada satu pun yang gagal untuk mengabarkannya.
+
+Penyebabnya `MaklumatAwalSeeder`. Syarat berhentinya dulu berbunyi "kalau sudah ada maklumat berstatus published, berhenti" — tanpa memeriksa apakah barisnya punya berkas. Baris yang terlanjur dibuat pada saat berkas acuannya belum tersedia karena itu tidak pernah bisa dilengkapi: setiap kali seeder dijalankan lagi, baris itulah yang membuatnya berhenti.
+
+Sekarang syaratnya memeriksa isinya, dan barisnya **dilengkapi**, bukan digandakan:
+
+```
+Dokumen maklumat terbit dilengkapi: uploads/maklumat/2026/08/x1pufFqUqHCUbTnH22hBuwBQ9Gx4Ud2q.png
+```
+
+Menambah baris terbit kedua akan membuat situs memilih salah satunya berdasarkan tanggal dan meninggalkan dua arsip untuk satu dokumen yang sama.
+
+### Judulnya hilang berdasarkan isi, bukan nama halaman
+
+Syarat penghilangan judul "Detail …" tidak ditulis sebagai daftar nama halaman, melainkan satu pertanyaan: apakah halaman ini punya gambar untuk ditayangkan?
+
+```blade
+$tayangBergambar = !empty($data['gambar_alur']) || !empty($data['dokumen']);
+```
+
+Halaman yang gambarnya belum diunggah tetap memakai judul itu sebagai pembuka isinya — termasuk Maklumat sendiri, kalau berkasnya suatu saat dikosongkan lagi. Daftar nama halaman akan menuntut suntingan template setiap kali ada halaman baru; pertanyaan ini tidak.
+
+### Halamannya tinggal dokumennya
+
+Tiga hal dilepas dari sekeliling gambar: kalimat pengantar "Pernyataan komitmen PPID …", tombol "Buka di tab baru", dan tombol "Unduh Maklumat".
+
+Ketiganya menerangkan atau menyediakan jalan menuju satu benda yang sudah ada di layar dan sudah lengkap isinya. Pengantarnya meringkas dokumen yang bisa dibaca utuh dua sentimeter di bawahnya. Tombol "Buka di tab baru" melakukan persis yang dilakukan mengklik gambarnya. Yang tersisa hanya tombol unduh, dan satu tombol berdiri sendiri di atas dokumen lebih mirip kotak menganggur daripada ajakan — sedangkan menyimpan gambar sudah punya jalannya sendiri di setiap peramban.
+
+Sebagai gantinya **gambarnya sendiri yang jadi tautannya**: satu sasaran besar, sama mudahnya disentuh di ponsel maupun diklik di layar lebar, dan zoom-nya memakai peramban alih-alih overlay yang justru mengecilkan gambar lagi.
+
+Susunannya sekarang satu `<figure>`: dokumen di dalam kartu putih bersudut membulat dengan bayangan tipis yang menegas saat disorot, lalu satu baris keterangan penerbitan di bawahnya — kecil, di tengah, dan turun sendiri jadi dua baris di layar sempit.
+
+### Lebar lembarnya dicari lewat dua kutub yang ditolak
+
+Ukurannya tidak ketemu sekali jadi, dan kedua percobaan yang gagal justru yang menentukan angka akhirnya.
+
+| Percobaan | Lebar lembar | Ditolak karena |
+| --- | --- | --- |
+| Pertama | `max-w-3xl` — 768 px | Terlalu kecil: maklumat ini **lembar A4 hasil pindai**, tulisannya ikut mengecil bersama lebarnya sampai harus diklik dulu sekadar untuk dibaca |
+| Kedua | `w-full` di dalam `max-w-screen-xl` — ±1.180 px | Terlalu besar: pada lebar itu lembar A4 menjulang ±1.670 px, lebih tinggi dari layar mana pun, dan tanda tangannya baru terlihat setelah gulir panjang |
+| **Sekarang** | **`max-w-4xl` — 896 px** | Di tengah keduanya |
+
+Yang membuat kutub kedua meleset adalah sifat dokumennya: A4 potret berbanding 1 : 1,414, jadi setiap penambahan lebar dibayar tinggi satu setengah kali lipat. Melebarkan lembar tegak bukan membuatnya lebih terbaca, melainkan lebih panjang.
+
+Pelebaran kontainer halaman yang sempat dipasang bersama percobaan kedua ikut dibatalkan: `max-w-screen-xl` kembali ke `max-w-6xl` dan padding kartu kembali `p-6 sm:p-10`, sama dengan halaman Standar Layanan lainnya. Aturan lebar khusus per halaman tidak lagi ada — satu pengecualian yang tersisa hanyalah Jalur & Waktu Layanan seperti sebelum langkah ini.
+
+Sisa keterbacaan diserahkan ke klik-untuk-ukuran-penuh, yang memang sudah menempel pada gambarnya. Efek hover "membesar sedikit" tetap dilepas: pada lembar sebesar ini gerakannya terasa gemetar, bukan hidup.
+
+Kolom `ringkasan` ikut dibersihkan sampai ke pangkalnya. Controller berhenti membawanya ke view, dan isian **Pengantar** dilepas dari formulir modul Maklumat di be-ppid: isian yang diminta kepada operator tetapi tidak pernah muncul di mana pun adalah jebakan, bukan fitur. Kolomnya tetap ada di basis data — isian lama tersimpan dan masih terjangkau kotak pencarian modul — hanya formulirnya yang tidak lagi memintanya.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `seeders/MaklumatAwalSeeder.php` | Berhenti hanya bila maklumat terbit sudah punya berkas; baris kosong dilengkapi |
+| fe-ppid | `views/ppid/service_standard.blade.php` | `$tayangBergambar`; blok maklumat jadi satu `<figure>` `max-w-4xl` tanpa pengantar dan tanpa kedua tombol |
+| fe-ppid | `PpidController@lengkapiMaklumat` | `ringkasan` tidak lagi diteruskan ke view |
+| fe-ppid | `lang/en.json` | Satu kunci baru, dua kunci mati dihapus |
+| fe-ppid | `tests/Feature/MaklumatHalamanTest.php` | Baru |
+| be-ppid | `ppid/lib/resources.ts` | Isian Pengantar dilepas dari formulir Maklumat |
+
+Modul CRUD-nya sendiri tidak ditambah — Maklumat sudah menyediakannya.
+
+### Verifikasi
+
+- **2 tes** `MaklumatHalamanTest` baru: dokumen gambar tayang tanpa judul "Detail …", tanpa pengantar, dan tanpa kedua tombol, tetapi tetap bisa dibuka ukuran penuh lewat gambarnya dan tetap menampilkan keterangan penerbitan; halaman tanpa dokumen kembali ke teks bawaan beserta judulnya. Yang kedua penting justru karena keadaan itulah yang tadinya menutupi bug-nya.
+- Halaman diminta langsung: `maklumat-pelayanan` **200**, 1 berkas, pengantar/tombol tab/tombol unduh/judul "Detail …" keempatnya **tidak ada**. `prosedur-permohonan` 5 gambar, `prosedur-keberatan` 3, `jalur-waktu-layanan` **200** dengan judulnya utuh.
+- Lebar dibaca dari markup yang benar-benar terkirim: `maklumat-pelayanan` → isi `max-w-6xl`, lembar `max-w-4xl`; `prosedur-permohonan` → isi `max-w-6xl`; `jalur-waktu-layanan` → isi `max-w-screen-2xl`.
+- Suite penuh: fe-ppid **64 lulus** (241 asersi), api-ppid **29 lulus**. `tsc --noEmit` bersih; peringatan `eslint` pada `resources.ts` turun dari 35 ke 33 dan seluruhnya prettier bawaan berkas itu, 0 error.
+
+### Yang belum dikerjakan
+
+Tidak berubah: tombol buka suspend akun panel, dan kolom dokumen yang diminta pada modul Permohonan di be-ppid.
+---
+
+
+## Status Pengerjaan (putaran 67 — langkah 87)
+
+**Prosedur Permohonan Keberatan** kini tayang sebagai alur bergambar juga, dengan tiga infografis. Tidak ada modul baru, tidak ada tabel baru, tidak ada satu baris pun di Blade yang ditambah untuk halaman ini: modul Alur Prosedur dari putaran 66 memang dibuat menerima dua halaman, dan langkah 87 hanya membuktikannya — mengunggah gambarnya sudah cukup.
+
+Aturan yang sudah berlaku ikut berjalan sendiri di halaman ini: begitu gambarnya ada, kartu tahapan, Rincian Tahapan, judul "Detail …", dan intronya berhenti tayang; tombol "Ajukan Keberatan" tetap.
+
+| Urutan | Judul | Isinya |
+| --- | --- | --- |
+| 1 | Tata Cara Permohonan Keberatan | Masuk dengan akun terverifikasi, buka Permohonan Keberatan, tambah pengajuan, isi, ajukan |
+| 2 | Mekanisme Permohonan Keberatan | Enam tahap penanganan: pencatatan berkas → tanggapan Atasan PPID paling lambat 30 hari → sengketa ke Komisi Informasi dalam 14 hari kerja |
+| 3 | Alasan Pengajuan Keberatan | Tujuh alasan sah: penolakan, permintaan tak ditanggapi, tanggapan lewat batas waktu, biaya tidak wajar, dan seterusnya |
+
+Alasan ditaruh paling akhir walau ia yang paling "awal" secara logika. Pemohon yang membuka halaman ini umumnya sudah tahu dirinya keberatan; yang ia cari adalah caranya, bukan izin untuk merasa keberatan. Daftar alasan berguna sebagai rujukan setelah tahu prosedurnya.
+
+### Satu bug diam yang ditutup di sini
+
+Folder `standar layanan/` datang lagi berisi `1.png`, `2.png`, `3.png` — nama yang sama persis dengan berkas Prosedur Permohonan putaran lalu, tetapi isinya Keberatan. Berkas lamanya tertimpa.
+
+Baris di basis data tidak terpengaruh: seeder menyalin gambarnya ke disk `media` saat dijalankan, jadi kelima gambar Permohonan tetap tayang. Yang rusak adalah **seedernya**. `AlurProsedurAwalSeeder` menunjuk `1.png`–`5.png` dengan judul-judul Permohonan; dijalankan di basis data kosong hari ini, ia akan memasang gambar Keberatan dengan judul Permohonan dan tidak mengeluh sedikit pun. Kegagalan yang hanya terlihat oleh orang yang membuka halamannya.
+
+Perbaikannya memisahkan sumbernya per halaman:
+
+```
+standar layanan/
+  prosedur-permohonan/  1.png … 5.png
+  prosedur-keberatan/   1.png … 3.png
+```
+
+Kelima gambar Permohonan dipulihkan dari disk `media` ke folder barunya, jadi seeder tetap bisa membangun ulang keadaan penuh dari nol. Seedernya sendiri sekarang berjalan per halaman dan **idempoten per halaman** — halaman yang barisnya sudah ada dilewati, halaman yang belum tetap diisi. Itulah yang membuat perintah yang sama bisa dijalankan lagi tanpa menggandakan Permohonan:
+
+```
+Alur bergambar prosedur-permohonan sudah ada — dilewati.
+Alur bergambar prosedur-keberatan dibuat: 3 gambar.
+```
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `seeders/AlurProsedurAwalSeeder.php` | Dua halaman, sumber per subfolder, idempoten per halaman |
+| — | `standar layanan/` | Dipecah jadi `prosedur-permohonan/` dan `prosedur-keberatan/` |
+| fe-ppid | `tests/Feature/AlurProsedurTest.php` | Satu tes baru; tes "tanpa gambar" kini menonaktifkan gambarnya lebih dulu |
+
+Tidak ada perubahan di be-ppid dan tidak ada perubahan di Blade — keduanya sudah menangani `prosedur-keberatan` sejak putaran 66.
+
+### Verifikasi
+
+- **6 tes** `AlurProsedurTest` lulus (23 asersi). Yang baru: Prosedur Keberatan tayang bergambar sekaligus kehilangan kartu tahapan, rincian, dan intronya, tetapi tetap punya tombol "Ajukan Keberatan". Tes "halaman tanpa gambar" tidak lagi bergantung pada Keberatan yang kebetulan kosong — ia menonaktifkan gambarnya lebih dulu, jadi tetap berarti setelah halaman itu terisi.
+- Render langsung: `prosedur-permohonan` **200** dengan 5 gambar, `prosedur-keberatan` **200** dengan 3 gambar, keduanya tanpa judul "Detail …".
+- Suite penuh: fe-ppid **62 lulus** (229 asersi), api-ppid **29 lulus**.
+
+### Yang belum dikerjakan
+
+Tinggal dua, keduanya dari daftar lama: tombol buka suspend akun panel, dan kolom dokumen yang diminta pada modul Permohonan di be-ppid. Catatan putaran 66 soal Keberatan belum punya infografis sudah gugur — gambarnya sekarang ada.
+---
+
+
+## Status Pengerjaan (putaran 66 — langkah 86)
+
+Halaman **Standar Layanan → Prosedur Permohonan Informasi** sekarang membuka dengan lima infografis resmi yang tayang berurutan, dan gambar-gambar itu dikelola dari be-ppid lewat modul baru **Alur Prosedur**.
+
+### Gambarnya jadi data, bukan berkas di dalam template
+
+Menyalin kelima PNG ke `public/assets` lalu menyebutnya satu per satu di Blade akan bekerja hari ini dan menjadi beban besok: setiap kali humas memperbaiki satu panel — mengganti tangkapan layar yang tampilannya sudah berubah, menambah tahap baru — perubahan itu berhenti di antrean deploy. Padahal isinya persis jenis konten yang selama ini sudah dikelola sendiri oleh petugas: Maklumat, Banner, Regulasi.
+
+Jadi gambarnya masuk sebagai data, dengan pola yang sama seperti Maklumat — tabel sendiri, unggahan ke disk `media`, dan situs publik membaca berkasnya utuh tanpa mengetik ulang isinya di CMS.
+
+### Urutannya mengikuti perjalanan pemohon, bukan nomor berkasnya
+
+Nama berkas di folder `standar layanan/` kebetulan sudah 1–5, tetapi urutan itu ditegakkan lewat kolom `urutan`, bukan diwarisi dari nama berkas — begitu petugas menyisipkan gambar keenam, nama berkas tidak lagi punya arti apa pun.
+
+| Urutan | Judul | Isinya |
+| --- | --- | --- |
+| 1 | Tata Cara Pembuatan Akun Permohonan Informasi | Langkah 1–4: kunjungi situs, buka menu Permohonan Informasi, daftar, isi data pendaftaran |
+| 2 | Proses Verifikasi & Lengkapi Data | Langkah 5–13: konfirmasi email, masuk, lengkapi identitas, unggah dokumen, verifikasi Tim PPID |
+| 3 | Tata Cara Permohonan Informasi Publik | Langkah 1–5 setelah akun terverifikasi: masuk, tambah pengajuan, isi rincian, ajukan |
+| 4 | Mekanisme Permohonan Informasi Publik | Lima tahap penanganan di sisi Badan Publik, termasuk batas 10 hari kerja + perpanjangan 7 hari |
+| 5 | Syarat Pengajuan Permohonan Informasi Publik | Dokumen identitas untuk perorangan, kelompok, mahasiswa, dan badan hukum |
+
+Dua gambar pertama adalah cara membuat akun, baru yang ketiga cara mengajukan. Itulah urutan yang dialami pemohon baru, dan itu berbeda dari urutan judulnya — "Tata Cara Permohonan" terdengar seperti awal, padahal ia langkah setelah akunnya terverifikasi.
+
+### Satu tabel untuk dua halaman
+
+Kolom `halaman` menentukan halaman Standar Layanan mana yang menayangkan satu baris; nilainya dibatasi ke slug yang memang ada (`prosedur-permohonan`, `prosedur-keberatan`). Prosedur Keberatan belum punya infografisnya, tetapi begitu gambarnya tersedia ia cukup diunggah dengan pilihan halaman yang berbeda — tanpa tabel kedua, controller kedua, atau menu kedua. Halaman yang belum punya gambar tampil persis seperti sebelumnya.
+
+### Hak aksesnya menumpang Halaman Statis
+
+Alasannya sama dengan Maklumat: alur bergambar adalah **isi salah satu halaman** Standar Layanan, bukan modul layanan tersendiri. Menjadikannya modul baru di matrix role berarti setiap role harus diberi hak lagi satu per satu untuk mengurus hal yang secara wewenang tidak berbeda dari mengurus halamannya. Matrix role tidak bertambah barisnya.
+
+### Gambar menggantikan seluruh isi teks halamannya
+
+Kartu enam tahapan dan daftar Rincian Tahapan **tidak lagi tayang** di halaman Prosedur Permohonan Informasi. Keduanya menceritakan prosedur yang sama dengan gambar di atasnya, dan halamannya jadi menyuruh pemohon membaca satu prosedur tiga kali sebelum sampai ke tombolnya.
+
+Teksnya tidak dihapus dari kode, hanya berhenti tayang selama gambarnya ada — dan itu bukan setengah-setengah, melainkan yang menjaga Prosedur Keberatan tetap punya isi. Halaman itu memakai blok Blade yang sama tetapi belum punya infografis; menghapus teksnya di kode akan mengosongkan halaman yang tidak diminta diubah. Aturannya satu kalimat: **ada gambar → gambar saja; belum ada gambar → teks tahapannya.** Begitu infografis Keberatan diunggah, halamannya berpindah sendiri tanpa menyentuh kode.
+
+Judul "Detail Prosedur Permohonan Informasi" dan kalimat pengantarnya ikut dilewati. Hero di atas halaman sudah memasang nama halamannya sebagai judul besar; mengulanginya di baris pertama isi tidak menambah keterangan apa pun, hanya mendorong gambar pertama turun hampir satu layar. Intronya sendiri sempat diganti lebih dulu dari "Enam tahapan sederhana…" — yang menjanjikan enam kartu yang sudah tidak ada — menjadi "Alur lengkap dari membuat akun sampai permohonan Anda diproses."; kalimat itu tetap tersimpan dan dipakai halaman yang belum punya gambar.
+
+Yang tersisa di halaman: judul "Panduan Bergambar", satu kalimat cara memakainya, kelima gambar, dan tombol "Mulai Ajukan Permohonan". Tombolnya tetap di tempatnya karena ia ajakan, bukan bagian tahapan.
+
+Ketiga halaman Standar Layanan lain — Maklumat, Prosedur Keberatan, Jalur & Waktu Layanan — masih memakai judul "Detail …" seperti biasa; penghilangannya terikat pada ada-tidaknya gambar alur, bukan pada nama halaman.
+
+Klik gambar membukanya di tab baru, bukan lightbox. Tulisan di dalam infografis ini kecil, dan tab baru memberi pemohon zoom bawaan peramban — termasuk di ponsel, tempat overlay justru mengecilkan gambarnya lagi ke dalam kotak yang lebih sempit dari layarnya.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `migrations/2026_08_27_000001_create_alur_prosedur_table.php` | Tabel `alur_prosedur` + jejak dokumen (migrasi traceability sudah lewat, jadi kolomnya ditulis di sini) |
+| api-ppid | `app/Models/AlurProsedur.php`, `Api/Cms/AlurProsedurController.php` | CRUD, hak akses menumpang `halaman-statis` |
+| api-ppid | `routes/api.php` | `CrudRoute::register('alur-prosedur', …)` |
+| api-ppid | `seeders/AlurProsedurAwalSeeder.php` | Menyalin kelima gambar ke disk `media`; idempoten |
+| be-ppid | `ppid/lib/resources.ts`, `navigation.ts` | Modul Alur Prosedur, masuk grup Standar Layanan |
+| be-ppid | `@i18n/kamusPpid.ts` | Label dan bantuan versi Inggris |
+| fe-ppid | `app/Models/AlurProsedur.php` | Scope `tayang()`: aktif, punya berkas, terurut |
+| fe-ppid | `PpidController@lengkapiAlurGambar` | Mengisi `gambar_alur`; DB mati → halaman tetap terbuka tanpa gambar |
+| fe-ppid | `PpidController` (`$standardData`) | Intro Prosedur Permohonan diganti, tidak lagi menjanjikan enam kartu |
+| fe-ppid | `views/ppid/service_standard.blade.php` | Blok Panduan Bergambar; kartu tahapan + Rincian Tahapan pindah ke cabang `@else`; judul "Detail …" dan intro dilewati saat ada gambar |
+| fe-ppid | `lang/en.json` | Lima kalimat baru; dua kunci mati dihapus |
+
+### Verifikasi
+
+- **5 tes** `AlurProsedurTest` baru: urutan tayang mengikuti kolom `urutan` (barisnya sengaja dibuat terbalik, jadi tes gagal kalau urutannya diabaikan), baris nonaktif dan baris tanpa berkas tidak tayang, gambar menggantikan Ringkasan Tahapan, Rincian Tahapan, judul "Detail …", dan intronya sementara tombol ajakannya tetap ada, halaman yang belum punya gambar tetap memakai teks tahapannya, dan gambar milik satu halaman tidak bocor ke halaman satunya.
+- Migrasi dijalankan dan seeder mengisi **5 baris**; `/standar-layanan/prosedur-permohonan` menjawab **200** dengan kelima gambar terpasang dan tanpa kartu tahapan, `/standar-layanan/prosedur-keberatan` menjawab **200** dengan teks tahapannya utuh.
+- Keempat halaman Standar Layanan diminta langsung: `prosedur-permohonan` **200** tanpa judul "Detail …", tiga lainnya **200** dengan judulnya utuh.
+- Suite penuh: fe-ppid **61 lulus** (224 asersi), api-ppid **29 lulus**.
+- `tsc --noEmit` bersih; `eslint` tidak menambah peringatan baru pada berkas be-ppid yang disunting.
+- **Cache route api-ppid ternyata basi** — `route:list` masih memakai daftar lama sehingga endpoint baru seolah tidak ada. Cache dibersihkan lalu dibangun ulang. Catatan ini berlaku umum: setiap penambahan route di api-ppid perlu `php artisan route:clear && php artisan route:cache` di lingkungan yang route-nya di-cache.
+
+### Yang belum dikerjakan
+
+Tidak berubah: tombol buka suspend akun panel, dan kolom dokumen yang diminta pada modul Permohonan di be-ppid. Ditambah satu yang menunggu bahan, bukan menunggu kode: **Prosedur Permohonan Keberatan belum punya infografisnya** — modulnya sudah siap menerima.
+---
+
+
+## Status Pengerjaan (putaran 65 — langkah 85)
+
+Logo perusahaan pada header dan footer fe-ppid dan be-ppid diganti `Logo_fstj.png` (707×243, 26,5 KB).
+
+### Dua cara berbeda, karena keadaannya berbeda
+
+**fe-ppid — berkasnya ditimpa, kodenya tidak disentuh.** Situs publik sudah merujuk `assets/images/logo/logo_fs.png` di **sebelas** tempat: header, footer, kop email, apple-touch-icon, gambar cadangan Open Graph, dan lima kartu "diunggah oleh" pada halaman Regulasi dan Laporan. Semuanya menunjuk satu hal yang sama — logo perusahaan. Menimpa berkasnya membuat kesebelasnya berganti sekaligus; menambah berkas baru lalu menyunting sebelas rujukan hanya menciptakan sebelas kesempatan untuk terlewat satu.
+
+**be-ppid — berkasnya baru, rujukannya disunting.** Panel admin masih memakai `logo.svg` bawaan template Fuse: tanda biru persegi 32×32, sama sekali bukan logo perusahaan. Menimpanya akan menyesatkan siapa pun yang membuka berkas bernama `logo.svg` dan menemukan PNG di dalamnya. Jadi logonya masuk sebagai `logo-fstj.png`, dan yang menunjuk logo perusahaan dialihkan ke sana:
+
+- `components/Logo.tsx` — logo header navbar (layout1 + navbar style-1, yang aktif)
+- keempat kop halaman auth: `JudulAuth`, `SignInPageTitle`, `SignOutPageTitle`, `SignUpPageTitle`
+
+Berkas milik layout 2 dan 3 sengaja dibiarkan: keduanya tidak dipakai, dan mengubah kode template yang mati hanya menambah selisih terhadap hulunya tanpa ada yang melihat hasilnya.
+
+### Perbandingannya berubah, dan itu menentukan ukurannya
+
+| | Lebar × tinggi | Perbandingan |
+| --- | --- | --- |
+| `logo_fs.png` lama | 1382 × 629 | 2,20 : 1 |
+| `Logo_fstj.png` baru | 707 × 243 | **2,91 : 1** |
+| `logo.svg` be-ppid lama | 32 × 32 | 1,00 : 1 |
+
+Selisih itu tidak berbahaya selama tingginya yang dikunci dan lebarnya mengikuti. Header fe-ppid (`h-9 sm:h-10 w-auto`) dan footer (`h-10 w-auto`) memang sudah begitu — keduanya tidak perlu disentuh.
+
+Yang perlu disentuh justru be-ppid, karena slot lamanya **persegi**:
+
+- `Logo.tsx`: `h-6 w-6` → `h-8 w-auto`
+- keempat kop auth: `w-12` → `h-10 w-auto`
+
+Dibiarkan seperti semula, logo 2,91 : 1 akan dipipihkan ke dalam kotak 1 : 1 — dan pemipihan logo resmi perusahaan bukan cacat kosmetik kecil.
+
+Ada satu hal yang sempat dikhawatirkan lalu ternyata tidak berlaku: navbar Fuse biasanya punya keadaan "terlipat" berupa rel sempit yang hanya memuat ikon persegi, dan logo selebar ini akan meluber di sana. `NavbarStyle1` yang dipakai panel ini lebarnya tetap 280 px dan tidak punya keadaan itu — ia menggeser diri keluar layar (`marginLeft: -280px`), bukan menyempit. Jadi tidak ada kompromi ukuran yang perlu diambil.
+
+### Lima kartu kecil yang dibiarkan apa adanya
+
+Halaman Regulasi, Laporan Pelayanan, dan Standar Layanan memakai logo yang sama sebagai avatar "diunggah oleh" berukuran 24×24 dan 28×28 piksel. Logo selebar ini di dalam kotak sekecil itu tinggal setinggi ~8 piksel.
+
+Tidak diubah, dua alasan: kelasnya memakai `object-contain`, jadi yang terjadi hanya pengecilan, bukan pemipihan; dan logo lama pun sudah dikotakkan begitu — 2,20 : 1 ke dalam 1 : 1. Ini pola lama yang memang layak dirapikan suatu saat, tetapi bukan bagian dari yang diminta, dan mengubahnya sekarang berarti menyentuh lima berkas di luar permintaan.
+
+### Verifikasi
+
+- **3 tes** `LogoPerusahaanTest` baru. Salah satunya mengikat ukuran berkasnya pada 707×243: penggantian yang tidak disengaja — termasuk kembali ke logo lama — gagal di tes, bukan baru ketahuan di layar orang. Satu lagi membaca markup header dan footer dan menuntut `w-auto` tetap ada, karena begitu salah satunya dikunci lebarnya logonya memipih.
+- Berkasnya dilayani kedua aplikasi: fe-ppid `/assets/images/logo/logo_fs.png` **200**, be-ppid `/assets/images/logo/logo-fstj.png` **200**, keduanya 27.156 byte.
+- Beranda memuat rujukan logonya **3 kali** (apple-touch-icon, header, footer).
+- `tsc --noEmit` bersih, `eslint` bersih pada kelima berkas be-ppid yang disunting.
+- Suite penuh: fe-ppid **56 lulus** (206 asersi), api-ppid **29 lulus**.
+
+### Yang belum dikerjakan
+
+Tidak berubah: tombol buka suspend akun panel, dan kolom dokumen yang diminta pada modul Permohonan di be-ppid.
 ---
 
 

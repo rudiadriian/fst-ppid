@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import _ from 'lodash';
 import usePathname from '@fuse/hooks/usePathname';
+import { Link } from 'react-router';
 import NotificationCard from '../ui/NotificationCard';
 import { useGetAllNotifications } from '../../api/hooks/useGetAllNotifications';
 import { useDeleteNotification } from '../../api/hooks/useDeleteNotification';
@@ -26,7 +27,7 @@ const StyledSwipeableDrawer = styled(SwipeableDrawer)(({ theme }) => ({
 function NotificationPanel() {
 	const pathname = usePathname();
 	// Lonceng hanya memuat yang belum dibaca; riwayatnya di halaman Notifikasi.
-	const { data: notifications } = useGetAllNotifications();
+	const { data: notifications, refetch } = useGetAllNotifications();
 	const { mutate: deleteNotification } = useDeleteNotification();
 	const { mutate: readNotification } = useReadNotification();
 	const { mutate: readAllNotifications } = useReadAllNotifications();
@@ -38,6 +39,22 @@ function NotificationPanel() {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [pathname]);
+
+	/*
+	 * Membuka lonceng selalu menarik ulang daftarnya.
+	 *
+	 * Pengambilan berkalanya berhenti selama tab panel tidak aktif, dan
+	 * kejadian yang diberitahukan justru datang dari situs publik saat petugas
+	 * sedang mengerjakan hal lain. Tanpa penarikan ini, lonceng yang baru
+	 * dibuka bisa menampilkan keadaan satu menit yang lalu — dan yang paling
+	 * sering terjadi, menampilkan kosong padahal barisnya sudah ada.
+	 */
+	useEffect(() => {
+		if (isOpen) {
+			refetch();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen]);
 
 	function handleClose() {
 		close();
@@ -89,6 +106,18 @@ function NotificationPanel() {
 								tandai semua dibaca
 							</Typography>
 						</div>
+						{/*
+						 * Lonceng hanya memuat yang belum dibaca, jadi jalan ke
+						 * arsipnya harus ada di sini — kalau tidak, notifikasi
+						 * yang terlanjur dibuka terasa hilang.
+						 */}
+						<Link
+							className="mb-4 text-md underline"
+							to="/ppid/notifikasi"
+							onClick={handleClose}
+						>
+							Lihat semua notifikasi
+						</Link>
 						{_.orderBy(notifications, ['time'], ['desc']).map((item) => (
 							<NotificationCard
 								key={item.id}
@@ -100,13 +129,20 @@ function NotificationPanel() {
 						))}
 					</div>
 				) : (
-					<div className="flex flex-1 items-center justify-center p-4">
+					<div className="flex flex-1 flex-col items-center justify-center gap-3 p-4">
 						<Typography
 							className="text-center text-xl"
 							color="text.secondary"
 						>
 							Tidak ada notifikasi baru.
 						</Typography>
+						<Link
+							className="text-md underline"
+							to="/ppid/notifikasi"
+							onClick={handleClose}
+						>
+							Lihat riwayat notifikasi
+						</Link>
 					</div>
 				)}
 			</FuseScrollbars>

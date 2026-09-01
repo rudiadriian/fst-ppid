@@ -16,7 +16,11 @@ function NotificationsAppView() {
 
 	// Halaman ini arsipnya, jadi yang sudah dibaca ikut ditarik — beda dengan
 	// lonceng, yang hanya memuat yang belum dibaca.
-	const { data: notifications, isLoading } = useGetAllNotifications(true);
+	const { data, isLoading } = useGetAllNotifications(true);
+
+	// Query yang gagal mengembalikan `undefined`; halaman arsip tidak boleh
+	// ikut jatuh karenanya — cukup tampil kosong.
+	const notifications = data ?? [];
 
 	function handleDismiss(id: string) {
 		deleteNotification(id);

@@ -5,14 +5,7 @@ import Typography from '@mui/material/Typography';
  */
 function AppFooterContent() {
 	return (
-		<div className="flex w-full items-center justify-between gap-2">
-			<Typography
-				className="text-md"
-				color="text.secondary"
-			>
-				PPID Admin
-			</Typography>
-
+		<div className="flex w-full items-center justify-end gap-2">
 			<Typography
 				className="text-md"
 				color="text.secondary"

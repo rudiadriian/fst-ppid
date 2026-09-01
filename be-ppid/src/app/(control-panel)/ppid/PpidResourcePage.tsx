@@ -7,9 +7,7 @@ import Typography from '@mui/material/Typography';
 import FuseLoading from '@fuse/core/FuseLoading';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import ResourceListPage from './components/ResourceListPage';
-import PermohonanStatusDialog from './components/PermohonanStatusDialog';
 import PermohonanDetailDialog from './components/PermohonanDetailDialog';
-import KeberatanTanggapanDialog from './components/KeberatanTanggapanDialog';
 import KeberatanDetailDialog from './components/KeberatanDetailDialog';
 import PemohonDetailDialog from './components/PemohonDetailDialog';
 import RoleAksesDialog from './components/RoleAksesDialog';
@@ -31,14 +29,16 @@ function PpidResourcePage() {
 
 	const { akses, isLoading } = useAksesModul(config?.modul ?? '');
 
-	const [permohonanTerpilih, setPermohonanTerpilih] = useState<ApiRecord | null>(null);
-	const [keberatanTerpilih, setKeberatanTerpilih] = useState<ApiRecord | null>(null);
 	const [roleTerpilih, setRoleTerpilih] = useState<ApiRecord | null>(null);
 	const [alurTerpilih, setAlurTerpilih] = useState<ApiRecord | null>(null);
 	const [pemohonTerpilih, setPemohonTerpilih] = useState<number | null>(null);
-	// Rincian dipisah dari baris terpilih untuk aksi tulis: petugas kerap
-	// membuka detail hanya untuk membaca, dan itu tidak boleh ikut membuka
-	// dialog status.
+	/*
+	 * Satu dialog per kategori pengajuan, dan tidak ada lagi dialog status
+	 * terpisah (langkah 94): memindahkan status maupun memutus persetujuan
+	 * dilakukan di dalam rinciannya, tempat berkas yang jadi dasar keputusannya
+	 * ikut terbaca. Menu "Ubah status" di tabel dilepas karena ia mengajak
+	 * memutuskan tanpa membuka berkasnya.
+	 */
 	const [detailPermohonan, setDetailPermohonan] = useState<number | null>(null);
 	const [detailKeberatan, setDetailKeberatan] = useState<number | null>(null);
 
@@ -50,17 +50,26 @@ function PpidResourcePage() {
 	 */
 	const [searchParams, setSearchParams] = useSearchParams();
 	const idDariNotifikasi = Number(searchParams.get('detail') ?? 0);
+	/*
+	 * Modul Permohonan memuat dua kategori dalam satu daftar (langkah 89), dan
+	 * nomor barisnya berasal dari dua tabel berbeda — id 3 bisa berarti
+	 * permohonan 3 maupun keberatan 3. Karena itu notifikasi keberatan membawa
+	 * `jenis=keberatan`; tanpa itu tautannya bisa membuka berkas orang lain.
+	 */
+	const jenisDariNotifikasi = searchParams.get('jenis');
 
 	useEffect(() => {
 		if (!idDariNotifikasi) {
 			return;
 		}
 
-		// Notifikasi persetujuan menaut ke modul Permohonan/Keberatan; yang
-		// dibuka rincian pengajuannya, tempat jenjang persetujuannya berada.
+		// Notifikasi persetujuan menaut ke modul Permohonan; yang dibuka
+		// rincian pengajuannya, tempat jenjang persetujuannya berada.
 		const pembuka: Record<string, (id: number) => void> = {
 			pemohon: setPemohonTerpilih,
-			permohonan: setDetailPermohonan,
+			permohonan: jenisDariNotifikasi === 'keberatan' ? setDetailKeberatan : setDetailPermohonan,
+			// Modul Keberatan tidak lagi ada di menu, tetapi halamannya masih
+			// bisa dibuka lewat URL — termasuk tautan notifikasi lama.
 			keberatan: setDetailKeberatan
 		};
 
@@ -72,7 +81,7 @@ function PpidResourcePage() {
 
 		buka(idDariNotifikasi);
 		setSearchParams({}, { replace: true });
-	}, [idDariNotifikasi, resourceSlug, setSearchParams]);
+	}, [idDariNotifikasi, jenisDariNotifikasi, resourceSlug, setSearchParams]);
 
 	if (!config) {
 		return (
@@ -106,6 +115,33 @@ function PpidResourcePage() {
 	// datanya. Modul Pemohon sendiri tetap `readOnly`.
 	const modulPemohon = config.slug === 'pemohon';
 
+	/**
+	 * Membuka rincian satu baris — dipakai klik baris maupun menu aksinya.
+	 *
+	 * Daftar Permohonan gabungan dua kategori (langkah 89), jadi barisnya
+	 * sendiri yang menentukan dialog mana yang dibuka. `ref_id` adalah id asli
+	 * di tabelnya — `id` sudah dipakai sebagai kunci baris yang unik lintas
+	 * tabel (`permohonan-3` / `keberatan-3`), dan mengirimnya ke dialog akan
+	 * meminta rincian dengan nomor yang tidak ada.
+	 */
+	const bukaRincian = (baris: ApiRecord) => {
+		const idAsli = Number(baris.ref_id ?? baris.id);
+
+		if (modulPemohon) {
+			setPemohonTerpilih(idAsli);
+			return;
+		}
+
+		if (modulKeberatan || (modulPermohonan && baris.jenis === 'keberatan')) {
+			setDetailKeberatan(idAsli);
+			return;
+		}
+
+		if (modulPermohonan) {
+			setDetailPermohonan(idAsli);
+		}
+	};
+
 	/*
 	 * Aksi baris per modul.
 	 *
@@ -114,90 +150,33 @@ function PpidResourcePage() {
 	 * Hapus sudah dilepas (`tanpaTambah`/`tanpaUbah`/`tanpaHapus`) dan
 	 * endpoint-nya pun tidak ada di API.
 	 *
+	 * Sejak langkah 94 menu ini menyisakan satu entri saja untuk keduanya —
+	 * "Detail & verifikasi". Perpindahan status dan tanggapan pindah ke dalam
+	 * dialog rinciannya, karena memutuskan dari baris tabel berarti memutuskan
+	 * tanpa membaca berkas yang sedang diputus.
+	 *
 	 * "Lihat detail" sengaja tidak dijaga hak `edit`: membaca rincian pengajuan
-	 * adalah bagian dari melihat modulnya. Yang menuntut hak tulis adalah
-	 * dialog status dan tanggapan.
+	 * adalah bagian dari melihat modulnya. Yang menuntut hak tulis adalah panel
+	 * status dan tanggapan di dalamnya, dan itu dijaga sendiri.
 	 *
 	 * Detail pemohon boleh dibuka siapa pun yang berhak melihat modulnya;
 	 * tombol keputusannya yang menuntut hak `Setujui`.
 	 */
 	const aksiBaris = ((): ((baris: ApiRecord, tutupMenu: () => void) => React.ReactNode[]) | undefined => {
-		if (modulPemohon) {
+		if (modulPemohon || modulPermohonan || modulKeberatan) {
 			return (baris, tutupMenu) => [
 				<MenuItem
 					key="detail"
 					onClick={() => {
-						setPemohonTerpilih(Number(baris.id));
+						bukaRincian(baris);
 						tutupMenu();
 					}}
 				>
 					<ListItemIcon>
-						<FuseSvgIcon size={18}>lucide:user-check</FuseSvgIcon>
+						<FuseSvgIcon size={18}>{modulPemohon ? 'lucide:user-check' : 'lucide:file-search'}</FuseSvgIcon>
 					</ListItemIcon>
-					{akses.approve ? 'Detail & verifikasi' : 'Lihat detail'}
+					{akses.approve || akses.edit ? 'Detail & verifikasi' : 'Lihat detail'}
 				</MenuItem>
-			];
-		}
-
-		if (modulPermohonan) {
-			return (baris, tutupMenu) => [
-				<MenuItem
-					key="detail"
-					onClick={() => {
-						setDetailPermohonan(Number(baris.id));
-						tutupMenu();
-					}}
-				>
-					<ListItemIcon>
-						<FuseSvgIcon size={18}>lucide:file-search</FuseSvgIcon>
-					</ListItemIcon>
-					Lihat detail
-				</MenuItem>,
-				akses.edit ? (
-					<MenuItem
-						key="status"
-						onClick={() => {
-							setPermohonanTerpilih(baris);
-							tutupMenu();
-						}}
-					>
-						<ListItemIcon>
-							<FuseSvgIcon size={18}>lucide:git-branch</FuseSvgIcon>
-						</ListItemIcon>
-						Ubah status
-					</MenuItem>
-				) : null
-			];
-		}
-
-		if (modulKeberatan) {
-			return (baris, tutupMenu) => [
-				<MenuItem
-					key="detail"
-					onClick={() => {
-						setDetailKeberatan(Number(baris.id));
-						tutupMenu();
-					}}
-				>
-					<ListItemIcon>
-						<FuseSvgIcon size={18}>lucide:file-search</FuseSvgIcon>
-					</ListItemIcon>
-					Lihat detail
-				</MenuItem>,
-				akses.edit ? (
-					<MenuItem
-						key="tanggapan"
-						onClick={() => {
-							setKeberatanTerpilih(baris);
-							tutupMenu();
-						}}
-					>
-						<ListItemIcon>
-							<FuseSvgIcon size={18}>lucide:message-square-reply</FuseSvgIcon>
-						</ListItemIcon>
-						Tanggapan &amp; status
-					</MenuItem>
-				) : null
 			];
 		}
 
@@ -250,63 +229,44 @@ function PpidResourcePage() {
 				key={config.slug}
 				config={config}
 				aksiBaris={aksiBaris}
+				// Modul yang rinciannya berupa dialog membukanya lewat klik baris;
+				// sisanya memakai perilaku bawaan ResourceListPage (buka formulir
+				// Ubah bila rolenya boleh menyunting).
+				onRowClick={modulPemohon || modulPermohonan || modulKeberatan ? bukaRincian : undefined}
 			/>
 
 			{modulPermohonan && (
 				<>
-					<PermohonanStatusDialog
-						open={permohonanTerpilih !== null}
-						onClose={() => setPermohonanTerpilih(null)}
-						permohonan={
-							permohonanTerpilih
-								? {
-										id: Number(permohonanTerpilih.id),
-										kode_permohonan: String(permohonanTerpilih.kode_permohonan ?? ''),
-										status: String(permohonanTerpilih.status ?? '')
-									}
-								: null
-						}
-					/>
-
 					<PermohonanDetailDialog
 						open={detailPermohonan !== null}
 						onClose={() => setDetailPermohonan(null)}
 						permohonanId={detailPermohonan}
 						bolehSetujui={akses.approve}
-					/>
-				</>
-			)}
-
-			{modulKeberatan && (
-				<>
-					<KeberatanTanggapanDialog
-						open={keberatanTerpilih !== null}
-						onClose={() => setKeberatanTerpilih(null)}
-						keberatan={
-							keberatanTerpilih
-								? {
-										id: Number(keberatanTerpilih.id),
-										// Keberatan tidak punya nomor sendiri; di
-										// seluruh sistem ia dirujuk lewat nomor
-										// permohonan induknya.
-										kode_permohonan: String(
-											(keberatanTerpilih.permohonan as { kode_permohonan?: string } | null)
-												?.kode_permohonan ?? ''
-										),
-										status: String(keberatanTerpilih.status ?? ''),
-										tanggapan_atasan_ppid: String(keberatanTerpilih.tanggapan_atasan_ppid ?? '')
-									}
-								: null
-						}
+						bolehUbah={akses.edit}
 					/>
 
+					{/*
+					 * Dua kategori dalam satu daftar: baris keberatan dibuka dengan
+					 * dialognya sendiri walaupun modulnya Permohonan.
+					 */}
 					<KeberatanDetailDialog
 						open={detailKeberatan !== null}
 						onClose={() => setDetailKeberatan(null)}
 						keberatanId={detailKeberatan}
 						bolehSetujui={akses.approve}
+						bolehUbah={akses.edit}
 					/>
 				</>
+			)}
+
+			{modulKeberatan && (
+				<KeberatanDetailDialog
+					open={detailKeberatan !== null}
+					onClose={() => setDetailKeberatan(null)}
+					keberatanId={detailKeberatan}
+					bolehSetujui={akses.approve}
+					bolehUbah={akses.edit}
+				/>
 			)}
 
 			{modulPemohon && (

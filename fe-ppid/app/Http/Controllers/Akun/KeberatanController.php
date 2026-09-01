@@ -8,6 +8,7 @@ use App\Models\KeberatanInformasi;
 use App\Models\PermohonanInformasi;
 use App\Support\EmailPemohon;
 use App\Support\NotifikasiAdmin;
+use App\Support\SlaLayanan;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,7 +63,14 @@ class KeberatanController extends Controller
 
         return view('akun.keberatan.create', [
             'pemohon' => $pemohon,
+            /*
+             * Hanya permohonan yang penanganannya sudah tuntas (langkah 89).
+             * Keberatan atas permohonan yang masih berjalan tidak punya objek:
+             * belum ada tanggapan untuk dikeberatankan, dan berkasnya justru
+             * ditarik keluar dari alur yang sedang menanganinya.
+             */
             'permohonanSaya' => PermohonanInformasi::where('pemohon_id', $pemohon->id)
+                ->whereIn('status', PermohonanInformasi::STATUS_SELESAI)
                 ->orderByDesc('tanggal_permohonan')
                 ->get(['id', 'kode_permohonan', 'status', 'rincian_informasi']),
         ]);
@@ -94,6 +102,15 @@ class KeberatanController extends Controller
             ]);
         }
 
+        // Diperiksa ulang di server, tidak dipercaya dari daftar pilihan:
+        // isian tersembunyi bisa diubah sebelum dikirim, dan aturan ini yang
+        // menjaga berkas berjalan tidak ditarik keluar dari alurnya.
+        if (!in_array($permohonan->status, PermohonanInformasi::STATUS_SELESAI, true)) {
+            return back()->withInput()->withErrors([
+                'permohonan_id' => __('Keberatan hanya dapat diajukan atas permohonan yang penanganannya sudah selesai.'),
+            ]);
+        }
+
         try {
             $keberatan = DB::transaction(function () use ($request, $data, $pemohon, $permohonan) {
                 $keberatan = KeberatanInformasi::create([
@@ -106,7 +123,15 @@ class KeberatanController extends Controller
                     'kasus_posisi' => $data['kasus_posisi'],
                     'dikuasakan' => (bool) ($data['dikuasakan'] ?? false),
                     'status' => 'diajukan',
+                    // Jalur pelayanannya mengikuti permohonan yang
+                    // dikeberatankan; petugas tetap bisa mengubahnya saat
+                    // menerima berkas (langkah 89).
+                    'jalur_pelayanan' => $permohonan->jalur_pelayanan ?: 'online',
                     'tanggal_keberatan' => now(),
+                    // Tanggapan atas keberatan paling lambat 30 hari sejak
+                    // diregistrasi. Hari kalender, bukan hari kerja — itu yang
+                    // membedakannya dari tenggat permohonan.
+                    'batas_waktu_tanggapan' => SlaLayanan::batasKeberatan(),
                 ]);
 
                 foreach ((array) $request->file('lampiran', []) as $berkas) {
@@ -135,17 +160,23 @@ class KeberatanController extends Controller
             return back()->withInput()->with('status', __('Keberatan gagal disimpan. Coba lagi beberapa saat lagi.'));
         }
 
+        // refresh() wajib dan harus lebih dulu: kode_keberatan dilahirkan
+        // trigger basis data, jadi baris yang baru saja dibuat belum memuatnya
+        // di memori — lonceng panel maupun surel tanda terima sama-sama
+        // mencetak nomor itu.
+        $keberatan->refresh();
+
         // Di luar transaksi: notifikasi ke panel admin tidak boleh menggagalkan
         // keberatan yang sudah tersimpan.
         NotifikasiAdmin::keberatanBaru($keberatan, $permohonan, $pemohon);
 
-        // Tanda terima ke pemohon; relasi permohonan diisi lebih dulu supaya
-        // nomor registrasinya bisa dicetak di email tanpa query tambahan.
+        // Relasi permohonan diisi supaya nomor induknya bisa dicetak di email
+        // tanpa query tambahan.
         $keberatan->setRelation('permohonan', $permohonan);
         EmailPemohon::pengajuanDikirim($keberatan, $pemohon);
 
         return redirect()->route('akun.keberatan.index')
-            ->with('status', __('Keberatan Anda sudah kami terima.'));
+            ->with('status', __('Keberatan Anda sudah kami terima dengan nomor registrasi :kode.', ['kode' => $keberatan->kode_keberatan]));
     }
 
     private function daftar(Request $request, int $pemohonId): LengthAwarePaginator
@@ -158,7 +189,8 @@ class KeberatanController extends Controller
             ->when($kelompok !== '', fn ($q) => $q->whereIn('status', KeberatanInformasi::statusKelompokPortal($kelompok)))
             ->when($cari !== '', function ($q) use ($cari) {
                 $q->where(function ($sub) use ($cari) {
-                    $sub->where('kasus_posisi', 'ilike', '%'.$cari.'%')
+                    $sub->where('kode_keberatan', 'ilike', '%'.$cari.'%')
+                        ->orWhere('kasus_posisi', 'ilike', '%'.$cari.'%')
                         ->orWhere('alasan_keberatan', 'ilike', '%'.$cari.'%')
                         ->orWhereHas('permohonan', fn ($p) => $p->where('kode_permohonan', 'ilike', '%'.$cari.'%'));
                 });

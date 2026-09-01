@@ -28,45 +28,69 @@ class AlurApprovalSeeder extends Seeder
 {
     public function run(): void
     {
+        /*
+         * Dua jenjang, bukan tiga (langkah 89). Tahap "Pengesahan Atasan PPID"
+         * dilepas dari kedua alur: alur layanan yang diminta berhenti di PPID
+         * selaku Sekretaris Perusahaan & Kepatuhan, dan menyisakan satu jenjang
+         * lagi di atasnya hanya menahan berkas di kotak yang tidak punya
+         * tugas memutus dalam alur ini. Rolenya sendiri tidak dihapus —
+         * susunannya masih bisa dikembalikan super admin lewat modul Alur
+         * Persetujuan tanpa menyentuh kode.
+         *
+         * Pembagian SLA-nya mengikuti tenggat undang-undang, dibagi dua:
+         * permohonan 3 + 7 = 10 hari kerja; keberatan 10 + 20 = 30 hari.
+         * Jenjang pertama sengaja lebih pendek — ia hanya memeriksa
+         * kelengkapan, sedangkan jenjang kedua yang menimbang isinya.
+         */
         $this->susun('permohonan', 'Alur Persetujuan Permohonan Informasi', [
+            [
+                'nama' => 'Penerimaan PPID Pelaksana',
+                'role' => 'ppid-pelaksana',
+                'jabatan' => 'PPID Pelaksana',
+                'sla_hari' => 3,
+                // Sengaja tanpa hak menolak: tugas jenjang ini meneruskan, dan
+                // menolak permohonan adalah keputusan yang menurut UU KIP harus
+                // disertai alasan tertulis dari pejabat yang berwenang.
+                'boleh_tolak' => false,
+                'keterangan' => 'PPID Pelaksana memeriksa kelengkapan permohonan dan menyiapkan tanggapannya, lalu meneruskan ke PPID. Penolakan bukan wewenang jenjang ini.',
+            ],
             [
                 'nama' => 'Persetujuan PPID',
                 'role' => 'ppid-utama',
                 'jabatan' => 'PPID',
-                'sla_hari' => 3,
+                'sla_hari' => 7,
                 'boleh_tolak' => true,
-                'keterangan' => 'PPID memeriksa tanggapan yang disiapkan PPID Pelaksana sebelum diteruskan ke Atasan PPID.',
-            ],
-            [
-                'nama' => 'Pengesahan Atasan PPID',
-                'role' => 'atasan-ppid',
-                'jabatan' => 'Atasan PPID',
-                'sla_hari' => 3,
-                'boleh_tolak' => true,
-                'keterangan' => 'Pengesahan akhir. Setelah disetujui, permohonan berpindah ke status Disetujui.',
+                'keterangan' => 'Putusan akhir permohonan. PPID dapat menyetujui atau menolak dengan alasan; setelah disetujui, permohonan berpindah ke status Disetujui.',
             ],
         ]);
 
         $this->susun('keberatan', 'Alur Persetujuan Keberatan Informasi', [
             [
-                'nama' => 'Telaah PPID',
-                'role' => 'ppid-utama',
-                'jabatan' => 'PPID',
-                'sla_hari' => 5,
+                'nama' => 'Penerimaan PPID Pelaksana',
+                'role' => 'ppid-pelaksana',
+                'jabatan' => 'PPID Pelaksana',
+                'sla_hari' => 10,
                 'boleh_tolak' => false,
-                'keterangan' => 'PPID menelaah keberatan dan menyiapkan bahan putusan; penolakan bukan wewenangnya.',
+                'keterangan' => 'PPID Pelaksana meregistrasi keberatan, memeriksa berkasnya, lalu meneruskan ke PPID. Penolakan bukan wewenang jenjang ini.',
             ],
             [
-                'nama' => 'Putusan Atasan PPID',
-                'role' => 'atasan-ppid',
-                'jabatan' => 'Atasan PPID',
-                'sla_hari' => 5,
+                'nama' => 'Putusan PPID',
+                'role' => 'ppid-utama',
+                'jabatan' => 'PPID',
+                'sla_hari' => 20,
                 'boleh_tolak' => true,
-                'keterangan' => 'Putusan atas keberatan. Setelah disetujui, keberatan berpindah ke status Selesai.',
+                'keterangan' => 'Putusan atas keberatan, paling lambat 30 hari sejak keberatan diregistrasi. Setelah disetujui, keberatan berpindah ke status Selesai.',
             ],
         ]);
 
-        $this->command?->info('Alur persetujuan: 2 alur, 4 tahap tersimpan.');
+        // Tahap lama di luar dua jenjang ini dilepas, bukan dibiarkan tertinggal:
+        // tahap ketiga yang masih aktif akan tetap menahan berkas meski sudah
+        // tidak disebut di seeder.
+        $dilepas = AlurApprovalTahap::whereIn('alur_id', AlurApproval::whereIn('jenis', ['permohonan', 'keberatan'])->pluck('id'))
+            ->where('urutan', '>', 2)
+            ->delete();
+
+        $this->command?->info('Alur persetujuan: 2 alur, 4 tahap tersimpan'.($dilepas ? ", $dilepas tahap lama dilepas." : '.'));
     }
 
     /** @param  array<int, array<string, mixed>>  $tahap */

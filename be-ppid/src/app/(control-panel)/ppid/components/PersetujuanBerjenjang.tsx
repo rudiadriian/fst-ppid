@@ -6,43 +6,29 @@ import CircularProgress from '@mui/material/CircularProgress';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import ppidApi, { PpidApiError } from '../api/ppidApi';
 import { resourceKeys } from '../api/useResource';
+import { kunciPersetujuan, LangkahPersetujuan, usePersetujuan } from '../api/usePersetujuan';
 import { STATUS_LANGKAH } from '../lib/statusPengajuan';
 import { formatWaktu } from '../lib/waktu';
 
-export type LangkahPersetujuan = {
-	id: number;
-	urutan: number;
-	nama_tahap: string;
-	nama_jabatan: string | null;
-	status: string;
-	catatan: string | null;
-	tanggal_masuk: string | null;
-	batas_waktu: string | null;
-	tanggal_putusan: string | null;
-	role: { id: number; name: string } | null;
-	pemutus: { id: number; name: string } | null;
-};
-
-type KeadaanPersetujuan = {
-	jenis: string;
-	langkah: LangkahPersetujuan[];
-	berjalan_id: number | null;
-	boleh_memutus: boolean;
-};
-
 /**
- * Kunci cache dipisah dari cache resource biasa supaya menyegarkan daftar
- * modul tidak ikut memuat ulang tiap panel persetujuan yang sedang terbuka.
+ * Keterangan meja layanan, ditampilkan saat menjadwalkan kunjungan pemohon.
+ *
+ * Ditulis di sini dan bukan diambil dari Pengaturan Situs karena petugas
+ * membacanya untuk disalin ke undangan, bukan untuk ditayangkan — dan alamat
+ * yang salah pada undangan jauh lebih merugikan daripada alamat yang tertinggal
+ * satu versi di halaman kontak.
  */
-function kunciPersetujuan(modul: string, id: number) {
-	return ['ppid', modul, 'persetujuan', id] as const;
-}
+const MEJA_LAYANAN = [
+	'Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Selatan No. 1, Jakarta Timur 13230',
+	'ppid@foodstation.co.id · (021) 4718011 (Ext. PPID)',
+	'Senin–Jumat pukul 08.00–15.00 WIB, istirahat 12.00–13.00 WIB'
+];
 
 function SatuLangkah({ langkah, berjalan }: { langkah: LangkahPersetujuan; berjalan: boolean }) {
 	const { t } = useTranslation();
@@ -156,11 +142,12 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 	const [keputusan, setKeputusan] = useState('disetujui');
 	const [catatan, setCatatan] = useState('');
 	const [menyimpan, setMenyimpan] = useState(false);
+	// Isian jalur pelayanan; hanya dipakai jenjang penerima (langkah 89).
+	const [jalur, setJalur] = useState('');
+	const [jadwal, setJadwal] = useState('');
+	const [keteranganPetugas, setKeteranganPetugas] = useState('');
 
-	const { data, isLoading, error } = useQuery<KeadaanPersetujuan>({
-		queryKey: kunciPersetujuan(modul, pengajuanId),
-		queryFn: () => ppidApi.ambil<KeadaanPersetujuan>(`${modul}/${pengajuanId}/approval`)
-	});
+	const { data, isLoading, error } = usePersetujuan(modul, pengajuanId);
 
 	if (isLoading) {
 		return (
@@ -184,7 +171,7 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 		return (
 			<Alert severity="info">
 				{t(
-					'Pengajuan ini belum masuk tahap persetujuan. Jenjangnya dibuat begitu statusnya dipindahkan ke Menunggu Persetujuan.'
+					'Alur persetujuan untuk jenis pengajuan ini belum disusun, jadi tidak ada jenjang yang bisa dijalankan. Super admin dapat menyusunnya lewat modul Alur Persetujuan.'
 				)}
 			</Alert>
 		);
@@ -196,22 +183,47 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 	const bolehKirim = Boolean(data?.boleh_memutus) && bolehSetujui;
 	const perluCatatan = keputusan !== 'disetujui';
 
+	/*
+	 * Jenjang penerima dikenali dari haknya, bukan dari namanya: tahap yang
+	 * tidak diberi hak menolak adalah tahap yang tugasnya meneruskan, dan
+	 * dialah yang berhubungan dengan pemohon. Namanya bisa diubah super admin
+	 * kapan saja; haknya menentukan perannya.
+	 */
+	const langkahBerjalan = langkah.find((satu) => satu.id === data?.berjalan_id) ?? null;
+	const jenjangPenerima = langkahBerjalan?.tahap ? !langkahBerjalan.tahap.boleh_tolak : false;
+	const perluJadwal = jenjangPenerima && jalur === 'langsung';
+	const isianJalurLengkap =
+		!jenjangPenerima || keputusan !== 'disetujui' || (jalur !== '' && (jalur !== 'langsung' || jadwal !== ''));
+
 	async function kirim() {
 		setMenyimpan(true);
 
 		try {
 			await ppidApi.action(`${modul}/${pengajuanId}/approval`, {
 				keputusan,
-				catatan: catatan || undefined
+				catatan: catatan || undefined,
+				// Hanya dikirim saat memang ditetapkan; jenjang pemutus di
+				// atasnya tidak menjadwalkan apa pun.
+				jalur_pelayanan: jenjangPenerima && keputusan === 'disetujui' ? jalur : undefined,
+				jadwal_layanan: perluJadwal && keputusan === 'disetujui' ? jadwal : undefined,
+				keterangan_petugas:
+					jenjangPenerima && keputusan === 'disetujui' && keteranganPetugas ? keteranganPetugas : undefined
 			});
 
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: kunciPersetujuan(modul, pengajuanId) }),
-				queryClient.invalidateQueries({ queryKey: resourceKeys.all(modul) })
+				queryClient.invalidateQueries({ queryKey: resourceKeys.all(modul) }),
+				// Daftar di panel dilayani endpoint gabungan `pengajuan` (langkah
+				// 89), bukan `permohonan`/`keberatan`; tanpa ini status di tabel
+				// masih yang lama setelah putusan tersimpan.
+				queryClient.invalidateQueries({ queryKey: resourceKeys.all('pengajuan') })
 			]);
 
 			setCatatan('');
 			setKeputusan('disetujui');
+			setJalur('');
+			setJadwal('');
+			setKeteranganPetugas('');
 			enqueueSnackbar(t('Putusan persetujuan tersimpan'), { variant: 'success' });
 		} catch (err) {
 			const pesan =
@@ -263,8 +275,87 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 					>
 						<MenuItem value="disetujui">{t('Setujui')}</MenuItem>
 						<MenuItem value="revisi">{t('Kembalikan untuk diperbaiki')}</MenuItem>
-						<MenuItem value="ditolak">{t('Tolak')}</MenuItem>
+						{/* Jenjang penerima memang tidak diberi hak menolak, jadi
+						    pilihannya pun tidak ditawarkan — menawarkan sesuatu
+						    yang pasti ditolak server hanya membuang waktu petugas. */}
+						{!jenjangPenerima && <MenuItem value="ditolak">{t('Tolak')}</MenuItem>}
 					</TextField>
+
+					{jenjangPenerima && keputusan === 'disetujui' && (
+						<>
+							<TextField
+								select
+								size="small"
+								label={t('Jalur pelayanan')}
+								required
+								value={jalur}
+								onChange={(event) => setJalur(event.target.value)}
+								fullWidth
+								helperText={t('Menentukan cara informasi sampai ke pemohon.')}
+							>
+								<MenuItem value="online">{t('Online — dokumen dikirim lewat email')}</MenuItem>
+								<MenuItem value="langsung">{t('Langsung — pemohon hadir di meja layanan')}</MenuItem>
+							</TextField>
+
+							{jalur === 'online' && (
+								<Alert severity="info">
+									{t(
+										'Unggah dokumen yang diminta lewat panel Berkas Tanggapan pada detail pengajuan ini. Pemohon menerima pemberitahuan begitu berkasnya tersimpan.'
+									)}
+								</Alert>
+							)}
+
+							{perluJadwal && (
+								<>
+									<TextField
+										size="small"
+										type="datetime-local"
+										label={t('Tanggal & waktu undangan')}
+										required
+										value={jadwal}
+										onChange={(event) => setJadwal(event.target.value)}
+										fullWidth
+										slotProps={{ inputLabel: { shrink: true } }}
+										helperText={t(
+											'Pilih di dalam jam layanan. Waktu ini dikirim ke pemohon sebagai undangan.'
+										)}
+									/>
+
+									<Alert severity="info">
+										<Typography
+											variant="caption"
+											component="div"
+											className="font-semibold"
+										>
+											{t('Meja layanan PPID')}
+										</Typography>
+										{MEJA_LAYANAN.map((baris) => (
+											<Typography
+												key={baris}
+												variant="caption"
+												component="div"
+											>
+												{baris}
+											</Typography>
+										))}
+									</Alert>
+								</>
+							)}
+
+							<TextField
+								size="small"
+								label={t('Keterangan untuk pemohon')}
+								multiline
+								minRows={2}
+								value={keteranganPetugas}
+								onChange={(event) => setKeteranganPetugas(event.target.value)}
+								fullWidth
+								helperText={t(
+									'Opsional. Ikut dikirim ke pemohon bersama pemberitahuan jalur pelayanan.'
+								)}
+							/>
+						</>
+					)}
 
 					<TextField
 						size="small"
@@ -288,7 +379,7 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 						variant="contained"
 						color={keputusan === 'ditolak' ? 'error' : 'secondary'}
 						className="self-start"
-						disabled={menyimpan || (perluCatatan && !catatan.trim())}
+						disabled={menyimpan || (perluCatatan && !catatan.trim()) || !isianJalurLengkap}
 						onClick={kirim}
 						startIcon={
 							menyimpan ? (

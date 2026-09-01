@@ -1,5 +1,4 @@
 import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
 import clsx from 'clsx';
 
 const Root = styled('div')(({ theme }) => ({
@@ -29,20 +28,20 @@ function Logo(props: LogoProps) {
 	return (
 		<Root className={clsx('flex flex-shrink-0 flex-grow items-center gap-3', className)}>
 			<div className="flex flex-1 items-center gap-2">
+				{/*
+				 * Logo perusahaan, bukan lagi tanda bawaan template (langkah 85).
+				 *
+				 * `w-auto`, bukan lebar tetap: berkasnya berbanding 707×243,
+				 * jauh lebih lebar daripada tanda persegi yang digantikannya.
+				 * Mengunci lebarnya akan memipihkannya. Navbar style-1 lebarnya
+				 * tetap 280 px, jadi logo selebar ini muat utuh. Label teks
+				 * "PPID Admin" di sebelahnya dibuang (langkah 98) — logo saja.
+				 */}
 				<img
-					className="logo-icon h-6 w-6"
-					src="/assets/images/logo/logo.svg"
-					alt="logo"
+					className="logo-icon h-8 w-auto"
+					src="/assets/images/logo/logo-fstj.png"
+					alt="PT Food Station Tjipinang Jaya (Perseroda)"
 				/>
-				<div className="logo-text flex flex-auto flex-col gap-0.5">
-					<Typography className="tracking-light text-lg leading-none font-semibold">PPID</Typography>
-					<Typography
-						className="tracking-light text-[12px] leading-none font-semibold"
-						color="text.secondary"
-					>
-						Admin
-					</Typography>
-				</div>
 			</div>
 		</Root>
 	);

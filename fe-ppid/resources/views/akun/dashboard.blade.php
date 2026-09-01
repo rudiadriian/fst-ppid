@@ -33,6 +33,7 @@
     @endphp
 
     @include('akun.partials.alert-verifikasi')
+    @include('akun.partials.alert-survei')
 
     {{-- Angka utama --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

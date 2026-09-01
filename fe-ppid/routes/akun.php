@@ -85,6 +85,10 @@ Route::prefix('akun')->name('akun.')->group(function () {
         Route::get('/permohonan', [PermohonanController::class, 'index'])->name('permohonan.index');
         Route::get('/permohonan/baru', [PermohonanController::class, 'create'])->name('permohonan.create');
         Route::post('/permohonan', [PermohonanController::class, 'store'])->name('permohonan.store');
+        // Didaftarkan sebelum pola `{permohonan}` supaya tidak tertangkap olehnya.
+        Route::get('/permohonan/berkas-tanggapan/{berkas}', [PermohonanController::class, 'berkasTanggapan'])
+            ->whereNumber('berkas')
+            ->name('permohonan.berkas-tanggapan');
         Route::get('/permohonan/{permohonan}', [PermohonanController::class, 'show'])
             ->whereNumber('permohonan')
             ->name('permohonan.show');

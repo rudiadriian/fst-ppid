@@ -172,6 +172,37 @@ class PortalNotifikasiTest extends TestCase
             ->assertRedirect(route('akun.notifikasi'));
     }
 
+    /**
+     * Notifikasi hasil verifikasi mengantar ke halaman Data Pemohon, dan
+     * halaman itu tetap terbuka setelah datanya terverifikasi (langkah 93).
+     *
+     * Keduanya diuji bersama karena tautan yang benar tidak ada gunanya kalau
+     * tujuannya menolak pemohon yang berkasnya sudah disetujui — keadaan yang
+     * justru paling sering mengklik notifikasi ini.
+     */
+    public function test_notifikasi_verifikasi_mengantar_ke_halaman_data_pemohon(): void
+    {
+        $baris = NotifikasiPemohon::create([
+            'pemohon_id' => $this->pemohon->id,
+            'type' => 'verifikasi_pemohon',
+            'message' => 'Data diri Anda telah diperiksa dan dinyatakan TERVERIFIKASI.',
+            'is_read' => false,
+            'data' => [
+                'title' => 'Data Pemohon Terverifikasi',
+                'link' => '/akun/pengaturan/data-pemohon',
+                'variant' => 'primary',
+            ],
+        ]);
+
+        $this->actingAs($this->pemohon, 'pemohon')
+            ->get(route('akun.notifikasi.buka', $baris->id))
+            ->assertRedirect(url('/akun/pengaturan/data-pemohon'));
+
+        $this->actingAs($this->pemohon, 'pemohon')
+            ->get(route('akun.data-pemohon'))
+            ->assertOk();
+    }
+
     public function test_halaman_notifikasi_menampilkan_pesan(): void
     {
         $this->notifikasi($this->pemohon);

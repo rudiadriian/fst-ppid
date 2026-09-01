@@ -19,6 +19,7 @@ class User extends Authenticatable implements JWTSubject
 
     protected $fillable = [
         'role_id',
+        'struktur_id',
         'name',
         'email',
         'password',
@@ -77,6 +78,18 @@ class User extends Authenticatable implements JWTSubject
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Kotak pada bagan struktur organisasi yang ditempati akun ini.
+     *
+     * Melengkapi `role`, tidak menggantikannya: role menentukan boleh apa,
+     * struktur menentukan siapa dalam bagan. Satu role bisa dipegang beberapa
+     * jabatan — ketiga anggota PPID Pelaksana adalah contohnya.
+     */
+    public function struktur(): BelongsTo
+    {
+        return $this->belongsTo(StrukturOrganisasi::class, 'struktur_id');
     }
 
     /**

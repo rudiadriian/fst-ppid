@@ -11,10 +11,17 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useTranslation } from 'react-i18next';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useResourceItem } from '../api/useResource';
+import { usePersetujuan } from '../api/usePersetujuan';
 import { JENIS_KEBERATAN, labelStatus, STATUS_KEBERATAN, warnaStatus } from '../lib/statusPengajuan';
 import { formatWaktu } from '../lib/waktu';
 import PersetujuanBerjenjang from './PersetujuanBerjenjang';
+import KeberatanTanggapanPanel from './KeberatanTanggapanPanel';
 import { Baris, DaftarBerkas, Judul } from './RincianPengajuan';
+
+const LABEL_JALUR: Record<string, string> = {
+	online: 'Online — dokumen dikirim lewat email',
+	langsung: 'Langsung — pemohon hadir di meja layanan'
+};
 
 type KeberatanDetailDialogProps = {
 	open: boolean;
@@ -22,6 +29,8 @@ type KeberatanDetailDialogProps = {
 	keberatanId: number | null;
 	/** Role pengguna punya hak `Setujui` pada modul Keberatan. */
 	bolehSetujui: boolean;
+	/** Role pengguna punya hak `Ubah` — menentukan panel tanggapan bisa dipakai. */
+	bolehUbah: boolean;
 };
 
 /**
@@ -31,7 +40,13 @@ type KeberatanDetailDialogProps = {
  * adalah jenjang persetujuan itu sendiri — tiap tahap membawa siapa memutus,
  * kapan, dan catatannya.
  */
-export function KeberatanDetailDialog({ open, onClose, keberatanId, bolehSetujui }: KeberatanDetailDialogProps) {
+export function KeberatanDetailDialog({
+	open,
+	onClose,
+	keberatanId,
+	bolehSetujui,
+	bolehUbah
+}: KeberatanDetailDialogProps) {
 	const { t } = useTranslation();
 	const { data, isLoading } = useResourceItem<Record<string, unknown>>(
 		'keberatan',
@@ -39,6 +54,8 @@ export function KeberatanDetailDialog({ open, onClose, keberatanId, bolehSetujui
 	);
 
 	const status = String(data?.status ?? '');
+	const { data: persetujuan } = usePersetujuan('keberatan', Number(keberatanId ?? 0), open && Boolean(keberatanId));
+	const alurBerjalan = Boolean(persetujuan?.berjalan_id);
 	const pemohon = data?.pemohon as Record<string, unknown> | null;
 	const permohonan = data?.permohonan as Record<string, unknown> | null;
 	const petugas = data?.petugas as { name?: string } | null;
@@ -68,7 +85,7 @@ export function KeberatanDetailDialog({ open, onClose, keberatanId, bolehSetujui
 								variant="h6"
 								className="font-semibold"
 							>
-								{String(permohonan?.kode_permohonan ?? '—')}
+								{String(data.kode_keberatan ?? '—')}
 							</Typography>
 							<Chip
 								size="small"
@@ -79,7 +96,7 @@ export function KeberatanDetailDialog({ open, onClose, keberatanId, bolehSetujui
 
 						<Alert severity="info">
 							{t(
-								'Keberatan tidak punya nomor sendiri; di seluruh sistem ia dirujuk lewat nomor permohonan induknya.'
+								'Nomor keberatan (KBT-FSTJ/…) berdiri sendiri, terpisah dari nomor permohonan yang dikeberatankan — keduanya berkas dengan tenggat yang berbeda.'
 							)}
 						</Alert>
 
@@ -168,7 +185,42 @@ export function KeberatanDetailDialog({ open, onClose, keberatanId, bolehSetujui
 								label="Petugas penanggung jawab"
 								nilai={petugas?.name}
 							/>
+							<Baris
+								label="Batas waktu tanggapan"
+								nilai={formatWaktu(data.batas_waktu_tanggapan)}
+							/>
+							{/*
+							 * Dua tenggat dengan satuan berbeda, dan itu bukan
+							 * kelalaian: tanggapan dihitung 30 hari kalender
+							 * sejak keberatan diregistrasi, sedangkan batas
+							 * pemohon membawa perkara ke Komisi Informasi 14
+							 * hari kerja sejak tanggapan diterima.
+							 */}
+							<Baris
+								label="Batas ajukan sengketa"
+								nilai={formatWaktu(data.batas_waktu_sengketa)}
+							/>
+							<Baris
+								label="Jalur pelayanan"
+								nilai={t(LABEL_JALUR[String(data.jalur_pelayanan ?? '')] ?? '')}
+							/>
+							<Baris
+								label="Jadwal layanan"
+								nilai={formatWaktu(data.jadwal_layanan)}
+							/>
+							<div className="sm:col-span-3">
+								<Baris
+									label="Keterangan petugas untuk pemohon"
+									nilai={data.keterangan_petugas}
+								/>
+							</div>
 						</div>
+
+						<Alert severity="info">
+							{t(
+								'Tanggapan keberatan paling lambat 30 hari kalender sejak diregistrasi. Bila pemohon tidak puas, sengketa informasi dapat diajukan ke Komisi Informasi paling lambat 14 hari kerja setelah tanggapan diterima.'
+							)}
+						</Alert>
 
 						{Boolean(data.tanggapan_atasan_ppid) && (
 							<Alert severity="success">
@@ -188,6 +240,17 @@ export function KeberatanDetailDialog({ open, onClose, keberatanId, bolehSetujui
 							modul="keberatan"
 							pengajuanId={Number(keberatanId)}
 							bolehSetujui={bolehSetujui}
+						/>
+
+						<Divider />
+
+						<Judul teks="Tanggapan & Status" />
+						<KeberatanTanggapanPanel
+							keberatanId={Number(keberatanId)}
+							status={status}
+							tanggapanAwal={String(data.tanggapan_atasan_ppid ?? '')}
+							bolehUbah={bolehUbah}
+							alurBerjalan={alurBerjalan}
 						/>
 					</>
 				)}

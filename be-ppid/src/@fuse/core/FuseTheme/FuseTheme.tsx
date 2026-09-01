@@ -115,11 +115,7 @@ function FuseTheme(props: FuseThemeProps) {
 						},
 						body: {
 							backgroundColor: theme.vars.palette.background.default,
-							color: theme.vars.palette.text.primary,
-
-							'& #spinner > div': {
-								backgroundColor: theme.vars.palette.secondary.main + '!important'
-							}
+							color: theme.vars.palette.text.primary
 						},
 						...baseStyles
 					})}

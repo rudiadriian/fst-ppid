@@ -30,14 +30,15 @@ class HistoriController extends Controller
         $keberatan = KeberatanInformasi::with('permohonan')
             ->where('pemohon_id', $pemohon->id)
             /*
-             * Keberatan tidak punya nomor registrasi sendiri — di seluruh
-             * portal ia dirujuk lewat nomor permohonan induknya. Nomor itu yang
-             * dicari; nomor urut barisnya ikut dicocokkan bila yang diketik
+             * Dicocokkan dengan nomor keberatannya sendiri maupun nomor
+             * permohonan yang dikeberatankan — pemohon bisa mencari lewat
+             * keduanya. Nomor urut barisnya ikut dicocokkan bila yang diketik
              * memang angka, supaya nomor pada tautan notifikasi tetap ketemu.
              */
             ->when($cari !== '', function ($q) use ($cari) {
                 $q->where(function ($sub) use ($cari) {
-                    $sub->whereHas('permohonan', fn ($p) => $p->where('kode_permohonan', 'ilike', '%'.$cari.'%'));
+                    $sub->where('kode_keberatan', 'ilike', '%'.$cari.'%')
+                        ->orWhereHas('permohonan', fn ($p) => $p->where('kode_permohonan', 'ilike', '%'.$cari.'%'));
 
                     if (ctype_digit($cari)) {
                         $sub->orWhere('id', (int) $cari);

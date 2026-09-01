@@ -107,7 +107,11 @@
                                      @if ($i !== 0) style="display:none" @endif>
                                     <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] drop-shadow-lg">
                                         @if (filled($slide['caption']))
-                                            {{ $slide['caption'] }}
+                                            {{-- Judul dari CMS ikut memakai konsep
+                                                 judul dua warna seperti judul lain
+                                                 di situs; dua kata terakhirnya yang
+                                                 beraksen (langkah 90). --}}
+                                            {!! $judulDua($slide['caption'], 2, 'fs-title-accent-soft') !!}
                                         @else
                                             {{ $judulBawaan }}<br><span class="fs-title-accent-soft">{{ $judulBawaanAksen }}</span>
                                         @endif

@@ -5,15 +5,18 @@ namespace App\Http\Controllers\Akun;
 use App\Http\Controllers\Controller;
 use App\Models\InformasiPublik;
 use App\Models\PermohonanInformasi;
+use App\Models\PermohonanTanggapanFile;
 use App\Support\Cms;
 use App\Support\EmailPemohon;
 use App\Support\NotifikasiAdmin;
+use App\Support\SlaLayanan;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\View;
 
@@ -171,10 +174,26 @@ class PermohonanController extends Controller
                 'cara_memperoleh' => $data['cara_memperoleh'],
                 'format_informasi' => $data['format_informasi'],
                 'cara_pengiriman' => $data['cara_pengiriman'],
+                /*
+                 * Jalur pelayanan diturunkan dari cara pengiriman, tidak
+                 * ditanyakan lagi (langkah 89). Keduanya menjawab pertanyaan
+                 * yang sama — dokumennya dikirim atau pemohonnya datang — dan
+                 * menaruh dua isian untuk satu jawaban hanya melahirkan
+                 * kemungkinan keduanya bertentangan. Petugas tetap bisa
+                 * mengubahnya saat menerima permohonan, misalnya ketika
+                 * pemohon menelepon minta datang langsung.
+                 */
+                'jalur_pelayanan' => $data['cara_pengiriman'] === 'ambil_langsung' ? 'langsung' : 'online',
                 'status' => 'diajukan',
                 'tanggal_permohonan' => now(),
-                // UU KIP: tanggapan paling lama 10 hari kerja sejak diterima.
-                'batas_waktu_tanggapan' => now()->addWeekdays(10),
+                // UU KIP Pasal 22: tanggapan paling lama 10 hari kerja sejak
+                // diterima. Angkanya dibaca dari SlaLayanan, bukan ditulis di
+                // sini, supaya panel dan portal tidak pernah menjanjikan dua
+                // tenggat berbeda atas berkas yang sama.
+                'batas_waktu_tanggapan' => SlaLayanan::batasPermohonan(),
+                // Tenggat awal disimpan terpisah supaya perpanjangan 7 hari
+                // kerja tidak menghapus jejak janji pertamanya.
+                'batas_waktu_awal' => SlaLayanan::batasPermohonan(),
                 // Register Permohonan publik memuat pokok permohonan tanpa
                 // identitas pemohon; hal ini disebut pada butir ketentuan yang
                 // wajib dibaca sebelum pernyataan dicentang.
@@ -202,11 +221,36 @@ class PermohonanController extends Controller
     {
         $pemohon = Auth::guard('pemohon')->user();
 
-        $baris = PermohonanInformasi::with(['survei', 'keberatan', 'logStatus'])
+        $baris = PermohonanInformasi::with(['survei', 'keberatan', 'logStatus', 'tanggapanFiles'])
             ->where('pemohon_id', $pemohon->id)
             ->findOrFail($permohonan);
 
         return view('akun.permohonan.show', ['permohonan' => $baris, 'pemohon' => $pemohon]);
+    }
+
+    /**
+     * Unduh satu berkas tanggapan milik permohonan sendiri.
+     *
+     * Dua penjagaan, keduanya perlu: berkasnya harus milik permohonan akun ini,
+     * dan permohonannya harus sudah diserahkan. Tanpa penjagaan kedua, dokumen
+     * yang masih disiapkan petugas — dan belum disetujui PPID — sudah bisa
+     * ditarik pemohon dengan menebak nomor berkasnya.
+     */
+    public function berkasTanggapan(int $berkas)
+    {
+        $pemohon = Auth::guard('pemohon')->user();
+
+        $baris = PermohonanTanggapanFile::with('permohonan')->findOrFail($berkas);
+        $permohonan = $baris->permohonan;
+
+        abort_unless($permohonan && $permohonan->pemohon_id === $pemohon->id, 403);
+        abort_unless($permohonan->tanggapanTerbukaUntukPemohon(), 403, __('Tanggapan permohonan ini belum diserahkan.'));
+
+        $disk = Storage::disk('public');
+
+        abort_unless($disk->exists($baris->path_file), 404);
+
+        return $disk->download($baris->path_file, $baris->nama_file);
     }
 
     /** Daftar permohonan milik akun: tab status, pencarian, pengurutan, pagination. */

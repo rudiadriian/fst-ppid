@@ -11,9 +11,12 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useTranslation } from 'react-i18next';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useResourceItem } from '../api/useResource';
+import { usePersetujuan } from '../api/usePersetujuan';
 import { labelStatus, STATUS_PERMOHONAN, warnaStatus } from '../lib/statusPengajuan';
 import { formatWaktu } from '../lib/waktu';
 import PersetujuanBerjenjang from './PersetujuanBerjenjang';
+import PermohonanStatusPanel from './PermohonanStatusPanel';
+import BerkasTanggapanPanel from './BerkasTanggapanPanel';
 import { Baris, DaftarBerkas, Judul, RiwayatStatus } from './RincianPengajuan';
 
 const LABEL_FORMAT: Record<string, string> = {
@@ -25,6 +28,11 @@ const LABEL_KIRIM: Record<string, string> = {
 	email: 'Email',
 	ambil_langsung: 'Ambil langsung',
 	pos: 'Pos'
+};
+
+const LABEL_JALUR: Record<string, string> = {
+	online: 'Online — dokumen dikirim lewat email',
+	langsung: 'Langsung — pemohon hadir di meja layanan'
 };
 
 const LABEL_JENIS_PEMOHON: Record<string, string> = {
@@ -40,6 +48,8 @@ type PermohonanDetailDialogProps = {
 	permohonanId: number | null;
 	/** Role pengguna punya hak `Setujui` pada modul Permohonan. */
 	bolehSetujui: boolean;
+	/** Role pengguna punya hak `Ubah` — menentukan panel status bisa dipakai. */
+	bolehUbah: boolean;
 };
 
 /**
@@ -52,7 +62,13 @@ type PermohonanDetailDialogProps = {
  * jenjang persetujuan supaya penyetuju bisa membaca berkasnya sebelum
  * memutuskan, bukan memutuskan dari baris tabel.
  */
-export function PermohonanDetailDialog({ open, onClose, permohonanId, bolehSetujui }: PermohonanDetailDialogProps) {
+export function PermohonanDetailDialog({
+	open,
+	onClose,
+	permohonanId,
+	bolehSetujui,
+	bolehUbah
+}: PermohonanDetailDialogProps) {
 	const { t } = useTranslation();
 	const { data, isLoading } = useResourceItem<Record<string, unknown>>(
 		'permohonan',
@@ -64,6 +80,12 @@ export function PermohonanDetailDialog({ open, onClose, permohonanId, bolehSetuj
 	const kategori = data?.kategori as { nama?: string } | null;
 	const petugas = data?.petugas as { name?: string } | null;
 	const keberatan = (data?.keberatan as unknown[] | undefined) ?? [];
+	const { data: persetujuan } = usePersetujuan(
+		'permohonan',
+		Number(permohonanId ?? 0),
+		open && Boolean(permohonanId)
+	);
+	const alurBerjalan = Boolean(persetujuan?.berjalan_id);
 
 	return (
 		<Dialog
@@ -202,6 +224,27 @@ export function PermohonanDetailDialog({ open, onClose, permohonanId, bolehSetuj
 								label="Tampil di register publik"
 								nilai={data.tampil_di_register_publik ? t('Ya') : t('Tidak')}
 							/>
+							{/*
+							 * Tiga isian yang ditetapkan jenjang penerima
+							 * (langkah 100). Tanpanya penyetuju di atasnya
+							 * memutus tanpa tahu jalur mana yang dijanjikan
+							 * ke pemohon, kapan ia diundang, dan keterangan
+							 * apa yang sudah dikirimkan.
+							 */}
+							<Baris
+								label="Jalur pelayanan"
+								nilai={t(LABEL_JALUR[String(data.jalur_pelayanan ?? '')] ?? '')}
+							/>
+							<Baris
+								label="Jadwal layanan"
+								nilai={formatWaktu(data.jadwal_layanan)}
+							/>
+							<div className="sm:col-span-3">
+								<Baris
+									label="Keterangan petugas untuk pemohon"
+									nilai={data.keterangan_petugas}
+								/>
+							</div>
 						</div>
 
 						{Boolean(data.alasan_penolakan) && (
@@ -216,7 +259,11 @@ export function PermohonanDetailDialog({ open, onClose, permohonanId, bolehSetuj
 						<DaftarBerkas berkas={data.files} />
 
 						<Judul teks="Berkas Tanggapan Petugas" />
-						<DaftarBerkas berkas={data.tanggapanFiles} />
+						<BerkasTanggapanPanel
+							permohonanId={Number(permohonanId)}
+							berkas={data.tanggapanFiles}
+							bolehUbah={bolehUbah}
+						/>
 
 						<Divider />
 
@@ -225,6 +272,16 @@ export function PermohonanDetailDialog({ open, onClose, permohonanId, bolehSetuj
 							modul="permohonan"
 							pengajuanId={Number(permohonanId)}
 							bolehSetujui={bolehSetujui}
+						/>
+
+						<Divider />
+
+						<Judul teks="Ubah Status" />
+						<PermohonanStatusPanel
+							permohonanId={Number(permohonanId)}
+							status={status}
+							bolehUbah={bolehUbah}
+							alurBerjalan={alurBerjalan}
 						/>
 
 						<Divider />

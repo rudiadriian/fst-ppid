@@ -63,8 +63,12 @@ class StatusLayanan extends Notification
     }
 
     /**
-     * Nomor registrasi permohonan dipakai apa adanya; keberatan belum punya
-     * kolom nomor sendiri, jadi dirujuk lewat nomor permohonan induknya.
+     * Nomor registrasi pengajuan yang sedang diberitahukan.
+     *
+     * Keberatan memakai nomornya sendiri (`KBT-FSTJ/…`) sejak langkah 89;
+     * sebelumnya ia dirujuk lewat nomor permohonan induknya, sehingga surat
+     * tentang keberatan dan surat tentang permohonan yang dipersoalkan
+     * bernomor sama.
      */
     protected function nomor(): string
     {
@@ -72,7 +76,7 @@ class StatusLayanan extends Notification
             return (string) $this->pengajuan->kode_permohonan;
         }
 
-        return (string) ($this->pengajuan->permohonan?->kode_permohonan ?? '-');
+        return (string) ($this->pengajuan->kode_keberatan ?? '-');
     }
 
     protected function subjek(string $jenis, string $nomor): string
@@ -134,7 +138,8 @@ class StatusLayanan extends Notification
         if ($keberatan) {
             return [
                 __('Jenis pengajuan') => __('Keberatan Informasi'),
-                __('Nomor permohonan') => $this->nomor(),
+                __('Nomor keberatan') => $this->nomor(),
+                __('Nomor permohonan') => (string) ($this->pengajuan->permohonan?->kode_permohonan ?? '-'),
                 __('Alasan keberatan') => __(KeberatanInformasi::JENIS[$this->pengajuan->jenis_keberatan] ?? '-'),
                 __('Tanggal keberatan') => $this->waktu($this->pengajuan->tanggal_keberatan),
                 __('Status') => $this->pengajuan->labelStatus(),

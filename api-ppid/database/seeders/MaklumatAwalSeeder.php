@@ -15,7 +15,12 @@ use Illuminate\Support\Str;
  * sehingga halaman Standar Layanan langsung menayangkan dokumen aslinya.
  * Setelahnya berkas bisa diganti kapan saja lewat modul Maklumat di be-ppid.
  *
- * Idempoten: kalau sudah ada maklumat berstatus published, seeder berhenti.
+ * Idempoten, tetapi tidak buta: maklumat terbit yang **sudah punya berkas**
+ * dilewati, sedangkan maklumat terbit yang berkasnya kosong tetap dilengkapi
+ * (langkah 88). Versi sebelumnya berhenti begitu ada baris berstatus published
+ * tanpa memeriksa isinya, sehingga baris yang terlanjur dibuat saat berkas
+ * acuannya belum tersedia tidak pernah terisi — halamannya diam-diam memakai
+ * teks bawaan, dan tidak ada yang gagal untuk memberi tahu.
  *
  *   php artisan db:seed --class=MaklumatAwalSeeder
  */
@@ -23,8 +28,13 @@ class MaklumatAwalSeeder extends Seeder
 {
     public function run(): void
     {
-        if (Maklumat::where('status', 'published')->exists()) {
-            $this->command?->info('Maklumat terbit sudah ada — dilewati.');
+        $terbit = Maklumat::where('status', 'published')
+            ->orderByDesc('tanggal_terbit')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($terbit && filled($terbit->file_dokumen)) {
+            $this->command?->info('Maklumat terbit sudah punya dokumen — dilewati.');
 
             return;
         }
@@ -41,6 +51,17 @@ class MaklumatAwalSeeder extends Seeder
             $path = 'uploads/maklumat/'.now()->format('Y/m').'/'.Str::random(32).'.png';
 
             Storage::disk('media')->put($path, file_get_contents($sumber));
+        }
+
+        // Baris yang sudah ada dilengkapi, bukan digandakan: menambah maklumat
+        // terbit kedua membuat situs memilih salah satunya berdasar tanggal,
+        // dan arsipnya jadi berisi dua baris untuk satu dokumen yang sama.
+        if ($terbit) {
+            $terbit->update(['file_dokumen' => $path]);
+
+            $this->command?->info('Dokumen maklumat terbit dilengkapi'.($path ? ": $path" : ' (berkas acuan tidak ada).'));
+
+            return;
         }
 
         Maklumat::create([

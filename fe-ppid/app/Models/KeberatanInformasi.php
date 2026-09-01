@@ -20,14 +20,23 @@ class KeberatanInformasi extends Model
 
     protected $table = 'keberatan_informasi';
 
-    /** Nilai yang diterima CHECK constraint `keberatan_informasi_jenis_keberatan_check`. */
+    /**
+     * Tujuh dasar keberatan menurut Pasal 35 UU No. 14 Tahun 2008.
+     *
+     * Kuncinya adalah nilai yang diterima CHECK constraint
+     * `keberatan_informasi_jenis_keberatan_check`; urutannya mengikuti bunyi
+     * pasalnya, bukan abjad, supaya daftar pilihan di formulir terbaca sejajar
+     * dengan undang-undangnya. Salinan dari `KeberatanInformasi::JENIS` di
+     * api-ppid — keduanya harus berubah bersama.
+     */
     public const JENIS = [
-        'permohonan_ditolak' => 'Permohonan Informasi Ditolak',
-        'informasi_tidak_disediakan' => 'Informasi Tidak Disediakan',
-        'permintaan_tidak_ditanggapi' => 'Permintaan Tidak Ditanggapi',
-        'informasi_tidak_sesuai' => 'Informasi yang Diberikan Tidak Sesuai',
+        'permohonan_ditolak' => 'Penolakan atas Permintaan Informasi',
+        'permintaan_tidak_ditanggapi' => 'Tidak Ditanggapinya Permintaan Informasi',
+        'melebihi_jangka_waktu' => 'Penyampaian Informasi Melebihi Waktu yang Diatur',
+        'informasi_tidak_sesuai' => 'Permintaan Informasi Tidak Ditanggapi Sebagaimana yang Diminta',
+        'permintaan_tidak_dipenuhi' => 'Tidak Dipenuhinya Permintaan Informasi',
         'biaya_tidak_wajar' => 'Pengenaan Biaya yang Tidak Wajar',
-        'melebihi_jangka_waktu' => 'Permintaan Melebihi Jangka Waktu Tanggapan',
+        'informasi_tidak_disediakan' => 'Tidak Disediakannya Informasi Berkala',
     ];
 
     /** Label status; disamakan dengan penamaan pada Permohonan Informasi. */
@@ -48,13 +57,18 @@ class KeberatanInformasi extends Model
         'kasus_posisi',
         'dikuasakan',
         'status',
+        'jalur_pelayanan',
         'tanggal_keberatan',
+        'batas_waktu_tanggapan',
     ];
 
     protected $casts = [
         'dikuasakan' => 'boolean',
         'tanggal_keberatan' => 'datetime',
         'tanggal_tanggapan' => 'datetime',
+        'batas_waktu_tanggapan' => 'datetime',
+        'batas_waktu_sengketa' => 'datetime',
+        'jadwal_layanan' => 'datetime',
     ];
 
     public function permohonan(): BelongsTo

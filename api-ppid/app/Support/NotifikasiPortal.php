@@ -159,11 +159,46 @@ class NotifikasiPortal
     }
 
     /**
+     * Tenggat tanggapan diperpanjang.
+     *
+     * Perpanjangan menggeser janji yang sudah diberikan kepada pemohon, jadi ia
+     * berhak tahu tanpa perlu membuka halaman permohonannya sendiri untuk
+     * menyadari tanggalnya berubah.
+     */
+    public static function tenggatDiperpanjang(PermohonanInformasi $permohonan): void
+    {
+        $batas = $permohonan->batas_waktu_tanggapan?->translatedFormat('d F Y');
+
+        self::kirim(
+            (int) $permohonan->pemohon_id,
+            'permohonan_perpanjangan',
+            "Tenggat tanggapan permohonan {$permohonan->kode_permohonan} diperpanjang".($batas ? " sampai {$batas}." : '.'),
+            [
+                'title' => 'Tenggat Diperpanjang',
+                'icon' => 'clock',
+                'link' => '/akun/permohonan/'.$permohonan->getKey(),
+                'variant' => 'warning',
+                'permohonan_id' => $permohonan->getKey(),
+                'kode_permohonan' => (string) $permohonan->kode_permohonan,
+            ]
+        );
+    }
+
+    /**
      * Hasil pemeriksaan berkas Verifikasi Data Diri Pemohon.
      *
-     * Yang ditolak dibawa langsung ke halaman perbaikannya, kecuali kalau
-     * kesempatan kirim ulangnya sudah habis — tautan ke formulir yang tidak
-     * lagi menerima kiriman cuma bikin pemohon berputar.
+     * Ketiga keadaannya — disetujui, ditolak dengan sisa kesempatan, dan
+     * ditolak sampai batas — dibawa ke halaman Data Pemohon. Di sanalah
+     * keputusannya tertulis lengkap: lencana statusnya, catatan petugas, sisa
+     * kesempatan, dan formulir perbaikannya bila masih boleh dikirim ulang.
+     * Halaman itu sendiri yang menyesuaikan tampilannya per keadaan, termasuk
+     * mengunci isian setelah terverifikasi dan menutup tombol kirim setelah
+     * kesempatannya habis, jadi tidak ada tautan yang berujung buntu.
+     *
+     * Sebelumnya yang disetujui dan yang sudah kehabisan kesempatan diarahkan
+     * ke `/akun`; halaman itu tidak menyebut hasil pemeriksaannya sama sekali,
+     * sehingga pemohon yang mengklik notifikasinya justru kehilangan isi
+     * pemberitahuan yang baru saja ia buka.
      */
     public static function hasilVerifikasiData(Pemohon $pemohon): void
     {
@@ -192,7 +227,7 @@ class NotifikasiPortal
             [
                 'title' => $disetujui ? 'Data Pemohon Terverifikasi' : 'Verifikasi Data Pemohon Ditolak',
                 'icon' => $disetujui ? 'user-check' : 'user-x',
-                'link' => $bolehKirimUlang ? '/akun/pengaturan/data-pemohon' : '/akun',
+                'link' => '/akun/pengaturan/data-pemohon',
                 'variant' => $disetujui ? 'primary' : 'warning',
                 'status_verifikasi' => (string) $pemohon->status_verifikasi,
             ]

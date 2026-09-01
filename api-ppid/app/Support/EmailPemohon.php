@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Mail\StatusLayananMail;
 use App\Models\KeberatanInformasi;
 use App\Models\Pemohon;
+use App\Models\PermohonanInformasi;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -41,15 +42,6 @@ class EmailPemohon
     public const PEMICU_KEBERATAN = [
         'diproses' => self::TAHAP_DITERIMA,
         'selesai' => self::TAHAP_SELESAI,
-    ];
-
-    private const LABEL_JENIS_KEBERATAN = [
-        'permohonan_ditolak' => 'Permohonan Informasi Ditolak',
-        'informasi_tidak_disediakan' => 'Informasi Tidak Disediakan',
-        'permintaan_tidak_ditanggapi' => 'Permintaan Tidak Ditanggapi',
-        'informasi_tidak_sesuai' => 'Informasi yang Diberikan Tidak Sesuai',
-        'biaya_tidak_wajar' => 'Pengenaan Biaya yang Tidak Wajar',
-        'melebihi_jangka_waktu' => 'Permintaan Melebihi Jangka Waktu Tanggapan',
     ];
 
     /**
@@ -100,6 +92,109 @@ class EmailPemohon
         }
 
         self::kirim($pengajuan, $tahap);
+    }
+
+    /**
+     * Pemberitahuan jalur pelayanan yang ditetapkan petugas.
+     *
+     * Dua isi yang berbeda untuk dua jalur, karena yang perlu dilakukan pemohon
+     * memang berbeda: jalur Online cukup ditunggu, jalur Langsung menuntutnya
+     * datang pada waktu tertentu ke alamat tertentu. Surel jalur Langsung karena
+     * itu memuat alamat, kontak, dan jam layanan — undangan yang menyuruh datang
+     * tanpa menyebut ke mana bukan undangan.
+     */
+    public static function jalurPelayanan(Model $pengajuan, string $jalur, ?string $keterangan = null): void
+    {
+        try {
+            $email = $pengajuan->pemohon?->email;
+
+            if (blank($email)) {
+                return;
+            }
+
+            $keberatan = $pengajuan instanceof KeberatanInformasi;
+            $nama = filled($pengajuan->pemohon?->nama) ? $pengajuan->pemohon->nama : 'Pemohon';
+            $perkara = $keberatan ? 'keberatan informasi' : 'permohonan informasi';
+            $nomor = self::nomor($pengajuan, $keberatan);
+
+            $langsung = $jalur === 'langsung';
+            $jadwal = $pengajuan->jadwal_layanan?->translatedFormat('l, d F Y \p\u\k\u\l H.i \W\I\B');
+
+            $paragraf = $langsung
+                ? [
+                    "Pengajuan {$perkara} Anda telah diterima dan akan dilayani secara langsung di meja layanan PPID.",
+                    'Mohon hadir sesuai waktu berikut dengan membawa identitas diri yang sama dengan yang Anda daftarkan.',
+                ]
+                : [
+                    "Pengajuan {$perkara} Anda telah diterima dan akan dilayani secara online.",
+                    'Dokumen yang diminta dikirimkan melalui email ini dan dapat diunduh melalui Portal Pemohon setelah tersedia.',
+                ];
+
+            if (filled($keterangan)) {
+                $paragraf[] = 'Keterangan petugas: '.$keterangan;
+            }
+
+            $baris = array_filter([
+                'Nomor Permohonan' => $nomor,
+                'Jalur Pelayanan' => $langsung ? 'Langsung (hadir di meja layanan)' : 'Online (dikirim lewat email)',
+                'Waktu Kunjungan' => $langsung ? $jadwal : null,
+                'Alamat' => $langsung ? 'Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Selatan No. 1, Jakarta Timur 13230' : null,
+                'Kontak' => $langsung ? 'ppid@foodstation.co.id · (021) 4718011 (Ext. PPID)' : null,
+                'Jam Layanan' => $langsung ? 'Senin–Jumat 08.00–15.00 WIB, istirahat 12.00–13.00 WIB' : null,
+            ]);
+
+            self::antre((string) $email, new StatusLayananMail(
+                $langsung ? 'Undangan layanan informasi publik' : 'Pengajuan Anda dilayani secara online',
+                [
+                    'judul' => $langsung ? 'Undangan Layanan Langsung' : 'Pelayanan Secara Online',
+                    'nama' => $nama,
+                    'paragraf' => $paragraf,
+                    'baris' => $baris,
+                ]
+            ));
+        } catch (\Throwable $e) {
+            // Surel gagal tidak boleh membatalkan penerimaan berkasnya: jalurnya
+            // sudah tersimpan dan sudah terbaca di Portal Pemohon.
+            report($e);
+        }
+    }
+
+    /**
+     * Pemberitahuan perpanjangan tenggat tanggapan.
+     *
+     * UU KIP menuntut perpanjangan **beserta alasannya** disampaikan kepada
+     * pemohon, bukan sekadar dicatat di sistem. Karena itu alasannya ikut
+     * dikirim apa adanya, bukan diringkas jadi "karena alasan teknis".
+     */
+    public static function tenggatDiperpanjang(PermohonanInformasi $permohonan, string $alasan): void
+    {
+        try {
+            $email = $permohonan->pemohon?->email;
+
+            if (blank($email)) {
+                return;
+            }
+
+            $nama = filled($permohonan->pemohon?->nama) ? $permohonan->pemohon->nama : 'Pemohon';
+            $batas = $permohonan->batas_waktu_tanggapan?->translatedFormat('d F Y');
+
+            self::antre((string) $email, new StatusLayananMail('Tenggat tanggapan permohonan diperpanjang', [
+                'judul' => 'Tenggat Tanggapan Diperpanjang',
+                'nama' => $nama,
+                'paragraf' => [
+                    'Penanganan permohonan informasi Anda memerlukan waktu tambahan. Sesuai Pasal 22 Undang-Undang Nomor 14 Tahun 2008, tenggat tanggapan diperpanjang paling lama 7 (tujuh) hari kerja.',
+                    'Alasan perpanjangan: '.$alasan,
+                ],
+                'baris' => array_filter([
+                    'Nomor Permohonan' => (string) $permohonan->kode_permohonan,
+                    'Tenggat Baru' => $batas,
+                ]),
+            ]));
+        } catch (\Throwable $e) {
+            // Kegagalan kirim surel tidak boleh membatalkan perpanjangannya:
+            // tenggatnya sudah tersimpan dan sudah tampil di portal pemohon.
+            report($e);
+        }
     }
 
     /**
@@ -216,13 +311,22 @@ class EmailPemohon
         }
     }
 
+    /**
+     * Nomor registrasi pengajuan yang sedang disurati.
+     *
+     * Keberatan memakai nomornya sendiri (`KBT-FSTJ/…`), bukan nomor
+     * permohonan induknya: pemohon yang mengajukan keberatan atas dua
+     * permohonan berbeda akan menerima dua surat, dan sebelumnya keduanya
+     * bernomor sama dengan berkas yang justru sedang dipersoalkan. Nomor
+     * permohonan induknya tetap ikut, sebagai barisnya sendiri.
+     */
     protected static function nomor(Model $pengajuan, bool $keberatan): string
     {
         if (!$keberatan) {
             return (string) $pengajuan->kode_permohonan;
         }
 
-        return (string) ($pengajuan->permohonan?->kode_permohonan ?? '-');
+        return (string) ($pengajuan->kode_keberatan ?? '-');
     }
 
     protected static function subjek(string $tahap, string $jenis, string $nomor): string
@@ -236,7 +340,17 @@ class EmailPemohon
     protected static function paragraf(string $tahap, string $jenis, string $nomor, bool $keberatan): array
     {
         $instansi = config('ppid.kontak.instansi');
-        $hariKerja = $keberatan ? 30 : 10;
+
+        /*
+         * Dua satuan waktu yang berbeda, dan undang-undangnya sendiri
+         * membedakannya: permohonan 10 hari kerja (Pasal 22), keberatan 30 hari
+         * kalender sejak diregistrasi (Pasal 36). Menyebut keduanya "hari
+         * kerja" memberi pemohon tenggat keberatan yang lebih longgar sekitar
+         * dua minggu daripada yang sebenarnya berlaku.
+         */
+        $tenggat = $keberatan
+            ? SlaLayanan::KEBERATAN_HARI.' hari kalender'
+            : SlaLayanan::PERMOHONAN_HARI_KERJA.' hari kerja';
 
         if ($tahap === self::TAHAP_SELESAI) {
             return [
@@ -247,7 +361,7 @@ class EmailPemohon
 
         return [
             "Pengajuan {$jenis} Anda dengan nomor registrasi {$nomor} telah diperiksa dan DITERIMA oleh petugas PPID {$instansi}.",
-            "Pengajuan Anda kini masuk tahap penelusuran dan penyiapan tanggapan. Tanggapan disampaikan paling lambat {$hariKerja} hari kerja sejak pengajuan diterima.",
+            "Pengajuan Anda kini masuk tahap penelusuran dan penyiapan tanggapan. Tanggapan disampaikan paling lambat {$tenggat} sejak pengajuan diterima.",
         ];
     }
 
@@ -257,8 +371,9 @@ class EmailPemohon
         if ($keberatan) {
             return [
                 'Jenis pengajuan' => 'Keberatan Informasi',
-                'Nomor permohonan' => $nomor,
-                'Alasan keberatan' => self::LABEL_JENIS_KEBERATAN[$pengajuan->jenis_keberatan] ?? '-',
+                'Nomor keberatan' => $nomor,
+                'Nomor permohonan' => (string) ($pengajuan->permohonan?->kode_permohonan ?? '-'),
+                'Alasan keberatan' => KeberatanInformasi::JENIS[$pengajuan->jenis_keberatan] ?? '-',
                 'Tanggal keberatan' => self::waktu($pengajuan->tanggal_keberatan),
                 'Status' => self::labelStatus($pengajuan->status),
             ];

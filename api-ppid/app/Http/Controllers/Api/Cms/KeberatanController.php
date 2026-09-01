@@ -9,6 +9,7 @@ use App\Support\AlurPersetujuan;
 use App\Support\AuditLogger;
 use App\Support\EmailPemohon;
 use App\Support\NotifikasiPortal;
+use App\Support\SlaLayanan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,9 +35,9 @@ class KeberatanController extends CrudController
 
     protected string $modulSlug = 'keberatan';
 
-    protected array $searchable = ['alasan_keberatan', 'tanggapan_atasan_ppid'];
+    protected array $searchable = ['kode_keberatan', 'alasan_keberatan', 'tanggapan_atasan_ppid'];
 
-    protected array $sortable = ['id', 'status', 'jenis_keberatan', 'tanggal_keberatan'];
+    protected array $sortable = ['id', 'kode_keberatan', 'status', 'jenis_keberatan', 'tanggal_keberatan'];
 
     protected string $defaultSort = '-tanggal_keberatan';
 
@@ -95,12 +96,26 @@ class KeberatanController extends CrudController
             ]);
         }
 
-        if ($statusLama === 'menunggu_approval'
-            && in_array($statusBaru, ['selesai', 'ditolak'], true)
+        /*
+         * Selama satu tahap persetujuan masih menunggu, perpindahan status
+         * bukan lagi milik dropdown ini — milik putusan penyetujunya
+         * (langkah 100). Sebelumnya yang dijaga hanya putusan akhir dari
+         * "Menunggu Persetujuan", sehingga PPID Pelaksana yang sudah
+         * meneruskan berkasnya masih bisa menariknya kembali, menolaknya
+         * sendiri, atau menyatakannya kedaluwarsa — tiga hal yang seluruhnya
+         * melangkahi jenjang di atasnya.
+         *
+         * Super admin dikecualikan dengan alasan yang sama seperti pada
+         * {@see AlurPersetujuan::bolehMemutus()}: berkas yang macet karena
+         * rolenya kosong atau pemegangnya nonaktif harus tetap bisa
+         * dibebaskan tanpa menyunting basis data.
+         */
+        if ($statusBaru !== $statusLama
+            && !$this->penggunaSuperAdmin()
             && AlurPersetujuan::berjalan(AlurPersetujuan::JENIS_KEBERATAN, $id) !== null) {
             throw ValidationException::withMessages([
-                'status' => 'Keberatan ini sedang menunggu putusan tahap persetujuan; '
-                    .'selesaikan tahapnya lewat menu Persetujuan Berjenjang.',
+                'status' => 'Keberatan ini sedang berada di jenjang persetujuan; '
+                    .'perpindahannya ditentukan putusan pada panel Persetujuan Berjenjang.',
             ]);
         }
 
@@ -146,6 +161,21 @@ class KeberatanController extends CrudController
 
         if (in_array($statusBaru, ['selesai', 'ditolak'], true)) {
             $keberatan->tanggal_tanggapan = $keberatan->tanggal_tanggapan ?? now();
+
+            /*
+             * Batas pemohon membawa perkara ke Komisi Informasi: 14 hari kerja
+             * sejak tanggapan diterima (Pasal 37 UU KIP). Kolomnya sudah ada
+             * sejak langkah 89 tetapi tidak pernah diisi, sehingga tenggat itu
+             * hanya disebut di badan surel dan tidak bisa ditampilkan,
+             * disaring, maupun dihitung di mana pun.
+             *
+             * Dihitung dari tanggal tanggapan, bukan dari hari ini: keberatan
+             * yang tanggal tanggapannya sudah terisi lebih dulu (misalnya
+             * berpindah selesai → ditolak) tidak boleh memperpanjang hak
+             * pemohon secara diam-diam.
+             */
+            $keberatan->batas_waktu_sengketa = $keberatan->batas_waktu_sengketa
+                ?? SlaLayanan::batasSengketa($keberatan->tanggal_tanggapan);
         }
 
         $keberatan->save();
@@ -181,6 +211,37 @@ class KeberatanController extends CrudController
      * tanggapan atasan atasnya, dan berkasnya langsung tertutup sebagai
      * `selesai`.
      */
+    /** Pengguna yang sedang masuk adalah super admin? */
+    private function penggunaSuperAdmin(): bool
+    {
+        $user = Auth::guard('api')->user();
+        $user?->loadMissing('role');
+
+        return $user?->role?->slug === 'super-admin';
+    }
+
+    /** Berkas naik ke jenjang berikutnya; lihat catatan yang sama di PermohonanController. */
+    protected function terapkanLanjutPersetujuan(Model $pengajuan): void
+    {
+        /** @var KeberatanInformasi $pengajuan */
+        $statusLama = (string) $pengajuan->status;
+
+        if ($statusLama === 'menunggu_approval') {
+            return;
+        }
+
+        $this->terapkanStatus($pengajuan, $statusLama, 'menunggu_approval');
+
+        AuditLogger::record(
+            Auth::guard('api')->id(),
+            'update_status',
+            KeberatanInformasi::class,
+            $pengajuan->id,
+            ['status' => $statusLama],
+            ['status' => 'menunggu_approval']
+        );
+    }
+
     protected function terapkanHasilPersetujuan(Model $pengajuan, string $hasil, ?string $catatan): void
     {
         /** @var KeberatanInformasi $pengajuan */
@@ -201,6 +262,12 @@ class KeberatanController extends CrudController
         }
 
         $this->terapkanStatus($pengajuan, $statusLama, $statusBaru);
+
+        // Sama seperti permohonan: revisi mengembalikan berkas ke jenjang
+        // pertama beserta lonceng gilirannya, bukan sekadar menurunkan status.
+        if ($hasil === AlurPersetujuan::HASIL_REVISI) {
+            AlurPersetujuan::mulai($pengajuan->refresh());
+        }
 
         AuditLogger::record(
             Auth::guard('api')->id(),

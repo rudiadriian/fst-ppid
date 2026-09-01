@@ -125,6 +125,78 @@ class PortalDashboardTest extends TestCase
         $this->assertStringContainsString((string) ($tahunIni - 3), $html);
     }
 
+    /**
+     * Survei kepuasan yang belum diisi ditandai di beranda (langkah 95).
+     *
+     * Hanya permohonan yang sudah tuntas yang muncul: menawarkan penilaian atas
+     * layanan yang masih berjalan meminta pemohon menilai sesuatu yang belum ia
+     * terima.
+     */
+    public function test_permohonan_tuntas_yang_belum_dinilai_disorot_di_beranda(): void
+    {
+        $selesai = $this->permohonan('selesai', Carbon::now());
+        $berjalan = $this->permohonan('diproses', Carbon::now());
+
+        $html = $this->actingAs($this->pemohon, 'pemohon')
+            ->get(route('akun.dashboard'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('menunggu penilaian', $html);
+        $this->assertStringContainsString(route('akun.survei.create', $selesai->id), $html);
+        $this->assertStringNotContainsString(route('akun.survei.create', $berjalan->id), $html);
+    }
+
+    public function test_permohonan_yang_sudah_dinilai_tidak_disorot_lagi(): void
+    {
+        $selesai = $this->permohonan('selesai', Carbon::now());
+
+        $this->actingAs($this->pemohon, 'pemohon')
+            ->post(route('akun.survei.store', $selesai->id), ['rating' => 5, 'komentar' => 'Cepat.'])
+            ->assertRedirect(route('akun.dashboard'));
+
+        $html = $this->actingAs($this->pemohon, 'pemohon')
+            ->get(route('akun.dashboard'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('menunggu penilaian', $html);
+        $this->assertStringNotContainsString(route('akun.survei.create', $selesai->id), $html);
+    }
+
+    /**
+     * Sorotannya ikut berbahasa Inggris, termasuk bentuk jamaknya.
+     *
+     * Kunci terjemahannya memuat aturan jamak (`{1}…|[2,*]…`); bila kuncinya
+     * tidak ada di `lang/en.json`, yang tampil adalah kunci mentah beserta
+     * tanda pemisahnya — cacat yang tidak terlihat dari pengujian bahasa
+     * Indonesia karena di sana kuncinya memang teksnya.
+     */
+    public function test_sorotan_survei_ikut_bahasa_inggris(): void
+    {
+        $this->permohonan('selesai', Carbon::now());
+        $this->permohonan('ditolak', Carbon::now());
+
+        $html = $this->actingAs($this->pemohon, 'pemohon')
+            ->get(route('akun.dashboard', ['lang' => 'en']))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('2 of your requests are awaiting your rating', $html);
+        $this->assertStringNotContainsString('[2,*]', $html);
+    }
+
+    /** Tanpa permohonan tuntas, tidak ada sorotan sama sekali. */
+    public function test_tanpa_permohonan_tuntas_tidak_ada_sorotan_survei(): void
+    {
+        $this->permohonan('diproses', Carbon::now());
+
+        $this->actingAs($this->pemohon, 'pemohon')
+            ->get(route('akun.dashboard'))
+            ->assertOk()
+            ->assertDontSee('menunggu penilaian', false);
+    }
+
     public function test_tahun_berjalan_tetap_tampil_walau_kosong(): void
     {
         $html = $this->actingAs($this->pemohon, 'pemohon')

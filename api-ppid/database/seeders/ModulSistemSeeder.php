@@ -24,6 +24,8 @@ class ModulSistemSeeder extends Seeder
         'permohonan' => ['Permohonan Informasi', 'heroicons-outline:inbox', '/ppid/permohonan', 5],
         'keberatan' => ['Keberatan Informasi', 'heroicons-outline:exclamation-triangle', '/ppid/keberatan', 6],
         'laporan-layanan' => ['Laporan Layanan', 'heroicons-outline:chart-bar', '/ppid/laporan-layanan', 7],
+        // Berkas yang dipakai berulang untuk menjawab permohonan (langkah 95).
+        'arsip-dokumen' => ['Arsip Dokumen', 'heroicons-outline:folder-open', '/ppid/arsip-dokumen', 8],
         'berita' => ['Berita', 'heroicons-outline:newspaper', '/ppid/berita', 8],
         'galeri' => ['Galeri', 'heroicons-outline:photo', '/ppid/galeri', 9],
         'faq' => ['FAQ', 'heroicons-outline:question-mark-circle', '/ppid/faq', 10],
@@ -114,16 +116,44 @@ class ModulSistemSeeder extends Seeder
             $hanyaLihat = ['can_view' => true, 'can_create' => false, 'can_edit' => false, 'can_delete' => false, 'can_approve' => false, 'can_export' => false];
             $tanpaAkses = ['can_view' => false, 'can_create' => false, 'can_edit' => false, 'can_delete' => false, 'can_approve' => false, 'can_export' => false];
 
+            /*
+             * Layanan menuntut hak `approve` meski jenjang ini tidak boleh
+             * menolak.
+             *
+             * PPID Pelaksana memegang tahap pertama alur — menerima permohonan
+             * dan keberatan, lalu meneruskannya ke PPID — dan memutuskan hasil
+             * Verifikasi Data Diri Pemohon. Ketiga jalurnya dijaga
+             * `akses:permohonan,approve` / `akses:keberatan,approve`, jadi tanpa
+             * hak ini tahap pertamanya menggantung: notifikasinya sampai, tetapi
+             * tombol putusannya ditolak 403.
+             *
+             * Hak menolak tidak ikut terbuka karenanya — itu ditentukan
+             * `boleh_tolak` pada tahap alurnya, yang ditegakkan terpisah di
+             * `MenanganiPersetujuan`.
+             */
+            $aksesLayanan = ['can_view' => true, 'can_create' => false, 'can_edit' => true, 'can_delete' => false, 'can_approve' => true, 'can_export' => true];
+
             $aksesPelaksana = match (true) {
                 in_array($modul->slug, ['pengguna', 'audit-log', 'pengaturan-situs'], true) => $tanpaAkses,
                 $modul->slug === 'alur-approval' => $hanyaLihat,
+                in_array($modul->slug, ['permohonan', 'keberatan'], true) => $aksesLayanan,
                 default => $operasional,
             };
 
             $this->setAkses($ppidPelaksana->id, $modul->id, $aksesPelaksana);
 
+            /*
+             * Arsip Dokumen tidak mengenal "menyetujui": isinya berkas milik
+             * lembaga, bukan pengajuan yang menunggu putusan. Yang diperlukan
+             * di sana justru menambah dan membuang — dan membuang hanya boleh
+             * dilakukan PPID, karena baris yang hilang membuat dokumen itu tidak
+             * lagi bisa dipilih petugas lain.
+             */
+            $arsipPenuh = ['can_view' => true, 'can_create' => true, 'can_edit' => true, 'can_delete' => true, 'can_approve' => false, 'can_export' => true];
+
             $aksesUtama = match ($modul->slug) {
                 'pengguna', 'alur-approval' => $hanyaLihat,
+                'arsip-dokumen' => $arsipPenuh,
                 default => $persetujuan,
             };
 

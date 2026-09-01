@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Notifikasi;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Notifikasi milik pengguna yang sedang login.
@@ -28,6 +30,7 @@ class NotifikasiController extends Controller
     public function index(Request $request): JsonResponse
     {
         $baris = Notifikasi::where('user_id', Auth::guard('api')->id())
+            ->tap(fn (Builder $q) => $this->batasiKeModulBolehLihat($q))
             ->when(!$request->boolean('semua'), fn ($q) => $q->where('is_read', false))
             ->orderByDesc('created_at')
             ->limit(50)
@@ -63,9 +66,56 @@ class NotifikasiController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $notifikasi = Notifikasi::where('user_id', Auth::guard('api')->id())->findOrFail($id);
+        $notifikasi = Notifikasi::where('user_id', Auth::guard('api')->id())
+            ->tap(fn (Builder $q) => $this->batasiKeModulBolehLihat($q))
+            ->findOrFail($id);
 
         return response()->json($this->toFuse($notifikasi));
+    }
+
+    /**
+     * Sembunyikan notifikasi milik modul yang tidak lagi boleh dilihat role ini.
+     *
+     * Hak akses bisa berubah setelah notifikasinya ditulis. Kalau tidak
+     * disaring saat dibaca, petugas yang hak modulnya dicabut tetap melihat
+     * pemberitahuan pekerjaan yang bukan lagi urusannya — dan tautannya hanya
+     * berujung "Akses ditolak". Penyaringnya di sini, bukan saat menulis, agar
+     * pencabutan langsung berlaku tanpa membersihkan baris lama.
+     *
+     * Baris tanpa penanda `modul` — notifikasi yang ditulis sebelum penanda ini
+     * ada — dibiarkan lewat: menyembunyikannya berarti menghapus riwayat yang
+     * sah hanya karena bentuk datanya lebih tua.
+     */
+    private function batasiKeModulBolehLihat(Builder $query): void
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return;
+        }
+
+        $user->loadMissing('role');
+
+        // Sama seperti middleware `akses:`: super-admin melihat semua modul.
+        if ($user->role?->slug === 'super-admin') {
+            return;
+        }
+
+        $slug = DB::table('role_modul_akses as akses')
+            ->join('modul_sistem as modul', 'modul.id', '=', 'akses.modul_id')
+            ->where('akses.role_id', $user->role_id)
+            ->where('akses.can_view', true)
+            ->where('modul.is_active', true)
+            ->pluck('modul.slug')
+            ->all();
+
+        $query->where(function (Builder $q) use ($slug) {
+            $q->whereRaw("data->>'modul' is null");
+
+            if ($slug !== []) {
+                $q->orWhereIn(DB::raw("data->>'modul'"), $slug);
+            }
+        });
     }
 
     public function destroy(int $id): JsonResponse

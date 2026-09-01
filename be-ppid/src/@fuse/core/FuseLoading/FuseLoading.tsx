@@ -1,7 +1,6 @@
 import { useTimeout } from '@fuse/hooks';
 import { useState } from 'react';
 import clsx from 'clsx';
-import Box from '@mui/material/Box';
 
 export type FuseLoadingProps = {
 	delay?: number;
@@ -10,6 +9,15 @@ export type FuseLoadingProps = {
 
 /**
  * FuseLoading displays a loading state with an optional delay
+ *
+ * Tiga titik pantul bawaan template diganti maskot Food Station (langkah 99),
+ * sama dengan yang dipakai layar pembuka. Ukurannya lebih kecil karena
+ * komponen ini muncul di dalam halaman — kadang di dalam panel sempit — bukan
+ * menutupi seluruh layar.
+ *
+ * Latarnya sengaja tidak diberi warna: pemuat ini menumpang warna halaman yang
+ * sedang menunggu isinya, dan memberi warna sendiri justru melahirkan kotak
+ * putih di tengah panel gelap.
  */
 function FuseLoading(props: FuseLoadingProps) {
 	const { delay = 0, className } = props;
@@ -27,18 +35,11 @@ function FuseLoading(props: FuseLoadingProps) {
 				!showLoading ? 'hidden' : ''
 			)}
 		>
-			<Box
-				id="spinner"
-				sx={{
-					'& > div': {
-						backgroundColor: 'palette.secondary.main'
-					}
-				}}
-			>
-				<div className="bounce1" />
-				<div className="bounce2" />
-				<div className="bounce3" />
-			</Box>
+			<img
+				className="h-auto w-28 max-w-[40vw]"
+				src="/assets/images/logo/loader-fs.gif"
+				alt="Memuat…"
+			/>
 		</div>
 	);
 }

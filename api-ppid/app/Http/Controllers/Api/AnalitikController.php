@@ -9,6 +9,7 @@ use App\Models\KeberatanInformasi;
 use App\Models\Pemohon;
 use App\Models\PermohonanInformasi;
 use App\Models\SurveyKepuasan;
+use App\Support\SlaLayanan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -36,14 +37,22 @@ class AnalitikController extends Controller
      * per baris; angka di bawah dipakai sebagai acuan tampilan dan sebagai
      * cadangan saat baris lama belum punya batas waktu.
      */
-    private const SLA_TANGGAPAN_HARI = 10;
+    /*
+     * Angkanya tidak lagi ditulis di sini (langkah 89): keempatnya berasal dari
+     * undang-undang dan sekarang tinggal di {@see SlaLayanan}, satu tempat yang
+     * dibaca portal pemohon, panel, surel, dan dashboard. Sebelumnya angka yang
+     * sama ditulis ulang di beberapa berkas — bentuk yang membuat satu tenggat
+     * bisa berubah di satu tempat dan tertinggal di tempat lain tanpa ada yang
+     * gagal.
+     */
+    private const SLA_TANGGAPAN_HARI = SlaLayanan::PERMOHONAN_HARI_KERJA;
 
-    private const SLA_PERPANJANGAN_HARI = 7;
+    private const SLA_PERPANJANGAN_HARI = SlaLayanan::PERPANJANGAN_HARI_KERJA;
 
-    private const SLA_KEBERATAN_HARI = 30;
+    private const SLA_KEBERATAN_HARI = SlaLayanan::KEBERATAN_HARI;
 
     /** Ambang "mendekati batas" — dipakai untuk daftar tindakan. */
-    private const AMBANG_SIAGA_HARI = 3;
+    private const AMBANG_SIAGA_HARI = SlaLayanan::AMBANG_SIAGA_HARI;
 
     /**
      * Target KPI. Diletakkan di satu tempat supaya mudah disesuaikan bila
@@ -150,6 +159,16 @@ class AnalitikController extends Controller
                         'keberatan' => $this->perJenisPemohon($keberatan, 'keberatan_informasi'),
                     ],
                     'cara_pengiriman' => $this->sebaran($permohonan, 'cara_pengiriman'),
+                    /*
+                     * Alasan keberatan — tujuh dasar Pasal 35 UU KIP. Ini satu-
+                     * satunya angka yang menunjuk *sebab* layanan dinilai
+                     * gagal, bukan sekadar berapa banyak yang gagal: "biaya
+                     * tidak wajar" menuntut perbaikan tarif, "melebihi waktu"
+                     * menuntut perbaikan tenggat. Alasan yang belum pernah
+                     * dipakai ikut dikembalikan bernilai 0 supaya yang kosong
+                     * terbaca sebagai nol, bukan sebagai belum diukur.
+                     */
+                    'alasan_keberatan' => $this->alasanKeberatan($keberatan),
                 ],
 
                 'kpi' => $this->kpi($sla, $rataHari, $total, $tuntas, $jumlahKeberatan, $kepuasan['persen']),
@@ -353,6 +372,30 @@ class AnalitikController extends Controller
             ->pluck('jumlah', $kolom)
             ->map(fn ($n) => (int) $n)
             ->all();
+    }
+
+    /**
+     * Sebaran alasan keberatan, lengkap dengan yang bernilai nol.
+     *
+     * @return array<int, array{kode: string, label: string, jumlah: int}>
+     */
+    private function alasanKeberatan(callable $keberatan): array
+    {
+        $hitung = $this->sebaran($keberatan, 'jenis_keberatan');
+
+        $baris = [];
+
+        foreach (KeberatanInformasi::JENIS as $kode => $label) {
+            $baris[] = [
+                'kode' => $kode,
+                'label' => $label,
+                'jumlah' => (int) ($hitung[$kode] ?? 0),
+            ];
+        }
+
+        usort($baris, fn ($a, $b) => $b['jumlah'] <=> $a['jumlah']);
+
+        return $baris;
     }
 
     /**

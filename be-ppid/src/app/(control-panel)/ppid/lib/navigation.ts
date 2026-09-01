@@ -26,9 +26,10 @@ const GRUP: { id: string; title: string; icon: string; slugs: string[] }[] = [
 		title: 'Standar Layanan',
 		icon: 'lucide:clipboard-list',
 		// Maklumat punya modul sendiri karena isinya berkas unggahan (PDF/gambar)
-		// yang dibaca langsung di situs publik; kedua prosedur dan jalur/waktu
-		// layanan tetap berupa halaman biasa lewat modul Halaman Statis.
-		slugs: ['maklumat', 'halaman-statis']
+		// yang dibaca langsung di situs publik; Alur Prosedur dengan alasan yang
+		// sama, hanya berupa rangkaian gambar berurutan. Jalur/waktu layanan dan
+		// teks prosedurnya tetap berupa halaman biasa lewat Halaman Statis.
+		slugs: ['maklumat', 'alur-prosedur', 'halaman-statis']
 	},
 	{
 		id: 'ppid.layanan',
@@ -36,7 +37,13 @@ const GRUP: { id: string; title: string; icon: string; slugs: string[] }[] = [
 		icon: 'lucide:inbox',
 		// `laporan-statistik` dihapus pada langkah 58; yang tersisa hanya
 		// Laporan Pelayanan (berkas laporan per tahun).
-		slugs: ['permohonan', 'keberatan', 'laporan-pelayanan', 'pemohon', 'survey-kepuasan']
+		// `keberatan` tidak lagi punya entri sendiri (langkah 89): isinya sudah
+		// tampil di modul Permohonan sebagai salah satu dari dua kategori.
+		// Modul, API, dan hak aksesnya tetap ada — mengembalikannya ke menu
+		// cukup menambahkan slugnya kembali di baris ini.
+		// `arsip-dokumen` berdiri di sini, bukan di Konten Situs: isinya berkas
+		// yang dipakai menjawab permohonan, bukan yang tayang di situs publik.
+		slugs: ['permohonan', 'laporan-pelayanan', 'pemohon', 'arsip-dokumen', 'survey-kepuasan']
 	},
 	{
 		id: 'ppid.konten',
@@ -90,6 +97,23 @@ export function buatNavigasiPpid(
 			url: '/ppid/dashboard'
 		});
 	}
+
+	/*
+	 * Notifikasi tidak digantung pada hak modul mana pun: isinya sudah disaring
+	 * per pengguna dan per modul di API, jadi yang tidak berhak melihat sesuatu
+	 * memang tidak menerima barisnya. Menggantungkannya pada satu modul justru
+	 * menyembunyikan halamannya dari role yang notifikasinya ada.
+	 *
+	 * Entrinya perlu ada karena lonceng hanya memuat yang belum dibaca; tanpa
+	 * halaman ini, notifikasi yang terlanjur dibuka tidak bisa dilihat lagi.
+	 */
+	menu.push({
+		id: 'ppid.notifikasi',
+		title: t('Notifikasi'),
+		type: 'item',
+		icon: 'lucide:bell',
+		url: '/ppid/notifikasi'
+	});
 
 	GRUP.forEach((grup) => {
 		const anak = grup.slugs

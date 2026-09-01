@@ -9,6 +9,7 @@
 const kamusPpid: Record<string, string> = {
 	// --- Kerangka panel -------------------------------------------------
 	Dashboard: 'Dashboard',
+	Notifikasi: 'Notifications',
 	Tambah: 'Add',
 	Ubah: 'Edit',
 	Hapus: 'Delete',
@@ -206,6 +207,7 @@ const kamusPpid: Record<string, string> = {
 	Banner: 'Banner',
 	Struktur: 'Structure',
 	Maklumat: 'Service Charter',
+	'Alur Prosedur': 'Procedure Flow',
 	Halaman: 'Pages',
 	Regulasi: 'Regulations',
 	Tautan: 'Links',
@@ -244,6 +246,8 @@ const kamusPpid: Record<string, string> = {
 	'Halaman profil, visi misi, maklumat, dan sejenisnya.': 'Profile, vision and mission, pledge, and similar pages.',
 	'Berkas Maklumat Pelayanan Informasi Publik yang dibaca langsung di situs publik. Situs memakai satu maklumat berstatus Terbit dengan tanggal terbit terbaru.':
 		'The Public Information Service Charter file read directly on the public site. The site uses the most recently issued charter with the status Published.',
+	'Infografis alur yang tayang di halaman Prosedur Permohonan Informasi. Gambar tampil berurutan sesuai kolom Urutan — situs publik menayangkan gambarnya utuh, isinya tidak diketik ulang di sini.':
+		'Flow infographics shown on the Information Request Procedure page. Images appear in the order set by the Order column — the public site shows each image in full; its contents are not retyped here.',
 	'Peraturan, dasar hukum PPID, dan pedoman layanan.': 'Regulations, PPID legal basis, and service guidelines.',
 	'Tautan mitra dan instansi terkait di footer situs.': 'Partner and related agency links in the site footer.',
 	'Struktur menu situs publik.': 'Public site menu structure.',
@@ -278,6 +282,17 @@ const kamusPpid: Record<string, string> = {
 	Induk: 'Parent',
 	Urutan: 'Order',
 	'Urutan tampil': 'Display order',
+	// --- Modul Alur Prosedur ---
+	'Tayang di halaman': 'Shown on page',
+	'Judul gambar': 'Image title',
+	'Judul gambar (English)': 'Image title (English)',
+	'Gambar alur': 'Flow image',
+	Keterangan: 'Caption',
+	'Keterangan (English)': 'Caption (English)',
+	'Prosedur Permohonan Informasi': 'Information Request Procedure',
+	'Prosedur Permohonan Keberatan': 'Objection Request Procedure',
+	'Prosedur Permohonan': 'Request Procedure',
+	'Prosedur Keberatan': 'Objection Procedure',
 	Deskripsi: 'Description',
 	'Deskripsi (English)': 'Description (English)',
 	'Deskripsi tugas': 'Duty description',
@@ -442,6 +457,17 @@ const kamusPpid: Record<string, string> = {
 		'The public site only shows reports with the status Published.',
 	'Situs publik hanya menayangkan maklumat berstatus Terbit; maklumat lama cukup diubah jadi Arsip agar tetap tersimpan.':
 		'The public site only shows charters with the status Published; set an older charter to Archived to keep it on record.',
+	'Menentukan halaman Standar Layanan yang menayangkan gambar ini.': 'Determines which Service Standards page shows this image.',
+	'Angka kecil tampil lebih dulu. Pakai kelipatan seperti 1, 2, 3 agar mudah disisipi nanti.':
+		'Smaller numbers appear first. Use steps such as 1, 2, 3 so new images are easy to insert later.',
+	'Tampil sebagai judul di atas gambar dan dipakai sebagai teks alternatif bagi pembaca layar.':
+		'Shown as the heading above the image and used as the alternative text for screen readers.',
+	'Wajib. JPG/PNG/WEBP, lebar minimal 1200 px. Gambar tampil selebar isi halaman tanpa dipotong, jadi rasio bebas — tapi pastikan tulisan di dalamnya masih terbaca saat dibuka di layar ponsel.':
+		'Required. JPG/PNG/WEBP, at least 1200 px wide. The image fills the content width uncropped, so any aspect ratio works — but make sure the text inside stays readable on a phone screen.',
+	'Satu sampai dua kalimat di bawah gambar. Isinya merangkum, bukan menyalin seluruh teks di gambar. Boleh dikosongkan.':
+		'One or two sentences below the image. It summarises rather than copies the text inside the image. May be left empty.',
+	'Gambar nonaktif tetap tersimpan tetapi tidak tayang di situs publik.':
+		'An inactive image stays stored but is not shown on the public site.',
 	'Wajib. PDF atau gambar (JPG/PNG/WEBP) hasil pindai maklumat yang sudah ditandatangani. Isinya ditampilkan utuh di halaman Standar Layanan, bukan diketik ulang di sini.':
 		'Required. A PDF or image (JPG/PNG/WEBP) scan of the signed charter. Its contents are shown in full on the Service Standard page rather than retyped here.',
 	'Kosongkan agar diisi tanggal saat maklumat diterbitkan.': 'Leave blank to use the date the charter is published.',
@@ -505,6 +531,58 @@ const kamusPpid: Record<string, string> = {
 	'Persetujuan Berjenjang': 'Tiered Approval',
 	'Berkas Lampiran Pemohon': 'Applicant Attachments',
 	'Berkas Tanggapan Petugas': 'Officer Response Files',
+	// --- Panel di dalam dialog rincian (langkah 94) ----------------------
+	'Ubah Status': 'Change Status',
+	'Tanggapan & Status': 'Response & Status',
+	'Status baru': 'New status',
+	'Simpan status': 'Save status',
+	'Simpan tanggapan': 'Save response',
+	'Status menjadi': 'Status changed to',
+	'Alasan ini disampaikan kepada pemohon.': 'This reason is conveyed to the applicant.',
+	'Tersimpan di riwayat status, tidak ditampilkan ke pemohon.':
+		'Stored in the status history; not shown to the applicant.',
+	'Tanggapan ini dibaca pemohon di Portal Pemohon.': 'The applicant reads this response in the Applicant Portal.',
+	'Status ini sudah final. Tidak ada perpindahan status lanjutan yang diizinkan.':
+		'This status is final. No further status transitions are allowed.',
+	'Role Anda tidak punya hak mengubah status permohonan. Rinciannya tetap bisa dibaca.':
+		'Your role cannot change the request status. The details remain readable.',
+	'Role Anda tidak punya hak menulis tanggapan keberatan. Rinciannya tetap bisa dibaca.':
+		'Your role cannot write objection responses. The details remain readable.',
+	'Unggah berkas tanggapan': 'Upload response files',
+	// --- Berkas tanggapan disimpan lebih dulu (langkah 97) ---------------
+	'Pilih berkas tanggapan': 'Choose response files',
+	'Simpan berkas tanggapan': 'Save response files',
+	'Belum disimpan': 'Not saved yet',
+	'berkas siap disimpan. Tekan Simpan berkas tanggapan.': 'files ready to save. Press Save response files.',
+	'berkas arsip siap disimpan. Tekan Simpan berkas tanggapan.':
+		'archived files ready to save. Press Save response files.',
+	'berkas tanggapan tersimpan.': 'response files saved.',
+	'Berkas gagal disimpan': 'Failed to save the files',
+	'Berkas baru tercatat pada permohonan setelah Anda menekan Simpan. Pemohon menerima pemberitahuan saat permohonannya diserahkan — status Disetujui atau Selesai — bukan saat berkasnya disimpan.':
+		'Files are recorded on the request only after you press Save. The applicant is notified when the request is handed over — status Approved or Completed — not when the files are saved.',
+	// --- Arsip Dokumen (langkah 95) --------------------------------------
+	'Arsip Dokumen': 'Document Archive',
+	'Dokumen Arsip': 'Archived Document',
+	'Pilih dari Arsip': 'Pick from Archive',
+	'Pilih dari Arsip Dokumen': 'Pick from the Document Archive',
+	'Cari dokumen': 'Search documents',
+	'Nama, kategori, atau keterangan…': 'Name, category, or note…',
+	'Nama dokumen': 'Document name',
+	Lampirkan: 'Attach',
+	Buka: 'Open',
+	'berkas dari arsip dilampirkan.': 'archived files attached.',
+	'Berkas gagal dilampirkan': 'Failed to attach the files',
+	'Berkas terlalu besar': 'File too large',
+	'batasnya 20 MB per berkas.': 'the limit is 20 MB per file.',
+	'Arsip masih kosong. Berkas yang Anda unggah dari panel ini otomatis tercatat di sana, dan bisa juga ditambahkan lewat modul Arsip Dokumen.':
+		'The archive is empty. Files you upload from this panel are recorded there automatically, and can also be added from the Document Archive module.',
+	'Menampilkan :tampil dari :total dokumen. Persempit dengan pencarian.':
+		'Showing :tampil of :total documents. Narrow it down with a search.',
+	'Belum ada berkas tanggapan.': 'No response files yet.',
+	'Berkas yang diunggah di sini langsung bisa diunduh pemohon, dan loncengnya diberi tahu saat itu juga.':
+		'Files uploaded here are downloadable by the applicant immediately, and their bell is notified at once.',
+	'Berkas tanggapan dihapus': 'Response file deleted',
+	'Hapus berkas': 'Delete file',
 	'Tidak ada berkas.': 'No files.',
 	'Belum ada perpindahan status.': 'No status changes yet.',
 	'Catatan internal': 'Internal note',
@@ -530,15 +608,39 @@ const kamusPpid: Record<string, string> = {
 	'Seluruh tahap persetujuan sudah dilalui.': 'Every approval stage has been completed.',
 	'Tahap yang berjalan bukan giliran role Anda, jadi putusannya tidak bisa dikirim dari sini.':
 		'The running stage is not your role turn, so its decision cannot be submitted from here.',
-	'Pengajuan ini belum masuk tahap persetujuan. Jenjangnya dibuat begitu statusnya dipindahkan ke Menunggu Persetujuan.':
-		'This submission has not entered the approval stage. The chain is created as soon as its status moves to Awaiting Approval.',
+	'Alur persetujuan untuk jenis pengajuan ini belum disusun, jadi tidak ada jenjang yang bisa dijalankan. Super admin dapat menyusunnya lewat modul Alur Persetujuan.':
+		'No approval chain has been defined for this submission type, so there is no stage to run. A super admin can define one in the Approval Chain module.',
+	'Permohonan ini sedang berada di jenjang persetujuan. Perpindahannya ditentukan putusan pada panel Persetujuan Berjenjang di atas — Setujui, Tolak, atau Kembalikan untuk diperbaiki — bukan dari sini.':
+		'This request is inside the approval chain. It moves by decision on the Tiered Approval panel above — Approve, Reject, or Return for correction — not from here.',
+	'Keberatan ini sedang berada di jenjang persetujuan. Perpindahannya ditentukan putusan pada panel Persetujuan Berjenjang di atas — Setujui, Tolak, atau Kembalikan untuk diperbaiki — bukan dari sini.':
+		'This objection is inside the approval chain. It moves by decision on the Tiered Approval panel above — Approve, Reject, or Return for correction — not from here.',
+	'Jalur pelayanan': 'Service channel',
+	'Jadwal layanan': 'Service schedule',
+	'Keterangan petugas untuk pemohon': 'Officer note for the applicant',
 	'Wajib diisi. Menjadi alasan penolakan yang dibaca pemohon.':
 		'Required. Becomes the refusal reason the applicant reads.',
 	'Wajib diisi. Menjelaskan apa yang harus diperbaiki petugas.': 'Required. Explains what the officer must correct.',
 	Opsional: 'Optional',
 	'Opsional.': 'Optional.',
-	'Keberatan tidak punya nomor sendiri; di seluruh sistem ia dirujuk lewat nomor permohonan induknya.':
-		'An objection has no number of its own; throughout the system it is referred to by the code of its parent request.',
+	'Nomor keberatan (KBT-FSTJ/…) berdiri sendiri, terpisah dari nomor permohonan yang dikeberatankan — keduanya berkas dengan tenggat yang berbeda.':
+		'The objection number (KBT-FSTJ/…) stands on its own, separate from the code of the request being objected to — they are two files with different deadlines.',
+	'Batas ajukan sengketa': 'Dispute filing deadline',
+	'Kode keberatan': 'Objection code',
+	'Tanggapan keberatan paling lambat 30 hari kalender sejak diregistrasi. Bila pemohon tidak puas, sengketa informasi dapat diajukan ke Komisi Informasi paling lambat 14 hari kerja setelah tanggapan diterima.':
+		'An objection must be answered within 30 calendar days of registration. If the applicant is not satisfied, an information dispute may be filed with the Information Commission within 14 working days of receiving the response.',
+
+	// --- Alasan keberatan (Pasal 35 UU KIP) ------------------------------
+	'Alasan Keberatan Informasi': 'Grounds for Information Objections',
+	'Tujuh dasar keberatan menurut Pasal 35 UU KIP. Angka ini menunjuk sebab layanan dinilai gagal, bukan sekadar berapa banyak yang gagal.':
+		'The seven grounds for objection under Article 35 of the Public Information Act. These figures point to why the service was judged to have failed, not merely how often.',
+	'Penolakan atas Permintaan Informasi': 'Denial of the Information Request',
+	'Tidak Ditanggapinya Permintaan Informasi': 'Information Request Not Responded To',
+	'Penyampaian Informasi Melebihi Waktu yang Diatur': 'Information Delivered Beyond the Statutory Timeframe',
+	'Permintaan Informasi Tidak Ditanggapi Sebagaimana yang Diminta': 'Information Request Not Answered as Requested',
+	'Tidak Dipenuhinya Permintaan Informasi': 'Information Request Not Fulfilled',
+	'Pengenaan Biaya yang Tidak Wajar': 'Unreasonable Fee Charged',
+	'Tidak Disediakannya Informasi Berkala': 'Periodic Information Not Made Available',
+	'hari kalender': 'calendar days',
 
 	// --- Alur persetujuan (modul super admin) ----------------------------
 	'Atur tahap': 'Set stages',
@@ -569,6 +671,7 @@ const kamusPpid: Record<string, string> = {
 	// --- Placeholder pencarian -------------------------------------------
 	'Cari judul atau periode…': 'Search title or period…',
 	'Cari judul maklumat…': 'Search charter title…',
+	'Cari judul gambar alur…': 'Search flow image title…',
 	'Cari judul, ringkasan, nomor klasifikasi…': 'Search title, summary, classification number…',
 	'Cari kode permohonan atau rincian…': 'Search request code or details…',
 	'Cari komentar…': 'Search comments…'

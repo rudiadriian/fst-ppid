@@ -50,6 +50,19 @@ class AlurPersetujuan
 
     public const HASIL_REVISI = 'revisi';
 
+    /**
+     * Status yang berarti berkasnya masih berjalan, per jenis pengajuan.
+     *
+     * Dipakai {@see pastikanBerjalan()} untuk memutuskan apakah satu pengajuan
+     * masih pantas punya jenjang. Yang didaftar sengaja status **akhir**, bukan
+     * status awal: status akhir berjumlah tetap dan jarang bertambah,
+     * sedangkan status di tengah alur berubah tiap kali alurnya disempurnakan.
+     */
+    private const STATUS_AKHIR = [
+        self::JENIS_PERMOHONAN => ['disetujui', 'ditolak', 'ditolak_sebagian', 'selesai', 'kedaluwarsa'],
+        self::JENIS_KEBERATAN => ['selesai', 'ditolak'],
+    ];
+
     public static function jenisDari(Model $pengajuan): string
     {
         return $pengajuan instanceof KeberatanInformasi ? self::JENIS_KEBERATAN : self::JENIS_PERMOHONAN;
@@ -120,12 +133,51 @@ class AlurPersetujuan
         return $dibuat;
     }
 
+    /**
+     * Pastikan pengajuan yang masih berjalan punya jenjang (langkah 100).
+     *
+     * Sebelum ini jenjang baru lahir ketika petugas memindahkan status ke
+     * "Menunggu Persetujuan" sendiri — dan karena itu tidak pernah lahir:
+     * PPID Pelaksana berhenti di "Diproses", berkasnya diam di sana, dan PPID
+     * tidak pernah diberi tahu ada yang menunggu putusannya. Pemohon menunggu
+     * berkas yang, dari sudut pandang alur, belum pernah masuk.
+     *
+     * Yang benar: berkas yang masuk **selalu** punya jenjang. Tahap pertamanya
+     * milik PPID Pelaksana, dan sejak itu perpindahan berkas ditentukan
+     * putusan, bukan dropdown status.
+     *
+     * Idempoten dan aman dipanggil dari mana saja — termasuk dari endpoint
+     * baca. Pengajuan yang sudah tuntas tidak dibuatkan jenjang baru: berkas
+     * yang ditutup sebelum alur berjenjang dipakai tidak boleh dibuka lagi
+     * hanya karena rinciannya dibuka orang.
+     *
+     * @return Collection<int, ApprovalPengajuan>
+     */
+    public static function pastikanBerjalan(Model $pengajuan): Collection
+    {
+        $jenis = self::jenisDari($pengajuan);
+        $id = (int) $pengajuan->getKey();
+
+        if (self::berjalan($jenis, $id) !== null) {
+            return self::langkahPutaranTerakhir($jenis, $id);
+        }
+
+        if (in_array((string) $pengajuan->status, self::STATUS_AKHIR[$jenis] ?? [], true)) {
+            return self::langkahPutaranTerakhir($jenis, $id);
+        }
+
+        return self::mulai($pengajuan);
+    }
+
     /** Seluruh langkah satu pengajuan, terurut. */
     public static function langkah(string $jenis, int $pengajuanId): Collection
     {
         return ApprovalPengajuan::where('jenis', $jenis)
             ->where('pengajuan_id', $pengajuanId)
-            ->with(['role:id,name,slug', 'pemutus:id,name'])
+            // `tahap` ikut dimuat agar panel tahu jenjang mana yang tidak diberi
+            // hak menolak — jenjang itulah tempat jalur pelayanan ditetapkan,
+            // dan formulir putusannya berbeda isi karena itu (langkah 89).
+            ->with(['role:id,name,slug', 'pemutus:id,name', 'tahap:id,boleh_tolak'])
             ->orderBy('id')
             ->get();
     }
@@ -253,6 +305,13 @@ class AlurPersetujuan
      * Tanpa ini jenjang berikutnya hanya terlihat oleh yang kebetulan membuka
      * modulnya, dan berkas menunggu tanpa ada yang tahu. Gagal menulis
      * notifikasi tidak boleh membatalkan putusan yang sudah tersimpan.
+     *
+     * Rolenya saja tidak cukup jadi dasar penerima. Tahap alur menyebut role,
+     * sedangkan yang menentukan seseorang bisa membuka dan memutuskan berkasnya
+     * adalah hak modul (`role_modul_akses`). Role yang dipasang di alur tetapi
+     * hak modulnya belum dibuka hanya akan menerima tautan yang berujung
+     * "Akses ditolak", jadi hak `view` + `approve` ikut disyaratkan di sini —
+     * sama dengan yang dijaga middleware `akses:{modul},approve` di route.
      */
     private static function beriTahuPenyetuju(?ApprovalPengajuan $langkah, Model $pengajuan): void
     {
@@ -261,20 +320,50 @@ class AlurPersetujuan
         }
 
         try {
-            $penerima = User::where('role_id', $langkah->role_id)
-                ->where('is_active', true)
-                ->pluck('id');
+            $keberatan = $pengajuan instanceof KeberatanInformasi;
+
+            /*
+             * Keberatan tampil sebagai kategori di dalam modul Permohonan sejak
+             * langkah 89 dan menunya sendiri sudah dilepas, jadi baik penerima
+             * maupun tautannya mengikuti modul Permohonan. `jenis` yang memberi
+             * tahu halaman itu rincian mana yang harus dibuka.
+             */
+            $modulPanel = 'permohonan';
+            $tautan = "/ppid/{$modulPanel}?detail=".$langkah->pengajuan_id
+                .($keberatan ? '&jenis=keberatan' : '');
+
+            $penerima = User::where('users.role_id', $langkah->role_id)
+                ->where('users.is_active', true)
+                ->whereExists(fn ($q) => $q
+                    ->from('role_modul_akses as akses')
+                    ->join('modul_sistem as modul', 'modul.id', '=', 'akses.modul_id')
+                    ->whereColumn('akses.role_id', 'users.role_id')
+                    ->where('modul.slug', $modulPanel)
+                    ->where('akses.can_view', true)
+                    ->where('akses.can_approve', true))
+                ->pluck('users.id');
 
             if ($penerima->isEmpty()) {
                 return;
             }
 
-            $keberatan = $pengajuan instanceof KeberatanInformasi;
             $nomor = self::nomor($pengajuan, $keberatan);
-            $modul = $keberatan ? 'keberatan' : 'permohonan';
             $label = $keberatan ? 'Keberatan Informasi' : 'Permohonan Informasi';
 
             foreach ($penerima as $userId) {
+                // Satu tahap hanya menunggu sekali. Alur yang dihitung ulang
+                // (mis. putusan tahap sebelumnya disimpan dua kali) tidak boleh
+                // menumpuk pemberitahuan untuk giliran yang sama.
+                $sudahAda = Notifikasi::where('user_id', $userId)
+                    ->where('type', 'approval_menunggu')
+                    ->where('is_read', false)
+                    ->whereRaw("data->>'approval_id' = ?", [(string) $langkah->getKey()])
+                    ->exists();
+
+                if ($sudahAda) {
+                    continue;
+                }
+
                 Notifikasi::create([
                     'user_id' => $userId,
                     'type' => 'approval_menunggu',
@@ -284,9 +373,10 @@ class AlurPersetujuan
                     'data' => [
                         'title' => 'Persetujuan Menunggu',
                         'icon' => 'lucide:stamp',
-                        'link' => "/ppid/{$modul}?detail=".$langkah->pengajuan_id,
+                        'link' => $tautan,
                         'useRouter' => true,
                         'variant' => 'warning',
+                        'modul' => $modulPanel,
                         'approval_id' => $langkah->getKey(),
                     ],
                 ]);
@@ -299,7 +389,7 @@ class AlurPersetujuan
     private static function nomor(Model $pengajuan, bool $keberatan): string
     {
         $nomor = $keberatan
-            ? (string) ($pengajuan->loadMissing('permohonan')->permohonan?->kode_permohonan ?? '')
+            ? (string) ($pengajuan->kode_keberatan ?? '')
             : (string) ($pengajuan instanceof PermohonanInformasi ? $pengajuan->kode_permohonan : '');
 
         return $nomor !== '' ? $nomor : '(tanpa nomor)';

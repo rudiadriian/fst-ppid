@@ -14,20 +14,46 @@ class KeberatanInformasi extends Model
 
     protected $table = 'keberatan_informasi';
 
+    /**
+     * Tujuh dasar keberatan menurut Pasal 35 UU No. 14 Tahun 2008.
+     *
+     * Urutannya mengikuti pasalnya, bukan abjad, supaya pilihan di portal
+     * pemohon terbaca sejajar dengan bunyi undang-undangnya. Kuncinya adalah
+     * nilai yang diterima CHECK constraint
+     * `keberatan_informasi_jenis_keberatan_check`.
+     */
+    public const JENIS = [
+        'permohonan_ditolak' => 'Penolakan atas Permintaan Informasi',
+        'permintaan_tidak_ditanggapi' => 'Tidak Ditanggapinya Permintaan Informasi',
+        'melebihi_jangka_waktu' => 'Penyampaian Informasi Melebihi Waktu yang Diatur',
+        'informasi_tidak_sesuai' => 'Permintaan Informasi Tidak Ditanggapi Sebagaimana yang Diminta',
+        'permintaan_tidak_dipenuhi' => 'Tidak Dipenuhinya Permintaan Informasi',
+        'biaya_tidak_wajar' => 'Pengenaan Biaya yang Tidak Wajar',
+        'informasi_tidak_disediakan' => 'Tidak Disediakannya Informasi Berkala',
+    ];
+
     protected $fillable = [
         'permohonan_id',
         'pemohon_id',
         'jenis_keberatan',
         'alasan_keberatan',
         'status',
+        'jalur_pelayanan',
         'tanggapan_atasan_ppid',
         'ditangani_oleh',
         'tanggal_tanggapan',
+        'batas_waktu_tanggapan',
+        'batas_waktu_sengketa',
+        'jadwal_layanan',
+        'keterangan_petugas',
     ];
 
     protected $casts = [
         'tanggal_keberatan' => 'datetime',
         'tanggal_tanggapan' => 'datetime',
+        'batas_waktu_tanggapan' => 'datetime',
+        'batas_waktu_sengketa' => 'datetime',
+        'jadwal_layanan' => 'datetime',
     ];
 
     /**
@@ -42,7 +68,7 @@ class KeberatanInformasi extends Model
      * putusan akhirnya tidak lagi dipasang petugas sendiri.
      */
     public const TRANSISI = [
-        'diajukan' => ['diproses', 'ditolak'],
+        'diajukan' => ['diproses', 'menunggu_approval', 'ditolak'],
         'diproses' => ['menunggu_approval', 'revisi', 'ditolak'],
         'revisi' => ['diproses', 'ditolak'],
         'menunggu_approval' => ['selesai', 'ditolak', 'diproses'],

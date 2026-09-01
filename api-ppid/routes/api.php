@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AnalitikController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CaptchaController;
 use App\Http\Controllers\Api\Cms\AlurApprovalController;
+use App\Http\Controllers\Api\Cms\AlurProsedurController;
+use App\Http\Controllers\Api\Cms\ArsipDokumenController;
 use App\Http\Controllers\Api\Cms\AuditLogController;
 use App\Http\Controllers\Api\Cms\BannerSliderController;
 use App\Http\Controllers\Api\Cms\BeritaController;
@@ -20,6 +22,7 @@ use App\Http\Controllers\Api\Cms\MaklumatController;
 use App\Http\Controllers\Api\Cms\MenuNavigasiController;
 use App\Http\Controllers\Api\Cms\ModulSistemController;
 use App\Http\Controllers\Api\Cms\PemohonController;
+use App\Http\Controllers\Api\Cms\PengajuanLayananController;
 use App\Http\Controllers\Api\Cms\PengaturanSitusController;
 use App\Http\Controllers\Api\Cms\PenggunaController;
 use App\Http\Controllers\Api\Cms\PermohonanController;
@@ -104,6 +107,12 @@ Route::prefix('v1')->group(function () {
         CrudRoute::register('informasi-publik', InformasiPublikController::class, 'informasi-publik');
         CrudRoute::register('informasi-dikecualikan', InformasiDikecualikanController::class, 'informasi-dikecualikan');
 
+        // Daftar gabungan permohonan + keberatan (langkah 89). Hanya baca;
+        // hak aksesnya menumpang modul Permohonan karena isinya berkas yang
+        // sama, hanya ditampilkan dalam satu daftar.
+        Route::get('pengajuan', [PengajuanLayananController::class, 'index'])
+            ->middleware('akses:permohonan,view');
+
         // --- Layanan permohonan ---
         // Route khusus didaftarkan sebelum CrudRoute agar tidak tertangkap pola /{id}.
         Route::post('permohonan/{id}/status', [PermohonanController::class, 'ubahStatus'])
@@ -113,6 +122,11 @@ Route::prefix('v1')->group(function () {
         Route::get('permohonan/{id}/approval', [PermohonanController::class, 'daftarPersetujuan'])
             ->middleware('akses:permohonan,view')->whereNumber('id');
         Route::post('permohonan/{id}/approval', [PermohonanController::class, 'putuskanPersetujuan'])
+            ->middleware('akses:permohonan,approve')->whereNumber('id');
+        // Perpanjangan tenggat menggeser janji resmi kepada pemohon, jadi
+        // dijaga hak `approve` — sama dengan putusan persetujuan, bukan `edit`
+        // yang dipegang setiap petugas pelaksana.
+        Route::post('permohonan/{id}/perpanjang', [PermohonanController::class, 'perpanjangTenggat'])
             ->middleware('akses:permohonan,approve')->whereNumber('id');
         Route::post('permohonan/{id}/tanggapan-files', [PermohonanController::class, 'tambahTanggapanFile'])
             ->middleware('akses:permohonan,edit')->whereNumber('id');
@@ -165,6 +179,10 @@ Route::prefix('v1')->group(function () {
         // pemakai lagi, baik di panel maupun di situs publik.
         CrudRoute::register('laporan-layanan', LaporanLayananController::class, 'laporan-layanan');
 
+        // Arsip dokumen petugas: berkas yang dipakai berulang untuk menjawab
+        // permohonan, dilampirkan tanpa unggahan ulang (langkah 95).
+        CrudRoute::register('arsip-dokumen', ArsipDokumenController::class, 'arsip-dokumen');
+
         // --- Konten situs ---
         CrudRoute::register('berita', BeritaController::class, 'berita');
         CrudRoute::register('kategori-berita', KategoriBeritaController::class, 'berita');
@@ -176,6 +194,9 @@ Route::prefix('v1')->group(function () {
         // Maklumat = halaman Standar Layanan berbentuk unggahan dokumen;
         // hak aksesnya menumpang modul Halaman Statis.
         CrudRoute::register('maklumat', MaklumatController::class, 'halaman-statis');
+        // Alur bergambar halaman Standar Layanan; hak aksesnya menumpang modul
+        // Halaman Statis dengan alasan yang sama seperti Maklumat.
+        CrudRoute::register('alur-prosedur', AlurProsedurController::class, 'halaman-statis');
         CrudRoute::register('regulasi', RegulasiController::class, 'regulasi');
         CrudRoute::register('tautan-terkait', TautanTerkaitController::class, 'tautan-terkait');
         CrudRoute::register('menu-navigasi', MenuNavigasiController::class, 'menu-navigasi');

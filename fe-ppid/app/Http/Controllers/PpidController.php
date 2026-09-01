@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use App\Mail\DownloadReportMail; // Asumsikan Anda membuat Mailable ini
 use Illuminate\Support\Facades\Log;
+use App\Models\AlurProsedur;
 use App\Models\InformasiDikecualikan;
 use App\Models\LaporanLayanan;
 use App\Models\Maklumat;
@@ -440,7 +441,10 @@ class PpidController extends Controller
             // sini supaya prosedurnya berada satu tempat dengan penjelasannya.
             'prosedur-permohonan' => [
                 'title' => 'Prosedur Permohonan Informasi',
-                'intro' => 'Enam tahapan sederhana dari pengajuan hingga informasi Anda terima.',
+                // Bunyinya tidak lagi menyebut "enam tahapan": sejak langkah 86
+                // halaman ini menayangkan alur bergambar, dan kartu tahapannya
+                // hanya muncul bila gambarnya belum diunggah.
+                'intro' => 'Alur lengkap dari membuat akun sampai permohonan Anda diproses.',
                 'flow' => [
                     ['title' => 'Ajukan Permohonan', 'desc' => 'Isi formulir permohonan informasi secara daring.', 'icon' => 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'],
                     ['title' => 'Verifikasi', 'desc' => 'Berkas & identitas pemohon diperiksa petugas PPID.', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
@@ -465,16 +469,16 @@ class PpidController extends Controller
                     ['title' => 'Isi Formulir Keberatan', 'desc' => 'Pilih alasan keberatan, tulis kasus posisi, lampirkan dokumen pendukung.', 'icon' => 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'],
                     ['title' => 'Verifikasi Berkas', 'desc' => 'Petugas memeriksa kelengkapan berkas dan mencatat keberatan Anda.', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
                     ['title' => 'Telaah Atasan PPID', 'desc' => 'Atasan PPID menelaah keberatan bersama unit kerja terkait.', 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'],
-                    ['title' => 'Tanggapan Tertulis', 'desc' => 'Tanggapan diberikan paling lama 30 hari kerja sejak keberatan dicatat.', 'icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
-                    ['title' => 'Sengketa Informasi', 'desc' => 'Bila tanggapan belum memuaskan, pemohon dapat mengajukan sengketa ke Komisi Informasi.', 'icon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z'],
+                    ['title' => 'Tanggapan Tertulis', 'desc' => 'Tanggapan diberikan paling lama 30 hari kalender sejak keberatan diregistrasi.', 'icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
+                    ['title' => 'Sengketa Informasi', 'desc' => 'Bila tanggapan belum memuaskan, sengketa dapat diajukan ke Komisi Informasi dalam 14 hari kerja.', 'icon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z'],
                 ],
                 'steps' => [
                     'Keberatan diajukan paling lambat 30 hari kerja setelah pemohon menerima tanggapan atau setelah batas waktu tanggapan terlewati.',
                     'Pemohon masuk ke akun, membuka menu Permohonan Keberatan, lalu memilih permohonan informasi yang dikeberatankan.',
                     'Pemohon mengisi alasan keberatan, kasus posisi, dan melampirkan dokumen pendukung (PDF/gambar, maksimal 10 MB per berkas).',
                     'Petugas mencatat keberatan dan meneruskannya kepada Atasan PPID untuk ditelaah.',
-                    'Atasan PPID memberikan tanggapan tertulis paling lama 30 hari kerja sejak keberatan dicatat.',
-                    'Apabila pemohon belum puas atas tanggapan tersebut, sengketa informasi dapat diajukan ke Komisi Informasi.',
+                    'Atasan PPID memberikan tanggapan tertulis paling lama 30 hari kalender sejak keberatan diregistrasi.',
+                    'Apabila pemohon belum puas atas tanggapan tersebut, sengketa informasi dapat diajukan ke Komisi Informasi paling lambat 14 hari kerja setelah tanggapan diterima.',
                 ]
             ],
             'jalur-waktu-layanan' => [
@@ -524,7 +528,55 @@ class PpidController extends Controller
             $data = $this->lengkapiMaklumat($data);
         }
 
+        // Prosedur tayang sebagai alur bergambar bila petugas sudah mengunggah
+        // infografisnya lewat modul Alur Prosedur. Kartu tahapan dan rincian
+        // langkah di `$standardData` tetap ada di bawahnya — gambar menunjukkan
+        // tampilan layarnya, teks tetap bisa dibaca pembaca layar dan dicari
+        // mesin pencari.
+        if (in_array($key, ['prosedur-permohonan', 'prosedur-keberatan'], true)) {
+            $data = $this->lengkapiAlurGambar($data, $key);
+        }
+
         return view('ppid.service_standard', compact('data', 'slug'));
+    }
+
+    /**
+     * Tambahkan gambar alur ke data halaman Standar Pelayanan.
+     *
+     * Kunci `gambar_alur` hanya diisi bila ada gambar aktif untuk halaman itu;
+     * halaman yang belum punya gambar tampil persis seperti sebelumnya.
+     */
+    private function lengkapiAlurGambar(array $data, string $halaman): array
+    {
+        $baris = $this->fromDatabase(
+            fn () => AlurProsedur::tayang($halaman)->get(),
+            collect(),
+            'alur prosedur'
+        );
+
+        $gambar = $baris
+            ->map(function ($item) {
+                $url = $this->fileUrl($item->gambar);
+
+                if (blank($url)) {
+                    return null;
+                }
+
+                return [
+                    'url' => $url,
+                    'judul' => $item->teks('judul'),
+                    'keterangan' => $item->teks('keterangan'),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        if ($gambar) {
+            $data['gambar_alur'] = $gambar;
+        }
+
+        return $data;
     }
 
     /**
@@ -570,7 +622,9 @@ class PpidController extends Controller
             'url' => $url,
             'ext' => $ekstensi,
             'judul' => filled($judul) ? $judul : $data['title'],
-            'ringkasan' => $baris->teks('ringkasan'),
+            // Kolom `ringkasan` tidak ikut dibawa sejak langkah 88: pengantarnya
+            // dilepas dari halaman, dan meneruskan data yang tidak dipakai
+            // membuat view berikutnya mengira ia masih tayang.
             'tanggal' => $baris->tanggal_terbit ? \App\Support\Cms::tanggal($baris->tanggal_terbit) : null,
             'pengunggah' => $baris->penerbit->name ?? null,
         ];

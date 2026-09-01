@@ -11,6 +11,7 @@ import { useTheme } from '@mui/material/styles';
 import FuseLoading from '@fuse/core/FuseLoading';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useTranslation } from 'react-i18next';
+import { JENIS_KEBERATAN } from './lib/statusPengajuan';
 import { ApexOptions } from 'apexcharts';
 import ReactApexChart from 'react-apexcharts';
 import api from '@/utils/api';
@@ -102,6 +103,7 @@ type Analitik = {
 			per_status: { permohonan: Record<string, number>; keberatan: Record<string, number> };
 			per_jenis_pemohon: { permohonan: Record<string, number>; keberatan: Record<string, number> };
 			cara_pengiriman: Record<string, number>;
+			alasan_keberatan: { kode: string; label: string; jumlah: number }[];
 		};
 		kpi: IndikatorKpi[];
 		tindakan: {
@@ -518,6 +520,30 @@ function PpidDashboard() {
 				</Paper>
 			</div>
 
+			{/* --- 4b. Alasan keberatan --- */}
+			<Paper
+				elevation={0}
+				className="border-divider rounded-lg border p-4"
+			>
+				<Typography className="mb-1 font-medium">{t('Alasan Keberatan Informasi')}</Typography>
+				<Typography
+					variant="caption"
+					color="text.secondary"
+					className="mb-3 block"
+				>
+					{t(
+						'Tujuh dasar keberatan menurut Pasal 35 UU KIP. Angka ini menunjuk sebab layanan dinilai gagal, bukan sekadar berapa banyak yang gagal.'
+					)}
+				</Typography>
+
+				<DaftarSebaran
+					data={Object.fromEntries(analisa.alasan_keberatan.map((a) => [a.kode, a.jumlah]))}
+					label={(kunci) => t(JENIS_KEBERATAN[kunci] ?? kunci)}
+					kosong={t('Belum ada keberatan.')}
+					warna="secondary"
+				/>
+			</Paper>
+
 			{/* --- 5. Kondisi konten --- */}
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<KartuAngka
@@ -626,7 +652,7 @@ function PpidDashboard() {
 						color="text.secondary"
 					>
 						{t('Tanggapan')} {sla.target_hari} {t('hari kerja')} (+{sla.perpanjangan_hari}) ·{' '}
-						{t('Keberatan')} {sla.target_keberatan_hari} {t('hari kerja')}
+						{t('Keberatan')} {sla.target_keberatan_hari} {t('hari kalender')}
 					</Typography>
 				</div>
 

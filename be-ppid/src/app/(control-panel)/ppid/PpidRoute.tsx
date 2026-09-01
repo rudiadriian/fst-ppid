@@ -5,6 +5,12 @@ import PpidAuthGuard from './components/PpidAuthGuard';
 
 const PpidDashboard = lazy(() => import('./PpidDashboard'));
 const PpidResourcePage = lazy(() => import('./PpidResourcePage'));
+/**
+ * Halaman arsip notifikasi. Komponennya sudah lama ada di `apps/notifications`
+ * tetapi tidak pernah punya route, jadi satu-satunya jalan melihat notifikasi
+ * adalah lonceng — dan lonceng hanya memuat yang belum dibaca.
+ */
+const NotifikasiPage = lazy(() => import('@/app/(control-panel)/apps/notifications/components/views/NotificationsAppView'));
 
 /**
  * Route panel CMS PPID.
@@ -23,6 +29,9 @@ const route: FuseRouteItemType[] = [
 			// Analitik & SLA melebur ke Dashboard. Alamat lamanya dibiarkan
 			// hidup sebagai pengalihan supaya tautan/bookmark tidak mati.
 			{ path: 'analitik', element: <Navigate to="/ppid/dashboard" replace /> },
+			// Didaftarkan sebelum `:resourceSlug`: tanpa itu alamatnya tertangkap
+			// pola modul dan dijawab "Modul tidak dikenal".
+			{ path: 'notifikasi', element: <NotifikasiPage /> },
 			{ path: ':resourceSlug', element: <PpidResourcePage /> }
 		]
 	}

@@ -117,7 +117,8 @@
                 @foreach ($keberatan as $item)
                     <li class="py-4 flex flex-wrap items-center justify-between gap-3">
                         <div>
-                            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $item->permohonan->kode_permohonan ?? '—' }}</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $item->kode_keberatan ?? '—' }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('atas') }} {{ $item->permohonan->kode_permohonan ?? '—' }}</p>
                             <p class="text-sm text-gray-500 dark:text-gray-400">
                                 {{ __(\App\Models\KeberatanInformasi::JENIS[$item->jenis_keberatan] ?? $item->jenis_keberatan) }} ·
                                 {{ optional($item->tanggal_keberatan)->translatedFormat('d F Y') }}

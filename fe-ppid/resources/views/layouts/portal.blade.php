@@ -39,30 +39,6 @@
         $subOn = $subClass.' font-bold text-[#10462F] bg-emerald-50 dark:bg-white/5 dark:text-[#3E9C6C]';
     @endphp
 
-    {{-- Sapaan --}}
-    <section class="relative fs-gradient overflow-hidden">
-        <div class="absolute inset-0 fs-dot-pattern opacity-40"></div>
-        <div class="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12 flex flex-wrap items-center gap-4 justify-between">
-            <div>
-                <p class="text-sm font-semibold tracking-widest uppercase text-white/70 mb-2">{{ __('Portal Pengguna') }}</p>
-                <h1 class="text-2xl lg:text-3xl font-bold text-white leading-tight">@yield('portal-judul', __('Dashboard'))</h1>
-            </div>
-            <div class="flex items-center gap-3">
-                @include('akun.partials.avatar', [
-                    'pemohon' => $akun,
-                    'ukuran' => 'w-12 h-12',
-                    'teks' => 'text-lg',
-                    'cincin' => 'ring-2 ring-white/40',
-                    'latar' => 'bg-white/15 text-white',
-                ])
-                <div class="text-white">
-                    <p class="font-semibold leading-tight">{{ $akun?->nama }}</p>
-                    <p class="text-xs text-white/70">{{ $akun?->email }}</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section class="py-8 lg:py-12 bg-[#F3ECDD] dark:bg-[#082217]">
         <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)] gap-6">
 

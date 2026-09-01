@@ -1,3 +1,4 @@
+import { JENIS_KEBERATAN } from './statusPengajuan';
 import { ResourceConfig } from './types';
 
 /**
@@ -21,6 +22,22 @@ const BADGE_KONTEN = {
 	archived: { label: 'Arsip', color: 'default' as const }
 };
 
+/**
+ * Halaman Standar Layanan yang bisa menayangkan alur bergambar.
+ *
+ * Nilainya adalah slug rute situs publik (`/standar-layanan/{slug}`), jadi
+ * menambah pilihan di sini harus dibarengi halaman yang sudah ada di fe-ppid.
+ */
+const HALAMAN_ALUR = [
+	{ value: 'prosedur-permohonan', label: 'Prosedur Permohonan Informasi' },
+	{ value: 'prosedur-keberatan', label: 'Prosedur Permohonan Keberatan' }
+];
+
+const BADGE_HALAMAN_ALUR = {
+	'prosedur-permohonan': { label: 'Prosedur Permohonan', color: 'success' as const },
+	'prosedur-keberatan': { label: 'Prosedur Keberatan', color: 'warning' as const }
+};
+
 /** Status Verifikasi Data Diri Pemohon; nilainya dari kolom `status_verifikasi`. */
 const BADGE_VERIFIKASI = {
 	belum: { label: 'Belum Diverifikasi', color: 'default' as const },
@@ -28,6 +45,49 @@ const BADGE_VERIFIKASI = {
 	terverifikasi: { label: 'Terverifikasi', color: 'success' as const },
 	ditolak: { label: 'Ditolak', color: 'error' as const }
 };
+
+/**
+ * Dua kategori pengajuan layanan (langkah 89).
+ *
+ * Nilainya sama dengan kolom `jenis` pada endpoint gabungan `pengajuan` di
+ * api-ppid, dan menentukan dialog detail mana yang dibuka aksi barisnya.
+ */
+const JENIS_PENGAJUAN = [
+	{ value: 'permohonan', label: 'Permohonan Informasi' },
+	{ value: 'keberatan', label: 'Permohonan Keberatan Informasi' }
+];
+
+const BADGE_JENIS_PENGAJUAN = {
+	permohonan: { label: 'Permohonan Informasi', color: 'info' as const },
+	keberatan: { label: 'Keberatan Informasi', color: 'warning' as const }
+};
+
+/** Jalur pelayanan; menentukan bentuk tindak lanjut petugas. */
+const JALUR_PELAYANAN = [
+	{ value: 'online', label: 'Online' },
+	{ value: 'langsung', label: 'Langsung' }
+];
+
+const BADGE_JALUR = {
+	online: { label: 'Online', color: 'info' as const },
+	langsung: { label: 'Langsung', color: 'success' as const }
+};
+
+/**
+ * Keadaan tenggat, dihitung server dari `App\Support\SlaLayanan`.
+ *
+ * Warnanya dipilih untuk dibaca sekilas dari seberang ruangan: merah hanya
+ * untuk yang sudah lewat, kuning untuk yang menuntut tindakan hari ini.
+ */
+const BADGE_SLA = {
+	aman: { label: 'Dalam tenggat', color: 'success' as const },
+	segera: { label: 'Segera jatuh tempo', color: 'warning' as const },
+	lewat_tenggat: { label: 'Lewat tenggat', color: 'error' as const },
+	tepat_waktu: { label: 'Tepat waktu', color: 'success' as const },
+	terlambat: { label: 'Terlambat', color: 'error' as const }
+};
+
+const KEADAAN_SLA = Object.entries(BADGE_SLA).map(([value, info]) => ({ value, label: info.label }));
 
 const BADGE_PERMOHONAN = {
 	diajukan: { label: 'Diajukan', color: 'info' as const },
@@ -312,41 +372,56 @@ export const resources: ResourceConfig[] = [
 		slug: 'permohonan',
 		modul: 'permohonan',
 		title: 'Permohonan',
-		singular: 'Permohonan',
+		singular: 'Pengajuan',
+		/*
+		 * Satu daftar untuk dua kategori (langkah 89). Petugas menangani
+		 * permohonan dan keberatan dengan gerak yang sama — buka detail,
+		 * periksa, teruskan — jadi keduanya dibaca di sini dan dibedakan kolom
+		 * Kategori. Dua menu terpisah memaksa petugas memeriksa dua tempat
+		 * untuk menjawab satu pertanyaan: apa yang menunggu saya hari ini.
+		 */
+		apiPath: 'pengajuan',
 		description:
-			'Permohonan masuk beserta status penanganannya. Isinya ditulis pemohon lewat portal, jadi tidak bisa ditambah, disunting, atau dihapus dari panel — tindakan petugas berupa perpindahan status dan putusan persetujuan berjenjang lewat aksi baris, yang tercatat di riwayat status. Buka Detail untuk melihat pengajuan selengkapnya.',
+			'Permohonan Informasi dan Permohonan Keberatan Informasi dalam satu daftar, dibedakan kolom Kategori. Isinya ditulis pemohon lewat portal, jadi tidak bisa ditambah, disunting, atau dihapus dari panel — tindakan petugas berupa verifikasi, putusan persetujuan berjenjang, dan perpindahan status lewat aksi baris, yang seluruhnya tercatat. Buka Detail untuk melihat pengajuan selengkapnya.',
 		icon: 'lucide:inbox',
 		// Data kiriman pemohon: tanpa tambah, ubah, dan hapus. Endpoint
 		// `store`/`update`/`destroy`-nya juga tidak didaftarkan di api-ppid.
 		tanpaTambah: true,
 		tanpaUbah: true,
 		tanpaHapus: true,
-		defaultSort: '-tanggal_permohonan',
-		searchPlaceholder: 'Cari kode permohonan atau rincian…',
+		defaultSort: '-tanggal_pengajuan',
+		searchPlaceholder: 'Cari kode, pokok pengajuan, atau nama pemohon…',
 		columns: [
-			{ key: 'kode_permohonan', label: 'Kode', size: 170 },
-			{ key: 'pemohon', label: 'Pemohon', type: 'relation', relationKey: 'nama', noSort: true },
-			{ key: 'rincian_informasi', label: 'Rincian', size: 280, noSort: true },
-			{ key: 'status', label: 'Status', type: 'badge', badgeMap: BADGE_PERMOHONAN, size: 170 },
-			{ key: 'tanggal_permohonan', label: 'Diajukan', type: 'datetime', size: 160 },
-			{ key: 'batas_waktu_tanggapan', label: 'Batas waktu', type: 'datetime', size: 160 }
+			{
+				key: 'jenis',
+				label: 'Kategori',
+				type: 'badge',
+				badgeMap: BADGE_JENIS_PENGAJUAN,
+				size: 190,
+				noSort: true
+			},
+			{ key: 'kode', label: 'Kode', size: 190, noSort: true },
+			{ key: 'nama_pemohon', label: 'Pemohon', size: 180, noSort: true },
+			{ key: 'pokok', label: 'Pokok pengajuan', size: 260, noSort: true },
+			{ key: 'status', label: 'Status', type: 'badge', badgeMap: BADGE_PERMOHONAN, size: 170, noSort: true },
+			{ key: 'jalur_pelayanan', label: 'Jalur', type: 'badge', badgeMap: BADGE_JALUR, size: 120, noSort: true },
+			{ key: 'sla_keadaan', label: 'Tenggat', type: 'badge', badgeMap: BADGE_SLA, size: 170, noSort: true },
+			{ key: 'tanggal_pengajuan', label: 'Diajukan', type: 'datetime', size: 160, noSort: true },
+			{ key: 'batas_waktu_tanggapan', label: 'Batas waktu', type: 'datetime', size: 160, noSort: true }
 		],
 		// Tanpa formulir: modul ini tidak punya jalur tambah maupun ubah.
 		// Seluruh isian pengajuan dibaca lewat aksi baris "Lihat detail".
 		fields: [],
 		filters: [
+			{ name: 'jenis', label: 'Kategori', type: 'select', options: JENIS_PENGAJUAN },
 			{
 				name: 'status',
 				label: 'Status',
 				type: 'select',
 				options: Object.entries(BADGE_PERMOHONAN).map(([value, info]) => ({ value, label: info.label }))
 			},
-			{
-				name: 'kategori_id',
-				label: 'Kategori',
-				type: 'relation',
-				relation: { resource: 'kategori-informasi', labelKey: 'nama' }
-			}
+			{ name: 'jalur_pelayanan', label: 'Jalur pelayanan', type: 'select', options: JALUR_PELAYANAN },
+			{ name: 'sla_keadaan', label: 'Tenggat', type: 'select', options: KEADAAN_SLA }
 		]
 	},
 	{
@@ -362,9 +437,10 @@ export const resources: ResourceConfig[] = [
 		tanpaHapus: true,
 		defaultSort: '-tanggal_keberatan',
 		columns: [
+			{ key: 'kode_keberatan', label: 'Kode keberatan', size: 190 },
 			{ key: 'permohonan', label: 'Kode permohonan', type: 'relation', relationKey: 'kode_permohonan', noSort: true },
 			{ key: 'pemohon', label: 'Pemohon', type: 'relation', relationKey: 'nama', noSort: true },
-			{ key: 'jenis_keberatan', label: 'Jenis', size: 220 },
+			{ key: 'jenis_keberatan', label: 'Alasan', type: 'map', mapValues: JENIS_KEBERATAN, size: 260 },
 			{ key: 'status', label: 'Status', type: 'badge', size: 170, badgeMap: BADGE_KEBERATAN },
 			{ key: 'tanggal_keberatan', label: 'Diajukan', type: 'datetime', size: 160 }
 		],
@@ -378,6 +454,12 @@ export const resources: ResourceConfig[] = [
 				label: 'Status',
 				type: 'select',
 				options: Object.entries(BADGE_KEBERATAN).map(([value, info]) => ({ value, label: info.label }))
+			},
+			{
+				name: 'jenis_keberatan',
+				label: 'Alasan keberatan',
+				type: 'select',
+				options: Object.entries(JENIS_KEBERATAN).map(([value, label]) => ({ value, label }))
 			}
 		]
 	},
@@ -818,27 +900,170 @@ export const resources: ResourceConfig[] = [
 				options: STATUS_KONTEN,
 				defaultValue: 'draft',
 				help: 'Situs publik hanya menayangkan maklumat berstatus Terbit; maklumat lama cukup diubah jadi Arsip agar tetap tersimpan.'
+			}
+			// Isian Pengantar (`ringkasan`/`ringkasan_en`) dilepas pada langkah 88:
+			// halaman Maklumat kini hanya menayangkan dokumennya, jadi kalimat
+			// pengantar itu tidak pernah muncul di mana pun. Kolomnya tetap ada di
+			// basis data — isian lama tersimpan dan tetap bisa dicari lewat kotak
+			// pencarian modul — hanya formulirnya yang tidak lagi memintanya.
+		],
+		filters: [{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN }]
+	},
+	{
+		slug: 'alur-prosedur',
+		// Alasannya sama dengan Maklumat: alur bergambar adalah isi halaman
+		// Standar Layanan, bukan modul layanan sendiri, jadi hak aksesnya
+		// menumpang Halaman Statis dan matrix role tidak bertambah.
+		modul: 'halaman-statis',
+		title: 'Alur Prosedur',
+		singular: 'Gambar alur',
+		description:
+			'Infografis alur yang tayang di halaman Prosedur Permohonan Informasi. Gambar tampil berurutan sesuai kolom Urutan — situs publik menayangkan gambarnya utuh, isinya tidak diketik ulang di sini.',
+		icon: 'lucide:route',
+		defaultSort: 'urutan',
+		searchPlaceholder: 'Cari judul gambar alur…',
+		columns: [
+			{ key: 'urutan', label: 'Urutan', type: 'number', size: 90 },
+			{ key: 'judul', label: 'Judul', size: 340 },
+			{ key: 'halaman', label: 'Halaman', type: 'badge', badgeMap: BADGE_HALAMAN_ALUR, size: 200 },
+			{ key: 'gambar', label: 'Gambar', type: 'file', size: 110, noSort: true },
+			{ key: 'is_active', label: 'Status', type: 'boolean', size: 110 }
+		],
+		fields: [
+			{
+				name: 'halaman',
+				label: 'Tayang di halaman',
+				type: 'select',
+				options: HALAMAN_ALUR,
+				defaultValue: 'prosedur-permohonan',
+				help: 'Menentukan halaman Standar Layanan yang menayangkan gambar ini.'
 			},
 			{
-				name: 'ringkasan',
-				label: 'Pengantar',
+				name: 'urutan',
+				label: 'Urutan',
+				type: 'number',
+				min: 0,
+				defaultValue: 0,
+				help: 'Angka kecil tampil lebih dulu. Pakai kelipatan seperti 1, 2, 3 agar mudah disisipi nanti.'
+			},
+			{
+				name: 'judul',
+				label: 'Judul gambar',
+				type: 'text',
+				required: true,
+				span: 2,
+				maxLength: 255,
+				help: 'Tampil sebagai judul di atas gambar dan dipakai sebagai teks alternatif bagi pembaca layar.'
+			},
+			{
+				name: 'judul_en',
+				label: 'Judul gambar (English)',
+				type: 'text',
+				span: 2,
+				maxLength: 255,
+				help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.'
+			},
+			{
+				name: 'gambar',
+				label: 'Gambar alur',
+				type: 'image',
+				required: true,
+				span: 2,
+				help: 'Wajib. JPG/PNG/WEBP, lebar minimal 1200 px. Gambar tampil selebar isi halaman tanpa dipotong, jadi rasio bebas — tapi pastikan tulisan di dalamnya masih terbaca saat dibuka di layar ponsel.',
+				upload: { folder: 'alur-prosedur', jenis: 'gambar' }
+			},
+			{
+				name: 'keterangan',
+				label: 'Keterangan',
 				type: 'textarea',
 				span: 2,
 				rows: 3,
 				maxLength: 2000,
-				help: 'Kalimat pengantar singkat yang tampil di atas dokumen. Boleh dikosongkan.'
+				help: 'Satu sampai dua kalimat di bawah gambar. Isinya merangkum, bukan menyalin seluruh teks di gambar. Boleh dikosongkan.'
 			},
 			{
-				name: 'ringkasan_en',
-				label: 'Pengantar (English)',
+				name: 'keterangan_en',
+				label: 'Keterangan (English)',
 				type: 'textarea',
 				span: 2,
 				rows: 3,
 				maxLength: 2000,
 				help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.'
+			},
+			{
+				name: 'is_active',
+				label: 'Aktif',
+				type: 'boolean',
+				defaultValue: true,
+				help: 'Gambar nonaktif tetap tersimpan tetapi tidak tayang di situs publik.'
 			}
 		],
-		filters: [{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN }]
+		filters: [{ name: 'halaman', label: 'Halaman', type: 'select', options: HALAMAN_ALUR }]
+	},
+	{
+		slug: 'arsip-dokumen',
+		modul: 'arsip-dokumen',
+		title: 'Arsip Dokumen',
+		singular: 'Dokumen Arsip',
+		description:
+			'Berkas yang dipakai berulang untuk menjawab permohonan — SK, laporan, daftar informasi. Diunggah sekali di sini, lalu dilampirkan ke permohonan mana pun lewat tombol "Pilih dari Arsip" pada dialog rinciannya, tanpa unggahan kedua. Berkas yang diunggah langsung dari dialog permohonan juga otomatis tercatat di sini.',
+		icon: 'lucide:folder-open',
+		defaultSort: '-id',
+		searchPlaceholder: 'Cari nama dokumen, kategori, atau keterangan…',
+		columns: [
+			{ key: 'nama', label: 'Nama dokumen', size: 320 },
+			{ key: 'kategori', label: 'Kategori', size: 160 },
+			{ key: 'pembuat', label: 'Diunggah oleh', type: 'relation', relationKey: 'name', size: 180, noSort: true },
+			{ key: 'created_at', label: 'Diunggah', type: 'datetime', size: 160 },
+			{ key: 'is_active', label: 'Aktif', type: 'boolean', size: 90 },
+			{ key: 'path_file', label: 'Berkas', type: 'file', size: 110, noSort: true }
+		],
+		fields: [
+			{ name: 'nama', label: 'Nama dokumen', type: 'text', required: true, span: 2, maxLength: 255 },
+			{
+				name: 'kategori',
+				label: 'Kategori',
+				type: 'text',
+				maxLength: 100,
+				help: 'Bebas diisi, mis. "SK", "Laporan Tahunan". Dipakai menyaring daftar saat memilih berkas.'
+			},
+			{
+				name: 'is_active',
+				label: 'Aktif',
+				type: 'boolean',
+				defaultValue: true,
+				help: 'Dokumen nonaktif tetap tersimpan tetapi tidak ditawarkan saat melampirkan berkas ke permohonan.'
+			},
+			{
+				name: 'keterangan',
+				label: 'Keterangan',
+				type: 'textarea',
+				span: 2,
+				rows: 3,
+				maxLength: 2000,
+				help: 'Catatan untuk sesama petugas, mis. periode berlakunya. Tidak dibaca pemohon.'
+			},
+			{
+				name: 'path_file',
+				label: 'Berkas',
+				type: 'file',
+				required: true,
+				span: 2,
+				help: 'PDF, gambar, atau dokumen Office. Satu berkas hanya boleh punya satu baris arsip.',
+				upload: { folder: 'permohonan', jenis: 'dokumen' }
+			}
+		],
+		filters: [
+			{
+				name: 'is_active',
+				label: 'Status',
+				type: 'select',
+				options: [
+					{ value: 'true', label: 'Aktif' },
+					{ value: 'false', label: 'Nonaktif' }
+				]
+			}
+		]
 	},
 	{
 		slug: 'regulasi',

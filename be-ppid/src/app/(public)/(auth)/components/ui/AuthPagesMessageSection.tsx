@@ -72,8 +72,7 @@ function AuthPagesMessageSection() {
 
 			<div className="relative z-10 w-full max-w-4xl">
 				<div className="text-7xl leading-none font-bold text-gray-100">
-					<div>Selamat datang di</div>
-					<div>PPID Admin</div>
+					<div>Selamat datang</div>
 				</div>
 				<div className="mt-6 text-lg leading-6 tracking-tight text-gray-400">
 					Panel pengelolaan konten dan layanan informasi publik PPID. Masuk dengan akun Anda untuk mengelola

@@ -74,7 +74,7 @@
                 <table class="min-w-full text-sm">
                     <thead class="bg-[#F3ECDD] dark:bg-[#082217] text-left text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
                         <tr>
-                            <th class="px-6 py-3 font-semibold">{{ __('Nomor Permohonan') }}</th>
+                            <th class="px-6 py-3 font-semibold">{{ __('Nomor Keberatan') }}</th>
                             <th class="px-6 py-3 font-semibold">{{ __('Alasan Keberatan') }}</th>
                             <th class="px-6 py-3 font-semibold">
                                 <a href="{{ $tautanUrut('tanggal_keberatan') }}" class="inline-flex items-center gap-1 hover:text-[#10462F] dark:hover:text-[#3E9C6C]">
@@ -95,7 +95,12 @@
                         @foreach ($daftar as $item)
                             @php $label = $item->labelStatus(); @endphp
                             <tr>
-                                <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white whitespace-nowrap">{{ $item->permohonan->kode_permohonan ?? '—' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="block font-semibold text-gray-900 dark:text-white">{{ $item->kode_keberatan ?? '—' }}</span>
+                                    {{-- Nomor permohonan yang dikeberatankan: berkasnya terpisah, tetapi
+                                         pemohon mengenali perkaranya lewat nomor permohonan asalnya. --}}
+                                    <span class="block text-xs text-gray-500 dark:text-gray-400">{{ __('atas') }} {{ $item->permohonan->kode_permohonan ?? '—' }}</span>
+                                </td>
                                 <td class="px-6 py-4 text-gray-600 dark:text-gray-300 max-w-sm">
                                     <span class="block font-semibold text-gray-800 dark:text-gray-100">{{ __(\App\Models\KeberatanInformasi::JENIS[$item->jenis_keberatan] ?? $item->jenis_keberatan) }}</span>
                                     {{ \Illuminate\Support\Str::limit($item->kasus_posisi ?: $item->alasan_keberatan, 80) }}

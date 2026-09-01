@@ -25,8 +25,14 @@ class PermohonanInformasi extends Model
         'tujuan_penggunaan',
         'format_informasi',
         'cara_pengiriman',
+        'jalur_pelayanan',
         'alasan_penolakan',
         'batas_waktu_tanggapan',
+        'batas_waktu_awal',
+        'diperpanjang_pada',
+        'alasan_perpanjangan',
+        'jadwal_layanan',
+        'keterangan_petugas',
         'tanggal_tanggapan',
         'ditangani_oleh',
         'tampil_di_register_publik',
@@ -35,8 +41,23 @@ class PermohonanInformasi extends Model
     protected $casts = [
         'tanggal_permohonan' => 'datetime',
         'batas_waktu_tanggapan' => 'datetime',
+        'batas_waktu_awal' => 'datetime',
+        'diperpanjang_pada' => 'datetime',
+        'jadwal_layanan' => 'datetime',
         'tanggal_tanggapan' => 'datetime',
         'tampil_di_register_publik' => 'boolean',
+    ];
+
+    /**
+     * Jalur pelayanan yang dipilih pemohon.
+     *
+     * Menentukan bentuk tindak lanjut petugas, bukan sekadar label: `online`
+     * menuntut dokumen diunggah dan dikirim lewat surel, `langsung` menuntut
+     * tanggal dan jam undangan agar pemohon tahu kapan harus datang.
+     */
+    public const JALUR = [
+        'online' => 'Online — dokumen dikirim lewat surel',
+        'langsung' => 'Langsung — pemohon hadir di meja layanan',
     ];
 
     /**
@@ -44,8 +65,8 @@ class PermohonanInformasi extends Model
      * punya tujuan lanjutan supaya berkas tidak bisa dibuka ulang diam-diam.
      */
     public const TRANSISI = [
-        'diajukan' => ['diverifikasi', 'ditolak', 'kedaluwarsa'],
-        'diverifikasi' => ['diproses', 'ditolak', 'kedaluwarsa'],
+        'diajukan' => ['diverifikasi', 'menunggu_approval', 'ditolak', 'kedaluwarsa'],
+        'diverifikasi' => ['diproses', 'menunggu_approval', 'ditolak', 'kedaluwarsa'],
         'diproses' => ['menunggu_approval', 'ditolak', 'kedaluwarsa'],
         'menunggu_approval' => ['disetujui', 'ditolak', 'ditolak_sebagian', 'diproses'],
         'disetujui' => ['selesai'],

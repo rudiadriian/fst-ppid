@@ -50,7 +50,7 @@ export type FieldConfig = {
 	maxLength?: number;
 };
 
-export type ColumnType = 'text' | 'number' | 'date' | 'datetime' | 'boolean' | 'badge' | 'relation' | 'file';
+export type ColumnType = 'text' | 'number' | 'date' | 'datetime' | 'boolean' | 'badge' | 'map' | 'relation' | 'file';
 
 export type ColumnConfig = {
 	key: string;
@@ -60,6 +60,14 @@ export type ColumnConfig = {
 	relationKey?: string;
 	/** Untuk type 'badge': pemetaan nilai ke label + warna chip MUI. */
 	badgeMap?: Record<string, { label: string; color: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' }>;
+	/**
+	 * Untuk type 'map': pemetaan kode ke label, ditampilkan sebagai teks biasa.
+	 *
+	 * Dipakai untuk nilai berkode yang labelnya kalimat penuh — alasan
+	 * keberatan, misalnya. Chip memaksa satu baris dan memotong kalimatnya;
+	 * teks biasa boleh membungkus.
+	 */
+	mapValues?: Record<string, string>;
 	size?: number;
 	/** Kolom ini tidak bisa diurutkan di server. */
 	noSort?: boolean;

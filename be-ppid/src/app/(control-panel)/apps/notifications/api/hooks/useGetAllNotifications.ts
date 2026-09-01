@@ -25,6 +25,21 @@ export const useGetAllNotifications = (semua = false) => {
 		// jadi daftarnya disegarkan berkala supaya lonceng tidak perlu menunggu
 		// admin memuat ulang halaman.
 		refetchInterval: 60_000,
-		refetchIntervalInBackground: false
+		refetchIntervalInBackground: false,
+		/*
+		 * Tiga penjagaan berikut sengaja menyimpang dari setelan bawaan
+		 * QueryClient (`staleTime` 5 menit, tanpa refetch saat fokus/tersambung
+		 * lagi). Setelan itu benar untuk daftar modul, tetapi salah untuk
+		 * lonceng: kejadian yang diberitahukan justru datang dari luar panel.
+		 *
+		 * Tanpa ini, petugas yang mengurus formulir di tab lain lalu kembali ke
+		 * panel melihat lonceng kosong — pengambilan berkalanya berhenti selama
+		 * tabnya tidak aktif dan baru berdetak lagi satu menit kemudian,
+		 * sementara data lamanya masih dianggap segar.
+		 */
+		staleTime: 0,
+		refetchOnMount: 'always',
+		refetchOnWindowFocus: true,
+		refetchOnReconnect: true
 	});
 };

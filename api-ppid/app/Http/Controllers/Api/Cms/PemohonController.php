@@ -144,6 +144,27 @@ class PemohonController extends CrudController
             'jumlah_ditolak' => $pemohon->jumlah_ditolak,
         ];
 
+        /*
+         * Putusan yang sama disimpan dua kali bukan keputusan baru.
+         *
+         * Terjadi lebih sering daripada dugaan: tombolnya diklik dua kali, atau
+         * petugas membuka ulang berkas yang sudah diputus untuk memastikan. Bagi
+         * pemohon bedanya besar — tanpa penyaring ini ia menerima dua surel dan
+         * dua baris lonceng untuk satu pemeriksaan.
+         */
+        $putusanSama = $pemohon->status_verifikasi === $data['status']
+            && (string) $pemohon->catatan_verifikasi === (string) ($data['catatan'] ?? '');
+
+        if ($putusanSama) {
+            // Penolakan yang diulang juga tidak boleh menaikkan `jumlah_ditolak`:
+            // klik kedua akan memakan jatah kirim ulang milik pemohon untuk
+            // berkas yang bahkan belum sempat ia perbaiki.
+            return response()->json([
+                'message' => 'Putusan verifikasi ini sudah tercatat sebelumnya; tidak ada perubahan yang disimpan.',
+                'data' => $pemohon->fresh($this->withList),
+            ]);
+        }
+
         $pemohon->status_verifikasi = $data['status'];
         $pemohon->catatan_verifikasi = $data['catatan'] ?? null;
         $pemohon->tanggal_verifikasi = now();

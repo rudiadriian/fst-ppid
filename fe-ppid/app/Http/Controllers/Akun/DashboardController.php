@@ -24,7 +24,13 @@ class DashboardController extends Controller
     {
         $pemohon = Auth::guard('pemohon')->user();
 
-        $permohonan = PermohonanInformasi::where('pemohon_id', $pemohon->id)->get();
+        // `survei` ikut dimuat sekali di sini: ia dipakai menyaring permohonan
+        // tuntas yang belum dinilai, dan tanpa eager load penyaringnya menembak
+        // satu query per permohonan.
+        $permohonan = PermohonanInformasi::with('survei')
+            ->where('pemohon_id', $pemohon->id)
+            ->get();
+
         $keberatan = KeberatanInformasi::where('pemohon_id', $pemohon->id)->get();
 
         $tahun = $this->tahunDibandingkan($permohonan);
@@ -38,7 +44,30 @@ class DashboardController extends Controller
             'grafik' => $this->grafikBulanan($permohonan, $tahun),
             'tahunGrafik' => $tahun,
             'totalPerTahun' => $this->totalPerTahun($permohonan, $tahun),
+            'surveiTertunda' => $this->surveiTertunda($permohonan),
         ]);
+    }
+
+    /**
+     * Permohonan yang sudah tuntas tetapi belum dinilai pemohonnya.
+     *
+     * Survei kepuasan tidak dikirim lewat surel maupun lonceng: mengejar
+     * pemohon dengan pemberitahuan untuk sesuatu yang sifatnya sukarela hanya
+     * menambah bising pada kotak masuk yang sudah dipakai memberitahu jalannya
+     * permohonan. Yang dilakukan cukup menandainya di beranda portal — tempat
+     * yang memang dibuka pemohon saat menengok permohonannya.
+     *
+     * Yang terbaru di atas: penilaian paling berarti diberikan selagi
+     * layanannya masih diingat.
+     *
+     * @return \Illuminate\Support\Collection<int, PermohonanInformasi>
+     */
+    private function surveiTertunda($permohonan)
+    {
+        return $permohonan
+            ->filter(fn (PermohonanInformasi $item) => $item->bolehDisurvei() && $item->survei === null)
+            ->sortByDesc(fn (PermohonanInformasi $item) => $item->tanggal_tanggapan ?? $item->updated_at ?? $item->created_at)
+            ->values();
     }
 
     /**
