@@ -10,9 +10,20 @@ class TrustProxies extends Middleware
     /**
      * The trusted proxies for this application.
      *
+     * Di produksi situs ini berada di belakang reverse proxy yang menangani
+     * TLS. Tanpa daftar ini Laravel mengabaikan `X-Forwarded-Proto`, sehingga
+     * `SESSION_SECURE_COOKIE=true` membuat cookie sesi tidak pernah terkirim
+     * dan pemohon tidak bisa login.
+     *
+     * Sengaja bukan '*': hanya alamat proxy yang memang dipercaya yang boleh
+     * memalsukan skema dan IP asal.
+     *
      * @var array<int, string>|string|null
      */
-    protected $proxies;
+    protected $proxies = [
+        '192.168.1.17',
+        '127.0.0.1',
+    ];
 
     /**
      * The headers that should be used to detect proxies.
