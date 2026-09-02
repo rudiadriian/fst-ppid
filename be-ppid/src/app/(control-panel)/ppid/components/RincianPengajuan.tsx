@@ -1,4 +1,6 @@
+import { ReactNode } from 'react';
 import Chip from '@mui/material/Chip';
+import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
@@ -15,17 +17,93 @@ import { urlMedia } from './UploadField';
  * satu perbaikan tampilan hanya sampai ke separuh panel.
  */
 
-export function Judul({ teks }: { teks: string }) {
+/**
+ * Satu bagian rincian, berbingkai dan berjudul.
+ *
+ * Rincian pengajuan sebelumnya satu aliran panjang: judul kecil, isi, garis
+ * pemisah, judul kecil lagi (langkah 102). Semua bagian karena itu tampil
+ * setara dan tidak ada yang menonjol — petugas harus membaca dari atas tiap
+ * kali hanya untuk menemukan satu isian. Kartu memberi tiap bagian batas yang
+ * kelihatan, ikon yang bisa dikenali sekilas, dan tempat tetap untuk aksinya.
+ */
+export function Kartu({
+	judul,
+	ikon,
+	aksi,
+	children
+}: {
+	judul: string;
+	ikon: string;
+	/** Tombol atau chip di ujung kanan kepala kartu. */
+	aksi?: ReactNode;
+	children: ReactNode;
+}) {
 	const { t } = useTranslation();
 
 	return (
-		<Typography
-			variant="subtitle2"
-			className="font-semibold"
-			color="text.secondary"
+		<Paper
+			elevation={0}
+			className="border-divider overflow-hidden rounded-xl border"
 		>
-			{t(teks)}
-		</Typography>
+			<div className="border-divider bg-default flex items-center gap-2 border-b px-4 py-2.5">
+				<FuseSvgIcon
+					size={16}
+					color="action"
+				>
+					{ikon}
+				</FuseSvgIcon>
+				<Typography
+					variant="subtitle2"
+					className="flex-auto font-semibold"
+				>
+					{t(judul)}
+				</Typography>
+				{aksi}
+			</div>
+
+			<div className="p-4">{children}</div>
+		</Paper>
+	);
+}
+
+/**
+ * Angka-angka pokok berkas dalam satu baris, di kepala rincian.
+ *
+ * Yang dicari petugas lebih dulu — kapan masuk, kapan tenggatnya, lewat jalur
+ * apa, siapa yang memegang — dulu tersebar di dalam blok "Penanganan" di
+ * tengah halaman, bercampur dengan isian yang jarang dibaca. Di sini keempatnya
+ * berdiri sendiri dan terbaca sebelum petugas menggulung apa pun.
+ */
+export function Ringkasan({ isi }: { isi: { label: string; nilai: unknown; ikon: string }[] }) {
+	const { t } = useTranslation();
+
+	return (
+		<div className="border-divider grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-transparent sm:grid-cols-4">
+			{isi.map((satu) => (
+				<div
+					key={satu.label}
+					className="bg-paper flex flex-col gap-0.5 px-4 py-3"
+				>
+					<div className="text-secondary flex items-center gap-1.5">
+						<FuseSvgIcon size={14}>{satu.ikon}</FuseSvgIcon>
+						<Typography
+							variant="caption"
+							color="text.secondary"
+						>
+							{t(satu.label)}
+						</Typography>
+					</div>
+					<Typography
+						variant="body2"
+						className="font-semibold"
+					>
+						{satu.nilai === null || satu.nilai === undefined || satu.nilai === ''
+							? '—'
+							: String(satu.nilai)}
+					</Typography>
+				</div>
+			))}
+		</div>
 	);
 }
 

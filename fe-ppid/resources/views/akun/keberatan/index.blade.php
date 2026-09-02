@@ -35,8 +35,10 @@
         <div class="p-5 border-b border-gray-100 dark:border-white/10 flex flex-wrap items-center gap-3 justify-between">
             <form method="GET" class="flex flex-wrap items-center gap-2">
                 <input type="hidden" name="status" value="{{ $status }}">
+                {{-- Sama seperti daftar permohonan: lebarnya dipatok supaya
+                     pencarian yang panjang tidak terpotong. --}}
                 <input type="search" name="cari" value="{{ $cari }}" placeholder="{{ __('Cari nomor permohonan atau isi keberatan…') }}"
-                       class="px-4 py-2.5 bg-gray-50 border border-gray-200 dark:border-white/10 dark:bg-[#0B2A1D] rounded-xl text-sm outline-none focus:border-[#10462F] focus:ring-2 focus:ring-[#10462F]/15">
+                       class="w-full sm:w-80 lg:w-96 px-4 py-2.5 bg-gray-50 border border-gray-200 dark:border-white/10 dark:bg-[#0B2A1D] rounded-xl text-sm outline-none focus:border-[#10462F] focus:ring-2 focus:ring-[#10462F]/15">
                 <input type="hidden" name="urut" value="{{ $urut }}">
                 <input type="hidden" name="arah" value="{{ $arah }}">
 
@@ -89,12 +91,16 @@
                                 </a>
                             </th>
                             <th class="px-6 py-3 font-semibold">{{ __('Lampiran') }}</th>
+                            <th class="px-6 py-3 font-semibold text-right">{{ __('Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-white/10">
                         @foreach ($daftar as $item)
                             @php $label = $item->labelStatus(); @endphp
-                            <tr>
+                            {{-- Seluruh baris membuka rinciannya; alasan sama
+                                 dengan daftar permohonan. --}}
+                            <tr class="cursor-pointer transition-colors hover:bg-[#F3ECDD]/60 dark:hover:bg-white/5"
+                                onclick="window.location='{{ route('akun.keberatan.show', $item->id) }}'">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="block font-semibold text-gray-900 dark:text-white">{{ $item->kode_keberatan ?? '—' }}</span>
                                     {{-- Nomor permohonan yang dikeberatankan: berkasnya terpisah, tetapi
@@ -112,12 +118,17 @@
                                 <td class="px-6 py-4">
                                     <span class="inline-flex px-3 py-1 rounded-full border text-xs font-semibold {{ $warnaStatus[$label] ?? 'bg-gray-100 text-gray-700 border-gray-200' }}">{{ __($label) }}</span>
                                 </td>
-                                <td class="px-6 py-4">
+                                {{-- Tautan berkas menghentikan klik barisnya:
+                                     tanpa itu unduhan ikut membuka rincian. --}}
+                                <td class="px-6 py-4" onclick="event.stopPropagation()">
                                     @forelse ($item->berkas as $berkas)
                                         <a href="{{ route('akun.keberatan.berkas', $berkas->id) }}" class="block text-sm text-[#E87317] hover:underline">{{ \Illuminate\Support\Str::limit($berkas->nama_file, 24) }}</a>
                                     @empty
                                         <span class="text-sm text-gray-400">—</span>
                                     @endforelse
+                                </td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap" onclick="event.stopPropagation()">
+                                    <a href="{{ route('akun.keberatan.show', $item->id) }}" class="text-sm font-semibold text-[#E87317] hover:underline">{{ __('Detail') }}</a>
                                 </td>
                             </tr>
                         @endforeach

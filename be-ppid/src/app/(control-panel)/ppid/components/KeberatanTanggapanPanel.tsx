@@ -73,7 +73,7 @@ export function KeberatanTanggapanPanel({
 		return (
 			<Alert severity="info">
 				{t(
-					'Keberatan ini sedang berada di jenjang persetujuan. Perpindahannya ditentukan putusan pada panel Persetujuan Berjenjang di atas — Setujui, Tolak, atau Kembalikan untuk diperbaiki — bukan dari sini.'
+					'Keberatan ini sedang berada di jenjang persetujuan. Perpindahannya ditentukan putusan pada panel Verifikasi Permohonan — Setujui, Tolak, atau Kembalikan untuk diperbaiki — bukan dari sini.'
 				)}
 			</Alert>
 		);

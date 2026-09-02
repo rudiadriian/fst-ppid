@@ -28,10 +28,15 @@ export const STATUS_PERMOHONAN: Record<string, { label: string; warna: WarnaChip
 };
 
 export const TRANSISI_PERMOHONAN: Record<string, string[]> = {
-	diajukan: ['diverifikasi', 'menunggu_approval', 'ditolak', 'kedaluwarsa'],
-	diverifikasi: ['diproses', 'menunggu_approval', 'ditolak', 'kedaluwarsa'],
-	diproses: ['menunggu_approval', 'ditolak', 'kedaluwarsa'],
-	menunggu_approval: ['disetujui', 'ditolak', 'ditolak_sebagian', 'diproses'],
+	diajukan: ['diverifikasi', 'diproses', 'ditolak', 'kedaluwarsa'],
+	diverifikasi: ['diproses', 'ditolak', 'kedaluwarsa'],
+	// Diproses = sudah disetujui PPID Pelaksana, tinggal putusan PPID.
+	// Persetujuan PPID menutup perkaranya langsung ke `selesai`.
+	diproses: ['selesai', 'disetujui', 'ditolak', 'ditolak_sebagian', 'revisi', 'kedaluwarsa'],
+	// Dikembalikan ke PPID Pelaksana; dari sini berkasnya diajukan lagi.
+	revisi: ['diproses', 'ditolak', 'kedaluwarsa'],
+	// Kosakata lama, artinya sama dengan `diproses`; tidak dipasang lagi.
+	menunggu_approval: ['disetujui', 'ditolak', 'ditolak_sebagian', 'revisi', 'diproses'],
 	disetujui: ['selesai'],
 	ditolak: ['selesai'],
 	ditolak_sebagian: ['selesai'],
@@ -49,10 +54,12 @@ export const STATUS_KEBERATAN: Record<string, { label: string; warna: WarnaChip 
 };
 
 export const TRANSISI_KEBERATAN: Record<string, string[]> = {
-	diajukan: ['diproses', 'menunggu_approval', 'ditolak'],
-	diproses: ['menunggu_approval', 'revisi', 'ditolak'],
+	diajukan: ['diproses', 'ditolak'],
+	// Diproses = sudah diteruskan PPID Pelaksana, tinggal putusan PPID.
+	diproses: ['selesai', 'revisi', 'ditolak'],
 	revisi: ['diproses', 'ditolak'],
-	menunggu_approval: ['selesai', 'ditolak', 'diproses'],
+	// Kosakata lama, artinya sama dengan `diproses`; tidak dipasang lagi.
+	menunggu_approval: ['selesai', 'revisi', 'ditolak', 'diproses'],
 	selesai: [],
 	ditolak: []
 };
@@ -91,3 +98,42 @@ export const JENIS_KEBERATAN: Record<string, string> = {
 	biaya_tidak_wajar: 'Pengenaan Biaya yang Tidak Wajar',
 	informasi_tidak_disediakan: 'Tidak Disediakannya Informasi Berkala'
 };
+
+/**
+ * Status yang masih boleh dipasang pemegang giliran lewat dropdown.
+ *
+ * Salinan `PermohonanController::STATUS_LANJUT_PEMEGANG`. Yang membedakannya
+ * dari perpindahan lain: berkasnya tetap di meja yang sama. Perpindahan yang
+ * memindahkan berkas ke meja lain atau menutup perkaranya adalah hasil putusan
+ * di panel Persetujuan Berjenjang, bukan pilihan dropdown.
+ */
+export const LANJUT_PEMEGANG = ['diverifikasi'];
+
+/** Tujuan status yang boleh ditawarkan pada keadaan ini. */
+export function tujuanStatus(status: string, alurBerjalan: boolean, giliranSaya: boolean): string[] {
+	const daftar = TRANSISI_PERMOHONAN[status] ?? [];
+
+	return alurBerjalan && giliranSaya ? daftar.filter((nilai) => LANJUT_PEMEGANG.includes(nilai)) : daftar;
+}
+
+/**
+ * Panel Ubah Status punya sesuatu untuk ditawarkan?
+ *
+ * Dipakai dialog rinciannya untuk memutuskan apakah bagian **Ubah Status**
+ * perlu dipasang sama sekali (langkah 100). Bagian yang isinya cuma keterangan
+ * "lanjutkan dari panel Persetujuan Berjenjang" menambah satu blok yang harus
+ * dilewati mata tanpa menambah satu pun tindakan — keterangan itu sudah ada di
+ * kepala rincian, tepat di tempat petugas membacanya.
+ */
+export function adaPilihanStatus(
+	status: string,
+	bolehUbah: boolean,
+	alurBerjalan: boolean,
+	giliranSaya: boolean
+): boolean {
+	if (!bolehUbah || (alurBerjalan && !giliranSaya)) {
+		return false;
+	}
+
+	return tujuanStatus(status, alurBerjalan, giliranSaya).length > 0;
+}

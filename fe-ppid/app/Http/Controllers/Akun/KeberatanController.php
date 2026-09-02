@@ -64,15 +64,14 @@ class KeberatanController extends Controller
         return view('akun.keberatan.create', [
             'pemohon' => $pemohon,
             /*
-             * Hanya permohonan yang penanganannya sudah tuntas (langkah 89).
-             * Keberatan atas permohonan yang masih berjalan tidak punya objek:
-             * belum ada tanggapan untuk dikeberatankan, dan berkasnya justru
-             * ditarik keluar dari alur yang sedang menanganinya.
+             * Permohonan yang punya dasar keberatan menurut Pasal 35 UU KIP —
+             * bukan sekadar yang sudah tuntas (langkah 101). Aturannya di
+             * {@see PermohonanInformasi::layakDikeberatankan()}.
              */
             'permohonanSaya' => PermohonanInformasi::where('pemohon_id', $pemohon->id)
-                ->whereIn('status', PermohonanInformasi::STATUS_SELESAI)
+                ->layakDikeberatankan()
                 ->orderByDesc('tanggal_permohonan')
-                ->get(['id', 'kode_permohonan', 'status', 'rincian_informasi']),
+                ->get(['id', 'kode_permohonan', 'status', 'rincian_informasi', 'batas_waktu_tanggapan']),
         ]);
     }
 
@@ -103,11 +102,10 @@ class KeberatanController extends Controller
         }
 
         // Diperiksa ulang di server, tidak dipercaya dari daftar pilihan:
-        // isian tersembunyi bisa diubah sebelum dikirim, dan aturan ini yang
-        // menjaga berkas berjalan tidak ditarik keluar dari alurnya.
-        if (!in_array($permohonan->status, PermohonanInformasi::STATUS_SELESAI, true)) {
+        // isian tersembunyi bisa diubah sebelum dikirim.
+        if (!$permohonan->layakDikeberatankan()) {
             return back()->withInput()->withErrors([
-                'permohonan_id' => __('Keberatan hanya dapat diajukan atas permohonan yang penanganannya sudah selesai.'),
+                'permohonan_id' => __('Keberatan hanya dapat diajukan atas permohonan yang sudah ditanggapi, ditolak, atau yang batas waktu tanggapannya sudah lewat.'),
             ]);
         }
 
@@ -177,6 +175,24 @@ class KeberatanController extends Controller
 
         return redirect()->route('akun.keberatan.index')
             ->with('status', __('Keberatan Anda sudah kami terima dengan nomor registrasi :kode.', ['kode' => $keberatan->kode_keberatan]));
+    }
+
+    /**
+     * Rincian satu keberatan milik akun ini.
+     *
+     * Sebelum langkah 101 keberatan tidak punya halaman rincian sama sekali:
+     * seluruh isinya harus terbaca dari satu baris tabel yang terpotong, dan
+     * tanggapan petugas tidak punya tempat untuk ditampilkan.
+     */
+    public function show(int $keberatan): View
+    {
+        $pemohon = Auth::guard('pemohon')->user();
+
+        $baris = KeberatanInformasi::with(['permohonan', 'berkas'])
+            ->where('pemohon_id', $pemohon->id)
+            ->findOrFail($keberatan);
+
+        return view('akun.keberatan.show', ['keberatan' => $baris, 'pemohon' => $pemohon]);
     }
 
     private function daftar(Request $request, int $pemohonId): LengthAwarePaginator

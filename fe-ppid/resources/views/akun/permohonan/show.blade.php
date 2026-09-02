@@ -9,7 +9,9 @@
         $baris = [
             __('Nomor Registrasi') => $permohonan->kode_permohonan,
             __('Tanggal Pengajuan') => optional($permohonan->tanggal_permohonan)->translatedFormat('d F Y H:i') ?? '—',
-            __('Batas Waktu Tanggapan') => optional($permohonan->batas_waktu_tanggapan)->translatedFormat('d F Y') ?? '—',
+            // Batas Waktu Tanggapan sengaja tidak ditampilkan (langkah 101):
+            // itu tenggat kerja petugas, dan di layar pemohon terbaca sebagai
+            // janji tanggal yang belum tentu jadi hari jawabannya keluar.
             __('Rincian Informasi') => $permohonan->rincian_informasi,
             __('Tujuan Penggunaan Informasi') => $permohonan->tujuan_penggunaan,
             __('Cara Memperoleh Informasi') => __(\App\Models\PermohonanInformasi::CARA_MEMPEROLEH[$permohonan->cara_memperoleh] ?? '—'),
@@ -19,7 +21,8 @@
                 'email' => __('Salinan Digital (Email)'),
                 default => __('Pos'),
             },
-            __('Tanggal Tanggapan') => optional($permohonan->tanggal_tanggapan)->translatedFormat('d F Y') ?? '—',
+            // Tanggal saat statusnya benar-benar berpindah ke Selesai.
+            __('Tanggal Tanggapan') => optional($permohonan->tanggalSelesaiPortal())->translatedFormat('d F Y') ?? '—',
         ];
     @endphp
 
@@ -82,28 +85,18 @@
         </div>
     </div>
 
-    {{-- Jejak status dari petugas --}}
+    {{-- Alur persetujuan versi pemohon: tiga langkah, selalu tiga.
+         Menggantikan Jejak Status yang mencetak tiap perpindahan internal —
+         termasuk putaran revisi antara PPID dan PPID Pelaksana, yang bukan
+         urusan pemohon dan terbaca sebagai masalah pada berkasnya sendiri
+         (langkah 101). --}}
     <div class="bg-white dark:bg-[#0B2A1D] rounded-2xl border border-gray-100 dark:border-white/10 p-6 sm:p-8">
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-5">{!! $judulDua(__('Jejak Status'), 1) !!}</h2>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-5">{!! $judulDua(__('Alur Persetujuan'), 1) !!}</h2>
 
-        @if ($permohonan->logStatus->isEmpty())
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Belum ada perubahan status dari petugas.') }}</p>
-        @else
-            <ol class="relative border-l border-gray-200 dark:border-white/10 ml-2 space-y-5">
-                @foreach ($permohonan->logStatus as $log)
-                    <li class="ml-5">
-                        <span class="absolute -left-1.5 w-3 h-3 rounded-full bg-[#E87317]"></span>
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                            {{ __(\App\Models\PermohonanInformasi::STATUS_LABEL[$log->status_baru] ?? $log->status_baru) }}
-                        </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ optional($log->created_at)->translatedFormat('d F Y H:i') }}</p>
-                        @if ($log->catatan)
-                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">{{ $log->catatan }}</p>
-                        @endif
-                    </li>
-                @endforeach
-            </ol>
-        @endif
+        @include('akun.partials.alur-persetujuan', [
+            'tahap' => $permohonan->tahapAlurPortal(),
+            'tanggal' => $permohonan->tanggalAlurPortal(),
+        ])
     </div>
 
 @endsection

@@ -97,9 +97,13 @@ Route::prefix('akun')->name('akun.')->group(function () {
         Route::get('/keberatan', [KeberatanController::class, 'index'])->name('keberatan.index');
         Route::get('/keberatan/baru', [KeberatanController::class, 'create'])->name('keberatan.create');
         Route::post('/keberatan', [KeberatanController::class, 'store'])->name('keberatan.store');
+        // Didaftarkan sebelum pola `{keberatan}` supaya tidak tertangkap olehnya.
         Route::get('/keberatan/berkas/{berkas}', [KeberatanController::class, 'berkas'])
             ->whereNumber('berkas')
             ->name('keberatan.berkas');
+        Route::get('/keberatan/{keberatan}', [KeberatanController::class, 'show'])
+            ->whereNumber('keberatan')
+            ->name('keberatan.show');
 
         // --- Pengaturan ---
         Route::get('/pengaturan/profil', [PengaturanController::class, 'profil'])->name('profil');

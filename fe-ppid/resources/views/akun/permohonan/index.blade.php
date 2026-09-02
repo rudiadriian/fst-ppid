@@ -34,8 +34,10 @@
         <div class="p-5 border-b border-gray-100 dark:border-white/10 flex flex-wrap items-center gap-3 justify-between">
             <form method="GET" class="flex flex-wrap items-center gap-2">
                 <input type="hidden" name="status" value="{{ $status }}">
-                <input type="search" name="cari" value="{{ $cari }}" placeholder="{{ __('Cari nomor atau rincian…') }}"
-                       class="px-4 py-2.5 bg-gray-50 border border-gray-200 dark:border-white/10 dark:bg-[#0B2A1D] rounded-xl text-sm outline-none focus:border-[#10462F] focus:ring-2 focus:ring-[#10462F]/15">
+                {{-- Lebarnya dipatok, bukan dibiarkan mengikuti isi: pencarian
+                     yang panjang terpotong di kotak selebar bawaan browser. --}}
+                <input type="search" name="cari" value="{{ $cari }}" placeholder="{{ __('Cari nomor atau rincian permohonan…') }}"
+                       class="w-full sm:w-80 lg:w-96 px-4 py-2.5 bg-gray-50 border border-gray-200 dark:border-white/10 dark:bg-[#0B2A1D] rounded-xl text-sm outline-none focus:border-[#10462F] focus:ring-2 focus:ring-[#10462F]/15">
                 <input type="hidden" name="urut" value="{{ $urut }}">
                 <input type="hidden" name="arah" value="{{ $arah }}">
 
@@ -110,14 +112,22 @@
                     <tbody class="divide-y divide-gray-100 dark:divide-white/10">
                         @foreach ($daftar as $item)
                             @php $label = $item->labelStatus(); @endphp
-                            <tr>
+                            {{-- Seluruh baris membuka rinciannya. Tautan Detail
+                                 tetap ada — untuk papan ketik, pembaca layar,
+                                 dan buka-di-tab-baru — tetapi mengharuskan
+                                 pengguna membidik satu kata di ujung kanan baris
+                                 hanya membuat rincian sulit dicapai. --}}
+                            <tr class="cursor-pointer transition-colors hover:bg-[#F3ECDD]/60 dark:hover:bg-white/5"
+                                onclick="window.location='{{ route('akun.permohonan.show', $item->id) }}'">
                                 <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white whitespace-nowrap">{{ $item->kode_permohonan }}</td>
                                 <td class="px-6 py-4 text-gray-600 dark:text-gray-300 max-w-sm">{{ \Illuminate\Support\Str::limit($item->rincian_informasi, 90) }}</td>
                                 <td class="px-6 py-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ optional($item->tanggal_permohonan)->translatedFormat('d M Y') ?? '—' }}</td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex px-3 py-1 rounded-full border text-xs font-semibold {{ $warnaStatus[$label] ?? 'bg-gray-100 text-gray-700 border-gray-200' }}">{{ __($label) }}</span>
                                 </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                {{-- Tautan di dalam baris menghentikan klik barisnya:
+                                     tanpa itu "Isi Survei" ikut membuka rincian. --}}
+                                <td class="px-6 py-4 text-right whitespace-nowrap" onclick="event.stopPropagation()">
                                     <a href="{{ route('akun.permohonan.show', $item->id) }}" class="text-sm font-semibold text-[#E87317] hover:underline">{{ __('Detail') }}</a>
                                     @if (!$item->survei && $item->bolehDisurvei())
                                         <a href="{{ route('akun.survei.create', $item->id) }}" class="ml-3 text-sm font-semibold text-[#10462F] dark:text-[#3E9C6C] hover:underline">{{ __('Isi Survei') }}</a>

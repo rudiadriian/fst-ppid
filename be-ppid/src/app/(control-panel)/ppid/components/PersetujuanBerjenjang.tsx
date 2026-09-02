@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -12,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import ppidApi, { PpidApiError } from '../api/ppidApi';
 import { resourceKeys } from '../api/useResource';
-import { kunciPersetujuan, LangkahPersetujuan, usePersetujuan } from '../api/usePersetujuan';
+import { kunciPersetujuan, langkahBerjalan, LangkahPersetujuan, usePersetujuan } from '../api/usePersetujuan';
 import { STATUS_LANGKAH } from '../lib/statusPengajuan';
 import { formatWaktu } from '../lib/waktu';
 
@@ -30,47 +33,65 @@ const MEJA_LAYANAN = [
 	'Senin–Jumat pukul 08.00–15.00 WIB, istirahat 12.00–13.00 WIB'
 ];
 
+/**
+ * Satu tahap sebagai baris garis waktu, bukan kartu berbingkai.
+ *
+ * Rincian permohonan sudah panjang; jenjangnya dulu menambah satu kartu
+ * berbingkai per tahap, masing-masing dengan ikon, dua chip, dan tiga baris
+ * keterangan — empat tahap berarti empat kotak yang menuntut perhatian sama
+ * besar dengan berkas dan formulir putusannya (langkah 100). Isinya sama
+ * persis; yang dilepas hanya bingkai, ikon berwarna, dan chip "Giliran
+ * sekarang" — giliran sudah ditandai titik dan tebalnya baris, dan diumumkan
+ * di kepala rincian.
+ */
 function SatuLangkah({ langkah, berjalan }: { langkah: LangkahPersetujuan; berjalan: boolean }) {
 	const { t } = useTranslation();
 	const info = STATUS_LANGKAH[langkah.status] ?? STATUS_LANGKAH.dilewati;
 	const telatnya = berjalan && langkah.batas_waktu && new Date(langkah.batas_waktu).getTime() < Date.now();
 
+	const pemegang = [langkah.nama_jabatan, langkah.role?.name ?? t('Role belum ditetapkan')]
+		.filter(Boolean)
+		.join(' · ');
+
+	const waktu = langkah.tanggal_putusan
+		? `${t('Diputus')} ${formatWaktu(langkah.tanggal_putusan)}${langkah.pemutus?.name ? ` · ${langkah.pemutus.name}` : ''}`
+		: langkah.tanggal_masuk
+			? `${t('Masuk')} ${formatWaktu(langkah.tanggal_masuk)}${
+					langkah.batas_waktu ? ` · ${t('batas')} ${formatWaktu(langkah.batas_waktu)}` : ''
+				}`
+			: t('Belum tiba gilirannya');
+
 	return (
-		<div
-			className={`flex gap-3 rounded-lg border p-3 ${
-				berjalan ? 'border-secondary-main bg-secondary-main/5' : 'border-divider'
-			}`}
-		>
-			<div className="flex flex-col items-center pt-0.5">
-				<FuseSvgIcon
-					size={18}
-					color={info.warna === 'default' ? 'disabled' : info.warna}
-				>
-					{info.ikon}
-				</FuseSvgIcon>
+		<div className="flex gap-2.5 py-1.5">
+			{/* Titik penanda, sekaligus ruas garis waktunya. */}
+			<div className="flex flex-col items-center pt-1.5">
+				<span
+					className={`h-2 w-2 shrink-0 rounded-full ${
+						berjalan ? 'bg-secondary-main ring-secondary-main/25 ring-3' : 'bg-divider'
+					}`}
+				/>
 			</div>
 
-			<div className="flex min-w-0 flex-auto flex-col gap-1">
-				<div className="flex flex-wrap items-center gap-2">
+			<div className="flex min-w-0 flex-auto flex-col">
+				<div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
 					<Typography
 						variant="body2"
-						className="font-semibold"
+						className={berjalan ? 'font-semibold' : ''}
 					>
 						{langkah.urutan}. {langkah.nama_tahap}
 					</Typography>
+					<Typography
+						variant="caption"
+						color="text.secondary"
+					>
+						{pemegang}
+					</Typography>
 					<Chip
 						size="small"
+						variant="outlined"
 						label={t(info.label)}
 						color={info.warna}
 					/>
-					{berjalan && (
-						<Chip
-							size="small"
-							variant="outlined"
-							color="secondary"
-							label={t('Giliran sekarang')}
-						/>
-					)}
 					{telatnya && (
 						<Chip
 							size="small"
@@ -85,27 +106,13 @@ function SatuLangkah({ langkah, berjalan }: { langkah: LangkahPersetujuan; berja
 					variant="caption"
 					color="text.secondary"
 				>
-					{langkah.nama_jabatan ? `${langkah.nama_jabatan} · ` : ''}
-					{langkah.role?.name ?? t('Role belum ditetapkan')}
-				</Typography>
-
-				<Typography
-					variant="caption"
-					color="text.secondary"
-				>
-					{langkah.tanggal_putusan
-						? `${t('Diputus')} ${formatWaktu(langkah.tanggal_putusan)} · ${langkah.pemutus?.name ?? '—'}`
-						: langkah.tanggal_masuk
-							? `${t('Masuk')} ${formatWaktu(langkah.tanggal_masuk)}${
-									langkah.batas_waktu ? ` · ${t('batas')} ${formatWaktu(langkah.batas_waktu)}` : ''
-								}`
-							: t('Belum tiba gilirannya')}
+					{waktu}
 				</Typography>
 
 				{langkah.catatan && (
 					<Typography
-						variant="body2"
-						className="whitespace-pre-line"
+						variant="caption"
+						className="mt-0.5 whitespace-pre-line"
 					>
 						{langkah.catatan}
 					</Typography>
@@ -115,12 +122,46 @@ function SatuLangkah({ langkah, berjalan }: { langkah: LangkahPersetujuan; berja
 	);
 }
 
+/**
+ * Judul kecil pemisah bagian di dalam kartu Verifikasi Permohonan.
+ *
+ * Kartu ini menampung empat hal berbeda — alur, isian petugas, lampiran, dan
+ * tombol putusan (langkah 102). Tanpa penanda bagian keempatnya mengalir jadi
+ * satu tumpukan kolom yang menuntut petugas mengira-ira di mana satu urusan
+ * berakhir dan urusan berikutnya mulai.
+ */
+function Bagian({ judul, children }: { judul: string; children: ReactNode }) {
+	const { t } = useTranslation();
+
+	return (
+		<section className="flex flex-col gap-2">
+			<Typography
+				variant="caption"
+				color="text.secondary"
+				className="font-semibold tracking-wide uppercase"
+			>
+				{t(judul)}
+			</Typography>
+			{children}
+		</section>
+	);
+}
+
 type PersetujuanBerjenjangProps = {
 	/** Segmen API modulnya: `permohonan` atau `keberatan`. */
 	modul: 'permohonan' | 'keberatan';
 	pengajuanId: number;
 	/** Role pengguna punya hak `Setujui` pada modul ini. */
 	bolehSetujui: boolean;
+	/**
+	 * Panel lampiran, disisipkan sebagai bagian ketiga.
+	 *
+	 * Diserahkan dari luar, bukan dibangun di sini: berkas tanggapan punya
+	 * aturan unggah, arsip, dan penguncian sendiri yang tidak ada hubungannya
+	 * dengan jenjang persetujuan. Yang ditentukan komponen ini cuma tempatnya —
+	 * setelah isian petugas, sebelum tombol putusan (langkah 102).
+	 */
+	lampiran?: ReactNode;
 };
 
 /**
@@ -134,12 +175,11 @@ type PersetujuanBerjenjangProps = {
  * jawabannya harus persis sama dengan aturan yang dipakai saat putusannya
  * dikirim, dan aturan itu hanya ada di satu tempat.
  */
-export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: PersetujuanBerjenjangProps) {
+export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui, lampiran }: PersetujuanBerjenjangProps) {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const { enqueueSnackbar } = useSnackbar();
 
-	const [keputusan, setKeputusan] = useState('disetujui');
 	const [catatan, setCatatan] = useState('');
 	const [menyimpan, setMenyimpan] = useState(false);
 	// Isian jalur pelayanan; hanya dipakai jenjang penerima (langkah 89).
@@ -181,7 +221,6 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 	// hak Setujui pada modulnya. Keduanya diperiksa: yang pertama menentukan
 	// giliran, yang kedua menentukan wewenang.
 	const bolehKirim = Boolean(data?.boleh_memutus) && bolehSetujui;
-	const perluCatatan = keputusan !== 'disetujui';
 
 	/*
 	 * Jenjang penerima dikenali dari haknya, bukan dari namanya: tahap yang
@@ -189,13 +228,30 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 	 * dialah yang berhubungan dengan pemohon. Namanya bisa diubah super admin
 	 * kapan saja; haknya menentukan perannya.
 	 */
-	const langkahBerjalan = langkah.find((satu) => satu.id === data?.berjalan_id) ?? null;
-	const jenjangPenerima = langkahBerjalan?.tahap ? !langkahBerjalan.tahap.boleh_tolak : false;
+	const berjalan = langkahBerjalan(data);
+	const jenjangPenerima = berjalan?.tahap ? !berjalan.tahap.boleh_tolak : false;
 	const perluJadwal = jenjangPenerima && jalur === 'langsung';
-	const isianJalurLengkap =
-		!jenjangPenerima || keputusan !== 'disetujui' || (jalur !== '' && (jalur !== 'langsung' || jadwal !== ''));
+	const isianJalurLengkap = !jenjangPenerima || (jalur !== '' && (jalur !== 'langsung' || jadwal !== ''));
+	const adaCatatan = catatan.trim() !== '';
 
-	async function kirim() {
+	/**
+	 * Kirim satu putusan.
+	 *
+	 * Putusannya datang dari tombol yang ditekan, bukan dari dropdown yang
+	 * dipilih lebih dulu (langkah 102). Dropdown menyembunyikan dua dari tiga
+	 * pilihan di balik satu klik tambahan, dan tombol kirimnya lalu harus
+	 * berbunyi netral — petugas menekan "Kirim putusan" tanpa tulisan apa pun
+	 * yang menyebut bahwa perkara pemohon akan ditutup.
+	 */
+	async function kirim(keputusan: string) {
+		// Dijaga di sini juga, bukan cuma lewat tombol yang mati: alasan wajib
+		// ada pada penolakan dan permintaan perbaikan, dan keduanya dibaca orang
+		// lain — pemohon pada penolakan, petugas pada revisi.
+		if (keputusan !== 'disetujui' && !adaCatatan) {
+			enqueueSnackbar(t('Catatan wajib diisi untuk Tolak dan Revisi.'), { variant: 'warning' });
+			return;
+		}
+
 		setMenyimpan(true);
 
 		try {
@@ -220,7 +276,6 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 			]);
 
 			setCatatan('');
-			setKeputusan('disetujui');
 			setJalur('');
 			setJadwal('');
 			setKeteranganPetugas('');
@@ -236,52 +291,110 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 		}
 	}
 
+	const riwayat = data?.riwayat_putaran ?? [];
+	/*
+	 * Empat bagian, dalam urutan kerjanya (langkah 102):
+	 *
+	 *   1. Alur Persetujuan Permohonan — di mana berkasnya sekarang;
+	 *   2. Verifikasi Petugas PPID     — isian yang harus ditetapkan petugas;
+	 *   3. Lampiran dan Keterangan     — dokumen yang akan diserahkan;
+	 *   4. Putusan                     — apa yang terjadi setelahnya.
+	 *
+	 * Bagian 1 dan 3 selalu ada; keduanya bacaan, dan yang belum kebagian
+	 * giliran pun perlu melihatnya. Bagian 2 dan 4 hanya untuk pemegang giliran.
+	 */
 	return (
-		<div className="flex flex-col gap-3">
-			{langkah.map((satu) => (
-				<SatuLangkah
-					key={satu.id}
-					langkah={satu}
-					berjalan={satu.id === data?.berjalan_id}
-				/>
-			))}
+		<div className="flex flex-col gap-5">
+			<Bagian judul="Alur Persetujuan Permohonan">
+				{/*
+				 * Putaran sebelumnya dilipat, bukan dibuang dan bukan pula dijejer
+				 * bersama yang berjalan (langkah 100): berkas yang sudah dua kali
+				 * dikembalikan menampilkan "1, 2, 1, 2" bila diratakan — urutan
+				 * yang mundur di tengah daftar dan terbaca sebagai data rusak.
+				 */}
+				{riwayat.length > 0 && (
+					<Accordion
+						disableGutters
+						elevation={0}
+						className="border-divider rounded-lg border before:hidden"
+					>
+						<AccordionSummary expandIcon={<FuseSvgIcon size={18}>lucide:chevron-down</FuseSvgIcon>}>
+							<Typography variant="body2">
+								{t('Alur Persetujuan sebelumnya')} ({riwayat.length}) —{' '}
+								{t('berkas ini pernah dikembalikan untuk diperbaiki')}
+							</Typography>
+						</AccordionSummary>
+						<AccordionDetails className="flex flex-col gap-3">
+							{riwayat.map((putaran, urutanPutaran) => (
+								<div
+									key={putaran[0]?.id ?? urutanPutaran}
+									className="flex flex-col gap-2"
+								>
+									<Typography
+										variant="caption"
+										color="text.secondary"
+										className="font-semibold"
+									>
+										{t('Alur Persetujuan')} {urutanPutaran + 1}
+									</Typography>
+									{putaran.map((satu) => (
+										<SatuLangkah
+											key={satu.id}
+											langkah={satu}
+											berjalan={false}
+										/>
+									))}
+								</div>
+							))}
+						</AccordionDetails>
+					</Accordion>
+				)}
 
-			{data?.berjalan_id === null && (
-				<Alert severity="success">{t('Seluruh tahap persetujuan sudah dilalui.')}</Alert>
-			)}
-
-			{data?.berjalan_id !== null && !bolehKirim && (
-				<Alert severity="info">
-					{t('Tahap yang berjalan bukan giliran role Anda, jadi putusannya tidak bisa dikirim dari sini.')}
-				</Alert>
-			)}
-
-			{bolehKirim && (
-				<div className="border-divider flex flex-col gap-3 rounded-lg border p-3">
+				{riwayat.length > 0 && (
 					<Typography
-						variant="subtitle2"
+						variant="caption"
+						color="text.secondary"
 						className="font-semibold"
 					>
-						{t('Putusan Anda')}
+						{t('Alur Persetujuan')} {data?.putaran ?? riwayat.length + 1} ({t('berjalan')})
 					</Typography>
+				)}
 
-					<TextField
-						select
-						size="small"
-						label={t('Keputusan')}
-						value={keputusan}
-						onChange={(event) => setKeputusan(event.target.value)}
-						fullWidth
-					>
-						<MenuItem value="disetujui">{t('Setujui')}</MenuItem>
-						<MenuItem value="revisi">{t('Kembalikan untuk diperbaiki')}</MenuItem>
-						{/* Jenjang penerima memang tidak diberi hak menolak, jadi
-						    pilihannya pun tidak ditawarkan — menawarkan sesuatu
-						    yang pasti ditolak server hanya membuang waktu petugas. */}
-						{!jenjangPenerima && <MenuItem value="ditolak">{t('Tolak')}</MenuItem>}
-					</TextField>
+				<div className="divide-divider divide-y">
+					{langkah.map((satu) => (
+						<SatuLangkah
+							key={satu.id}
+							langkah={satu}
+							berjalan={satu.id === data?.berjalan_id}
+						/>
+					))}
+				</div>
 
-					{jenjangPenerima && keputusan === 'disetujui' && (
+				{data?.berjalan_id === null && (
+					<Alert severity="success">{t('Seluruh tahap persetujuan sudah dilalui.')}</Alert>
+				)}
+
+				{/*
+				 * Yang tidak kebagian giliran tidak diberi kotak keterangan di
+				 * sini. Tahap yang memegang berkasnya sudah diumumkan di kepala
+				 * rincian, tempat petugas benar-benar membacanya — mengulanginya
+				 * di bawah hanya menambah blok yang harus dilewati mata (langkah
+				 * 100). Yang tetap perlu disebut cuma satu hal yang tidak terbaca
+				 * dari mana pun: rolenya memang tidak diberi hak memutus.
+				 */}
+				{data?.berjalan_id !== null && !bolehSetujui && (
+					<Alert severity="info">{t('Role Anda tidak diberi hak memutus pada modul ini.')}</Alert>
+				)}
+			</Bagian>
+
+			{bolehKirim && (
+				<Bagian judul="Verifikasi Petugas PPID">
+					{/*
+					 * Jenjang penerima menetapkan jalur pelayanan; jenjang pemutus
+					 * di atasnya tidak menjadwalkan apa pun dan hanya menulis
+					 * catatan.
+					 */}
+					{jenjangPenerima && (
 						<>
 							<TextField
 								select
@@ -300,7 +413,7 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 							{jalur === 'online' && (
 								<Alert severity="info">
 									{t(
-										'Unggah dokumen yang diminta lewat panel Berkas Tanggapan pada detail pengajuan ini. Pemohon menerima pemberitahuan begitu berkasnya tersimpan.'
+										'Unggah dokumen yang diminta pada bagian Lampiran dan Keterangan di bawah. Pemohon menerima pemberitahuan begitu permohonannya disetujui.'
 									)}
 								</Alert>
 							)}
@@ -360,38 +473,85 @@ export function PersetujuanBerjenjang({ modul, pengajuanId, bolehSetujui }: Pers
 					<TextField
 						size="small"
 						label={t('Catatan')}
-						required={perluCatatan}
 						multiline
 						minRows={2}
 						value={catatan}
 						onChange={(event) => setCatatan(event.target.value)}
 						fullWidth
 						helperText={
-							keputusan === 'ditolak'
-								? t('Wajib diisi. Menjadi alasan penolakan yang dibaca pemohon.')
-								: keputusan === 'revisi'
-									? t('Wajib diisi. Menjelaskan apa yang harus diperbaiki petugas.')
-									: t('Opsional.')
+							jenjangPenerima
+								? t('Opsional. Catatan internal, tidak dikirim ke pemohon.')
+								: t('Wajib diisi untuk Tolak dan Revisi. Menjadi alasan yang dibaca penerimanya.')
 						}
 					/>
+				</Bagian>
+			)}
 
-					<Button
-						variant="contained"
-						color={keputusan === 'ditolak' ? 'error' : 'secondary'}
-						className="self-start"
-						disabled={menyimpan || (perluCatatan && !catatan.trim()) || !isianJalurLengkap}
-						onClick={kirim}
-						startIcon={
-							menyimpan ? (
-								<CircularProgress size={16} />
-							) : (
-								<FuseSvgIcon size={18}>lucide:stamp</FuseSvgIcon>
-							)
-						}
+			{lampiran && <Bagian judul="Lampiran dan Keterangan">{lampiran}</Bagian>}
+
+			{bolehKirim && (
+				<Bagian judul="Putusan">
+					{/*
+					 * Tombol per putusan, bukan dropdown lalu satu tombol netral.
+					 *
+					 * Jenjang penerima hanya meneruskan berkasnya, jadi tombolnya
+					 * satu: **Konfirmasi** — ia meminta konfirmasi PPID, bukan
+					 * menyetujui permohonannya. Jenjang pemutus mendapat ketiganya,
+					 * dan tiap tombol menyebut sendiri apa yang akan terjadi.
+					 */}
+					<div className="flex flex-wrap gap-2">
+						<Button
+							variant="contained"
+							color="secondary"
+							disabled={menyimpan || !isianJalurLengkap}
+							onClick={() => kirim('disetujui')}
+							startIcon={
+								menyimpan ? (
+									<CircularProgress size={16} />
+								) : (
+									<FuseSvgIcon size={18}>lucide:stamp</FuseSvgIcon>
+								)
+							}
+						>
+							{jenjangPenerima ? t('Konfirmasi') : t('Setuju')}
+						</Button>
+
+						{!jenjangPenerima && (
+							<>
+								<Button
+									variant="outlined"
+									color="warning"
+									disabled={menyimpan || !adaCatatan}
+									onClick={() => kirim('revisi')}
+									startIcon={<FuseSvgIcon size={18}>lucide:undo-2</FuseSvgIcon>}
+								>
+									{t('Revisi')}
+								</Button>
+
+								<Button
+									variant="outlined"
+									color="error"
+									disabled={menyimpan || !adaCatatan}
+									onClick={() => kirim('ditolak')}
+									startIcon={<FuseSvgIcon size={18}>lucide:x</FuseSvgIcon>}
+								>
+									{t('Tolak')}
+								</Button>
+							</>
+						)}
+					</div>
+
+					<Typography
+						variant="caption"
+						color="text.secondary"
 					>
-						{t('Kirim putusan')}
-					</Button>
-				</div>
+						{jenjangPenerima
+							? t('Konfirmasi meneruskan berkas ini ke PPID untuk diputuskan.')
+							: t(
+									'Setuju menutup permohonan dan memberitahukan hasilnya ke pemohon. Revisi mengembalikannya ke PPID Pelaksana untuk diperbaiki.'
+								)}
+					</Typography>
+				</Bagian>
 			)}
 		</div>
 	);

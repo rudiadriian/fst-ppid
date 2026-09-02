@@ -463,10 +463,508 @@ Alur lengkap dari membuat akun sampai permohonan Anda diproses.
 98. [x] logo pada be-ppid dengan label "PPID Admin" di halaman login, maupun sidebar/header/footer dan atau dimanapun jika ada, tolong dihapus. cukup pakai logo yang sudah ada saja.
 99. [x] ubah favicon atau icon taskbar halaman di be-ppid agar sama dengan fe-ppid, dan tolong ubah loader pada be-ppid menggunakan file ini D:\Project\Ppid\loader-fs.gif
 100. [x] Alur proses permohonannya masih error, ketika pemohon telah mengajukan Permohonan Informasi/ Keberatan Informasi :
-    - Data telah masuk ke be-ppid modul Permohonan, tetapi setelah permohonan tersebut dikonfirmasi dengan menyertakan file upload dan keterangan (diubah statusnya menjadi Diproses) oleh Role PPID Pelaksana, permohonan tersebut masih bisa diubah statusnya oleh PPID Pelaksana (harusnya tidak), dan permohonan tersebut notifikasinya tidak terkirim ke role PPID (harusnya terkirim untuk role PPID verifikasi apakah disetujui atau tidak), kalau saat ini role PPID tidak bisa lihat file yang diupload dan status yang tampil pada form adalah Menunggu diproses, Ditolak, dan Kadaluwarsa (harusnya status yang tampil Tolak, Setujui dan Revisi jika revisi permohonan akan balik ke Role PPID pelaksana untuk direvisi begitu seterusnya alur loopingnya) cek lagi langkah ke 89
+    - Saat ini, saya login sebagai role PPID (Sekretaris Perusahaan) di Detail Permohonan Informasi tidak ada aksi apapun, pastikan alur prosesnya sudah betul ya mulai dari Pemohon -> PPID Pelaksana -> PPID. Harusnya role ini bisa Setuju, Tolak dan Revisi.
+        - Jika PPID Setuju, status berubah menjadi Selesai (Closed). Dokumen langsung didistribusikan (kirim notifikasi), jika Online kirim email, tetapi jika langsung berikan undangan ke email Pemohon dengan menyertakan informasi Keterangan, Tanggal dan Waktu, dan hadir sesuai layanan:
+            Alamat : Komplek Pasar Induk Beras Cipinang, Jl. Pisangan Lama Selatan No. 1, Jakarta Timur 13230
+            Email & Telepon : ppid@foodstation.co.id · (021) 4718011 (Ext. PPID)
+            Jam Layanan : Senin–Jumat Pukul 08.00–15.00 WIB dan Istirahat Pukul 12.00–13.00 WIB
+        - Jika PPID Menolak, status berubah menjadi Ditolak (Rejected), langsung kirim notifikasi ke portal Pemohon (fe-ppid)
+        - Jika PPID Revisi, 
+            - PPID Pelaksana akan menyesuiakan hasil revisi arahan PPID, jika sudah selesai Revisi, klik tombol Setuju lagi, untuk kembali ke PPID (begitu seterusnya)
+            - status akan berubah menjadi Revisi tapi status ini tidak terlihat di sisi Pemohon (fe-ppid) dari sisi pemohon statusnya tetap Diproses
+    - Cek kembali, karena ada bug kode PPID-FSTJ/20260831/0001 tolong dicek. Saat ini, saya login sebagai role PPID Pelaksana tetapi tidak dapat memperoses permohonan informasi.
+    - Tampilan UI/UX modal dialog Detail Permohonan Informasi bisakah dibuat lebih baik lagi? dan tidak menumpuk2, misalhnya dibagi menjadi 2 col, disebelah kiri form yang harus di isi, sebelah kanan form detail infomasi permohonan.
+    - Bagian Ubah Status "Berkas ini sudah siap diputuskan. Lanjutkan dari panel Persetujuan Berjenjang di atas — Setujui untuk meneruskannya, atau Kembalikan untuk diperbaiki." pada modal dialog Detail Permohonan Informasi apakah diperlukan? jika tidak dihilangkan saja agar tampilan lebih simple tapi tetap informatif.
+    - Bagian Persetujuan Berjenjang pada modal dialog Detail Permohonan Informasi, bisakah dibuat tampilannya desainnya dibuat lebih minimalis tapi dengan informasi yang sama? 
+101. [x] pada fe-ppid tolong disesuaikan, disempurnakan lagi ;
+    1. di modul akun/keberatan/baru form keberatan dapat diajukan dengan syarat permohonan informasi yang pernah diajukan memiliki alasan sebagai berikut :
+        - Penolakan atas permintaan informasi
+        - Tidak ditanggapinya permintaan informasi
+        - Penyampaian informasi yang melebihi waktu yang diatur
+        - Permintaan informasi tidak ditanggapi sebagaimana yang diminta
+        - Tidak dipenuhinya permintaan informasi
+        - Pengenaan biaya yang tidak wajar
+        - Tidak disediakannya Informasi berkala 
+    2. table data di akun/permohonan dan akun/keberatan rownya dapat di klik untuk melihat detail dari permohonan dan field Search nomor atau rincian permohonannya dibuat lebih lebar lagi karena kalau yang diketik panjang, tulisannya kepotong
+    3. pada tampilan detail permohonan informasi maupun keberatan ubah label Jejak Status menjadi Alur Persetujuan dengan menampilkan HANYA status Diajukan (ketika pemohon mengajukan), Diproses (permohonan sedang diproses internal, meskipun ada revisi ataupun status lainnya di be-ppid pada fe-ppid tetap menampilkan sedang diproses, lalu stepnya tidak berubah hanya 1 saja), dan Selesai (permohonan selesai) 
+    4. tampilan riwayat permohonan informasi pada modul Histori permohonan di akun/histori, ini juga informasi statusnya dibuat seperti poin nomor 3 (baik dibagian Permohonan Informasi ataupun Keberatan Informasi)
+    5. Batas Waktu Tanggapan tidak perlu ditampilkan informasinya, dan Tanggal Tanggapan diisi tanggal perubahan status menjadi Selesai
+102. 1. [x] Tampilan UI/UX be-ppid di bagian modal dialog Detail Permohonan Informasi modul Permohonan terlalu ribet. coba buat responsive, menarik, informatif dan lebih rapi secara penyampaian/ penempatan informasi maupun field form yang bisa di isi.
+    2. [x] sekarang sudah bagus tetapi letak bagian Berkas Tanggapan Petugas tolong diletakan diatas Putusan Anda
+    3. [x] Label-label di /ppid/permohonan disesuaikan, Putaran diubah menjadi Alur Persetujuan, Putusan Anda diubah menjadi Verifikasi Permohonan, Berkas Tanggapan Petugas dibuah menjadi Lampiran dan Keterangan, Pilih berkas tanggapan diubah menjadi Pilih dari Perangkat, Belum ada berkas tanggapan diubah menjadi Dokumen belum dilampirkan, Kirim putusan diubah menjadi Setuju, Persetujuan Berjenjang diubah menjadi Verifikasi Permohonan
+    4. [x] Lampiran dan Keterangan ini adanya di dalam Verifikasi Permohonan, nah HARUSNYA Verifikasi Permohonan yang disebelah kiri ini ada section bagiannya :
+        1. Alur Persetujuan Permohonan
+        2. Verifikasi Petugas PPID
+        3. Lampiran dan Keterangan 
+        4. Tombol Konfirmasi (sebelumnya Setuju). Tombol Setuju, Tolak dan Revisi (khusus untuk role user PPID)
+            Konfirmasi = meminta konfirmasi dari Role user PPID Pelaksana ke PPID
+            Setuju = Permohonan disetujui oleh Role PPID untuk diinformasikan ke Pemohon
+            Tolak = Permohonan ditolak oleh Role PPID untuk diinformasikan ke Pemohon
+            Revisi = Konfirmasi dari Role user PPID Pelaksana ke PPID untuk meminta direvisi (perbaikan) atas permohonan yang diajukan dan telah dikonfirmasi   
+        Untuk bagian sebelah kanan : Isi Permohonan, Pemohon, Pelayanan & Tanggapan, Riwayat Status (bagian ini sudah sesuai.)
+
 
 ---
 
+
+## Status Pengerjaan (putaran 89 — langkah 102.4)
+
+### Verifikasi Permohonan jadi satu kartu berbagian
+
+Empat bagian, dalam urutan kerjanya:
+
+1. **Alur Persetujuan Permohonan** — di mana berkasnya sekarang, beserta putaran sebelumnya yang dilipat.
+2. **Verifikasi Petugas PPID** — jalur pelayanan, jadwal, keterangan untuk pemohon, dan catatan.
+3. **Lampiran dan Keterangan** — dokumen yang akan diserahkan.
+4. **Putusan** — tombolnya.
+
+Lampiran tidak lagi berdiri sebagai kartu tersendiri di atasnya; ia bagian ketiga di dalam kartu ini. Bagian 1 dan 3 selalu tampil — keduanya bacaan, dan yang belum kebagian giliran pun perlu melihatnya. Bagian 2 dan 4 hanya untuk pemegang giliran.
+
+Panelnya tidak membangun lampirannya sendiri: `BerkasTanggapanPanel` diserahkan dari dialog lewat prop `lampiran`. Berkas tanggapan punya aturan unggah, arsip, dan penguncian sendiri yang tidak ada hubungannya dengan jenjang persetujuan; yang ditentukan panel ini cuma tempatnya.
+
+### Tombol per putusan, bukan dropdown
+
+Dropdown **Keputusan** dilepas. Ia menyembunyikan dua dari tiga pilihan di balik satu klik tambahan, dan memaksa tombol kirimnya berbunyi netral — petugas menekan "Kirim putusan" tanpa satu kata pun yang menyebut bahwa perkara pemohon akan ditutup.
+
+Sekarang tombolnya menyebut sendiri apa yang akan terjadi, dan yang tampil mengikuti hak tahapnya:
+
+| Tahap | Tombol | Artinya |
+| --- | --- | --- |
+| Penerimaan PPID Pelaksana (`boleh_tolak: false`) | **Konfirmasi** | Meminta konfirmasi PPID — meneruskan berkasnya, bukan menyetujui permohonannya |
+| Persetujuan PPID (`boleh_tolak: true`) | **Setuju** | Menutup permohonan dan memberitahukan hasilnya ke pemohon |
+| | **Revisi** | Mengembalikan berkas ke PPID Pelaksana untuk diperbaiki |
+| | **Tolak** | Menolak permohonan dan memberitahukan alasannya ke pemohon |
+
+Tiap kelompok tombol diberi satu baris keterangan di bawahnya, karena "Konfirmasi" dan "Setuju" sama-sama mengirim `disetujui` ke server tetapi berbeda akibatnya bagi pemohon — yang satu belum mengubah apa pun baginya, yang lain menutup perkaranya.
+
+Catatan wajib untuk Tolak dan Revisi dijaga dua kali: tombolnya mati selama catatan kosong, dan `kirim()` menolaknya sekali lagi sebelum permintaan berangkat. Alasan itu dibaca orang lain — pemohon pada penolakan, petugas pada revisi — jadi tidak boleh lolos hanya karena tombolnya sempat hidup.
+
+### Kamus Inggris
+
+Sebelas padanan baru — nama tiap bagian, ketiga tombol, dan keterangan di bawahnya. Tiga kunci yang mati bersama dropdown-nya (dua helper text "Wajib diisi…" dan satu petunjuk unggah yang menyebut panel yang sudah tidak ada) dibuang.
+
+### Berkas yang disentuh
+
+| Berkas | Isi |
+| --- | --- |
+| `components/PersetujuanBerjenjang.tsx` | `Bagian`, prop `lampiran`, empat bagian, tombol per putusan |
+| `components/PermohonanDetailDialog.tsx` | Lampiran masuk ke dalam kartu Verifikasi Permohonan |
+| `@i18n/kamusPpid.ts` | Sebelas padanan baru, tiga kunci mati dibuang |
+
+### Verifikasi
+
+- be-ppid `tsc --noEmit` bersih; `eslint` atas seluruh berkas yang disunting tanpa galat dan tanpa peringatan.
+- api-ppid **76 lulus** (396 asersi), fe-ppid **96 lulus** (361 asersi).
+- Dijalankan atas `PPID-FSTJ/20260831/0001` yang sungguhan (transaksi, lalu dibatalkan): tahap Pelaksana `boleh_tolak: false` → satu tombol Konfirmasi → status `diproses`; tahap PPID `boleh_tolak: true` → tiga tombol → Revisi menurunkannya ke `revisi`, Konfirmasi ulang mengembalikannya ke `diproses`, Setuju menutupnya ke `selesai`.
+
+---
+
+## Status Pengerjaan (putaran 88 — langkah 102.2 & 102.3)
+
+### Lampiran mendahului putusan
+
+Kartu **Lampiran dan Keterangan** naik ke atas kartu putusan. Urutan kerjanya memang begitu: petugas melampirkan dokumen dan menulis keterangannya, baru memutus. Formulir putusan yang berdiri lebih dulu menawarkan langkah terakhir sebagai langkah pertama.
+
+### Label disamakan dengan kosakata petugas
+
+| Sebelum | Sekarang |
+| --- | --- |
+| Persetujuan Berjenjang | **Verifikasi Permohonan** |
+| Putusan Anda | *(dilepas — lihat catatan)* |
+| Putaran | **Alur Persetujuan** |
+| Berkas Tanggapan Petugas | **Lampiran dan Keterangan** |
+| Pilih berkas tanggapan | **Pilih dari Perangkat** |
+| Belum ada berkas tanggapan | **Dokumen belum dilampirkan** |
+| Kirim putusan | **Setuju** *(mengikuti putusan yang dipilih)* |
+
+Dua keputusan yang menyimpang sedikit dari daftarnya, keduanya karena mengikuti daftar apa adanya justru merugikan:
+
+**"Putusan Anda" tidak diganti melainkan dilepas.** Permintaannya mengubah *dua* label menjadi "Verifikasi Permohonan" — nama kartunya dan judul kotak putusan di dalamnya. Keduanya bertumpuk, dan dua judul yang sama beruntun hanya menambah baris tanpa menambah keterangan. Nama itu dipakai kartunya; judul di dalam kotak dilepas.
+
+**"Kirim putusan" jadi "Setuju" — tetapi hanya saat putusannya memang Setujui.** Satu tombol yang selalu berbunyi "Setuju" untuk tiga putusan yang berbeda tidak menyebutkan apa yang akan terjadi, dan yang paling merugikan justru penolakan: petugas yang memilih Tolak akan menekan tombol bertuliskan "Setuju" untuk menutup perkara pemohon. Bunyinya karena itu mengikuti pilihan di atasnya — **Setuju**, **Tolak**, atau **Kembalikan untuk diperbaiki** — dan pada keadaan bawaan tetap berbunyi "Setuju" persis seperti yang diminta.
+
+### Kamus Inggris ikut disamakan
+
+Kunci lama diganti dan padanannya diperbarui: *Request Verification*, *Attachments and Notes*, *Choose from device*, *No documents attached yet*, *Approval Flow*, *Approve*.
+
+Sekalian ditutup lubang yang tertinggal dari putaran 100 dan 102: sembilan kalimat baru — pengumuman giliran, keterangan lampiran terkunci, label strip ringkasan — belum pernah punya padanan dan tampil sebagai bahasa Indonesia saat panel dipakai dalam bahasa Inggris. Satu kunci yang sudah tidak dipakai kode mana pun (`Permohonan ini sedang berada di jenjang persetujuan…`, milik panel status yang kini diam) ikut dibuang.
+
+### Berkas yang disentuh
+
+| Berkas | Isi |
+| --- | --- |
+| `components/PermohonanDetailDialog.tsx`, `components/KeberatanDetailDialog.tsx` | Urutan kartu; judul kartu |
+| `components/PersetujuanBerjenjang.tsx` | `LABEL_TOMBOL`; label putaran; judul kotak putusan dilepas |
+| `components/BerkasTanggapanPanel.tsx` | Dua label tombol dan keadaan kosong |
+| `components/KeberatanTanggapanPanel.tsx` | Rujukan nama panel |
+| `@i18n/kamusPpid.ts` | Kunci diganti, sembilan padanan baru, satu kunci mati dibuang |
+
+### Verifikasi
+
+- be-ppid `tsc --noEmit` bersih; `eslint` atas seluruh berkas yang disunting tanpa galat dan tanpa peringatan.
+- api-ppid **76 lulus** (396 asersi), fe-ppid **96 lulus** (361 asersi) — keduanya tidak tersentuh putaran ini dan dijalankan sebagai pemeriksaan mundur.
+
+---
+
+## Status Pengerjaan (putaran 87 — langkah 101 & 102)
+
+### Langkah 101 — dua butir tambahan
+
+**101.4 — Histori memakai alur yang sama.** Modul Histori masih mencetak jejak status apa adanya: tiap perpindahan internal jadi satu titik di linimasa, termasuk putaran revisi antara PPID dan PPID Pelaksana. Keduanya kini memakai partial alur tiga langkah yang sama dengan rincian.
+
+Daftar keberatan di Histori sekaligus dinaikkan bentuknya. Dulu satu baris datar tanpa alur sama sekali — pemohon tidak punya cara tahu keberatannya sudah sampai mana. Sekarang bentuknya sama dengan permohonan: kepala berkas yang bisa dilipat, alasan keberatan, tanggal tanggapan, alur, dan tautan ke rinciannya.
+
+**101.5 — Batas Waktu Tanggapan dilepas, Tanggal Tanggapan dibetulkan.** Batas waktu adalah tenggat kerja petugas; di layar pemohon ia terbaca sebagai janji tanggal yang belum tentu jadi hari jawabannya keluar. Dilepas dari rincian permohonan, rincian keberatan, dan Histori.
+
+Tanggal Tanggapan tidak lagi dibaca dari kolom `tanggal_tanggapan`. Kolom itu diisi begitu berkasnya berpindah ke status akhir **mana pun** dan tidak pernah ditulis ulang, jadi baris yang sempat lewat status akhir lain lebih dulu membawa tanggal yang bukan tanggal selesainya. `tanggalSelesaiPortal()` mengambilnya dari perpindahan status ke **Selesai**, dengan kolomnya sebagai cadangan untuk baris lama yang log statusnya tidak lengkap.
+
+---
+
+### Langkah 102 — rincian permohonan di panel dirapikan
+
+Putaran 100 sudah memecahnya jadi dua kolom, tetapi isinya masih satu aliran `judul-kecil → isi → garis pemisah` yang panjang. Semua bagian tampil setara, tidak ada yang menonjol, dan petugas membaca dari atas tiap kali hanya untuk menemukan satu isian.
+
+**Nomor berkas naik ke judul dialog.** Judul yang cuma berbunyi "Detail Permohonan Informasi" tidak memberi tahu apa pun tentang berkas yang sedang dibuka, sementara nomornya — satu-satunya penanda yang dipakai petugas saat bicara dengan pemohon — tenggelam sebagai baris pertama isi. Sekarang nomor, status, dan penanda keberatan terkait berdiri di judul.
+
+**Empat angka pokok jadi strip ringkasan.** Kapan masuk, kapan tenggatnya, lewat jalur apa, siapa petugasnya — dulu tersebar di dalam blok "Penanganan" di tengah halaman, bercampur isian yang jarang dibaca. Kini berdiri di kepala dan terbaca sebelum petugas menggulung apa pun.
+
+**Tiap bagian jadi kartu berbingkai** dengan ikon yang bisa dikenali sekilas dan tempat tetap untuk aksinya. Isinya disusun ulang menurut apa yang dicari bersamaan, bukan menurut urutan kolom tabelnya:
+
+- **Isi Permohonan** — rincian, tujuan, kategori, format, cara pengiriman, dan lampiran pemohon. Lampiran menempel di sini karena ia bagian dari permintaan itu, bukan kartu tersendiri.
+- **Pemohon** — identitas; jenis pemohon naik jadi chip di kepala kartu.
+- **Pelayanan & Tanggapan** — jalur, jadwal, tanggal tanggapan, register publik, keterangan untuk pemohon, dan alasan penolakan bila ada. Lima isian yang dulu terserak di dua blok.
+- **Riwayat Status** — tetap terakhir.
+
+**Kolom kerja menempel** (`lg:sticky`) saat kolom kanan digulung, jadi tombol putusan tidak hilang dari layar saat petugas membaca berkasnya. Di bawah `md` dialognya jadi layar penuh: dialog `lg` di layar ponsel menyisakan bingkai tipis di tiap sisi dan memotong isinya dua kali.
+
+Rincian keberatan disusun sama persis — dua modul yang isinya sejenis tidak boleh menuntut dua kebiasaan membaca.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| fe-ppid | `Models/PermohonanInformasi.php` | `tanggalSelesaiPortal()` |
+| fe-ppid | `views/akun/histori.blade.php` | Alur tiga langkah di kedua daftar; keberatan dinaikkan bentuknya |
+| fe-ppid | `views/akun/permohonan/show.blade.php`, `views/akun/keberatan/show.blade.php` | Batas waktu dilepas; tanggal tanggapan dari perpindahan ke Selesai |
+| fe-ppid | `tests/Feature/PortalAlurDanKeberatanTest.php` | Dua tes baru |
+| be-ppid | `components/RincianPengajuan.tsx` | `Kartu`, `Ringkasan`; `Judul` yang jadi kode mati dibuang |
+| be-ppid | `components/PermohonanDetailDialog.tsx`, `components/KeberatanDetailDialog.tsx` | Judul, ringkasan, kartu, kolom menempel, layar penuh di layar sempit |
+
+### Verifikasi
+
+- api-ppid **76 lulus** (396 asersi), fe-ppid **96 lulus** (361 asersi). be-ppid `tsc --noEmit` bersih; `eslint` atas seluruh berkas yang disunting tanpa galat **dan** tanpa peringatan.
+- Dua tes baru: Histori memasang alur tiga langkah di kedua daftar tanpa membocorkan `revisi` maupun tenggat petugas; Tanggal Tanggapan mengikuti perpindahan ke Selesai meski `tanggal_tanggapan` memuat tanggal lain.
+
+---
+
+## Status Pengerjaan (putaran 86 — langkah 100 & 101)
+
+Dua langkah sekaligus: tampilan rincian di panel admin, dan penyempurnaan Portal Pemohon.
+
+---
+
+### Langkah 100 — rincian permohonan tidak lagi menumpuk
+
+**Dua kolom.** Rincian dan formulir kerjanya sebelumnya bercampur dalam satu kolom panjang: petugas menggulung melewati enam blok bacaan sebelum sampai ke tempat ia harus bertindak, lalu menggulung balik untuk memastikan apa yang tadi ia baca. Kiri sekarang berisi yang **dikerjakan** — putusan berjenjang, berkas tanggapan, ubah status — dan kanan yang **dibaca**: pemohon, isi permohonan, penanganan, lampiran, riwayat. Dialognya melebar ke `lg`; di layar sempit keduanya kembali menumpuk dengan kolom kerja tetap lebih dulu. Rincian keberatan disusun sama supaya keduanya tidak menuntut dua kebiasaan berbeda.
+
+**Bagian Ubah Status yang kosong dilepas.** Keterangan "Berkas ini sudah siap diputuskan, lanjutkan dari panel Persetujuan Berjenjang" adalah satu blok penuh yang tidak menambah satu pun tindakan — dan isinya sudah disebut di kepala rincian, tepat di tempat petugas membacanya. `adaPilihanStatus()` memutuskan apakah bagian itu perlu dipasang sama sekali; kalau tidak ada perpindahan yang bisa dipilih, bagiannya tidak ada.
+
+**Jenjang persetujuan jadi garis waktu, bukan tumpukan kartu.** Tiap tahap dulu satu kartu berbingkai dengan ikon berwarna, dua chip, dan tiga baris keterangan — empat tahap berarti empat kotak yang menuntut perhatian sama besar dengan berkas dan formulir putusannya. Sekarang satu baris bertitik penanda: nama tahap, pemegangnya, dan status pada satu baris; waktunya di baris kedua. Isinya sama persis. Yang dilepas cuma bingkai, ikon, dan chip "Giliran sekarang" — giliran sudah ditandai titik beraksen, tebalnya baris, dan pengumuman di kepala rincian. Kotak "bukan giliran Anda" di dasar panel ikut dilepas karena mengulang pengumuman yang sama.
+
+---
+
+### Langkah 101 — Portal Pemohon
+
+**1. Dasar keberatan mengikuti Pasal 35, bukan "sudah selesai".** Aturan lama hanya mengizinkan keberatan atas permohonan yang penanganannya tuntas. Justru itu menutup dua dasar yang paling sering dipakai — **tidak ditanggapinya permintaan informasi** dan **penyampaian informasi melebihi waktu yang diatur** — karena keduanya baru muncul ketika permohonan **belum** ditanggapi sampai tenggatnya lewat, dan berkas semacam itu statusnya masih berjalan.
+
+`layakDikeberatankan()` karena itu punya dua pintu: penanganannya sudah tuntas (apa pun hasilnya), **atau** masih berjalan tetapi tenggat tanggapannya sudah lewat. Ketujuh dasarnya juga ditulis di muka formulir, bukan ditemukan satu per satu di dalam dropdown setelah pemohon terlanjur menyusun kasus posisinya.
+
+**2. Baris tabel bisa diklik, kolom cari dilebarkan.** Daftar permohonan dan keberatan sama-sama membuka rinciannya dari mana pun di barisnya; tautan Detail tetap ada untuk papan ketik, pembaca layar, dan buka-di-tab-baru. Tautan di dalam baris — Isi Survei, unduh lampiran — menghentikan klik barisnya sendiri. Kotak carinya dipatok `sm:w-80 lg:w-96`; sebelumnya selebar bawaan peramban, dan pencarian yang panjang terpotong.
+
+Keberatan sebelumnya **tidak punya halaman rincian sama sekali**: seluruh isinya harus terbaca dari satu baris tabel yang terpotong, dan tanggapan petugas tidak punya tempat untuk ditampilkan. Halamannya dibuat, lengkap dengan tanggapan PPID, lampiran, dan batas pengajuan sengketa ke Komisi Informasi — tenggat yang sebelumnya hanya ada di badan surel dan mudah terlewat.
+
+**3. Jejak Status jadi Alur Persetujuan: tiga langkah, selalu tiga.** Panel admin punya jenjang berlapis dengan putaran revisi yang bisa berulang; semuanya urusan internal. Yang perlu diketahui pemohon cuma di mana berkasnya berada — **Diajukan**, **Diproses**, **Selesai**. Langkahnya tidak bertambah-kurang tiap kali petugas bekerja, dan perbaikan pekerjaan petugas tidak lagi terbaca sebagai masalah pada berkas pemohon sendiri. Satu partial dipakai rincian permohonan maupun keberatan.
+
+---
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| be-ppid | `components/PermohonanDetailDialog.tsx`, `components/KeberatanDetailDialog.tsx` | Dua kolom; Ubah Status dipasang bersyarat |
+| be-ppid | `components/PermohonanStatusPanel.tsx` | Diam saat bukan gilirannya; helper pindah ke `lib` |
+| be-ppid | `components/PersetujuanBerjenjang.tsx` | Garis waktu menggantikan tumpukan kartu |
+| be-ppid | `lib/statusPengajuan.ts` | `tujuanStatus()`, `adaPilihanStatus()`, `LANJUT_PEMEGANG` |
+| fe-ppid | `Models/PermohonanInformasi.php` | `layakDikeberatankan()`, `tahapAlurPortal()`, `tanggalAlurPortal()` |
+| fe-ppid | `Models/KeberatanInformasi.php` | Tonggak alur versi pemohon |
+| fe-ppid | `Akun/KeberatanController.php` | `show()`; kelayakan mengikuti Pasal 35 |
+| fe-ppid | `routes/akun.php` | Rute `akun.keberatan.show` |
+| fe-ppid | `views/akun/partials/alur-persetujuan.blade.php` | Baru — tiga langkah, dipakai dua rincian |
+| fe-ppid | `views/akun/keberatan/show.blade.php` | Baru — rincian keberatan |
+| fe-ppid | `views/akun/permohonan/{index,show}.blade.php`, `views/akun/keberatan/{index,create}.blade.php` | Baris diklik, kolom cari, alur, tujuh dasar |
+| fe-ppid | `tests/Feature/PortalAlurDanKeberatanTest.php` | Baru — enam tes |
+
+### Verifikasi
+
+- api-ppid **76 lulus** (396 asersi), fe-ppid **94 lulus** (353 asersi). be-ppid `tsc --noEmit` bersih, `eslint` atas seluruh modul `ppid` tanpa galat.
+- Enam tes baru di fe-ppid: kelayakan keberatan atas berkas lewat tenggat dan atas berkas ditolak, penolakan server atas berkas yang belum layak, rincian keberatan beserta penjagaan kepemilikannya, tiga langkah alur atas sepuluh status berbeda, dan rincian permohonan yang tidak lagi membocorkan `revisi` maupun `diverifikasi`.
+
+### Catatan
+
+`npx eslint --fix` sempat dijalankan atas seluruh direktori `ppid/` dan ikut merapikan delapan berkas yang tidak ada hubungannya dengan langkah ini. Semuanya dikembalikan; yang tersisa di diff hanya berkas yang memang disunting.
+
+---
+
+## Status Pengerjaan (putaran 85 — langkah 100, `PPID-FSTJ/20260831/0001`)
+
+"Login sebagai PPID Pelaksana tetapi tidak dapat memproses permohonan informasi."
+
+### Bukan berkasnya — kuncinya kelewat rapat
+
+Berkas `PPID-FSTJ/20260831/0001` sehat. Jenjangnya ada, tahap 1 **Penerimaan PPID Pelaksana** menunggu, dan putusan Setujui atasnya dijawab HTTP 200. Yang tidak bisa dilakukan petugas adalah **memprosesnya** — menandai berkas baru itu **Diverifikasi** sebelum ia menyiapkan tanggapan.
+
+Putaran 80 mengunci seluruh perpindahan status selama ada tahap yang menunggu. Yang benar untuk berkas yang sudah diteruskan; salah untuk berkas yang justru masih di meja orang yang membukanya. Jenjang lahir sejak berkasnya pertama dibaca, jadi kuncinya terpasang sejak detik pertama: satu-satunya tombol yang tersisa bagi PPID Pelaksana adalah **Setujui** — yang justru melempar berkas ke PPID sebelum ia sempat mengerjakannya.
+
+Riwayat status membenarkannya. `PPID-FSTJ/20260831/0002` sempat melewati `diajukan → diverifikasi → diproses` pada 31 Agustus, sebelum kunci itu ada. Berkas `0001` mencoba jalan yang sama dan ditolak.
+
+### Kunci sekarang punya tiga jawaban, bukan dua
+
+| Keadaan | Dropdown status |
+| --- | --- |
+| Tidak ada tahap berjalan | Sepenuhnya milik petugas |
+| Tahap berjalan milik orang lain | Tertutup penuh |
+| **Tahap berjalan milik Anda** | **Hanya perpindahan yang membiarkan berkasnya di meja Anda** |
+
+Untuk permohonan, isi baris ketiga adalah `diverifikasi` (`STATUS_LANJUT_PEMEGANG`). Yang tetap tertutup — bagi siapa pun, termasuk pemegang gilirannya — adalah perpindahan yang memindahkan berkas ke meja lain atau menutup perkaranya: `diproses`, `revisi`, dan seluruh status akhir. Ketiganya hasil putusan di panel Persetujuan Berjenjang, bukan pilihan dropdown. Super admin tetap dikecualikan, dengan alasan yang sama seperti pada `bolehMemutus()`.
+
+Panelnya mengikuti aturan yang sama dan menyebutkan tahap yang sedang memegang berkasnya, bukan sekadar "sedang di jenjang persetujuan". Saat pilihan pemegang giliran memang habis — berkasnya sudah Diverifikasi dan tinggal diputuskan — keterangannya menunjuk ke panel putusan, bukan berbunyi "status ini sudah final" yang justru keliru.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `Cms/PermohonanController.php` | `STATUS_LANJUT_PEMEGANG`, `pastikanBolehGeserStatus()` |
+| api-ppid | `tests/Feature/AlurPersetujuanPermohonanTest.php` | Satu tes baru |
+| be-ppid | `components/PermohonanStatusPanel.tsx` | Tiga wajah kunci; tujuan disaring; keterangan menyebut tahapnya |
+| be-ppid | `components/PermohonanDetailDialog.tsx` | Meneruskan `giliranSaya` dan nama tahap berjalan |
+
+### Verifikasi
+
+- api-ppid **76 lulus** (396 asersi), fe-ppid **88 lulus** (316 asersi). be-ppid `tsc --noEmit` bersih, `eslint` tanpa galat.
+- Tes baru: pemegang giliran boleh menandai Diverifikasi; `diproses`, `ditolak`, dan `kedaluwarsa` tetap ditolak baginya; PPID yang belum kebagian giliran ditolak bahkan untuk Diverifikasi; alurnya tetap berjalan sesudahnya lewat putusan.
+- Dijalankan atas `PPID-FSTJ/20260831/0001` yang sungguhan (transaksi, lalu dibatalkan): `diajukan` → Diverifikasi berhasil → loncatan ke `diproses` ditolak → Setujui meneruskannya ke `diproses`.
+
+---
+
+## Status Pengerjaan (putaran 84 — langkah 100, putusan PPID menutup perkara)
+
+Langkah 100 ditulis ulang menjadi tiga akibat putusan PPID. Yang sudah berjalan sejak putaran sebelumnya — PPID kebagian giliran dengan Setujui / Tolak / Kembalikan untuk diperbaiki, dan putaran revisi berulang sampai selesai — tidak diubah. Yang berubah tiga hal.
+
+### 1. Setuju menutup perkaranya, bukan menaikkannya satu tingkat lagi
+
+Putusan PPID dulu memasang **Disetujui**, dan `selesai` menunggu ada yang menggesernya lagi lewat dropdown — langkah yang tidak dimiliki siapa pun dalam alur ini, sehingga berkas yang sebetulnya tuntas menumpuk di status antara. Sekarang putusan Setuju memasang **Selesai (Closed)** langsung.
+
+`disetujui` tidak dihapus: masih status yang sah, masih dipegang baris lama, dan dari sana `selesai` masih bisa dituju. Yang berubah hanya apa yang **dihasilkan** alurnya.
+
+### 2. Dokumen didistribusikan saat putusan akhir, bukan saat berkasnya diteruskan
+
+Undangan jalur Langsung dulu berangkat begitu PPID Pelaksana meneruskan berkasnya — menjanjikan pertemuan pada tanggal tertentu atas permohonan yang belum diputus, dan yang bisa saja ditolak PPID beberapa hari kemudian. Undangan itu kini berangkat bersama putusan yang menutup perkaranya, lengkap dengan Keterangan petugas, Tanggal & Waktu, alamat, kontak, dan jam layanan.
+
+Jalur Online tidak dikirimi surel kedua: perpindahan ke `selesai` sudah memicu surel "selesai ditangani" beserta tautan portalnya. Satu peristiwa, satu surat — yang khas jalur Langsung memang tidak ada di surel itu, jadi undangannya berdiri sendiri.
+
+Penolakan tidak berubah: status **Ditolak**, alasannya ikut ke lonceng portal pemohon.
+
+### 3. Revisi tidak pernah terlihat pemohon
+
+Putaran perbaikan antara PPID dan PPID Pelaksana adalah urusan internal. Dari sisi pemohon tidak ada yang berubah — permohonannya memang masih diproses — dan mengabarkan tiap putaran hanya membuat pemohon mengira berkas *miliknya* yang bermasalah, padahal yang diperbaiki pekerjaan petugas.
+
+Disembunyikan di dua lapis yang harus sepakat, karena lonceng yang menyebut satu status sementara daftarnya menyebut yang lain lebih membingungkan daripada tidak berkabar sama sekali:
+
+- **api-ppid** — `NotifikasiPortal::STATUS_INTERNAL` menahan loncengnya; tidak ada notifikasi yang berangkat.
+- **fe-ppid** — `revisi` dilabeli **Dalam Proses** / **Diproses** di seluruh peta status portal dan halaman cek status publik.
+
+"Revisi" ikut dilepas dari `KELOMPOK` grafik dashboard pemohon: tidak ada lagi status yang memetakan ke sana, dan legend dengan potongan yang selamanya nol hanya menyisakan pertanyaan.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `Cms/PermohonanController.php` | Setuju → `selesai` |
+| api-ppid | `Models/PermohonanInformasi.php` | `diproses` boleh menuju `selesai` |
+| api-ppid | `Concerns/MenanganiPersetujuan.php` | Undangan jalur Langsung menyusul putusan akhir |
+| api-ppid | `Support/NotifikasiPortal.php` | `STATUS_INTERNAL` — `revisi` tidak dikabarkan |
+| api-ppid | `tests/Feature/AlurPersetujuanPermohonanTest.php`, `BerkasTanggapanTest.php` | Dua tes baru; satu tes disusun ulang |
+| be-ppid | `lib/statusPengajuan.ts` | Transisi disamakan |
+| fe-ppid | `Models/PermohonanInformasi.php`, `Models/KeberatanInformasi.php` | `revisi` tampil sebagai Dalam Proses; `KELOMPOK` dirapikan |
+| fe-ppid | `PpidController.php` | Cek status publik & label status ikut menyamarkan `revisi` |
+
+### Verifikasi
+
+- api-ppid **75 lulus** (384 asersi), fe-ppid **88 lulus** (316 asersi). be-ppid `tsc --noEmit` bersih, `eslint` tanpa galat.
+- Dua tes baru: putusan PPID menutup berkas ke `selesai` **dan** mengirim undangan jalur Langsung — sekaligus menegaskan tidak ada surat yang berangkat saat PPID Pelaksana baru meneruskan; putusan Revisi memindahkan status di panel tanpa menambah satu pun lonceng di sisi pemohon.
+- Rantai penuh dijalankan atas `PPID-FSTJ/20260831/0002` yang sungguhan (transaksi, lalu dibatalkan): PPID kebagian giliran → Revisi menurunkannya ke `revisi` tanpa lonceng pemohon → Pelaksana menyetujui lagi → `diproses` → PPID menyetujui → **`selesai`**.
+
+---
+
+## Status Pengerjaan (putaran 83 — langkah 100, keluhan ketiga)
+
+> "Kalau sudah Konfirmasi tidak bisa Pilih Berkas Tanggapan dan Pilih dari Arsip … padahal sudah setuju dan saya sudah upload berkas tanggapan, tapi kenapa tidak ada di tampilan Detail Permohonan Informasi."
+
+Dua cacat, tidak berkaitan satu sama lain.
+
+### 1. Berkas tanggapan tidak pernah tampil — kunci JSON-nya salah
+
+Eloquent menulis nama relasi dalam bentuk snake_case saat menyusun jawabannya (`$snakeAttributes`), jadi rincian permohonan mengirim `tanggapan_files` dan `log_status`. Dialognya membaca `data.tanggapanFiles` dan `data.logStatus` — keduanya `undefined`, tanpa galat apa pun. Panel Berkas Tanggapan karena itu selalu berbunyi "Belum ada berkas tanggapan", dan Riwayat Status selalu kosong, berapa pun isinya.
+
+Terbukti di basis data: permohonan `PPID-FSTJ/20260831/0002` menyimpan `KEBERATAN.png` sebagai berkas tanggapan dan dua baris `permohonan_log_status`. Keduanya ada sejak awal; yang tidak ada adalah kunci yang dibaca panelnya.
+
+Kedua pembacaan disamakan dengan kunci yang sungguh dikirim, dan satu tes menjaga keduanya sekaligus — termasuk menegaskan bahwa kunci camelCase memang **tidak pernah** ada, supaya kekeliruan yang sama tidak kembali dalam bentuk `?? data.tanggapanFiles`.
+
+### 2. Lampiran masih bisa diubah setelah berkasnya diteruskan
+
+Dropdown status sudah terkunci sejak putaran 80, tetapi lampirannya tidak. PPID Pelaksana yang sudah menekan Setujui tetap bisa Pilih Berkas Tanggapan, Pilih dari Arsip, dan membuang lampiran yang sudah ada — sehingga berkas yang sedang dipertimbangkan PPID bisa berubah isi di tengah pertimbangannya, dan yang akhirnya sampai ke pemohon bukan yang disetujui.
+
+Aturannya sekarang satu kalimat: **lampiran hanya boleh disentuh pemegang giliran.** Dijaga server di `tambahTanggapanFile()` dan `hapusTanggapanFile()` lewat `bolehMemutus()` — aturan yang sama persis dengan yang menentukan siapa boleh memutus, jadi tidak ada dua definisi yang bisa berbeda — dan panel mengunci dirinya dengan jawaban yang sama.
+
+Dua hal sengaja tetap terbuka:
+
+- **Berkas yang jenjangnya sudah tuntas.** Itu jalur melampirkan dokumen susulan setelah permohonannya diserahkan, dan pemohon memang diberi tahu saat itu juga.
+- **Berkas yang dikembalikan untuk diperbaiki.** Gilirannya balik ke PPID Pelaksana, jadi lampirannya terbuka lagi — memang itu yang diminta putusan Revisi.
+
+Panelnya tidak sekadar kehilangan tombol: ada keterangan kenapa terkunci dan apa yang membukanya kembali. Tombol yang hilang tanpa sebab terbaca sebagai kerusakan.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `Cms/PermohonanController.php` | `pastikanBolehUbahBerkas()` pada kedua endpoint lampiran |
+| api-ppid | `tests/Feature/AlurPersetujuanPermohonanTest.php` | Dua tes baru |
+| be-ppid | `components/PermohonanDetailDialog.tsx` | Kunci `tanggapan_files` / `log_status`; lampiran ikut terkunci |
+| be-ppid | `components/BerkasTanggapanPanel.tsx` | `alasanTerkunci` — keterangan saat lampiran dikunci |
+
+### Verifikasi
+
+- api-ppid **72 lulus** (362 asersi), fe-ppid **88 lulus** (316 asersi). be-ppid `tsc --noEmit` bersih, `eslint` tanpa galat.
+- Dua tes baru: PPID Pelaksana ditolak menambah maupun menghapus lampiran setelah meneruskan, lalu boleh lagi setelah berkasnya dikembalikan untuk diperbaiki; rincian membawa `tanggapan_files` dan `log_status` dan tidak pernah membawa kunci camelCase.
+- Dijalankan atas baris sungguhan (transaksi, lalu dibatalkan): rincian `PPID-FSTJ/20260831/0002` mengirim satu berkas tanggapan (`KEBERATAN.png`) dan dua baris riwayat; PPID Pelaksana yang mencoba melampirkan berkas baru ditolak dengan *"Berkas ini sedang menunggu putusan tahap 'Persetujuan PPID', jadi lampirannya tidak bisa diubah."*
+
+---
+
+## Status Pengerjaan (putaran 82 — langkah 100, arti status Diproses)
+
+> "Kalau statusnya Diproses berarti permohonan sudah disetujui oleh PPID Pelaksana, tinggal PPID yang menentukan Setuju, Tolak, dan atau Revisi."
+
+Aturan itu menyelesaikan cacatnya di akarnya, bukan di tampilannya. Sebelum ini sistem punya **dua** nama untuk satu keadaan — `diproses` dan `menunggu_approval` — dan jenjang persetujuannya membaca yang kedua. Berkas yang petugas tandai **Diproses** karena itu tetap dianggap belum diteruskan, dan PPID menunggu giliran yang tidak pernah datang.
+
+### Kosakata status sesudah putaran ini
+
+| Status | Artinya | Ada di meja |
+| --- | --- | --- |
+| `diajukan` / `diverifikasi` | Baru masuk, belum ditangani | PPID Pelaksana |
+| **`diproses`** | **Sudah disetujui PPID Pelaksana; tinggal putusan PPID** | **PPID** |
+| `revisi` | Dikembalikan PPID untuk diperbaiki | PPID Pelaksana |
+| `disetujui` / `ditolak` / `ditolak_sebagian` / `selesai` / `kedaluwarsa` | Akhir | — |
+
+`menunggu_approval` tidak dipasang lagi. Nilainya tetap dikenali di seluruh jalur — CHECK constraint, peta transisi, penghitung dashboard — supaya baris yang telanjur tersimpan tetap terbaca benar, tetapi tidak pernah lagi ditulis. Dua nama untuk satu keadaan memaksa petugas menghafal mana yang sedang berlaku, dan justru itu yang membuat cacat ini lolos.
+
+Konsekuensinya: **revisi tidak boleh lagi mengembalikan berkas ke `diproses`.** Sebelumnya begitu, dan kini artinya berlawanan — berkas yang baru dikembalikan ke petugas akan tampil sama dengan berkas yang sudah menunggu putusan PPID. Statusnya menjadi `revisi`, nilai yang sudah lama diterima CHECK constraint `permohonan_informasi` tetapi belum pernah dipakai, jadi tidak ada migrasi.
+
+### Jenjang dibuka di tahap yang sesuai statusnya
+
+`AlurPersetujuan::mulai()` tidak lagi selalu membuka tahap pertama. Berkas berstatus Diproses lahir dengan tahap penerima **sudah disetujui** — berketerangan dari mana kesimpulannya diambil, tanpa nama pemutus yang dikarang — dan gilirannya langsung jatuh ke PPID beserta loncengnya.
+
+Berkas yang jenjangnya telanjur dibuat dengan aturan lama ikut dibetulkan saat dibaca (`selaraskanDenganStatus()`): tahap penerima yang masih menahan berkas berstatus Diproses ditutup, tahap PPID dibuka, lonceng lama yang tidak lagi punya giliran dibuang. Satu arah saja dan hanya dari tahap pertama — jenjang tidak pernah dimundurkan, dan putaran yang memang baru dibuka setelah revisi (statusnya `revisi`, bukan `diproses`) tidak tersentuh. Tidak ada baris yang perlu disunting tangan.
+
+### Dashboard ikut berpindah meja
+
+`perlu_tindakan` selama ini menghitung `diproses` sebagai beban PPID Pelaksana. Di bawah aturan baru berkas itu justru sudah lepas dari mejanya, jadi angkanya menghitung `diajukan` + `diverifikasi` + `revisi`, sementara `menunggu_approval` — kartu "Menunggu persetujuan" — menghitung `diproses` (plus kosakata lamanya). Tanpa ini kedua kartu sama-sama salah: yang satu menghitung pekerjaan yang sudah selesai, yang lain menampilkan nol selamanya.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `Support/AlurPersetujuan.php` | `STATUS_SUDAH_DITERUSKAN`, `mulai()` membuka tahap sesuai status, `selaraskanDenganStatus()`, `hapusLonceng()` |
+| api-ppid | `Cms/PermohonanController.php`, `Cms/KeberatanController.php` | Meneruskan → `diproses`; revisi → `revisi`; `STATUS_DI_MEJA_PPID` |
+| api-ppid | `Models/PermohonanInformasi.php`, `Models/KeberatanInformasi.php` | Peta transisi mengikuti arti baru |
+| api-ppid | `AnalitikController.php` | Dua beban kerja dipisah menurut mejanya |
+| api-ppid | `tests/Feature/AlurPersetujuanPermohonanTest.php`, `BerkasTanggapanTest.php` | Dua tes baru; kosakata disamakan |
+| be-ppid | `lib/statusPengajuan.ts`, `lib/resources.ts` | Transisi & label disamakan; `revisi` punya label |
+| be-ppid | `PpidDashboard.tsx` | Keterangan kartu mengikuti arti baru |
+| fe-ppid | `PpidController.php`, `Support/AksesDokumen.php` | Label `revisi`; keterangan status diperbarui |
+
+### Verifikasi
+
+- api-ppid **70 lulus** (343 asersi), fe-ppid **88 lulus** (316 asersi). be-ppid `tsc --noEmit` bersih, `eslint` tanpa galat.
+- Dua tes baru: berkas berstatus Diproses langsung jadi giliran PPID dengan ketiga pilihan terbuka; jenjang lama yang tertahan di tahap penerima ikut dimajukan saat dibaca, tanpa berlipat.
+- Dijalankan atas `PPID-FSTJ/20260831/0002` yang sungguhan (transaksi, lalu dibatalkan): dibuka PPID → tahap 1 tertutup, tahap 2 berjalan, `boleh_memutus` benar → Revisi menurunkannya ke `revisi` dan mengembalikannya ke Pelaksana → Pelaksana setuju → kembali `diproses`.
+
+### Catatan
+
+Permohonan yang tempo hari tertahan tidak lagi butuh langkah manual: begitu PPID membuka rinciannya, jenjangnya menyusul sendiri dan ketiga tombol — Setujui, Tolak, Kembalikan untuk diperbaiki — langsung tersedia.
+
+---
+
+## Status Pengerjaan (putaran 81 — langkah 100, keluhan kedua)
+
+"Login sebagai PPID, di Detail Permohonan tidak ada aksi apapun."
+
+### Alurnya sendiri sudah benar
+
+Ditelusuri di basis data yang sesungguhnya, bukan di tes: permohonan `PPID-FSTJ/20260831/0002` punya jenjang lengkap, tahap 1 **Penerimaan PPID Pelaksana** masih `menunggu`, tahap 2 **Persetujuan PPID** belum kebagian giliran. PPID memang belum boleh berbuat apa-apa — berkasnya belum sampai kepadanya.
+
+Dijalankan sampai habis atas baris yang sama (di dalam transaksi yang lalu dibatalkan), rantainya utuh: PPID Pelaksana menyetujui → status berpindah ke **Menunggu Persetujuan** dan lonceng sampai ke akun PPID → PPID membuka rincian dan `boleh_memutus` menjadi `true` → putusan **Kembalikan untuk diperbaiki** melempar berkasnya balik ke Pelaksana beserta loncengnya. Pemohon → PPID Pelaksana → PPID berjalan sebagaimana mestinya.
+
+Hak aksesnya juga bukan penyebabnya: role `ppid-utama` memegang `can_view` + `can_approve` atas modul Permohonan maupun Keberatan, dan akun `ppid@foodstation.co.id` memang ber-role itu.
+
+### Yang salah: halamannya tidak mengatakan apa-apa
+
+Berkas tertahan di tahap 1, dan yang PPID lihat hanyalah rincian tanpa satu pun tombol. Panel status terkunci — memang seharusnya — dan panel jenjang menjawab **"Tahap yang berjalan bukan giliran role Anda"**, kalimat yang tidak menyebut tahap mana, siapa yang memegangnya, sejak kapan, atau apa yang ditunggu. Dari kursi PPID itu tidak terbaca sebagai antrean; itu terbaca sebagai halaman rusak.
+
+Sisi lainnya sama diamnya. PPID Pelaksana yang membuka berkas untuk membacanya tidak menggulung sampai dasar dialog, jadi tidak pernah melihat bahwa gilirannyalah yang sedang ditunggu — dan berkas diam di tahap 1 tanpa ada yang merasa ditunggu. Itulah yang membuat berkas ini tidak pernah sampai ke PPID.
+
+**Giliran karena itu diumumkan di kepala rincian**, di kedua dialog. Yang sedang kebagian membaca "Giliran Anda memutus berkas ini pada tahap …"; yang belum membaca "Menunggu putusan tahap …". Alert di panel jenjang ikut menyebut tahap, jabatan pemegangnya, jam masuk, dan batas waktunya.
+
+### Dua cacat yang ikut ditemukan
+
+**1. Putaran bertumpuk jadi satu daftar rata.** Tiap revisi membuat satu set langkah baru di atas yang lama, dan panel menerima seluruhnya sekaligus — berkas yang sekali dikembalikan tampil sebagai "1. Penerimaan, 2. Persetujuan, 1. Penerimaan, 2. Persetujuan". Urutan yang mundur di tengah daftar terbaca sebagai data rusak, bukan sebagai berkas yang berputar dua kali.
+
+`AlurPersetujuan::putaran()` memecahnya di batas `urutan` yang kembali ke 1 — penanda yang sudah tersimpan tersirat, karena langkah selalu dibuat satu set penuh dari urutan 1, jadi tidak perlu kolom baru dan tidak perlu migrasi. Endpoint mengirim putaran berjalan sebagai `langkah`, sisanya sebagai `riwayat_putaran`, dan panel melipat yang lama ke dalam accordion.
+
+**2. Lonceng giliran hidup lebih lama dari berkasnya.** Tiga pemberitahuan "menunggu persetujuan Anda" di basis data menunjuk permohonan 974 dan langkah 17 — keduanya sudah tidak ada. Diklik, hasilnya rincian yang tidak bisa dibuka; dan tidak ada cara membuangnya karena berkasnya sendiri sudah lenyap dari daftar.
+
+`AlurPersetujuan::bersihkan()` sudah ada sejak lama tetapi **tidak pernah dipanggil dari mana pun**. Sekarang dipasang sebagai peristiwa model di kedua pengajuan: hapus lunak membuang loncengnya saja (`bersihkanLonceng()`) karena langkahnya masih bernilai sebagai jejak; hapus permanen membuang keduanya, karena `approval_pengajuan` menunjuk dua tabel sekaligus dan tidak bisa dipasangi foreign key.
+
+### Berkas yang disentuh
+
+| Aplikasi | Berkas | Isi |
+| --- | --- | --- |
+| api-ppid | `Support/AlurPersetujuan.php` | `putaran()`, `bersihkanLonceng()`, `bersihkan()` ikut membuang lonceng |
+| api-ppid | `Models/PermohonanInformasi.php`, `Models/KeberatanInformasi.php` | `booted()` — jenjang tidak hidup lebih lama dari berkasnya |
+| api-ppid | `Concerns/MenanganiPersetujuan.php` | Balasan memisahkan putaran berjalan dari riwayatnya |
+| api-ppid | `tests/Feature/AlurPersetujuanPermohonanTest.php` | Dua tes baru |
+| be-ppid | `api/usePersetujuan.ts` | `riwayat_putaran`, `putaran`, `langkahBerjalan()`, `pemegangGiliran()` |
+| be-ppid | `components/PersetujuanBerjenjang.tsx` | Putaran lama dilipat; alert menyebut pemegang, jam masuk, batas waktu |
+| be-ppid | `components/PermohonanDetailDialog.tsx`, `components/KeberatanDetailDialog.tsx` | Giliran diumumkan di kepala rincian |
+
+### Verifikasi
+
+- api-ppid **68 lulus** (319 asersi), termasuk dua tes baru: putaran lama terpisah dari yang berjalan setelah satu revisi, dan lonceng ikut hilang saat berkasnya dihapus (lunak maupun permanen).
+- fe-ppid **88 lulus** (316 asersi). be-ppid `tsc --noEmit` bersih, `eslint` atas empat berkas yang diubah bersih.
+- Rantai Pemohon → PPID Pelaksana → PPID → revisi → PPID Pelaksana dijalankan atas baris sungguhan di `ppiddb`, di dalam transaksi yang dibatalkan sesudahnya.
+
+### Catatan
+
+Tiga lonceng yatim yang sudah telanjur ada (`notifikasi` id 378–380) tidak ikut terbawa perbaikan ini — kodenya mencegah yang baru, bukan membersihkan yang lama. Buang sendiri kalau mengganggu:
+
+```sql
+DELETE FROM notifikasi
+WHERE type = 'approval_menunggu'
+  AND (data->>'approval_id')::int NOT IN (SELECT id FROM approval_pengajuan);
+```
+
+Permohonan `PPID-FSTJ/20260831/0002` masih menunggu PPID Pelaksana menekan **Setujui** pada panel Persetujuan Berjenjang; berkas itu ditangani sebelum jenjangnya ada, jadi tahap 1-nya belum pernah diputus. Setelah itu ia sampai ke PPID sendiri.
+
+---
 
 ## Status Pengerjaan (putaran 80 — langkah 100)
 

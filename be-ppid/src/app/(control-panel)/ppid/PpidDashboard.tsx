@@ -413,7 +413,7 @@ function PpidDashboard() {
 				<KartuAngka
 					label={t('Menunggu persetujuan')}
 					nilai={ringkasan.menunggu_approval}
-					keterangan={t('Perlu putusan PPID Utama')}
+					keterangan={t('Diproses — tinggal putusan PPID')}
 					ikon="lucide:clock"
 					warna="text-amber-500"
 				/>

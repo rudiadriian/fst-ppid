@@ -19,7 +19,12 @@ export type LangkahPersetujuan = {
 
 export type KeadaanPersetujuan = {
 	jenis: string;
+	/** Langkah putaran yang sedang berjalan saja. */
 	langkah: LangkahPersetujuan[];
+	/** Putaran-putaran sebelumnya, terlama lebih dulu; kosong bila baru sekali. */
+	riwayat_putaran: LangkahPersetujuan[][];
+	/** Berkas ini sedang di putaran keberapa. */
+	putaran: number;
 	berjalan_id: number | null;
 	boleh_memutus: boolean;
 };
@@ -49,4 +54,33 @@ export function usePersetujuan(modul: 'permohonan' | 'keberatan', pengajuanId: n
 		queryFn: () => ppidApi.ambil<KeadaanPersetujuan>(`${modul}/${pengajuanId}/approval`),
 		enabled: aktif && Number.isFinite(pengajuanId) && pengajuanId > 0
 	});
+}
+
+/** Tahap yang sedang menunggu putusan; `null` bila jenjangnya sudah tuntas. */
+export function langkahBerjalan(data?: KeadaanPersetujuan): LangkahPersetujuan | null {
+	if (!data?.berjalan_id) {
+		return null;
+	}
+
+	return data.langkah.find((satu) => satu.id === data.berjalan_id) ?? null;
+}
+
+/**
+ * Siapa yang sedang memegang berkasnya, dalam satu baris.
+ *
+ * Dipakai di tempat-tempat yang harus menjawab "kenapa saya tidak bisa apa-apa
+ * di sini" (langkah 100). Jawaban "bukan giliran Anda" saja membuat penyetuju
+ * di jenjang atas melihat rincian tanpa satu pun tombol dan tanpa tahu berkas
+ * itu tertahan di siapa — persis keluhan yang membuka putaran ini.
+ */
+export function pemegangGiliran(data?: KeadaanPersetujuan): string | null {
+	const langkah = langkahBerjalan(data);
+
+	if (!langkah) {
+		return null;
+	}
+
+	const pemegang = langkah.nama_jabatan ?? langkah.role?.name ?? null;
+
+	return pemegang ? `${langkah.nama_tahap} (${pemegang})` : langkah.nama_tahap;
 }

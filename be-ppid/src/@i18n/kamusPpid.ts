@@ -457,7 +457,8 @@ const kamusPpid: Record<string, string> = {
 		'The public site only shows reports with the status Published.',
 	'Situs publik hanya menayangkan maklumat berstatus Terbit; maklumat lama cukup diubah jadi Arsip agar tetap tersimpan.':
 		'The public site only shows charters with the status Published; set an older charter to Archived to keep it on record.',
-	'Menentukan halaman Standar Layanan yang menayangkan gambar ini.': 'Determines which Service Standards page shows this image.',
+	'Menentukan halaman Standar Layanan yang menayangkan gambar ini.':
+		'Determines which Service Standards page shows this image.',
 	'Angka kecil tampil lebih dulu. Pakai kelipatan seperti 1, 2, 3 agar mudah disisipi nanti.':
 		'Smaller numbers appear first. Use steps such as 1, 2, 3 so new images are easy to insert later.',
 	'Tampil sebagai judul di atas gambar dan dipakai sebagai teks alternatif bagi pembaca layar.':
@@ -528,9 +529,9 @@ const kamusPpid: Record<string, string> = {
 	'Permohonan Terkait': 'Related Request',
 	Penanganan: 'Handling',
 	'Riwayat Status': 'Status History',
-	'Persetujuan Berjenjang': 'Tiered Approval',
+	'Verifikasi Permohonan': 'Request Verification',
 	'Berkas Lampiran Pemohon': 'Applicant Attachments',
-	'Berkas Tanggapan Petugas': 'Officer Response Files',
+	'Lampiran dan Keterangan': 'Attachments and Notes',
 	// --- Panel di dalam dialog rincian (langkah 94) ----------------------
 	'Ubah Status': 'Change Status',
 	'Tanggapan & Status': 'Response & Status',
@@ -550,7 +551,7 @@ const kamusPpid: Record<string, string> = {
 		'Your role cannot write objection responses. The details remain readable.',
 	'Unggah berkas tanggapan': 'Upload response files',
 	// --- Berkas tanggapan disimpan lebih dulu (langkah 97) ---------------
-	'Pilih berkas tanggapan': 'Choose response files',
+	'Pilih dari Perangkat': 'Choose from device',
 	'Simpan berkas tanggapan': 'Save response files',
 	'Belum disimpan': 'Not saved yet',
 	'berkas siap disimpan. Tekan Simpan berkas tanggapan.': 'files ready to save. Press Save response files.',
@@ -578,7 +579,7 @@ const kamusPpid: Record<string, string> = {
 		'The archive is empty. Files you upload from this panel are recorded there automatically, and can also be added from the Document Archive module.',
 	'Menampilkan :tampil dari :total dokumen. Persempit dengan pencarian.':
 		'Showing :tampil of :total documents. Narrow it down with a search.',
-	'Belum ada berkas tanggapan.': 'No response files yet.',
+	'Dokumen belum dilampirkan.': 'No documents attached yet.',
 	'Berkas yang diunggah di sini langsung bisa diunduh pemohon, dan loncengnya diberi tahu saat itu juga.':
 		'Files uploaded here are downloadable by the applicant immediately, and their bell is notified at once.',
 	'Berkas tanggapan dihapus': 'Response file deleted',
@@ -598,10 +599,41 @@ const kamusPpid: Record<string, string> = {
 	'Belum tiba gilirannya': 'Its turn has not come yet',
 	'Role belum ditetapkan': 'No role assigned yet',
 	Diputus: 'Decided',
-	'Putusan Anda': 'Your decision',
+	'Alur Persetujuan': 'Approval Flow',
+	'Alur Persetujuan sebelumnya': 'Previous approval flow',
 	'Kembalikan untuk diperbaiki': 'Return for correction',
 	Tolak: 'Reject',
-	'Kirim putusan': 'Submit decision',
+	Setuju: 'Approve',
+	// --- Verifikasi Permohonan berbagian (langkah 102) --------------------
+	'Alur Persetujuan Permohonan': 'Request Approval Flow',
+	'Verifikasi Petugas PPID': 'PPID Officer Verification',
+	Putusan: 'Decision',
+	Konfirmasi: 'Confirm',
+	Revisi: 'Revise',
+	'Catatan wajib diisi untuk Tolak dan Revisi.': 'A note is required for Reject and Revise.',
+	'Opsional. Catatan internal, tidak dikirim ke pemohon.':
+		'Optional. An internal note; it is not sent to the applicant.',
+	'Wajib diisi untuk Tolak dan Revisi. Menjadi alasan yang dibaca penerimanya.':
+		'Required for Reject and Revise. It becomes the reason its recipient reads.',
+	'Konfirmasi meneruskan berkas ini ke PPID untuk diputuskan.':
+		'Confirm forwards this file to the PPID for a decision.',
+	'Setuju menutup permohonan dan memberitahukan hasilnya ke pemohon. Revisi mengembalikannya ke PPID Pelaksana untuk diperbaiki.':
+		'Approve closes the request and notifies the applicant of the outcome. Revise returns it to the executing PPID for correction.',
+	'Unggah dokumen yang diminta pada bagian Lampiran dan Keterangan di bawah. Pemohon menerima pemberitahuan begitu permohonannya disetujui.':
+		'Upload the requested documents in the Attachments and Notes section below. The applicant is notified once the request is approved.',
+	// --- Rincian pengajuan versi kartu (langkah 100 & 102) ---------------
+	Petugas: 'Officer',
+	'Pelayanan & Tanggapan': 'Service & Response',
+	'Berkas lampiran pemohon': 'Applicant attachments',
+	'Giliran Anda memutus berkas ini pada tahap': 'It is your turn to decide this file at stage',
+	'Putusannya dikirim dari panel Verifikasi Permohonan.':
+		'The decision is submitted from the Request Verification panel.',
+	'Menunggu putusan tahap': 'Waiting for a decision at stage',
+	'Role Anda tidak diberi hak memutus pada modul ini.': 'Your role has no decision rights in this module.',
+	'berkas ini pernah dikembalikan untuk diperbaiki': 'this file has been returned for correction before',
+	berjalan: 'running',
+	'Berkas ini sudah diteruskan dan sedang menunggu putusan tahap berikutnya. Lampirannya baru bisa diubah lagi bila dikembalikan untuk diperbaiki.':
+		'This file has been forwarded and awaits a decision at the next stage. Its attachments can be changed again only if it is returned for correction.',
 	'Putusan persetujuan tersimpan': 'Approval decision saved',
 	'Putusan gagal disimpan': 'The decision could not be saved',
 	'Jenjang persetujuan gagal dimuat.': 'The approval chain could not be loaded.',
@@ -610,16 +642,11 @@ const kamusPpid: Record<string, string> = {
 		'The running stage is not your role turn, so its decision cannot be submitted from here.',
 	'Alur persetujuan untuk jenis pengajuan ini belum disusun, jadi tidak ada jenjang yang bisa dijalankan. Super admin dapat menyusunnya lewat modul Alur Persetujuan.':
 		'No approval chain has been defined for this submission type, so there is no stage to run. A super admin can define one in the Approval Chain module.',
-	'Permohonan ini sedang berada di jenjang persetujuan. Perpindahannya ditentukan putusan pada panel Persetujuan Berjenjang di atas — Setujui, Tolak, atau Kembalikan untuk diperbaiki — bukan dari sini.':
-		'This request is inside the approval chain. It moves by decision on the Tiered Approval panel above — Approve, Reject, or Return for correction — not from here.',
-	'Keberatan ini sedang berada di jenjang persetujuan. Perpindahannya ditentukan putusan pada panel Persetujuan Berjenjang di atas — Setujui, Tolak, atau Kembalikan untuk diperbaiki — bukan dari sini.':
-		'This objection is inside the approval chain. It moves by decision on the Tiered Approval panel above — Approve, Reject, or Return for correction — not from here.',
+	'Keberatan ini sedang berada di jenjang persetujuan. Perpindahannya ditentukan putusan pada panel Verifikasi Permohonan — Setujui, Tolak, atau Kembalikan untuk diperbaiki — bukan dari sini.':
+		'This objection is inside the approval chain. It moves by decision on the Request Verification panel — Approve, Reject, or Return for correction — not from here.',
 	'Jalur pelayanan': 'Service channel',
 	'Jadwal layanan': 'Service schedule',
 	'Keterangan petugas untuk pemohon': 'Officer note for the applicant',
-	'Wajib diisi. Menjadi alasan penolakan yang dibaca pemohon.':
-		'Required. Becomes the refusal reason the applicant reads.',
-	'Wajib diisi. Menjelaskan apa yang harus diperbaiki petugas.': 'Required. Explains what the officer must correct.',
 	Opsional: 'Optional',
 	'Opsional.': 'Optional.',
 	'Nomor keberatan (KBT-FSTJ/…) berdiri sendiri, terpisah dari nomor permohonan yang dikeberatankan — keduanya berkas dengan tenggat yang berbeda.':

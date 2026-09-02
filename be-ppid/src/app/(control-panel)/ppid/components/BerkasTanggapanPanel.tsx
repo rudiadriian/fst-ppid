@@ -53,6 +53,14 @@ type BerkasTanggapanPanelProps = {
 	berkas: unknown;
 	/** Role pengguna punya hak `Ubah` pada modul Permohonan. */
 	bolehUbah: boolean;
+	/**
+	 * Kenapa lampirannya terkunci padahal rolenya boleh menyunting.
+	 *
+	 * Dipisah dari `bolehUbah` supaya petugas yang kehilangan tombolnya tahu
+	 * sebabnya. Panel yang hanya menghilangkan tombol tanpa keterangan terbaca
+	 * sebagai kerusakan, bukan sebagai giliran yang sudah lewat.
+	 */
+	alasanTerkunci?: string;
 };
 
 /**
@@ -69,7 +77,7 @@ type BerkasTanggapanPanelProps = {
  * Disetujui/Selesai), bukan saat berkasnya disimpan — itu ditentukan API,
  * karena selama masih disiapkan berkasnya memang belum tampil di portal.
  */
-export function BerkasTanggapanPanel({ permohonanId, berkas, bolehUbah }: BerkasTanggapanPanelProps) {
+export function BerkasTanggapanPanel({ permohonanId, berkas, bolehUbah, alasanTerkunci }: BerkasTanggapanPanelProps) {
 	const { t } = useTranslation();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [sibuk, setSibuk] = useState(false);
@@ -223,7 +231,7 @@ export function BerkasTanggapanPanel({ permohonanId, berkas, bolehUbah }: Berkas
 					variant="body2"
 					color="text.secondary"
 				>
-					{t('Belum ada berkas tanggapan.')}
+					{t('Dokumen belum dilampirkan.')}
 				</Typography>
 			) : (
 				<div className="flex flex-wrap gap-2">
@@ -244,6 +252,8 @@ export function BerkasTanggapanPanel({ permohonanId, berkas, bolehUbah }: Berkas
 					))}
 				</div>
 			)}
+
+			{!bolehUbah && alasanTerkunci && <Alert severity="info">{t(alasanTerkunci)}</Alert>}
 
 			{bolehUbah && (
 				<>
@@ -330,7 +340,7 @@ export function BerkasTanggapanPanel({ permohonanId, berkas, bolehUbah }: Berkas
 								)
 							}
 						>
-							{t('Pilih berkas tanggapan')}
+							{t('Pilih dari Perangkat')}
 						</Button>
 
 						{/* Dokumen yang sama dikirim ke banyak pemohon; mengunggahnya

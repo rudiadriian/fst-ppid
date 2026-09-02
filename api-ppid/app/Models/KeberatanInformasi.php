@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\MencatatPelaku;
+use App\Support\AlurPersetujuan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +14,28 @@ class KeberatanInformasi extends Model
     use MencatatPelaku, SoftDeletes;
 
     protected $table = 'keberatan_informasi';
+
+    /**
+     * Jenjang persetujuan tidak boleh hidup lebih lama dari berkasnya.
+     *
+     * Alasannya sama persis dengan {@see PermohonanInformasi::booted()}:
+     * `approval_pengajuan` tidak bisa dipasangi foreign key, dan lonceng
+     * giliran menyimpan tautan ke rincian berkas ini (langkah 100).
+     */
+    protected static function booted(): void
+    {
+        static::deleted(function (self $keberatan): void {
+            if ($keberatan->isForceDeleting()) {
+                return;
+            }
+
+            AlurPersetujuan::bersihkanLonceng(AlurPersetujuan::JENIS_KEBERATAN, (int) $keberatan->getKey());
+        });
+
+        static::forceDeleted(function (self $keberatan): void {
+            AlurPersetujuan::bersihkan(AlurPersetujuan::JENIS_KEBERATAN, (int) $keberatan->getKey());
+        });
+    }
 
     /**
      * Tujuh dasar keberatan menurut Pasal 35 UU No. 14 Tahun 2008.
@@ -68,10 +91,12 @@ class KeberatanInformasi extends Model
      * putusan akhirnya tidak lagi dipasang petugas sendiri.
      */
     public const TRANSISI = [
-        'diajukan' => ['diproses', 'menunggu_approval', 'ditolak'],
-        'diproses' => ['menunggu_approval', 'revisi', 'ditolak'],
+        'diajukan' => ['diproses', 'ditolak'],
+        // Diproses = sudah diteruskan PPID Pelaksana, tinggal putusan PPID.
+        'diproses' => ['selesai', 'revisi', 'ditolak'],
         'revisi' => ['diproses', 'ditolak'],
-        'menunggu_approval' => ['selesai', 'ditolak', 'diproses'],
+        // Kosakata lama, artinya sama dengan `diproses`; tidak dipasang lagi.
+        'menunggu_approval' => ['selesai', 'revisi', 'ditolak', 'diproses'],
         'selesai' => [],
         'ditolak' => [],
     ];

@@ -59,35 +59,28 @@
                         </summary>
 
                         <div class="px-5 py-5 space-y-4">
+                            {{-- Batas Waktu Tanggapan dilepas (langkah 101): itu
+                                 tenggat kerja petugas, bukan janji tanggal ke
+                                 pemohon. Yang menggantikannya tanggal selesai,
+                                 diambil dari perpindahan status ke Selesai. --}}
                             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                                 <div>
                                     <dt class="text-gray-500 dark:text-gray-400">{{ __('Tujuan Penggunaan Informasi') }}</dt>
                                     <dd class="text-gray-900 dark:text-white">{{ $item->tujuan_penggunaan ?: '—' }}</dd>
                                 </div>
                                 <div>
-                                    <dt class="text-gray-500 dark:text-gray-400">{{ __('Batas Waktu Tanggapan') }}</dt>
-                                    <dd class="text-gray-900 dark:text-white">{{ optional($item->batas_waktu_tanggapan)->translatedFormat('d F Y') ?? '—' }}</dd>
+                                    <dt class="text-gray-500 dark:text-gray-400">{{ __('Tanggal Tanggapan') }}</dt>
+                                    <dd class="text-gray-900 dark:text-white">{{ optional($item->tanggalSelesaiPortal())->translatedFormat('d F Y') ?? '—' }}</dd>
                                 </div>
                             </dl>
 
-                            @if ($item->logStatus->isEmpty())
-                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Belum ada perubahan status dari petugas.') }}</p>
-                            @else
-                                <ol class="relative border-l border-gray-200 dark:border-white/10 ml-2 space-y-4">
-                                    @foreach ($item->logStatus as $log)
-                                        <li class="ml-5">
-                                            <span class="absolute -left-1.5 w-3 h-3 rounded-full bg-[#E87317]"></span>
-                                            <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                                                {{ __(\App\Models\PermohonanInformasi::STATUS_LABEL[$log->status_baru] ?? $log->status_baru) }}
-                                            </p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ optional($log->created_at)->translatedFormat('d F Y H:i') }}</p>
-                                            @if ($log->catatan)
-                                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">{{ $log->catatan }}</p>
-                                            @endif
-                                        </li>
-                                    @endforeach
-                                </ol>
-                            @endif
+                            {{-- Alur tiga langkah, sama persis dengan rincian
+                                 permohonan: putaran internal petugas tidak punya
+                                 tempat di layar pemohon (langkah 101). --}}
+                            @include('akun.partials.alur-persetujuan', [
+                                'tahap' => $item->tahapAlurPortal(),
+                                'tanggal' => $item->tanggalAlurPortal(),
+                            ])
 
                             <div class="flex flex-wrap items-center gap-4 pt-1">
                                 <a href="{{ route('akun.permohonan.show', $item->id) }}" class="text-sm font-semibold text-[#E87317] hover:underline">{{ __('Detail') }}</a>
@@ -113,23 +106,50 @@
                 {{ $cari !== '' ? __('Tidak ada keberatan yang cocok dengan pencarian.') : __('Belum ada keberatan yang diajukan.') }}
             </p>
         @else
-            <ul class="divide-y divide-gray-100 dark:divide-white/10">
+            {{-- Keberatan memakai susunan yang sama dengan permohonan di atas:
+                 kepala berkas yang bisa dilipat, lalu alur tiga langkah. Dulu
+                 satu baris datar tanpa alur sama sekali, sehingga pemohon tidak
+                 punya cara tahu keberatannya sudah sampai mana (langkah 101). --}}
+            <div class="space-y-4">
                 @foreach ($keberatan as $item)
-                    <li class="py-4 flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $item->kode_keberatan ?? '—' }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('atas') }} {{ $item->permohonan->kode_permohonan ?? '—' }}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ __(\App\Models\KeberatanInformasi::JENIS[$item->jenis_keberatan] ?? $item->jenis_keberatan) }} ·
-                                {{ optional($item->tanggal_keberatan)->translatedFormat('d F Y') }}
-                            </p>
+                    <details class="group rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden" @if ($loop->first) open @endif>
+                        <summary class="cursor-pointer list-none px-5 py-4 bg-[#F3ECDD] dark:bg-[#082217] flex flex-wrap items-center justify-between gap-3">
+                            <span>
+                                <span class="block text-sm font-bold text-gray-900 dark:text-white">{{ $item->kode_keberatan ?? '—' }}</span>
+                                <span class="block text-xs text-gray-500 dark:text-gray-400">
+                                    {{ __('atas') }} {{ $item->permohonan->kode_permohonan ?? '—' }} ·
+                                    {{ optional($item->tanggal_keberatan)->translatedFormat('d F Y') ?? '—' }}
+                                </span>
+                            </span>
+                            <span class="inline-flex px-3 py-1 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0B2A1D] text-xs font-bold text-gray-700 dark:text-gray-200">
+                                {{ $item->labelStatus() }}
+                            </span>
+                        </summary>
+
+                        <div class="px-5 py-5 space-y-4">
+                            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <dt class="text-gray-500 dark:text-gray-400">{{ __('Alasan Keberatan') }}</dt>
+                                    <dd class="text-gray-900 dark:text-white">{{ __(\App\Models\KeberatanInformasi::JENIS[$item->jenis_keberatan] ?? $item->jenis_keberatan) }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-500 dark:text-gray-400">{{ __('Tanggal Tanggapan') }}</dt>
+                                    <dd class="text-gray-900 dark:text-white">{{ optional($item->tanggal_tanggapan)->translatedFormat('d F Y') ?? '—' }}</dd>
+                                </div>
+                            </dl>
+
+                            @include('akun.partials.alur-persetujuan', [
+                                'tahap' => $item->tahapAlurPortal(),
+                                'tanggal' => $item->tanggalAlurPortal(),
+                            ])
+
+                            <div class="pt-1">
+                                <a href="{{ route('akun.keberatan.show', $item->id) }}" class="text-sm font-semibold text-[#E87317] hover:underline">{{ __('Detail') }}</a>
+                            </div>
                         </div>
-                        <span class="inline-flex px-3 py-1 rounded-full border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-700 dark:text-gray-200">
-                            {{ $item->labelStatus() }}
-                        </span>
-                    </li>
+                    </details>
                 @endforeach
-            </ul>
+            </div>
         @endif
     </div>
 

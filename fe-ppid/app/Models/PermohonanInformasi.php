@@ -23,7 +23,18 @@ class PermohonanInformasi extends Model
         'diajukan' => 'Dalam Proses',
         'diverifikasi' => 'Dalam Proses',
         'diproses' => 'Dalam Proses',
-        'revisi' => 'Revisi',
+        /*
+         * `revisi` sengaja tampil sebagai "Dalam Proses".
+         *
+         * Statusnya menandai putaran internal antara PPID dan PPID Pelaksana —
+         * berkasnya dikembalikan untuk diperbaiki, lalu diajukan lagi, mungkin
+         * beberapa kali. Dari sisi pemohon tidak ada yang berubah: permohonannya
+         * memang masih diproses. Menampilkannya apa adanya membuat pemohon
+         * mengira berkas *miliknya* yang bermasalah, padahal yang diperbaiki
+         * pekerjaan petugas. `NotifikasiPortal` di api-ppid diam untuk status
+         * ini dengan alasan yang sama.
+         */
+        'revisi' => 'Dalam Proses',
         'menunggu_approval' => 'Menunggu Persetujuan',
         'disetujui' => 'Selesai',
         'selesai' => 'Selesai',
@@ -32,8 +43,14 @@ class PermohonanInformasi extends Model
         'kedaluwarsa' => 'Tolak',
     ];
 
-    /** Kelompok status yang dipakai grafik & legend dashboard. */
-    public const KELOMPOK = ['Dalam Proses', 'Revisi', 'Menunggu Persetujuan', 'Tolak', 'Selesai'];
+    /**
+     * Kelompok status yang dipakai grafik & legend dashboard.
+     *
+     * "Revisi" dilepas: tidak ada lagi status yang memetakan ke sana sejak
+     * putaran perbaikan internal ditampilkan sebagai "Dalam Proses", dan
+     * legend dengan potongan yang selamanya nol hanya menyisakan pertanyaan.
+     */
+    public const KELOMPOK = ['Dalam Proses', 'Menunggu Persetujuan', 'Tolak', 'Selesai'];
 
     /**
      * Tab filter pada daftar Portal Pemohon — sengaja lebih ringkas daripada
@@ -51,7 +68,7 @@ class PermohonanInformasi extends Model
      * Segala yang berakhir (termasuk yang ditolak) dihitung tuntas.
      */
     private const PETA_PORTAL = [
-        'Dalam Proses' => ['Dalam Proses', 'Revisi', 'Menunggu Persetujuan'],
+        'Dalam Proses' => ['Dalam Proses', 'Menunggu Persetujuan'],
         'Selesai' => ['Selesai', 'Tolak'],
     ];
 
@@ -103,6 +120,101 @@ class PermohonanInformasi extends Model
      * permintaan tidak ditanggapi sampai tenggatnya lewat.
      */
     public const STATUS_SELESAI = ['selesai', 'disetujui', 'ditolak', 'ditolak_sebagian', 'kedaluwarsa'];
+
+    /**
+     * Permohonan ini punya dasar untuk dikeberatankan?
+     *
+     * Yang menentukan bukan "sudah selesai", melainkan apakah salah satu dari
+     * tujuh dasar Pasal 35 UU KIP bisa berlaku atasnya (langkah 101).
+     * Membatasinya pada permohonan yang tuntas justru menutup dua dasar yang
+     * paling sering dipakai — **tidak ditanggapinya permintaan informasi** dan
+     * **penyampaian informasi melebihi waktu yang diatur** — karena keduanya
+     * baru muncul ketika permohonan **belum** ditanggapi sampai tenggatnya
+     * lewat, dan berkas semacam itu statusnya masih berjalan.
+     *
+     * Dua pintu karena itu, bukan satu:
+     *
+     *  - Penanganannya sudah tuntas — apa pun hasilnya. Ditolak, ditolak
+     *    sebagian, selesai, maupun kedaluwarsa sama-sama punya dasar.
+     *  - Masih berjalan tetapi tenggat tanggapannya sudah lewat.
+     */
+    public function layakDikeberatankan(): bool
+    {
+        if (in_array($this->status, self::STATUS_SELESAI, true)) {
+            return true;
+        }
+
+        return $this->batas_waktu_tanggapan !== null && $this->batas_waktu_tanggapan->isPast();
+    }
+
+    /**
+     * Tonggak alur versi pemohon: `diajukan`, `diproses`, atau `selesai`.
+     *
+     * Tiga langkah, selalu tiga (langkah 101). Seluruh perpindahan internal —
+     * diverifikasi, revisi, jenjang persetujuan yang berputar berkali-kali —
+     * menyatu di **Diproses**. Yang perlu diketahui pemohon cuma di mana
+     * berkasnya berada; menampilkan tiap perpindahan membuat langkahnya
+     * bertambah-kurang tiap kali petugas bekerja, dan perbaikan pekerjaan
+     * petugas terbaca sebagai masalah pada berkas pemohon sendiri.
+     */
+    public function tahapAlurPortal(): string
+    {
+        if (in_array($this->status, self::STATUS_SELESAI, true)) {
+            return 'selesai';
+        }
+
+        return $this->status === 'diajukan' ? 'diajukan' : 'diproses';
+    }
+
+    /**
+     * Tanggal tiap tonggak, untuk ditempelkan pada langkahnya.
+     *
+     * "Diproses" diambil dari perpindahan status pertama yang meninggalkan
+     * `diajukan`, bukan dari `updated_at`: kolom itu ikut berubah tiap kali
+     * petugas menyentuh barisnya, jadi tanggalnya akan bergeser maju terus
+     * selama berkasnya masih ditangani.
+     *
+     * @return array<string, \Illuminate\Support\Carbon|null>
+     */
+    public function tanggalAlurPortal(): array
+    {
+        $mulaiDiproses = $this->logStatus
+            ->first(fn ($log) => $log->status_baru !== 'diajukan');
+
+        return [
+            'diajukan' => $this->tanggal_permohonan,
+            'diproses' => $mulaiDiproses?->created_at,
+            'selesai' => $this->tanggalSelesaiPortal(),
+        ];
+    }
+
+    /**
+     * Tanggal permohonannya benar-benar selesai.
+     *
+     * Diambil dari perpindahan status ke **Selesai**, bukan dari kolom
+     * `tanggal_tanggapan` (langkah 101). Kolom itu diisi begitu berkasnya
+     * berpindah ke status akhir mana pun dan tidak pernah ditulis ulang, jadi
+     * baris yang sempat lewat status akhir lain lebih dulu membawa tanggal yang
+     * bukan tanggal selesainya. Kolomnya tetap dipakai sebagai cadangan untuk
+     * baris lama yang log statusnya tidak lengkap.
+     */
+    public function tanggalSelesaiPortal(): ?\Illuminate\Support\Carbon
+    {
+        $log = $this->logStatus->first(fn ($satu) => $satu->status_baru === 'selesai')
+            ?? $this->logStatus->first(fn ($satu) => in_array($satu->status_baru, self::STATUS_SELESAI, true));
+
+        return $log?->created_at ?? $this->tanggal_tanggapan;
+    }
+
+    /** Permohonan yang punya dasar keberatan; lihat {@see layakDikeberatankan()}. */
+    public function scopeLayakDikeberatankan($query)
+    {
+        return $query->where(fn ($q) => $q
+            ->whereIn('status', self::STATUS_SELESAI)
+            ->orWhere(fn ($lewat) => $lewat
+                ->whereNotNull('batas_waktu_tanggapan')
+                ->where('batas_waktu_tanggapan', '<', now())));
+    }
 
     /**
      * Hanya permohonan yang pemohonnya setuju ditampilkan di Register Permohonan publik.

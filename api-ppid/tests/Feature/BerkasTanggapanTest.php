@@ -136,14 +136,18 @@ class BerkasTanggapanTest extends TestCase
      */
     public function test_pemberitahuan_menyusul_saat_permohonan_diserahkan(): void
     {
-        $permohonan = $this->permohonan('diproses');
+        $permohonan = $this->permohonan('diajukan');
         $token = $this->token($this->akun('super-admin'));
 
         $this->lampirkan($token, $permohonan);
         $this->assertSame(0, $this->jumlahNotifikasiBerkas($permohonan));
 
+        // Berkasnya mulai di tangan PPID Pelaksana. Jenjangnya lahir begitu
+        // rinciannya dibuka — tidak ada lagi perpindahan status manual ke
+        // "menunggu persetujuan": Diproses kini berarti berkasnya justru sudah
+        // lewat jenjang itu.
         $this->withToken($token)
-            ->postJson("/api/v1/permohonan/{$permohonan->id}/status", ['status_baru' => 'menunggu_approval'])
+            ->getJson("/api/v1/permohonan/{$permohonan->id}/approval")
             ->assertOk();
 
         $this->assertSame(0, $this->jumlahNotifikasiBerkas($permohonan));
@@ -164,11 +168,36 @@ class BerkasTanggapanTest extends TestCase
             ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", ['keputusan' => 'disetujui'])
             ->assertOk();
 
-        $this->assertSame('disetujui', $permohonan->fresh()->status);
+        // Persetujuan PPID menutup perkaranya sekaligus: tidak ada langkah
+        // penyerahan tersendiri sesudahnya.
+        $this->assertSame('selesai', $permohonan->fresh()->status);
         $this->assertSame(1, $this->jumlahNotifikasiBerkas($permohonan));
 
-        // Disetujui → Selesai sama-sama terbuka bagi pemohon; berkas yang sama
-        // tidak boleh diberitahukan dua kali.
+        // Rinciannya dibuka lagi: berkas yang sama tidak boleh diberitahukan
+        // dua kali hanya karena ada yang membacanya.
+        $this->withToken($token)
+            ->getJson("/api/v1/permohonan/{$permohonan->id}/approval")
+            ->assertOk();
+
+        $this->assertSame(1, $this->jumlahNotifikasiBerkas($permohonan));
+    }
+
+    /**
+     * Perpindahan antar dua status yang sama-sama terbuka tidak memberitahukan
+     * ulang berkas yang sudah diketahui pemohon.
+     *
+     * `disetujui` tidak lagi dihasilkan alur persetujuan, tetapi tetap status
+     * yang sah dan masih dipegang baris lama — dan dari sana `selesai` masih
+     * bisa dituju petugas.
+     */
+    public function test_perpindahan_antar_status_terbuka_tidak_memberitahu_ulang(): void
+    {
+        $permohonan = $this->permohonan('disetujui');
+        $token = $this->token($this->akun('super-admin'));
+
+        $this->lampirkan($token, $permohonan);
+        $this->assertSame(1, $this->jumlahNotifikasiBerkas($permohonan));
+
         $this->withToken($token)
             ->postJson("/api/v1/permohonan/{$permohonan->id}/status", ['status_baru' => 'selesai'])
             ->assertOk();

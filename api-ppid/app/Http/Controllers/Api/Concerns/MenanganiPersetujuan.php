@@ -71,10 +71,27 @@ trait MenanganiPersetujuan
         $berjalan = AlurPersetujuan::berjalan($jenis, $id);
         $user = Auth::guard('api')->user();
 
+        /*
+         * Putaran dipisahkan di sini, bukan di panel (langkah 100).
+         *
+         * Berkas yang dikembalikan untuk diperbaiki memulai satu set langkah
+         * baru di atas yang lama, sehingga daftar ratanya berbunyi "1, 2, 1, 2"
+         * — urutan yang mundur di tengah dan tidak terbaca sebagai riwayat.
+         * Yang dikirim sebagai `langkah` karena itu hanya putaran berjalan;
+         * putaran sebelumnya menyusul terpisah sebagai `riwayat_putaran`, dan
+         * `putaran` menyebutkan sedang di putaran keberapa berkasnya.
+         */
+        $putaran = AlurPersetujuan::putaran(AlurPersetujuan::langkah($jenis, $id));
+        $terakhir = $putaran === [] ? collect() : end($putaran);
+
         return response()->json([
             'data' => [
                 'jenis' => $jenis,
-                'langkah' => AlurPersetujuan::langkah($jenis, $id),
+                'langkah' => $terakhir->values(),
+                'riwayat_putaran' => collect(array_slice($putaran, 0, max(count($putaran) - 1, 0)))
+                    ->map(fn ($satu) => $satu->values())
+                    ->values(),
+                'putaran' => count($putaran),
                 'berjalan_id' => $berjalan?->getKey(),
                 'boleh_memutus' => $berjalan !== null && $user !== null
                     && AlurPersetujuan::bolehMemutus($user, $berjalan),
@@ -174,16 +191,36 @@ trait MenanganiPersetujuan
             return $hasil;
         });
 
-        // Di luar transaksi: pemberitahuan yang gagal terkirim tidak boleh
-        // membatalkan putusan yang sudah sah.
-        if ($jenjangPenerima && $data['keputusan'] === 'disetujui') {
+        /*
+         * Distribusi dokumen menyusul putusan **akhir**, bukan penerimaan
+         * petugas.
+         *
+         * Sebelumnya undangan jalur Langsung berangkat begitu PPID Pelaksana
+         * meneruskan berkasnya — menjanjikan pertemuan pada tanggal tertentu
+         * atas permohonan yang belum diputus, dan yang bisa saja ditolak PPID
+         * beberapa hari kemudian. Undangan itu kini berangkat bersama putusan
+         * yang menutup perkaranya.
+         *
+         * Jalur Online tidak dikirimi surel kedua: perpindahan ke `selesai`
+         * sudah memicu surel "selesai ditangani" beserta tautan portalnya
+         * lewat {@see EmailPemohon::statusBerubah()}, dan dua surat untuk satu
+         * peristiwa hanya membuat yang penting tenggelam. Yang khas jalur
+         * Langsung — waktu, alamat, kontak, jam layanan — memang tidak ada di
+         * surel itu, jadi undangannya berdiri sendiri.
+         *
+         * Di luar transaksi: pemberitahuan yang gagal terkirim tidak boleh
+         * membatalkan putusan yang sudah sah.
+         */
+        if ($hasil === AlurPersetujuan::HASIL_DISETUJUI) {
             $pengajuan->refresh();
 
-            EmailPemohon::jalurPelayanan(
-                $pengajuan,
-                (string) $pengajuan->jalur_pelayanan,
-                $data['keterangan_petugas'] ?? null
-            );
+            if ((string) $pengajuan->jalur_pelayanan === 'langsung') {
+                EmailPemohon::jalurPelayanan(
+                    $pengajuan,
+                    'langsung',
+                    $pengajuan->keterangan_petugas
+                );
+            }
         }
 
         AuditLogger::record(
@@ -200,10 +237,15 @@ trait MenanganiPersetujuan
             ]
         );
 
+        // Putaran berjalan saja, sama dengan yang dikirim `daftarPersetujuan()`:
+        // dua bentuk untuk data yang sama membuat panel harus tahu dari mana
+        // jawabannya datang sebelum bisa membacanya.
+        $putaran = AlurPersetujuan::putaran(AlurPersetujuan::langkah($jenis, $id));
+
         return response()->json([
             'data' => [
                 'hasil' => $hasil,
-                'langkah' => AlurPersetujuan::langkah($jenis, $id),
+                'langkah' => $putaran === [] ? collect() : end($putaran)->values(),
             ],
             'message' => match ($hasil) {
                 AlurPersetujuan::HASIL_LANJUT => 'Disetujui. Berkas diteruskan ke tahap berikutnya.',

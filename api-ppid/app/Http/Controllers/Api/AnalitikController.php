@@ -113,11 +113,23 @@ class AnalitikController extends Controller
                     'rata_rata_hari' => $rataHari,
                     'kepuasan_persen' => $kepuasan['persen'],
                     'responden_survei' => $kepuasan['responden'],
-                    // Beban kerja yang menunggu petugas.
+                    /*
+                     * Dua beban kerja yang berbeda mejanya (langkah 100).
+                     *
+                     * `perlu_tindakan` milik PPID Pelaksana: berkas yang belum
+                     * ia teruskan, termasuk yang dikembalikan PPID untuk
+                     * diperbaiki. `menunggu_approval` milik PPID: **Diproses**
+                     * berarti Pelaksana sudah menyetujuinya dan tinggal putusan
+                     * PPID — status berkasnya berpindah meja, bukan sekadar
+                     * berganti nama. Kosakata lama `menunggu_approval` ikut
+                     * dihitung supaya baris yang telanjur tersimpan tidak
+                     * hilang dari angka.
+                     */
                     'perlu_tindakan' => (int) ($perStatus['diajukan'] ?? 0)
                         + (int) ($perStatus['diverifikasi'] ?? 0)
-                        + (int) ($perStatus['diproses'] ?? 0),
-                    'menunggu_approval' => (int) ($perStatus['menunggu_approval'] ?? 0),
+                        + (int) ($perStatus['revisi'] ?? 0),
+                    'menunggu_approval' => (int) ($perStatus['diproses'] ?? 0)
+                        + (int) ($perStatus['menunggu_approval'] ?? 0),
                 ],
 
                 /*

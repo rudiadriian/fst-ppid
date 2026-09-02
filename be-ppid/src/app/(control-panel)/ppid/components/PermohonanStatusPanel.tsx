@@ -9,7 +9,7 @@ import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 import ppidApi, { PpidApiError } from '../api/ppidApi';
 import { resourceKeys } from '../api/useResource';
-import { labelStatus, STATUS_PERMOHONAN, TRANSISI_PERMOHONAN as TRANSISI } from '../lib/statusPengajuan';
+import { labelStatus, STATUS_PERMOHONAN, tujuanStatus } from '../lib/statusPengajuan';
 
 type PermohonanStatusPanelProps = {
 	permohonanId: number;
@@ -18,6 +18,8 @@ type PermohonanStatusPanelProps = {
 	bolehUbah: boolean;
 	/** Ada tahap persetujuan yang sedang menunggu putusan. */
 	alurBerjalan: boolean;
+	/** Tahap yang berjalan itu giliran pengguna ini. */
+	giliranSaya?: boolean;
 };
 
 /**
@@ -28,23 +30,42 @@ type PermohonanStatusPanelProps = {
  * pindahkan. Sekarang ia berdiri di bawah rinciannya, satu layar dengan berkas
  * dan jenjang persetujuan yang jadi dasar keputusannya.
  *
- * Tujuan yang ditawarkan diambil dari {@see TRANSISI_PERMOHONAN}, salinan
+ * Tujuan yang ditawarkan diambil dari {@see tujuanStatus}, salinan
  * aturan milik API supaya petugas hanya melihat perpindahan yang memang sah.
  * Penolakan tetap terjadi di server bila salinan itu ketinggalan zaman — jadi
  * keduanya tidak boleh diandalkan sendirian.
  *
- * Selama satu tahap persetujuan masih menunggu, panel ini terkunci penuh
- * (langkah 100). Sebelumnya hanya putusan akhir yang dijaga, sehingga PPID
- * Pelaksana yang sudah meneruskan berkasnya masih bisa menariknya kembali,
- * menolaknya sendiri, atau menyatakannya kedaluwarsa — tiga hal yang
- * seluruhnya melangkahi jenjang di atasnya. Perpindahan berkas yang sedang
- * berjalan adalah hasil putusan, bukan pilihan dropdown.
+ * Selama satu tahap persetujuan masih menunggu, panel ini punya tiga wajah
+ * (langkah 100):
+ *
+ *  - **Bukan giliran Anda** — tertutup penuh. PPID Pelaksana yang sudah
+ *    meneruskan berkasnya tidak boleh menariknya kembali, menolaknya sendiri,
+ *    maupun menyatakannya kedaluwarsa; ketiganya melangkahi jenjang di atasnya.
+ *  - **Giliran Anda** — hanya perpindahan yang membiarkan berkasnya tetap di
+ *    meja Anda, yaitu `LANJUT_PEMEGANG`. Panel ini sempat terkunci penuh, dan
+ *    akibatnya petugas yang memegang berkas baru tidak bisa menandainya
+ *    Diverifikasi — satu-satunya tombol yang tersisa baginya justru yang
+ *    melempar berkas ke PPID sebelum tanggapannya siap.
+ *  - **Tidak ada jenjang berjalan** — dropdown sepenuhnya milik petugas.
  *
  * Server menjaga aturan yang sama; keduanya tidak boleh diandalkan sendirian.
  */
-export function PermohonanStatusPanel({ permohonanId, status, bolehUbah, alurBerjalan }: PermohonanStatusPanelProps) {
+export function PermohonanStatusPanel({
+	permohonanId,
+	status,
+	bolehUbah,
+	alurBerjalan,
+	giliranSaya = false
+}: PermohonanStatusPanelProps) {
 	const { t } = useTranslation();
-	const tujuan = TRANSISI[status] ?? [];
+	/*
+	 * Selama jenjangnya berjalan, pemegang giliran hanya ditawari perpindahan
+	 * yang membiarkan berkasnya tetap di mejanya. Sebelumnya panel ini terkunci
+	 * penuh, sehingga PPID Pelaksana yang memegang berkas baru tidak bisa
+	 * menandainya Diverifikasi — dan satu-satunya tombol yang tersisa baginya
+	 * justru yang melempar berkas ke PPID sebelum tanggapannya siap.
+	 */
+	const tujuan = tujuanStatus(status, alurBerjalan, giliranSaya);
 
 	const [statusBaru, setStatusBaru] = useState('');
 	const [catatan, setCatatan] = useState('');
@@ -55,24 +76,22 @@ export function PermohonanStatusPanel({ permohonanId, status, bolehUbah, alurBer
 	const { enqueueSnackbar } = useSnackbar();
 
 	useEffect(() => {
-		// Daftar tujuan dibaca ulang di dalam efek, bukan dari `tujuan` di atas:
-		// nilainya diturunkan dari `status`, jadi memasukkannya ke daftar
-		// kebergantungan hanya menambah acuan yang berubah tiap render.
-		setStatusBaru((TRANSISI[status] ?? [])[0] ?? '');
+		// Daftar tujuan dihitung ulang di dalam efek, bukan dibaca dari `tujuan`
+		// di atas: nilainya diturunkan dari prop lain, jadi memasukkannya ke
+		// daftar kebergantungan hanya menambah acuan yang berubah tiap render.
+		setStatusBaru(tujuanStatus(status, alurBerjalan, giliranSaya)[0] ?? '');
 		setCatatan('');
 		setAlasan('');
-	}, [permohonanId, status]);
+	}, [permohonanId, status, alurBerjalan, giliranSaya]);
 
 	const perluAlasan = statusBaru === 'ditolak' || statusBaru === 'ditolak_sebagian';
 
-	if (alurBerjalan) {
-		return (
-			<Alert severity="info">
-				{t(
-					'Permohonan ini sedang berada di jenjang persetujuan. Perpindahannya ditentukan putusan pada panel Persetujuan Berjenjang di atas — Setujui, Tolak, atau Kembalikan untuk diperbaiki — bukan dari sini.'
-				)}
-			</Alert>
-		);
+	// Berkasnya di tangan orang lain: seluruh perpindahan tertutup. Keterangannya
+	// tidak diulang di sini — kepala rincian sudah menyebutkan tahap yang
+	// memegangnya, dan dialognya memang tidak memasang bagian ini
+	// ({@see adaPilihanStatus()}).
+	if (alurBerjalan && !giliranSaya) {
+		return null;
 	}
 
 	if (!bolehUbah) {

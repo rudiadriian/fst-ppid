@@ -43,7 +43,9 @@ class KeberatanInformasi extends Model
     public const STATUS_LABEL = [
         'diajukan' => 'Dalam Proses',
         'diproses' => 'Dalam Proses',
-        'revisi' => 'Revisi',
+        // Putaran internal PPID ↔ PPID Pelaksana; lihat alasannya pada
+        // {@see PermohonanInformasi::STATUS_LABEL}.
+        'revisi' => 'Dalam Proses',
         'menunggu_approval' => 'Menunggu Persetujuan',
         'ditolak' => 'Tolak',
         'selesai' => 'Selesai',
@@ -84,6 +86,38 @@ class KeberatanInformasi extends Model
     public function berkas(): HasMany
     {
         return $this->hasMany(KeberatanFile::class, 'keberatan_id');
+    }
+
+    /**
+     * Tonggak alur versi pemohon; sama tiga langkahnya dengan permohonan.
+     *
+     * Lihat {@see PermohonanInformasi::tahapAlurPortal()} untuk alasannya.
+     */
+    public function tahapAlurPortal(): string
+    {
+        if (in_array($this->status, ['selesai', 'ditolak'], true)) {
+            return 'selesai';
+        }
+
+        return $this->status === 'diajukan' ? 'diajukan' : 'diproses';
+    }
+
+    /**
+     * Tanggal tiap tonggak.
+     *
+     * Keberatan tidak punya tabel log status seperti permohonan, jadi tonggak
+     * "Diproses" memang tidak bertanggal — lebih baik kosong daripada diisi
+     * `updated_at`, yang bergeser maju tiap kali petugas menyentuh barisnya.
+     *
+     * @return array<string, \Illuminate\Support\Carbon|null>
+     */
+    public function tanggalAlurPortal(): array
+    {
+        return [
+            'diajukan' => $this->tanggal_keberatan,
+            'diproses' => null,
+            'selesai' => $this->tanggal_tanggapan,
+        ];
     }
 
     public function labelStatus(): string

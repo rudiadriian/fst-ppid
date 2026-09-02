@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Mail\StatusLayananMail;
 use App\Models\ApprovalPengajuan;
 use App\Models\Notifikasi;
+use App\Models\NotifikasiPemohon;
 use App\Models\Pemohon;
 use App\Models\PermohonanInformasi;
+use App\Models\PermohonanTanggapanFile;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\SlaLayanan;
@@ -191,10 +194,10 @@ class AlurPersetujuanPermohonanTest extends TestCase
             ])
             ->assertOk();
 
-        // 1. Statusnya berpindah — sebelumnya berhenti di "Diproses" dan
-        //    keadaan "sedang di jenjang" tidak tercermin di mana pun.
+        // 1. Statusnya berpindah ke Diproses: PPID Pelaksana sudah
+        //    menyetujui berkasnya, dan yang tersisa tinggal putusan PPID.
         $permohonan->refresh();
-        $this->assertSame('menunggu_approval', $permohonan->status);
+        $this->assertSame('diproses', $permohonan->status);
 
         // 2. Isian jenjang penerima tersimpan dan ikut terbaca pada rincian,
         //    supaya PPID tahu apa yang sudah dijanjikan ke pemohon.
@@ -235,7 +238,7 @@ class AlurPersetujuanPermohonanTest extends TestCase
 
         // Menolak sendiri, menarik kembali, maupun menyatakan kedaluwarsa:
         // ketiganya melangkahi jenjang PPID di atasnya.
-        foreach (['ditolak', 'diproses', 'kedaluwarsa'] as $tujuan) {
+        foreach (['ditolak', 'revisi', 'kedaluwarsa'] as $tujuan) {
             $this->sebagai($tokenPelaksana)
                 ->postJson("/api/v1/permohonan/{$permohonan->id}/status", [
                     'status_baru' => $tujuan,
@@ -244,7 +247,7 @@ class AlurPersetujuanPermohonanTest extends TestCase
                 ->assertStatus(422);
         }
 
-        $this->assertSame('menunggu_approval', $permohonan->refresh()->status);
+        $this->assertSame('diproses', $permohonan->refresh()->status);
     }
 
     public function test_revisi_mengembalikan_berkas_ke_pelaksana_dan_alurnya_berulang(): void
@@ -275,7 +278,7 @@ class AlurPersetujuanPermohonanTest extends TestCase
         // Berkasnya kembali ke petugas, dan putaran baru langsung terbuka —
         // bukan berhenti menunggu seseorang ingat mengajukannya lagi.
         $permohonan->refresh();
-        $this->assertSame('diproses', $permohonan->status);
+        $this->assertSame('revisi', $permohonan->status);
 
         $berjalan = ApprovalPengajuan::where('jenis', 'permohonan')
             ->where('pengajuan_id', $permohonan->id)
@@ -305,7 +308,7 @@ class AlurPersetujuanPermohonanTest extends TestCase
             ])
             ->assertOk();
 
-        $this->assertSame('menunggu_approval', $permohonan->refresh()->status);
+        $this->assertSame('diproses', $permohonan->refresh()->status);
 
         $this->sebagai($tokenPpid)
             ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", [
@@ -313,7 +316,7 @@ class AlurPersetujuanPermohonanTest extends TestCase
             ])
             ->assertOk();
 
-        $this->assertSame('disetujui', $permohonan->refresh()->status);
+        $this->assertSame('selesai', $permohonan->refresh()->status);
     }
 
     public function test_pelaksana_tidak_diberi_pilihan_menolak(): void
@@ -363,5 +366,372 @@ class AlurPersetujuanPermohonanTest extends TestCase
         $this->assertStringContainsString($this->tanda, (string) $rincian['keterangan_petugas']);
         $this->assertArrayHasKey('files', $rincian);
         $this->assertArrayHasKey('tanggapan_files', $rincian);
+    }
+
+    public function test_berkas_berstatus_diproses_langsung_jadi_giliran_ppid(): void
+    {
+        // Diproses berarti PPID Pelaksana sudah menyetujui berkasnya; yang
+        // tersisa tinggal putusan PPID. Jenjangnya karena itu tidak boleh
+        // dibuka di tahap penerima — tahap itu sudah dilalui.
+        $permohonan = $this->permohonan();
+        $permohonan->forceFill(['status' => 'diproses'])->save();
+
+        $ppid = $this->akun('ppid-utama');
+
+        $isi = $this->sebagai($this->token($ppid))
+            ->getJson("/api/v1/permohonan/{$permohonan->id}/approval")
+            ->assertOk()
+            ->json('data');
+
+        $this->assertCount(2, $isi['langkah']);
+        $this->assertSame('disetujui', $isi['langkah'][0]['status'], 'Tahap penerima harus sudah terlewat.');
+        $this->assertSame('menunggu', $isi['langkah'][1]['status']);
+        $this->assertSame($isi['langkah'][1]['id'], $isi['berjalan_id']);
+        $this->assertTrue($isi['boleh_memutus'], 'PPID tidak kebagian giliran atas berkas yang sudah Diproses.');
+
+        // Loncengnya jatuh ke PPID, bukan ke PPID Pelaksana.
+        $this->assertTrue(
+            Notifikasi::where('user_id', $ppid->id)
+                ->where('type', 'approval_menunggu')
+                ->whereRaw("data->>'approval_id' = ?", [(string) $isi['berjalan_id']])
+                ->exists(),
+            'PPID tidak diberi tahu berkasnya menunggu putusannya.'
+        );
+
+        // Ketiga pilihan PPID benar-benar terbuka, termasuk Tolak yang tidak
+        // diberikan kepada jenjang penerima.
+        $this->assertTrue($isi['langkah'][1]['tahap']['boleh_tolak']);
+
+        $this->sebagai($this->token($ppid))
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", ['keputusan' => 'disetujui'])
+            ->assertOk();
+
+        $this->assertSame('selesai', $permohonan->refresh()->status);
+    }
+
+    public function test_jenjang_lama_yang_tertahan_di_penerima_ikut_dimajukan(): void
+    {
+        // Berkas yang jenjangnya dibuat sebelum aturan ini berlaku menahan
+        // giliran di tahap penerima walaupun statusnya sudah Diproses. Dibuka
+        // sekali, jenjangnya menyusul sendiri — tidak ada baris yang perlu
+        // disunting tangan.
+        $permohonan = $this->permohonan();
+
+        $this->sebagai($this->token($this->akun('ppid-pelaksana')))
+            ->getJson("/api/v1/permohonan/{$permohonan->id}/approval")
+            ->assertOk();
+
+        $langkah = $this->langkah($permohonan);
+        $this->assertSame('menunggu', $langkah[0]->status, 'Prasyarat: tahap penerima yang berjalan.');
+
+        // Status dipasang langsung, meniru berkas yang ditangani sebelum jenjang
+        // berjalan dipakai.
+        $permohonan->forceFill(['status' => 'diproses'])->save();
+
+        $ppid = $this->akun('ppid-utama');
+
+        $isi = $this->sebagai($this->token($ppid))
+            ->getJson("/api/v1/permohonan/{$permohonan->id}/approval")
+            ->assertOk()
+            ->json('data');
+
+        $this->assertSame('disetujui', $isi['langkah'][0]['status'], 'Tahap penerima tidak ikut dimajukan.');
+        $this->assertSame($isi['langkah'][1]['id'], $isi['berjalan_id']);
+        $this->assertTrue($isi['boleh_memutus'], 'PPID masih tidak kebagian giliran.');
+
+        // Tidak berlipat: dibuka lagi, jenjangnya tetap dua langkah.
+        $this->sebagai($this->token($ppid))
+            ->getJson("/api/v1/permohonan/{$permohonan->id}/approval")
+            ->assertOk();
+
+        $this->assertCount(2, $this->langkah($permohonan));
+
+        // Lonceng tahap penerima ikut hilang: gilirannya sudah lewat.
+        $this->assertFalse(
+            Notifikasi::where('type', 'approval_menunggu')
+                ->whereRaw("data->>'approval_id' = ?", [(string) $langkah[0]->id])
+                ->exists(),
+            'Lonceng tahap yang sudah lewat masih menggantung.'
+        );
+    }
+
+    public function test_pelaksana_tidak_bisa_mengubah_berkas_setelah_meneruskan(): void
+    {
+        $permohonan = $this->permohonan();
+        $tokenPelaksana = $this->token($this->akun('ppid-pelaksana'));
+
+        $this->sebagai($tokenPelaksana)->getJson("/api/v1/permohonan/{$permohonan->id}/approval")->assertOk();
+
+        // Selama masih gilirannya, lampiran memang boleh disusun.
+        $this->sebagai($tokenPelaksana)
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/tanggapan-files", [
+                'files' => [['nama_file' => "Jawaban $this->tanda.pdf", 'path_file' => "uji/{$this->tanda}.pdf"]],
+            ])
+            ->assertStatus(201);
+
+        $berkas = PermohonanTanggapanFile::where('permohonan_id', $permohonan->id)->firstOrFail();
+
+        $this->sebagai($tokenPelaksana)
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", [
+                'keputusan' => 'disetujui',
+                'jalur_pelayanan' => 'online',
+            ])
+            ->assertOk();
+
+        // Diteruskan: berkas yang sedang dipertimbangkan PPID tidak boleh
+        // berubah isi di tengah pertimbangannya.
+        $this->sebagai($tokenPelaksana)
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/tanggapan-files", [
+                'files' => [['nama_file' => 'Susulan.pdf', 'path_file' => "uji/{$this->tanda}-2.pdf"]],
+            ])
+            ->assertStatus(422);
+
+        $this->sebagai($tokenPelaksana)
+            ->deleteJson("/api/v1/permohonan/{$permohonan->id}/tanggapan-files/{$berkas->id}")
+            ->assertStatus(422);
+
+        $this->assertSame(1, PermohonanTanggapanFile::where('permohonan_id', $permohonan->id)->count());
+
+        // Dikembalikan untuk diperbaiki: gilirannya balik, lampirannya terbuka.
+        $this->sebagai($this->token($this->akun('ppid-utama')))
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", [
+                'keputusan' => 'revisi',
+                'catatan' => 'Ganti lampirannya.',
+            ])
+            ->assertOk();
+
+        $this->sebagai($tokenPelaksana)
+            ->deleteJson("/api/v1/permohonan/{$permohonan->id}/tanggapan-files/{$berkas->id}")
+            ->assertOk();
+    }
+
+    public function test_rincian_membawa_berkas_tanggapan_dan_riwayat_status(): void
+    {
+        // Kunci JSON-nya `tanggapan_files` dan `log_status` — Eloquent
+        // meng-snake_case-kan nama relasi saat menyusun jawabannya. Panel
+        // sempat membaca `tanggapanFiles` dan `logStatus`, sehingga berkas yang
+        // sudah terunggah tidak pernah tampil di rincian.
+        $permohonan = $this->permohonan();
+        $tokenPelaksana = $this->token($this->akun('ppid-pelaksana'));
+
+        $this->sebagai($tokenPelaksana)
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/tanggapan-files", [
+                'files' => [['nama_file' => "Jawaban $this->tanda.pdf", 'path_file' => "uji/{$this->tanda}.pdf"]],
+            ])
+            ->assertStatus(201);
+
+        $rincian = $this->sebagai($tokenPelaksana)
+            ->getJson("/api/v1/permohonan/{$permohonan->id}")
+            ->assertOk()
+            ->json('data');
+
+        $this->assertArrayHasKey('tanggapan_files', $rincian);
+        $this->assertArrayNotHasKey('tanggapanFiles', $rincian, 'Kunci camelCase tidak pernah dikirim API.');
+        $this->assertCount(1, $rincian['tanggapan_files']);
+        $this->assertStringContainsString($this->tanda, $rincian['tanggapan_files'][0]['nama_file']);
+
+        $this->assertArrayHasKey('log_status', $rincian);
+        $this->assertArrayNotHasKey('logStatus', $rincian);
+    }
+
+    public function test_persetujuan_ppid_menutup_dan_mengundang_jalur_langsung(): void
+    {
+        $permohonan = $this->permohonan();
+        $tokenPelaksana = $this->token($this->akun('ppid-pelaksana'));
+
+        $this->sebagai($tokenPelaksana)->getJson("/api/v1/permohonan/{$permohonan->id}/approval")->assertOk();
+
+        $jadwal = now()->addWeekdays(3)->setTime(9, 0);
+
+        $this->sebagai($tokenPelaksana)
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", [
+                'keputusan' => 'disetujui',
+                'jalur_pelayanan' => 'langsung',
+                'jadwal_layanan' => $jadwal->toIso8601String(),
+                'keterangan_petugas' => "Bawa identitas $this->tanda.",
+            ])
+            ->assertOk();
+
+        // Undangan belum berangkat: berkasnya baru diteruskan, belum diputus.
+        // Menjanjikan pertemuan atas permohonan yang masih bisa ditolak PPID
+        // adalah janji yang belum tentu bisa ditepati.
+        Mail::assertNothingSent();
+
+        $this->sebagai($this->token($this->akun('ppid-utama')))
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", ['keputusan' => 'disetujui'])
+            ->assertOk();
+
+        // Putusan PPID menutup perkaranya sekaligus mendistribusikan hasilnya.
+        $permohonan->refresh();
+        $this->assertSame('selesai', $permohonan->status);
+
+        Mail::assertSent(
+            StatusLayananMail::class,
+            fn (StatusLayananMail $surat) => str_contains($surat->envelope()->subject, 'Undangan')
+        );
+
+        $notifikasi = NotifikasiPemohon::where('pemohon_id', $permohonan->pemohon_id)
+            ->where('type', 'permohonan_status')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($notifikasi, 'Pemohon tidak diberi tahu permohonannya selesai.');
+        $this->assertSame('selesai', $notifikasi->data['status'] ?? null);
+    }
+
+    public function test_revisi_tidak_pernah_terlihat_pemohon(): void
+    {
+        $permohonan = $this->permohonan();
+        $tokenPelaksana = $this->token($this->akun('ppid-pelaksana'));
+
+        $this->sebagai($tokenPelaksana)->getJson("/api/v1/permohonan/{$permohonan->id}/approval")->assertOk();
+
+        $this->sebagai($tokenPelaksana)
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", [
+                'keputusan' => 'disetujui',
+                'jalur_pelayanan' => 'online',
+            ])
+            ->assertOk();
+
+        $sebelum = NotifikasiPemohon::where('pemohon_id', $permohonan->pemohon_id)->count();
+
+        $this->sebagai($this->token($this->akun('ppid-utama')))
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", [
+                'keputusan' => 'revisi',
+                'catatan' => 'Lampirannya kurang jelas.',
+            ])
+            ->assertOk();
+
+        // Statusnya berpindah di panel, tetapi pemohon tidak dikabari: yang
+        // diperbaiki pekerjaan petugas, bukan berkas miliknya.
+        $this->assertSame('revisi', $permohonan->refresh()->status);
+        $this->assertSame(
+            $sebelum,
+            NotifikasiPemohon::where('pemohon_id', $permohonan->pemohon_id)->count(),
+            'Putaran perbaikan internal bocor ke lonceng pemohon.'
+        );
+    }
+
+    public function test_pemegang_giliran_masih_bisa_menandai_diverifikasi(): void
+    {
+        // Berkas baru masuk dan tahap pertamanya milik PPID Pelaksana. Sejak
+        // seluruh perpindahan dikunci, ia tidak bisa menandainya Diverifikasi —
+        // padahal itu tahap kerjanya sendiri, sebelum berkasnya diteruskan.
+        $permohonan = $this->permohonan();
+        $tokenPelaksana = $this->token($this->akun('ppid-pelaksana'));
+
+        $this->sebagai($tokenPelaksana)->getJson("/api/v1/permohonan/{$permohonan->id}/approval")->assertOk();
+
+        $this->sebagai($tokenPelaksana)
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/status", ['status_baru' => 'diverifikasi'])
+            ->assertOk();
+
+        $this->assertSame('diverifikasi', $permohonan->refresh()->status);
+
+        // Yang memindahkan berkasnya ke meja lain atau menutup perkaranya tetap
+        // tertutup, sekalipun bagi pemegang gilirannya.
+        foreach (['diproses', 'ditolak', 'kedaluwarsa'] as $tujuan) {
+            $this->sebagai($tokenPelaksana)
+                ->postJson("/api/v1/permohonan/{$permohonan->id}/status", [
+                    'status_baru' => $tujuan,
+                    'alasan_penolakan' => 'Alasan uji.',
+                ])
+                ->assertStatus(422);
+        }
+
+        // Bukan gilirannya: seluruh perpindahan tertutup, termasuk Diverifikasi.
+        $this->sebagai($this->token($this->akun('ppid-utama')))
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/status", ['status_baru' => 'diverifikasi'])
+            ->assertStatus(422);
+
+        $this->assertSame('diverifikasi', $permohonan->refresh()->status);
+
+        // Alurnya tetap berjalan sesudahnya: berkasnya diteruskan lewat putusan.
+        $this->sebagai($tokenPelaksana)
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", [
+                'keputusan' => 'disetujui',
+                'jalur_pelayanan' => 'online',
+            ])
+            ->assertOk();
+
+        $this->assertSame('diproses', $permohonan->refresh()->status);
+    }
+
+    public function test_putaran_lama_dipisahkan_dari_putaran_berjalan(): void
+    {
+        $permohonan = $this->permohonan();
+        $tokenPelaksana = $this->token($this->akun('ppid-pelaksana'));
+
+        $this->sebagai($tokenPelaksana)->getJson("/api/v1/permohonan/{$permohonan->id}/approval")->assertOk();
+
+        $this->sebagai($tokenPelaksana)
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", [
+                'keputusan' => 'disetujui',
+                'catatan' => 'Putaran pertama.',
+                'jalur_pelayanan' => 'online',
+            ])
+            ->assertOk();
+
+        $this->sebagai($this->token($this->akun('ppid-utama')))
+            ->postJson("/api/v1/permohonan/{$permohonan->id}/approval", [
+                'keputusan' => 'revisi',
+                'catatan' => 'Lampiran kurang jelas.',
+            ])
+            ->assertOk();
+
+        $isi = $this->sebagai($tokenPelaksana)
+            ->getJson("/api/v1/permohonan/{$permohonan->id}/approval")
+            ->assertOk()
+            ->json('data');
+
+        // Empat langkah tersimpan, tetapi yang dikirim sebagai jenjang berjalan
+        // hanya dua. Daftar rata berbunyi "1, 2, 1, 2": urutan yang mundur di
+        // tengah dan terbaca sebagai data rusak, bukan sebagai berkas yang
+        // sudah berputar dua kali.
+        $this->assertCount(4, $this->langkah($permohonan));
+        $this->assertCount(2, $isi['langkah'], 'Putaran lama ikut masuk ke jenjang berjalan.');
+        $this->assertSame(2, $isi['putaran']);
+        $this->assertCount(1, $isi['riwayat_putaran'], 'Putaran pertama hilang dari riwayat.');
+        $this->assertCount(2, $isi['riwayat_putaran'][0]);
+
+        // Urutan di dalam tiap putaran tetap menaik, dan langkah yang berjalan
+        // memang ada di putaran yang dikirim.
+        $this->assertSame([1, 2], array_column($isi['langkah'], 'urutan'));
+        $this->assertSame([1, 2], array_column($isi['riwayat_putaran'][0], 'urutan'));
+        $this->assertContains($isi['berjalan_id'], array_column($isi['langkah'], 'id'));
+
+        // Yang dilipat memang putusan lama, bukan salinan yang berjalan.
+        $this->assertSame('revisi', $isi['riwayat_putaran'][0][1]['status']);
+    }
+
+    public function test_lonceng_giliran_ikut_hilang_saat_berkasnya_dihapus(): void
+    {
+        $permohonan = $this->permohonan();
+
+        $this->sebagai($this->token($this->akun('ppid-pelaksana')))
+            ->getJson("/api/v1/permohonan/{$permohonan->id}/approval")
+            ->assertOk();
+
+        $langkahId = $this->langkah($permohonan)->first()->id;
+
+        $lonceng = fn () => Notifikasi::where('type', 'approval_menunggu')
+            ->whereRaw("data->>'approval_id' = ?", [(string) $langkahId])
+            ->count();
+
+        $this->assertGreaterThan(0, $lonceng(), 'Lonceng giliran tidak terkirim.');
+
+        // Hapus lunak: berkasnya lenyap dari daftar, jadi loncengnya menunjuk
+        // rincian yang tidak bisa dibuka lagi. Langkahnya sendiri ditinggalkan
+        // sebagai jejak.
+        $permohonan->delete();
+
+        $this->assertSame(0, $lonceng(), 'Lonceng menggantung setelah berkasnya dihapus.');
+        $this->assertCount(2, $this->langkah($permohonan));
+
+        // Hapus permanen membuang langkahnya juga: tidak ada lagi berkas yang
+        // dirujuknya, dan tabelnya tidak bisa dipasangi foreign key.
+        $permohonan->forceDelete();
+
+        $this->assertCount(0, $this->langkah($permohonan));
     }
 }

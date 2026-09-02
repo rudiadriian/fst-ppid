@@ -672,6 +672,8 @@ class PpidController extends Controller
             'diajukan'          => 'DIAJUKAN',
             'diverifikasi'      => 'DALAM PENELITIAN',
             'diproses'          => 'DIPROSES',
+            // Putaran perbaikan internal PPID; pemohon tetap melihat DIPROSES.
+            'revisi'            => 'DIPROSES',
             'menunggu_approval' => 'MENUNGGU PERSETUJUAN',
             'disetujui'         => 'DITERIMA',
             'ditolak'           => 'DITOLAK',
@@ -1054,6 +1056,8 @@ class PpidController extends Controller
             'diajukan'          => 'Diajukan',
             'diverifikasi'      => 'Diverifikasi',
             'diproses'          => 'Diproses',
+            // Putaran perbaikan internal PPID; pemohon tetap melihat Diproses.
+            'revisi'            => 'Diproses',
             'menunggu_approval' => 'Menunggu Persetujuan',
             'disetujui'         => 'Disetujui',
             'ditolak'           => 'Ditolak',

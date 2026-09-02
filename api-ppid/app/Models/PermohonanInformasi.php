@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Concerns\MencatatPelaku;
+use App\Support\AlurPersetujuan;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PermohonanInformasi extends Model
@@ -13,6 +14,35 @@ class PermohonanInformasi extends Model
     use MencatatPelaku, SoftDeletes;
 
     protected $table = 'permohonan_informasi';
+
+    /**
+     * Jenjang persetujuan tidak boleh hidup lebih lama dari berkasnya.
+     *
+     * `approval_pengajuan` menunjuk dua tabel sekaligus sehingga tidak bisa
+     * dipasangi foreign key, dan lonceng "menunggu persetujuan Anda" menyimpan
+     * tautan ke rincian berkas ini. Tanpa pembersihan, permohonan yang dihapus
+     * meninggalkan lonceng yang menunjuk halaman yang tidak ada — dan petugas
+     * tidak punya cara membuangnya karena berkasnya sendiri sudah hilang dari
+     * daftar (langkah 100).
+     *
+     * Hapus lunak hanya membuang loncengnya: barisnya masih ada dan riwayat
+     * jenjangnya masih bernilai sebagai jejak. Hapus permanen membuang
+     * keduanya, karena tidak ada lagi berkas yang dirujuk langkahnya.
+     */
+    protected static function booted(): void
+    {
+        static::deleted(function (self $permohonan): void {
+            if ($permohonan->isForceDeleting()) {
+                return;
+            }
+
+            AlurPersetujuan::bersihkanLonceng(AlurPersetujuan::JENIS_PERMOHONAN, (int) $permohonan->getKey());
+        });
+
+        static::forceDeleted(function (self $permohonan): void {
+            AlurPersetujuan::bersihkan(AlurPersetujuan::JENIS_PERMOHONAN, (int) $permohonan->getKey());
+        });
+    }
 
     /**
      * `kode_permohonan` diisi DEFAULT di sisi PostgreSQL, `status` hanya boleh
@@ -65,10 +95,17 @@ class PermohonanInformasi extends Model
      * punya tujuan lanjutan supaya berkas tidak bisa dibuka ulang diam-diam.
      */
     public const TRANSISI = [
-        'diajukan' => ['diverifikasi', 'menunggu_approval', 'ditolak', 'kedaluwarsa'],
-        'diverifikasi' => ['diproses', 'menunggu_approval', 'ditolak', 'kedaluwarsa'],
-        'diproses' => ['menunggu_approval', 'ditolak', 'kedaluwarsa'],
-        'menunggu_approval' => ['disetujui', 'ditolak', 'ditolak_sebagian', 'diproses'],
+        'diajukan' => ['diverifikasi', 'diproses', 'ditolak', 'kedaluwarsa'],
+        'diverifikasi' => ['diproses', 'ditolak', 'kedaluwarsa'],
+        // Diproses = sudah disetujui PPID Pelaksana, tinggal putusan PPID.
+        // Persetujuan PPID menutup perkaranya langsung ke `selesai`; `disetujui`
+        // tetap sah sebagai tujuan manual dan sebagai status baris lama.
+        'diproses' => ['selesai', 'disetujui', 'ditolak', 'ditolak_sebagian', 'revisi', 'kedaluwarsa'],
+        // Dikembalikan ke PPID Pelaksana; dari sini berkasnya diajukan lagi.
+        'revisi' => ['diproses', 'ditolak', 'kedaluwarsa'],
+        // Kosakata lama, artinya sama dengan `diproses`. Tidak dipasang lagi,
+        // tetapi baris yang telanjur tersimpan tetap punya jalan keluar.
+        'menunggu_approval' => ['disetujui', 'ditolak', 'ditolak_sebagian', 'revisi', 'diproses'],
         'disetujui' => ['selesai'],
         'ditolak' => ['selesai'],
         'ditolak_sebagian' => ['selesai'],

@@ -31,6 +31,15 @@ class KeberatanController extends CrudController
 {
     use MenanganiPersetujuan;
 
+    /**
+     * Status yang berarti berkasnya sudah ada di meja PPID.
+     *
+     * Sama dengan permohonan: **Diproses** berarti PPID Pelaksana sudah
+     * menyelesaikan bagiannya. `menunggu_approval` kosakata lama dengan arti
+     * yang sama, masih dikenali supaya baris lama tetap terbaca.
+     */
+    private const STATUS_DI_MEJA_PPID = ['diproses', 'menunggu_approval'];
+
     protected string $model = KeberatanInformasi::class;
 
     protected string $modulSlug = 'keberatan';
@@ -180,7 +189,9 @@ class KeberatanController extends CrudController
 
         $keberatan->save();
 
-        if ($statusBaru === 'menunggu_approval') {
+        // `mulai()` sendiri yang menentukan tahap mana yang terbuka — untuk
+        // status ini tahap penerima sudah dilalui.
+        if (in_array($statusBaru, self::STATUS_DI_MEJA_PPID, true)) {
             AlurPersetujuan::mulai($keberatan);
         }
 
@@ -226,11 +237,11 @@ class KeberatanController extends CrudController
         /** @var KeberatanInformasi $pengajuan */
         $statusLama = (string) $pengajuan->status;
 
-        if ($statusLama === 'menunggu_approval') {
+        if (in_array($statusLama, self::STATUS_DI_MEJA_PPID, true)) {
             return;
         }
 
-        $this->terapkanStatus($pengajuan, $statusLama, 'menunggu_approval');
+        $this->terapkanStatus($pengajuan, $statusLama, 'diproses');
 
         AuditLogger::record(
             Auth::guard('api')->id(),
@@ -238,7 +249,7 @@ class KeberatanController extends CrudController
             KeberatanInformasi::class,
             $pengajuan->id,
             ['status' => $statusLama],
-            ['status' => 'menunggu_approval']
+            ['status' => 'diproses']
         );
     }
 
@@ -247,10 +258,12 @@ class KeberatanController extends CrudController
         /** @var KeberatanInformasi $pengajuan */
         $statusLama = (string) $pengajuan->status;
 
+        // `revisi` mengembalikan berkas ke PPID Pelaksana. Diproses tidak lagi
+        // bisa dipakai untuk itu: artinya sekarang berkasnya di meja PPID.
         $statusBaru = match ($hasil) {
             AlurPersetujuan::HASIL_DISETUJUI => 'selesai',
             AlurPersetujuan::HASIL_DITOLAK => 'ditolak',
-            default => 'diproses',
+            default => 'revisi',
         };
 
         // Catatan penolakan penyetuju menjadi tanggapan yang dibaca pemohon:

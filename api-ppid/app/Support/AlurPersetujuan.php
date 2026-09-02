@@ -63,6 +63,24 @@ class AlurPersetujuan
         self::JENIS_KEBERATAN => ['selesai', 'ditolak'],
     ];
 
+    /**
+     * Status yang berarti jenjang penerima sudah selesai bagiannya.
+     *
+     * **Diproses** berarti PPID Pelaksana sudah menyetujui berkasnya; yang
+     * tersisa hanya putusan PPID — Setujui, Tolak, atau Kembalikan untuk
+     * diperbaiki. Jenjang yang dibuat atas berkas berstatus itu karena itu
+     * tidak boleh dimulai dari tahap penerima: tahap itu sudah dilalui, dan
+     * membukanya lagi menuntut petugas mengulang pekerjaan yang sudah selesai
+     * sementara PPID menunggu giliran yang tidak pernah tiba.
+     *
+     * `menunggu_approval` ikut didaftar sebagai kosakata lama yang artinya
+     * sama. Baris yang tersimpan dengan status itu tetap terbaca benar.
+     */
+    private const STATUS_SUDAH_DITERUSKAN = [
+        self::JENIS_PERMOHONAN => ['diproses', 'menunggu_approval'],
+        self::JENIS_KEBERATAN => ['diproses', 'menunggu_approval'],
+    ];
+
     public static function jenisDari(Model $pengajuan): string
     {
         return $pengajuan instanceof KeberatanInformasi ? self::JENIS_KEBERATAN : self::JENIS_PERMOHONAN;
@@ -71,9 +89,11 @@ class AlurPersetujuan
     /**
      * Buat langkah persetujuan untuk satu pengajuan.
      *
-     * Dipanggil saat pengajuan masuk status "menunggu persetujuan". Seluruh
-     * jenjang dibuat sekaligus supaya petugas melihat sisa perjalanannya, bukan
-     * satu kotak yang muncul-hilang. Hanya langkah pertama yang `menunggu`.
+     * Seluruh jenjang dibuat sekaligus supaya petugas melihat sisa
+     * perjalanannya, bukan satu kotak yang muncul-hilang. Hanya satu langkah
+     * yang `menunggu` — dan yang mana ditentukan status berkasnya: berkas
+     * berstatus **Diproses** sudah lewat jenjang penerima, jadi langkah itu
+     * lahir sebagai sudah disetujui dan giliran langsung jatuh ke pemutus.
      *
      * Aman dipanggil ulang: bila masih ada langkah berjalan, tidak ada yang
      * dibuat. Bila putaran sebelumnya sudah tuntas (mis. dikembalikan ke
@@ -106,9 +126,26 @@ class AlurPersetujuan
 
         $dibuat = new Collection();
 
-        foreach ($tahap->values() as $index => $satu) {
+        /*
+         * Dari tahap mana jenjangnya dibuka.
+         *
+         * Berkas berstatus **Diproses** sudah lewat tangan PPID Pelaksana:
+         * berkas tanggapannya terunggah, keterangannya tertulis, dan yang
+         * ditunggu tinggal putusan PPID. Jenjangnya karena itu dibuka di tahap
+         * pemutus, dengan tahap penerima ditandai selesai — bukan di tahap
+         * penerima, yang akan menahan berkasnya menunggu pekerjaan yang sudah
+         * dikerjakan.
+         */
+        $daftar = $tahap->values();
+        $mulaiDari = in_array((string) $pengajuan->status, self::STATUS_SUDAH_DITERUSKAN[$jenis] ?? [], true)
+            && $daftar->count() > 1
+            ? 1
+            : 0;
+
+        foreach ($daftar as $index => $satu) {
             /** @var AlurApprovalTahap $satu */
-            $pertama = $index === 0;
+            $terlewat = $index < $mulaiDari;
+            $berjalan = $index === $mulaiDari;
 
             $dibuat->push(ApprovalPengajuan::create([
                 'jenis' => $jenis,
@@ -119,16 +156,22 @@ class AlurPersetujuan
                 'nama_tahap' => $satu->nama,
                 'role_id' => $satu->role_id,
                 'nama_jabatan' => $satu->struktur?->jabatan,
-                'status' => ApprovalPengajuan::MENUNGGU,
+                'status' => $terlewat ? self::HASIL_DISETUJUI : ApprovalPengajuan::MENUNGGU,
+                // Putusannya tidak dikarang bernama: tidak ada pemutus yang
+                // dicatat, hanya keterangan dari mana kesimpulannya diambil.
+                'catatan' => $terlewat
+                    ? 'Sudah diselesaikan sebelum jenjang berjalan dipakai; disimpulkan dari status berkas.'
+                    : null,
+                'tanggal_putusan' => $terlewat ? now() : null,
                 // Hanya langkah berjalan yang punya jam masuk: langkah
                 // berikutnya belum dimulai, dan SLA-nya baru berlaku saat
                 // gilirannya tiba.
-                'tanggal_masuk' => $pertama ? now() : null,
-                'batas_waktu' => $pertama && $satu->sla_hari ? now()->addDays($satu->sla_hari) : null,
+                'tanggal_masuk' => $index <= $mulaiDari ? now() : null,
+                'batas_waktu' => $berjalan && $satu->sla_hari ? now()->addDays($satu->sla_hari) : null,
             ]));
         }
 
-        self::beriTahuPenyetuju($dibuat->first(), $pengajuan);
+        self::beriTahuPenyetuju($dibuat->get($mulaiDari), $pengajuan);
 
         return $dibuat;
     }
@@ -157,8 +200,11 @@ class AlurPersetujuan
     {
         $jenis = self::jenisDari($pengajuan);
         $id = (int) $pengajuan->getKey();
+        $berjalan = self::berjalan($jenis, $id);
 
-        if (self::berjalan($jenis, $id) !== null) {
+        if ($berjalan !== null) {
+            self::selaraskanDenganStatus($pengajuan, $jenis, $berjalan);
+
             return self::langkahPutaranTerakhir($jenis, $id);
         }
 
@@ -180,6 +226,45 @@ class AlurPersetujuan
             ->with(['role:id,name,slug', 'pemutus:id,name', 'tahap:id,boleh_tolak'])
             ->orderBy('id')
             ->get();
+    }
+
+    /**
+     * Pecah langkah satu pengajuan menjadi putaran-putaran.
+     *
+     * Satu berkas bisa melewati jenjang yang sama berkali-kali: tiap kali PPID
+     * mengembalikannya untuk diperbaiki, {@see mulai()} membuat satu set langkah
+     * baru di atas yang lama. Sebelum ini panel menerima seluruhnya sebagai satu
+     * daftar rata, sehingga berkas yang sudah dua kali berputar tampil sebagai
+     * "1. Penerimaan, 2. Persetujuan, 1. Penerimaan, 2. Persetujuan" — urutan
+     * yang mundur di tengah daftar dan tidak terbaca sebagai riwayat.
+     *
+     * Batas putaran dikenali dari `urutan` yang kembali ke 1. Tidak ada kolom
+     * penanda putaran di tabelnya, dan menambahkannya berarti migrasi untuk
+     * sesuatu yang sudah tersimpan tersirat: langkah selalu dibuat satu set
+     * penuh dan selalu dimulai dari urutan 1.
+     *
+     * @param  Collection<int, ApprovalPengajuan>  $langkah  hasil {@see langkah()}
+     * @return array<int, Collection<int, ApprovalPengajuan>> putaran terlama lebih dulu
+     */
+    public static function putaran(Collection $langkah): array
+    {
+        $putaran = [];
+        $sekarang = new Collection();
+
+        foreach ($langkah as $satu) {
+            if ((int) $satu->urutan === 1 && $sekarang->isNotEmpty()) {
+                $putaran[] = $sekarang;
+                $sekarang = new Collection();
+            }
+
+            $sekarang->push($satu);
+        }
+
+        if ($sekarang->isNotEmpty()) {
+            $putaran[] = $sekarang;
+        }
+
+        return $putaran;
     }
 
     /** Langkah yang sedang menunggu putusan; null bila tidak ada. */
@@ -256,19 +341,110 @@ class AlurPersetujuan
     }
 
     /**
-     * Buang langkah milik pengajuan yang dihapus.
+     * Buang langkah milik pengajuan yang dihapus, beserta loncengnya.
      *
      * `approval_pengajuan` menunjuk dua tabel sekaligus sehingga tidak bisa
      * dipasangi foreign key; pembersihannya dikerjakan di sini.
+     *
+     * Loncengnya ikut dibuang. Pemberitahuan "menunggu persetujuan Anda"
+     * menyimpan tautan ke rincian pengajuannya, dan pengajuan yang sudah
+     * dihapus meninggalkan lonceng yang menunjuk halaman yang tidak ada —
+     * petugas mengkliknya, mendapat rincian kosong, dan tidak punya cara
+     * membuangnya karena berkasnya sendiri sudah tidak ada di daftar.
      */
     public static function bersihkan(string $jenis, int $pengajuanId): void
     {
+        self::bersihkanLonceng($jenis, $pengajuanId);
+
         ApprovalPengajuan::where('jenis', $jenis)->where('pengajuan_id', $pengajuanId)->delete();
+    }
+
+    /**
+     * Buang lonceng giliran milik satu pengajuan, langkahnya dibiarkan.
+     *
+     * Dipakai saat pengajuan dihapus lunak: barisnya masih ada dan riwayat
+     * jenjangnya masih bernilai sebagai jejak, tetapi loncengnya menunjuk
+     * rincian yang tidak lagi muncul di daftar. Yang dibuang karena itu hanya
+     * pemberitahuannya.
+     */
+    public static function bersihkanLonceng(string $jenis, int $pengajuanId): void
+    {
+        $langkahId = ApprovalPengajuan::where('jenis', $jenis)
+            ->where('pengajuan_id', $pengajuanId)
+            ->pluck('id')
+            ->all();
+
+        self::hapusLonceng(...$langkahId);
+    }
+
+    /**
+     * Buang lonceng giliran milik langkah-langkah ini.
+     *
+     * `approval_id` disimpan di dalam kolom JSON, jadi tidak ada kolom yang
+     * bisa dipakai `whereIn` biasa.
+     */
+    private static function hapusLonceng(int|string ...$langkahId): void
+    {
+        if ($langkahId === []) {
+            return;
+        }
+
+        $nilai = array_map(fn ($id) => (string) $id, $langkahId);
+        $isian = implode(',', array_fill(0, count($nilai), '?'));
+
+        Notifikasi::where('type', 'approval_menunggu')
+            ->whereRaw("data->>'approval_id' IN ($isian)", $nilai)
+            ->delete();
     }
 
     // -----------------------------------------------------------------
     // Internal
     // -----------------------------------------------------------------
+
+    /**
+     * Majukan jenjang yang tertinggal di belakang status berkasnya.
+     *
+     * Berkas berstatus **Diproses** sudah lewat jenjang penerima, tetapi berkas
+     * yang jenjangnya dibuat sebelum aturan itu berlaku masih menahan giliran
+     * di tahap penerima — dan PPID menunggu giliran yang tidak akan datang.
+     * Membetulkannya saat dibaca berarti tidak ada baris yang perlu disunting
+     * tangan dan tidak ada migrasi data yang harus diingat.
+     *
+     * Hanya berlaku satu arah dan hanya dari tahap pertama: jenjang tidak
+     * pernah dimundurkan, dan putaran yang memang baru dibuka setelah revisi
+     * (statusnya `revisi`, bukan `diproses`) tidak tersentuh.
+     */
+    private static function selaraskanDenganStatus(Model $pengajuan, string $jenis, ApprovalPengajuan $berjalan): void
+    {
+        if ((int) $berjalan->urutan !== 1) {
+            return;
+        }
+
+        if (!in_array((string) $pengajuan->status, self::STATUS_SUDAH_DITERUSKAN[$jenis] ?? [], true)) {
+            return;
+        }
+
+        $berikutnya = self::langkahBerikutnya($berjalan);
+
+        if ($berikutnya === null) {
+            return;
+        }
+
+        $berjalan->status = self::HASIL_DISETUJUI;
+        $berjalan->catatan = $berjalan->catatan
+            ?? 'Sudah diselesaikan sebelum jenjang berjalan dipakai; disimpulkan dari status berkas.';
+        $berjalan->tanggal_putusan = now();
+        $berjalan->save();
+
+        $sla = $berikutnya->tahap?->sla_hari;
+        $berikutnya->tanggal_masuk = now();
+        $berikutnya->batas_waktu = $sla ? now()->addDays($sla) : null;
+        $berikutnya->save();
+
+        // Lonceng tahap penerima tidak lagi punya giliran yang dirujuknya.
+        self::hapusLonceng($berjalan->getKey());
+        self::beriTahuPenyetuju($berikutnya, $pengajuan);
+    }
 
     /** Langkah putaran yang sama dengan langkah berjalan (satu `alur_id`). */
     private static function langkahPutaranTerakhir(string $jenis, int $pengajuanId): Collection

@@ -93,6 +93,7 @@ const BADGE_PERMOHONAN = {
 	diajukan: { label: 'Diajukan', color: 'info' as const },
 	diverifikasi: { label: 'Diverifikasi', color: 'info' as const },
 	diproses: { label: 'Diproses', color: 'warning' as const },
+	revisi: { label: 'Revisi', color: 'warning' as const },
 	menunggu_approval: { label: 'Menunggu Persetujuan', color: 'warning' as const },
 	disetujui: { label: 'Disetujui', color: 'success' as const },
 	ditolak: { label: 'Ditolak', color: 'error' as const },

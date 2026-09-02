@@ -26,8 +26,10 @@ class AksesDokumen
      * Status permohonan yang berarti "petugas sudah memutuskan, dan hasilnya
      * dokumen boleh diberikan".
      *
-     * `ditolak` jelas tidak masuk. `diajukan`, `diverifikasi`, `diproses`, dan
-     * `menunggu_approval` juga tidak: semuanya berarti keputusannya belum ada.
+     * `ditolak` jelas tidak masuk. `diajukan`, `diverifikasi`, `diproses`,
+     * `revisi`, dan `menunggu_approval` juga tidak: semuanya berarti
+     * keputusannya belum ada. `diproses` berarti berkasnya sudah di meja PPID
+     * menunggu putusan — sudah diteruskan, belum diputus.
      */
     public const STATUS_DISETUJUI = ['selesai'];
 

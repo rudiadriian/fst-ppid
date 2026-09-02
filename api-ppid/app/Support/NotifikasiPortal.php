@@ -71,6 +71,21 @@ class NotifikasiPortal
     private const STATUS_PERINGATAN = ['revisi', 'ditolak', 'ditolak_sebagian', 'kedaluwarsa'];
 
     /**
+     * Status yang tidak pernah dikabarkan ke pemohon.
+     *
+     * `revisi` adalah putaran internal antara PPID dan PPID Pelaksana: berkasnya
+     * dikembalikan untuk diperbaiki, lalu diajukan lagi, mungkin beberapa kali.
+     * Dari sisi pemohon tidak ada yang berubah — permohonannya tetap sedang
+     * diproses — dan mengabarkan tiap putaran hanya membuat pemohon mengira
+     * berkasnya bermasalah, padahal yang diperbaiki pekerjaan petugas.
+     *
+     * Portal ikut menampilkannya sebagai "Dalam Proses"; keduanya harus sepakat,
+     * karena lonceng yang menyebut satu status sementara daftarnya menyebut
+     * yang lain justru lebih membingungkan daripada tidak berkabar sama sekali.
+     */
+    private const STATUS_INTERNAL = ['revisi'];
+
+    /**
      * Status pengajuan berpindah karena tindakan petugas.
      *
      * Status yang tidak berubah tidak menghasilkan notifikasi: petugas kerap
@@ -79,6 +94,10 @@ class NotifikasiPortal
     public static function statusPengajuan(Model $pengajuan, ?string $statusLama, string $statusBaru, ?string $keterangan = null): void
     {
         if ($statusLama === $statusBaru) {
+            return;
+        }
+
+        if (in_array($statusBaru, self::STATUS_INTERNAL, true)) {
             return;
         }
 
