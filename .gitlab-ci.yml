@@ -1,0 +1,114 @@
+# Pipeline deploy PPID Food Station.
+# Rujukan lengkap: persiapan_go_live.md bagian 10.
+#
+# Runner: shell executor yang dipasang langsung di server aplikasi
+# (192.168.1.21), tag `ppid-prod`. Runner SaaS GitLab.com tidak dipakai karena
+# tidak bisa menjangkau IP privat.
+#
+# Variabel yang harus diisi di Settings -> CI/CD -> Variables (Protected+Masked):
+#   VITE_API_BASE_URL, VITE_MEDIA_BASE_URL, VITE_MAP_KEY
+#
+# `.env` Laravel TIDAK disimpan di CI. Berkas itu hidup di server dan tidak
+# pernah disentuh pipeline — itulah sebabnya setiap rsync meng-exclude-nya.
+
+stages:
+  - build
+  - deploy
+
+variables:
+  DEPLOY_ROOT: /var/www/ppid
+  GIT_DEPTH: "20"
+
+# ---------------------------------------------------------------- BUILD ----
+
+build:adm:
+  stage: build
+  tags: [ppid-prod]
+  script:
+    - cd be-ppid
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - be-ppid/build/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+build:fe-assets:
+  stage: build
+  tags: [ppid-prod]
+  script:
+    - cd fe-ppid
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - fe-ppid/public/build/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# --------------------------------------------------------------- DEPLOY ----
+#
+# PERINGATAN soal `rsync --delete`:
+# `--exclude='.env'` dan `--exclude='storage/'` bersifat kritis. Tanpa keduanya,
+# --delete akan menghapus .env produksi dan SELURUH berkas unggahan pemohon.
+# Periksa dua opsi itu setiap kali menyunting berkas ini.
+
+deploy:api:
+  stage: deploy
+  tags: [ppid-prod]
+  needs: []
+  script:
+    - rsync -a --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' api-ppid/ "$DEPLOY_ROOT/api/"
+    - cd "$DEPLOY_ROOT/api"
+    - sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
+    - sudo -u www-data php artisan migrate --force
+    - sudo -u www-data php artisan config:cache
+    - sudo -u www-data php artisan route:cache
+    - sudo -u www-data php artisan view:cache
+    - sudo supervisorctl restart 'ppid-api-queue:*'
+  environment:
+    name: production/api
+    url: https://api-ppid.foodstation.co.id
+  rules:
+    # Rilis produksi selalu dipicu manusia, tidak otomatis saat push.
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+
+deploy:fe:
+  stage: deploy
+  tags: [ppid-prod]
+  needs: ["build:fe-assets"]
+  script:
+    - rsync -a --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' --exclude='public/storage' fe-ppid/ "$DEPLOY_ROOT/fe/"
+    - cd "$DEPLOY_ROOT/fe"
+    - sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
+    # TIDAK ADA `artisan migrate` di sini. Skema database dimiliki api-ppid saja
+    # (persiapan_go_live.md 1.5) — folder migrations fe-ppid sengaja kosong.
+    - sudo -u www-data php artisan config:cache
+    - sudo -u www-data php artisan route:cache
+    - sudo -u www-data php artisan view:cache
+    - test -L public/storage || sudo -u www-data php artisan storage:link
+    - sudo supervisorctl restart 'ppid-fe-queue:*'
+  environment:
+    name: production/fe
+    url: https://ppid.foodstation.co.id
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+
+deploy:adm:
+  stage: deploy
+  tags: [ppid-prod]
+  needs: ["build:adm"]
+  script:
+    - rsync -a --delete be-ppid/build/ "$DEPLOY_ROOT/adm/"
+    - sudo chown -R www-data:www-data "$DEPLOY_ROOT/adm"
+  environment:
+    name: production/adm
+    url: https://adm-ppid.foodstation.co.id
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual

@@ -10,9 +10,20 @@ class TrustProxies extends Middleware
     /**
      * The trusted proxies for this application.
      *
+     * Di produksi aplikasi ini berada di belakang reverse proxy yang menangani
+     * TLS. Tanpa daftar ini Laravel mengabaikan `X-Forwarded-Proto`, mengira
+     * request datang lewat HTTP biasa, lalu menyusun `url()`/`asset()` dan
+     * tautan di email dengan skema `http://`.
+     *
+     * Sengaja bukan '*': hanya alamat proxy yang memang dipercaya yang boleh
+     * memalsukan skema dan IP asal.
+     *
      * @var array<int, string>|string|null
      */
-    protected $proxies;
+    protected $proxies = [
+        '192.168.1.17',
+        '127.0.0.1',
+    ];
 
     /**
      * The headers that should be used to detect proxies.

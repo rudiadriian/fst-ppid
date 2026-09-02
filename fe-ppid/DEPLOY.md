@@ -1,3 +1,13 @@
+> **USANG — jangan diikuti untuk produksi.**
+>
+> Dokumen ini menjelaskan deploy ke Vercel, yang sudah tidak lagi menjadi target.
+> Produksi berjalan di server Ubuntu sendiri (Nginx + PHP-FPM + PostgreSQL) di
+> belakang reverse proxy. Rujukan resmi: **`../persiapan_go_live.md`**.
+>
+> Catatan yang masih berlaku di bawah hanyalah bagian "Catatan build" dan
+> "Seed data contoh". Sisanya (`vercel.json`, runtime `vercel-php`, environment
+> variable di dashboard Vercel) tidak dipakai lagi.
+
 # Deploy fe-ppid ke Vercel
 
 Frontend publik PPID (Laravel 10 + Blade + Vite) dijalankan di Vercel lewat runtime
