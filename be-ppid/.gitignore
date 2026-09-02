@@ -57,3 +57,7 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+
+# Berkas rahasia: JANGAN pernah di-commit (lihat persiapan_go_live.md 1.1)
+.env
+.env.production
