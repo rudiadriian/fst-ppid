@@ -162,13 +162,60 @@ Belum ada remote GitLab dan belum ada `.gitlab-ci.yml`. Lihat Langkah 10.
 
 ## 2. Siapkan server Ubuntu (192.168.1.21)
 
-```bash
-sudo apt update && sudo apt upgrade -y
+### 2.0 Server ini dipakai bersama aplikasi lain
 
-# PHP 8.2 (Laravel 10 butuh >= 8.1; repo Ondrej dipakai bila bawaan Ubuntu masih 8.1)
+`/var/app` sudah berisi aplikasi web lain. Artinya beberapa perintah "pasang dari nol" di
+bawah **tidak boleh dijalankan apa adanya** — sebagian bisa mematikan aplikasi tetangga.
+Jalankan blok pemeriksaan berikut dulu, dan sesuaikan Langkah 2–3 dengan hasilnya:
+
+```bash
+echo "=== isi /var/app ==="; ls -la /var/app
+echo "=== OS ==="; lsb_release -ds
+echo "=== PHP ==="; php -v 2>/dev/null | head -1; ls /etc/php 2>/dev/null
+echo "=== PHP-FPM aktif ==="; systemctl list-units --type=service --state=running | grep -i fpm
+echo "=== socket FPM ==="; ls /run/php/ 2>/dev/null
+echo "=== Node/Composer ==="; node -v 2>/dev/null; composer -V 2>/dev/null
+echo "=== Nginx vhost aktif ==="; ls -la /etc/nginx/sites-enabled/
+echo "=== port dipakai ==="; sudo ss -lntp | grep -E ':(80|443|5432|3000|8000|8001)\b'
+echo "=== PostgreSQL ==="; psql --version 2>/dev/null; sudo -u postgres psql -tAc "SELECT datname FROM pg_database WHERE datistemplate=false;" 2>/dev/null
+echo "=== Supervisor ==="; ls /etc/supervisor/conf.d/ 2>/dev/null
+echo "=== cron terpasang ==="; ls /etc/cron.d/ 2>/dev/null; sudo crontab -l 2>/dev/null
+echo "=== firewall ==="; sudo ufw status
+echo "=== disk ==="; df -h /var
+```
+
+Yang perlu diputuskan dari hasilnya:
+
+| Temuan | Konsekuensi |
+|---|---|
+| PHP sudah terpasang (versi berapa pun ≥ 8.1) | **Jangan** tambah `ppa:ondrej/php` dan jangan `apt upgrade` global. Cukup pasang ekstensi yang kurang untuk versi yang sudah ada. Menaikkan versi PHP akan ikut menaikkan versi untuk aplikasi tetangga |
+| Sudah ada PHP-FPM lain | Catat nama socket-nya (`/run/php/phpX.Y-fpm.sock`) dan pakai nilai itu di `fastcgi_pass`, bukan `php8.2-fpm.sock` |
+| Nginx sudah melayani vhost lain | **Jangan** `rm /etc/nginx/sites-enabled/default` tanpa memeriksa isinya. Cukup tambah tiga server block baru — pemisahan per `server_name` sudah cukup |
+| PostgreSQL sudah berisi database lain | Tetap buat role + database baru seperti Langkah 3. Jangan ubah `postgresql.conf` global tanpa memastikan aplikasi lain tidak butuh koneksi dari LAN |
+| `ufw` masih `inactive` | **Jangan** `ufw enable` sendirian. Menyalakan firewall dengan aturan yang hanya memikirkan PPID akan memutus akses aplikasi tetangga. Sepakati dulu dengan pemilik server |
+| Sudah ada isi di `/etc/cron.d` atau crontab root | Tambah berkas sendiri (`/etc/cron.d/ppid-*`), jangan pernah `| crontab -` |
+
+Aturan umum: semua yang PPID pasang diberi awalan `ppid-` (vhost Nginx, program Supervisor,
+berkas cron), supaya jelas milik siapa dan aman dihapus saat rollback.
+
+### 2.1 Paket yang dibutuhkan
+
+Blok di bawah mengasumsikan server kosong. Kalau pemeriksaan 2.0 menunjukkan paketnya sudah
+ada, lewati baris yang bersangkutan.
+
+```bash
+sudo apt update
+
+# --- PHP ---
+# Kalau PHP sudah ada dan versinya >= 8.1: LEWATI dua baris add-apt-repository,
+# dan ganti `php8.2-` di bawah dengan versi yang sudah terpasang. Menambah PPA
+# Ondrej lalu `apt upgrade` bisa menaikkan versi PHP milik aplikasi tetangga.
 sudo apt install -y software-properties-common
 sudo add-apt-repository -y ppa:ondrej/php
 sudo apt update
+
+# Ekstensi wajib: pgsql (driver DB), mbstring/xml/curl/zip/bcmath (Laravel),
+# gd (olah gambar), intl (format tanggal & angka lokal id).
 sudo apt install -y php8.2-fpm php8.2-cli php8.2-pgsql php8.2-mbstring \
   php8.2-xml php8.2-curl php8.2-zip php8.2-bcmath php8.2-gd php8.2-intl
 
@@ -250,7 +297,7 @@ Karena DB satu mesin dengan aplikasi, biarkan PostgreSQL hanya mendengar di loca
 ## 4. Tata letak folder deploy
 
 ```
-/var/www/ppid/
+/var/app/ppid/
 ├── api/        ← isi folder api-ppid
 ├── fe/         ← isi folder fe-ppid
 ├── adm/        ← hasil build be-ppid (isi folder build/)
@@ -262,24 +309,24 @@ Media publik tidak ditaruh di `shared/` karena desain aplikasi memang menjadikan
 `fe/storage/app/public` sebagai sumber tunggal; `api-ppid` menulis ke sana lewat `MEDIA_ROOT`.
 
 ```bash
-sudo mkdir -p /var/www/ppid/{api,fe,adm,shared/dokumen-terbatas}
-sudo chown -R www-data:www-data /var/www/ppid
+sudo mkdir -p /var/app/ppid/{api,fe,adm,shared/dokumen-terbatas}
+sudo chown -R www-data:www-data /var/app/ppid
 ```
 
 Setelah kode ada di tempatnya:
 
 ```bash
 # Laravel: hanya dua folder ini yang perlu bisa ditulis
-sudo chown -R www-data:www-data /var/www/ppid/api/storage /var/www/ppid/api/bootstrap/cache
-sudo chown -R www-data:www-data /var/www/ppid/fe/storage  /var/www/ppid/fe/bootstrap/cache
-sudo chmod -R 775 /var/www/ppid/api/storage /var/www/ppid/fe/storage
-sudo chmod -R 775 /var/www/ppid/shared/dokumen-terbatas
+sudo chown -R www-data:www-data /var/app/ppid/api/storage /var/app/ppid/api/bootstrap/cache
+sudo chown -R www-data:www-data /var/app/ppid/fe/storage  /var/app/ppid/fe/bootstrap/cache
+sudo chmod -R 775 /var/app/ppid/api/storage /var/app/ppid/fe/storage
+sudo chmod -R 775 /var/app/ppid/shared/dokumen-terbatas
 
 # Tautan storage publik untuk fe-ppid (WAJIB — kalau tidak, semua gambar 404)
-sudo -u www-data php /var/www/ppid/fe/artisan storage:link
+sudo -u www-data php /var/app/ppid/fe/artisan storage:link
 
 # Berkas .env jangan terbaca user lain
-sudo chmod 640 /var/www/ppid/api/.env /var/www/ppid/fe/.env
+sudo chmod 640 /var/app/ppid/api/.env /var/app/ppid/fe/.env
 ```
 
 > `api-ppid` **tidak** perlu `storage:link` — disk publiknya diarahkan ke milik `fe-ppid`.
@@ -289,7 +336,7 @@ sudo chmod 640 /var/www/ppid/api/.env /var/www/ppid/fe/.env
 
 ## 5. Berkas `.env` produksi
 
-### 5.1 `/var/www/ppid/api/.env`
+### 5.1 `/var/app/ppid/api/.env`
 
 ```ini
 APP_NAME="PPID API"
@@ -330,9 +377,9 @@ SESSION_DRIVER=file
 SESSION_LIFETIME=120
 
 # Berkas dibagi pakai dengan fe-ppid — lihat Langkah 1.4
-MEDIA_ROOT=/var/www/ppid/fe/storage/app/public
+MEDIA_ROOT=/var/app/ppid/fe/storage/app/public
 MEDIA_URL=https://ppid.foodstation.co.id/storage
-DOKUMEN_TERBATAS_ROOT=/var/www/ppid/shared/dokumen-terbatas
+DOKUMEN_TERBATAS_ROOT=/var/app/ppid/shared/dokumen-terbatas
 
 MAIL_MAILER=smtp
 MAIL_HOST=srv179.niagahoster.com
@@ -354,7 +401,7 @@ PPID_CAPTCHA_AKTIF=true
 masih menunjuk `192.168.10.250`, email yang diterima pemohon berisi tautan yang tidak bisa
 dibuka dari luar.
 
-### 5.2 `/var/www/ppid/fe/.env`
+### 5.2 `/var/app/ppid/fe/.env`
 
 ```ini
 APP_NAME=PPID
@@ -385,7 +432,7 @@ SESSION_SECURE_COOKIE=true
 SESSION_DOMAIN=ppid.foodstation.co.id
 
 # HARUS sama persis dengan nilai di api-ppid
-DOKUMEN_TERBATAS_ROOT=/var/www/ppid/shared/dokumen-terbatas
+DOKUMEN_TERBATAS_ROOT=/var/app/ppid/shared/dokumen-terbatas
 
 MAIL_MAILER=smtp
 MAIL_HOST=srv179.niagahoster.com
@@ -438,7 +485,7 @@ Nginx di sini cukup mendengar port 80 pada IP internal.
 server {
     listen 80;
     server_name ppid.foodstation.co.id;
-    root /var/www/ppid/fe/public;
+    root /var/app/ppid/fe/public;
 
     index index.php;
     charset utf-8;
@@ -479,7 +526,7 @@ server {
 server {
     listen 80;
     server_name api-ppid.foodstation.co.id;
-    root /var/www/ppid/api/public;
+    root /var/app/ppid/api/public;
 
     index index.php;
     charset utf-8;
@@ -514,7 +561,7 @@ Header CORS **tidak** ditulis di Nginx — sudah ditangani `api-ppid/config/cors
 server {
     listen 80;
     server_name adm-ppid.foodstation.co.id;
-    root /var/www/ppid/adm;
+    root /var/app/ppid/adm;
 
     index index.html;
     charset utf-8;
@@ -549,9 +596,18 @@ Aktifkan:
 sudo ln -sf /etc/nginx/sites-available/ppid-fe  /etc/nginx/sites-enabled/
 sudo ln -sf /etc/nginx/sites-available/ppid-api /etc/nginx/sites-enabled/
 sudo ln -sf /etc/nginx/sites-available/ppid-adm /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
+
+# `default` TIDAK dihapus: server ini melayani aplikasi lain, dan vhost default
+# bisa saja yang menangani permintaan tanpa Host yang cocok. Pemisahan per
+# server_name sudah cukup — tiga domain PPID tidak bertabrakan dengan siapa pun.
+# Periksa dulu bila ingin menghapusnya:  cat /etc/nginx/sites-enabled/default
+
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+`nginx -t` menguji seluruh konfigurasi, termasuk milik aplikasi lain. Kalau gagal,
+**jangan** `reload` — perbaiki dulu, karena reload dengan konfigurasi rusak menjatuhkan
+semua situs di server ini, bukan hanya PPID.
 
 ---
 
@@ -605,7 +661,7 @@ Pastikan juga DNS ketiga domain menunjuk ke IP publik reverse proxy, bukan ke 19
 Semua dijalankan dari `api-ppid` (lihat Langkah 1.5).
 
 ```bash
-cd /var/www/ppid/api
+cd /var/app/ppid/api
 
 sudo -u www-data php artisan key:generate --force
 sudo -u www-data php artisan jwt:secret --force
@@ -654,7 +710,7 @@ Karena itu Langkah 5 menyetelnya ke `database`, dan itu butuh worker.
 ```ini
 [program:ppid-api-queue]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/ppid/api/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+command=php /var/app/ppid/api/artisan queue:work --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 user=www-data
@@ -665,7 +721,7 @@ stopwaitsecs=3600
 
 [program:ppid-fe-queue]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/ppid/fe/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+command=php /var/app/ppid/fe/artisan queue:work --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 user=www-data
@@ -680,13 +736,24 @@ sudo supervisorctl reread && sudo supervisorctl update && sudo supervisorctl sta
 ```
 
 Penjadwal Laravel (`app/Console/Kernel.php`) masih kosong di kedua aplikasi, jadi cron belum
-wajib hari ini. Tetap pasang sekarang supaya tugas terjadwal di kemudian hari langsung jalan —
-`sudo crontab -u www-data -e`:
+wajib hari ini. Tetap pasang sekarang supaya tugas terjadwal di kemudian hari langsung jalan.
 
-```cron
-* * * * * php /var/www/ppid/api/artisan schedule:run >> /dev/null 2>&1
-* * * * * php /var/www/ppid/fe/artisan schedule:run >> /dev/null 2>&1
+Pakai berkas sendiri di `/etc/cron.d/`, **jangan** `crontab -` — server ini dipakai bersama
+aplikasi lain, dan `crontab -` menimpa seluruh isi crontab user, bukan menambahkan.
+
+```bash
+sudo tee /etc/cron.d/ppid-schedule >/dev/null <<'CRON'
+# Penjadwal Laravel PPID. Berkas di /etc/cron.d butuh kolom user (www-data).
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+* * * * * www-data php /var/app/ppid/api/artisan schedule:run >/dev/null 2>&1
+* * * * * www-data php /var/app/ppid/fe/artisan  schedule:run >/dev/null 2>&1
+CRON
+
+sudo chmod 644 /etc/cron.d/ppid-schedule
 ```
+
+Berkas di `/etc/cron.d` harus dimiliki root, mode 644, dan **tanpa titik pada namanya** —
+kalau tidak, cron mengabaikannya tanpa pesan error.
 
 ---
 
@@ -753,7 +820,7 @@ pipeline — itulah sebabnya skrip di bawah meng-exclude `.env`.
 stages: [build, deploy]
 
 variables:
-  DEPLOY_ROOT: /var/www/ppid
+  DEPLOY_ROOT: /var/app/ppid
 
 # ---------- BUILD ----------
 
@@ -901,14 +968,30 @@ Uji manual yang harus lulus semua:
 
 ## 12. Pengamanan & cadangan
 
-```bash
-# Firewall: hanya SSH dari LAN + HTTP dari reverse proxy
-sudo ufw allow from 192.168.1.0/24 to any port 22 proto tcp
-sudo ufw allow from 192.168.1.17 to any port 80 proto tcp
-sudo ufw enable
+**Firewall — jangan dijalankan sendirian.** Server ini melayani aplikasi lain. `ufw enable`
+memberlakukan kebijakan tolak-bawaan: setiap port yang tidak diizinkan eksplisit langsung
+tertutup, termasuk milik aplikasi tetangga, dan Anda bisa ikut terputus dari sesi SSH ini.
 
-# PostgreSQL tidak boleh terjangkau dari LAN — pastikan hanya localhost
-sudo ss -lntp | grep 5432
+Kalau `ufw status` menunjukkan `inactive`, sepakati dulu dengan pemilik server. Bila
+memang disetujui, kumpulkan **semua** port yang sedang dilayani (dari blok pemeriksaan 2.0),
+izinkan seluruhnya, baru aktifkan:
+
+```bash
+sudo ss -lntp                 # daftar lengkap port yang sedang dipakai
+
+sudo ufw allow OpenSSH        # amankan jalur masuk lebih dulu
+sudo ufw allow from 192.168.1.17 to any port 80 proto tcp
+# ... tambahkan aturan untuk aplikasi lain di server ini ...
+
+sudo ufw status numbered      # periksa daftarnya sebelum diaktifkan
+sudo ufw enable
+```
+
+Yang aman dilakukan sekarang tanpa menyentuh firewall — pastikan PostgreSQL memang hanya
+mendengar di localhost:
+
+```bash
+sudo ss -lntp | grep 5432     # harus 127.0.0.1:5432, bukan 0.0.0.0:5432
 ```
 
 Backup harian database + media, simpan 14 hari — `/usr/local/bin/ppid-backup.sh`:
@@ -924,16 +1007,25 @@ PGPASSWORD='SANDI' pg_dump -h 127.0.0.1 -U ppid_app -Fc ppiddb \
   > "$TUJUAN/ppiddb-$TANGGAL.dump"
 
 tar czf "$TUJUAN/media-$TANGGAL.tar.gz" \
-  -C /var/www/ppid/fe/storage/app public \
-  -C /var/www/ppid/shared dokumen-terbatas
+  -C /var/app/ppid/fe/storage/app public \
+  -C /var/app/ppid/shared dokumen-terbatas
 
 find "$TUJUAN" -type f -mtime +14 -delete
 ```
 
 ```bash
-sudo chmod 700 /usr/local/bin/ppid-backup.sh
-# crontab root — 02:00 setiap hari
-echo '0 2 * * * /usr/local/bin/ppid-backup.sh' | sudo crontab -
+sudo chown root:root /usr/local/bin/ppid-backup.sh
+sudo chmod 700 /usr/local/bin/ppid-backup.sh   # berisi sandi DB — root saja
+
+# Jadwal 02:00 setiap hari, lewat berkas sendiri.
+# JANGAN `| sudo crontab -`: perintah itu MENIMPA seluruh crontab root, dan
+# server ini dipakai bersama aplikasi lain yang mungkin punya jadwal di sana.
+sudo tee /etc/cron.d/ppid-backup >/dev/null <<'CRON'
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 2 * * * root /usr/local/bin/ppid-backup.sh >/dev/null 2>&1
+CRON
+
+sudo chmod 644 /etc/cron.d/ppid-backup
 ```
 
 > Backup belum bernilai sampai pernah **dipulihkan**. Uji `pg_restore` ke database
@@ -957,9 +1049,10 @@ Legenda: ☑ selesai · ◐ sebagian · ☐ belum
 | 2 | Perbaiki `TrustProxies` di `api-ppid` **dan** `fe-ppid` | 1.3 | ☑ |
 | 3 | Hapus 4 migration bawaan di `fe-ppid` | 1.5 | ☑ |
 | 4 | Push repo ke GitLab, tambah `.gitlab-ci.yml` | 10.1, 10.4 | ◐ |
-| 5 | Pasang PHP 8.2 + ekstensi, Node 20, Composer, Supervisor | 2 | ☐ |
+| 4b | **Periksa kondisi server dulu** — sudah ada aplikasi lain di `/var/app` | 2.0 | ☐ |
+| 5 | Pasang PHP + ekstensi, Node 20, Composer, Supervisor (yang belum ada saja) | 2.1 | ☐ |
 | 6 | Buat role `ppid_app` + database `ppiddb` | 3 | ☐ |
-| 7 | Siapkan `/var/www/ppid`, hak akses, `storage:link` di `fe` | 4 | ☐ |
+| 7 | Siapkan `/var/app/ppid`, hak akses, `storage:link` di `fe` | 4 | ☐ |
 | 8 | Tulis `.env` produksi — termasuk `DOKUMEN_TERBATAS_ROOT` di **kedua** app | 5, 1.4 | ◐ |
 | 9 | Pasang 3 server block Nginx | 6 | ☐ |
 | 10 | Setel reverse proxy 192.168.1.17 + `X-Forwarded-Proto` | 7 | ☐ |
@@ -993,6 +1086,8 @@ Perubahan berikut sudah diterapkan pada working tree (**belum di-commit**).
 | `fe-ppid/.env.example` | tambah `DOKUMEN_TERBATAS_ROOT` | 1.4 |
 | `fe-ppid/DEPLOY.md` | ditandai USANG, diarahkan ke dokumen ini | 1.6 |
 | `.gitlab-ci.yml` | baru; 2 job build + 3 job deploy manual | 10.4 |
+| `persiapan_go_live.md`, `.gitlab-ci.yml` | akar deploy diubah `/var/www/ppid` → **`/var/app/ppid`** mengikuti konvensi server | 4, 10.4 |
+| `persiapan_go_live.md` | ditambah bagian 2.0 (server dipakai bersama), cron pindah ke `/etc/cron.d`, `ufw enable` dan `rm sites-enabled/default` tidak lagi disarankan buta | 2.0, 9, 12 |
 
 Verifikasi yang sudah dijalankan:
 

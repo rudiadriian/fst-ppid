@@ -16,7 +16,7 @@ stages:
   - deploy
 
 variables:
-  DEPLOY_ROOT: /var/www/ppid
+  DEPLOY_ROOT: /var/app/ppid
   GIT_DEPTH: "20"
 
 # ---------------------------------------------------------------- BUILD ----
