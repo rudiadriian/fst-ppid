@@ -9,6 +9,10 @@
 # - PHP wajib 8.2 (bukan default sistem 8.3) — lcobucci/jwt tidak kompatibel 8.3
 # - Queue pakai QUEUE_CONNECTION=sync, jadi TIDAK butuh supervisorctl/queue worker
 # - storage/ dan bootstrap/cache/ butuh fix ownership setiap deploy (www-data)
+# - rsync pakai --no-g --no-o supaya tidak coba chgrp/chown file yang bukan
+#   miliknya sendiri (gitlab-runner bukan owner file lama) — itu selalu gagal
+#   untuk non-root dan bikin exit status 23. File baru otomatis ikut grup folder
+#   induk berkat bit setgid yang sudah dipasang di /var/app/ppid/*.
 #
 # Variabel yang harus diisi di Settings -> CI/CD -> Variables (Protected+Masked):
 #   VITE_API_BASE_URL, VITE_MEDIA_BASE_URL, VITE_MAP_KEY
@@ -68,7 +72,7 @@ deploy:api:
   tags: [ppid-prod]
   needs: []
   script:
-    - rsync -a --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' api-ppid/ "$DEPLOY_ROOT/api-ppid/"
+    - rsync -a --no-g --no-o --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' api-ppid/ "$DEPLOY_ROOT/api-ppid/"
     - cd "$DEPLOY_ROOT/api-ppid"
     - sudo -u www-data $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
     - sudo chown -R fsit:www-data storage bootstrap/cache
@@ -90,7 +94,7 @@ deploy:fe:
   tags: [ppid-prod]
   needs: ["build:fe-assets"]
   script:
-    - rsync -a --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' --exclude='public/storage' fe-ppid/ "$DEPLOY_ROOT/fe-ppid/"
+    - rsync -a --no-g --no-o --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' --exclude='public/storage' fe-ppid/ "$DEPLOY_ROOT/fe-ppid/"
     - cd "$DEPLOY_ROOT/fe-ppid"
     - sudo -u www-data $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
     - sudo chown -R fsit:www-data storage bootstrap/cache
@@ -113,7 +117,7 @@ deploy:adm:
   tags: [ppid-prod]
   needs: ["build:adm"]
   script:
-    - rsync -a --delete be-ppid/build/ "$DEPLOY_ROOT/be-ppid/build/"
+    - rsync -a --no-g --no-o --delete be-ppid/build/ "$DEPLOY_ROOT/be-ppid/build/"
     - sudo chown -R www-data:www-data "$DEPLOY_ROOT/be-ppid/build"
   environment:
     name: production/adm
