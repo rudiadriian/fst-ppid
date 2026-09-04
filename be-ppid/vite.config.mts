@@ -29,9 +29,6 @@ export default defineConfig({
 	],
 	build: {
 		outDir: 'build',
-		// Pustaka besar dipisah dari kode panel supaya kunjungan berikutnya
-		// memakai berkas yang sudah ada di cache peramban: menambah satu modul
-		// CMS tidak lagi membatalkan cache MUI, tabel, dan grafik sekaligus.
 		rollupOptions: {
 			output: {
 				manualChunks: {
@@ -39,7 +36,7 @@ export default defineConfig({
 					mui: ['@mui/material', '@mui/system', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
 					tabel: ['material-react-table'],
 					grafik: ['apexcharts', 'react-apexcharts'],
-					editor: ['@tiptap/react', '@tiptap/starter-kit', '@tiptap/pm']
+					editor: ['@tiptap/react', '@tiptap/starter-kit']
 				}
 			}
 		}
