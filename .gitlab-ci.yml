@@ -1,9 +1,14 @@
 # Pipeline deploy PPID Food Station.
-# Rujukan lengkap: persiapan_go_live.md bagian 10.
 #
 # Runner: shell executor yang dipasang langsung di server aplikasi
 # (192.168.1.21), tag `ppid-prod`. Runner SaaS GitLab.com tidak dipakai karena
 # tidak bisa menjangkau IP privat.
+#
+# CATATAN PENTING:
+# - Struktur folder aktual di server: api-ppid, fe-ppid, be-ppid (bukan api/fe/adm)
+# - PHP wajib 8.2 (bukan default sistem 8.3) — lcobucci/jwt tidak kompatibel 8.3
+# - Queue pakai QUEUE_CONNECTION=sync, jadi TIDAK butuh supervisorctl/queue worker
+# - storage/ dan bootstrap/cache/ butuh fix ownership setiap deploy (www-data)
 #
 # Variabel yang harus diisi di Settings -> CI/CD -> Variables (Protected+Masked):
 #   VITE_API_BASE_URL, VITE_MEDIA_BASE_URL, VITE_MAP_KEY
@@ -17,6 +22,8 @@ stages:
 
 variables:
   DEPLOY_ROOT: /var/app/ppid
+  PHP_BIN: php8.2
+  COMPOSER_BIN: /usr/local/bin/composer
   GIT_DEPTH: "20"
 
 # ---------------------------------------------------------------- BUILD ----
@@ -61,14 +68,15 @@ deploy:api:
   tags: [ppid-prod]
   needs: []
   script:
-    - rsync -a --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' api-ppid/ "$DEPLOY_ROOT/api/"
-    - cd "$DEPLOY_ROOT/api"
-    - sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
-    - sudo -u www-data php artisan migrate --force
-    - sudo -u www-data php artisan config:cache
-    - sudo -u www-data php artisan route:cache
-    - sudo -u www-data php artisan view:cache
-    - sudo supervisorctl restart 'ppid-api-queue:*'
+    - rsync -a --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' api-ppid/ "$DEPLOY_ROOT/api-ppid/"
+    - cd "$DEPLOY_ROOT/api-ppid"
+    - sudo -u www-data $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
+    - sudo chown -R fsit:www-data storage bootstrap/cache
+    - sudo chmod -R 2775 storage bootstrap/cache
+    - sudo -u www-data HOME=/tmp $PHP_BIN artisan migrate --force
+    - sudo -u www-data HOME=/tmp $PHP_BIN artisan config:cache
+    - sudo -u www-data HOME=/tmp $PHP_BIN artisan route:cache
+    - sudo -u www-data HOME=/tmp $PHP_BIN artisan view:cache
   environment:
     name: production/api
     url: https://api-ppid.foodstation.co.id
@@ -82,16 +90,17 @@ deploy:fe:
   tags: [ppid-prod]
   needs: ["build:fe-assets"]
   script:
-    - rsync -a --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' --exclude='public/storage' fe-ppid/ "$DEPLOY_ROOT/fe/"
-    - cd "$DEPLOY_ROOT/fe"
-    - sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
+    - rsync -a --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' --exclude='public/storage' fe-ppid/ "$DEPLOY_ROOT/fe-ppid/"
+    - cd "$DEPLOY_ROOT/fe-ppid"
+    - sudo -u www-data $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
+    - sudo chown -R fsit:www-data storage bootstrap/cache
+    - sudo chmod -R 2775 storage bootstrap/cache
     # TIDAK ADA `artisan migrate` di sini. Skema database dimiliki api-ppid saja
-    # (persiapan_go_live.md 1.5) — folder migrations fe-ppid sengaja kosong.
-    - sudo -u www-data php artisan config:cache
-    - sudo -u www-data php artisan route:cache
-    - sudo -u www-data php artisan view:cache
-    - test -L public/storage || sudo -u www-data php artisan storage:link
-    - sudo supervisorctl restart 'ppid-fe-queue:*'
+    # — folder migrations fe-ppid sengaja kosong.
+    - sudo -u www-data HOME=/tmp $PHP_BIN artisan config:cache
+    - sudo -u www-data HOME=/tmp $PHP_BIN artisan route:cache
+    - sudo -u www-data HOME=/tmp $PHP_BIN artisan view:cache
+    - test -L public/storage || sudo -u www-data HOME=/tmp $PHP_BIN artisan storage:link
   environment:
     name: production/fe
     url: https://ppid.foodstation.co.id
@@ -104,8 +113,8 @@ deploy:adm:
   tags: [ppid-prod]
   needs: ["build:adm"]
   script:
-    - rsync -a --delete be-ppid/build/ "$DEPLOY_ROOT/adm/"
-    - sudo chown -R www-data:www-data "$DEPLOY_ROOT/adm"
+    - rsync -a --delete be-ppid/build/ "$DEPLOY_ROOT/be-ppid/build/"
+    - sudo chown -R www-data:www-data "$DEPLOY_ROOT/be-ppid/build"
   environment:
     name: production/adm
     url: https://adm-ppid.foodstation.co.id
