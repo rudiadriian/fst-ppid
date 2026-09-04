@@ -1,11 +1,5 @@
-saya sudah naikin project ini ke server production dan gitlab tapi sepertinya file-file gitlab saya tidak update, karena ketika saya upload gambar banner di be-ppid, di fe-ppid tidak ada perubahan. di github saya pakai branch main ya.
-coba anda connection dulu source controllnya ke gitlab deh lalu sinkronasi lagi.
+ubah text di footer ini :
+PT Food Station Tjipinang Jaya (Perseroda) — BUMD DKI Jakarta yang berkomitmen pada keterbukaan informasi publik sesuai UU No. 14 Tahun 2008.
 
-# ini remote gitlab : https://gitlab.com/fs-group4/fst-ppid.git
-# ini remote github : gh repo clone rudiadriian/fst-ppid
-# harusnya dibuat pada main saja, branch go-live-prep tidak digunakan agar 1 persepsi.
-
-urlnya udah aktif :
-- https://ppid.foodstation.co.id/
-- https://adm-ppid.foodstation.co.id/
-- https://api-ppid.foodstation.co.id/
+menjadi :
+Dikelola oleh Pejabat Pengelola Informasi dan Dokumentasi (PPID) PT Food Station Tjipinang Jaya (Perseroda). Informasi yang disediakan diharapkan dapat digunakan secara bijak dan dimanfaatkan untuk kepentingan masyarakat sesuai dengan ketentuan peraturan perundang-undangan yang berlaku.

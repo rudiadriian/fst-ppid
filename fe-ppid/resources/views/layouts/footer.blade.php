@@ -25,7 +25,7 @@
                         <span class="text-[11px] text-white/70 uppercase tracking-widest font-semibold mt-1">{{ __('Transparansi Informasi') }}</span>
                     </span>
                 </a>
-                <p class="text-sm text-white/75 leading-relaxed">{{ __('PT Food Station Tjipinang Jaya (Perseroda) — BUMD DKI Jakarta yang berkomitmen pada keterbukaan informasi publik sesuai UU No. 14 Tahun 2008.') }}</p>
+                <p class="text-sm text-white/75 leading-relaxed">{{ __('Dikelola oleh Pejabat Pengelola Informasi dan Dokumentasi (PPID) PT Food Station Tjipinang Jaya (Perseroda). Informasi yang disediakan diharapkan dapat digunakan secara bijak dan dimanfaatkan untuk kepentingan masyarakat sesuai dengan ketentuan peraturan perundang-undangan yang berlaku.') }}</p>
                 <div class="space-y-3 text-sm text-white/80">
                     <div class="flex items-start gap-3">
                         <svg class="w-5 h-5 text-white mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m-4.243 0a8 8 0 1111.314 0z"></path></svg>
