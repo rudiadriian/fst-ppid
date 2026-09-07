@@ -60,8 +60,8 @@ export async function authSignInWithToken(accessToken: string): Promise<Response
 export async function authSignIn(credentials: {
 	email: string;
 	password: string;
-	captcha?: string;
-	captcha_id?: string | null;
+	/** Token reCAPTCHA v3 untuk aksi `masuk_panel`. */
+	recaptcha_token?: string;
 }): Promise<AuthResponse> {
 	return withErrorData(() =>
 		api
@@ -76,24 +76,6 @@ export async function authSignIn(credentials: {
 	);
 }
 
-export type CaptchaResponse = {
-	aktif: boolean;
-	id: string | null;
-	gambar: string | null;
-};
-
-/**
- * Ambil satu kode captcha beserta gambarnya.
- *
- * Tiap panggilan menghasilkan kode baru dan membatalkan yang sebelumnya, jadi
- * ini juga yang dipakai tombol "ganti gambar".
- */
-export async function authAmbilCaptcha(): Promise<CaptchaResponse> {
-	const hasil = await api.get(`${AUTH_PREFIX}/captcha`, { retry: 0 }).json<{ data: CaptchaResponse }>();
-
-	return hasil.data;
-}
-
 /**
  * Minta tautan atur ulang password dikirim ke email.
  *
@@ -102,8 +84,7 @@ export async function authAmbilCaptcha(): Promise<CaptchaResponse> {
  */
 export async function authMintaResetPassword(payload: {
 	email: string;
-	captcha?: string;
-	captcha_id?: string | null;
+	recaptcha_token?: string;
 }): Promise<{ message: string }> {
 	return withErrorData(() =>
 		api.post(`${AUTH_PREFIX}/lupa-password`, { json: payload, retry: 0 }).json<{ message: string }>()
@@ -118,8 +99,7 @@ export async function authPasangPasswordBaru(payload: {
 	email: string;
 	password: string;
 	password_confirmation: string;
-	captcha?: string;
-	captcha_id?: string | null;
+	recaptcha_token?: string;
 }): Promise<{ message: string }> {
 	return withErrorData(() =>
 		api.post(`${AUTH_PREFIX}/reset-password`, { json: payload, retry: 0 }).json<{ message: string }>()

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Rules\CaptchaBenar;
+use App\Rules\RecaptchaBenar;
 use App\Support\AuditLogger;
 use App\Support\KunciLoginAdmin;
 use Illuminate\Http\JsonResponse;
@@ -29,15 +29,19 @@ class AuthController extends Controller
             $data = $request->validate([
                 'email' => ['required', 'email', 'max:150'],
                 'password' => ['required', 'string', 'max:255'],
-                'captcha_id' => ['nullable', 'string', 'max:64'],
-                'captcha' => [
-                    ...(config('ppid.akun.captcha_aktif') ? ['required'] : ['nullable']),
+                /*
+                 * Token reCAPTCHA v3. Panjangnya ditentukan Google dan bisa
+                 * ratusan karakter, jadi batasnya longgar — yang menjaga bukan
+                 * panjangnya melainkan pemeriksaan ke `siteverify`.
+                 */
+                'recaptcha_token' => [
+                    ...(config('ppid.akun.recaptcha_aktif') ? ['required'] : ['nullable']),
                     'string',
-                    'max:16',
-                    new CaptchaBenar($request->input('captcha_id')),
+                    'max:5000',
+                    new RecaptchaBenar('masuk_panel', $request),
                 ],
             ], [
-                'captcha.required' => 'Kode captcha wajib diisi.',
+                'recaptcha_token.required' => 'Verifikasi keamanan belum selesai. Muat ulang halaman lalu coba lagi.',
                 'email.required' => 'Email wajib diisi.',
                 'email.email' => 'Format email tidak sah.',
                 'password.required' => 'Kata sandi wajib diisi.',

@@ -17,7 +17,9 @@
 #   www-data, karena /var/www bukan home directory yang otomatis writable.
 #
 # Variabel yang harus diisi di Settings -> CI/CD -> Variables (Protected+Masked):
-#   VITE_API_BASE_URL, VITE_MEDIA_BASE_URL, VITE_MAP_KEY
+#   VITE_API_BASE_URL, VITE_MEDIA_BASE_URL, VITE_MAP_KEY,
+#   VITE_RECAPTCHA_SITE_KEY (site key reCAPTCHA v3 panel admin — publik,
+#   jadi tidak perlu Masked; secret key-nya ada di api-ppid/.env di server)
 #
 # `.env` Laravel TIDAK disimpan di CI. Berkas itu hidup di server dan tidak
 # pernah disentuh pipeline — itulah sebabnya setiap rsync meng-exclude-nya.

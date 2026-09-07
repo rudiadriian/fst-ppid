@@ -39,7 +39,7 @@ class AlurLayananPpidTest extends TestCase
         // Captcha dimatikan seperti pada AuthKeamananTest: yang diuji di sini
         // alur layanannya, bukan pengaman formulir masuknya.
         config([
-            'ppid.akun.captcha_aktif' => false,
+            'ppid.akun.recaptcha_aktif' => false,
             'ppid.akun.gagal_per_tahap' => 99,
         ]);
 

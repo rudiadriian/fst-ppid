@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,7 +13,7 @@ import Link from '@fuse/core/Link';
 import Button from '@mui/material/Button';
 import useJwtAuth from '../useJwtAuth';
 import { bacaGalat } from '../utils/pesanGalat';
-import KolomCaptcha from './KolomCaptcha';
+import { AKSI_RECAPTCHA, ambilTokenRecaptcha, siapkanRecaptcha } from '../utils/recaptcha';
 
 /**
  * Form Validation Schema
@@ -21,9 +21,6 @@ import KolomCaptcha from './KolomCaptcha';
 const schema = z.object({
 	email: z.string().email('Format email tidak sah').nonempty('Email wajib diisi'),
 	password: z.string().nonempty('Kata sandi wajib diisi'),
-	// Wajibnya ditegakkan server: saat captcha dimatikan di API, komponen
-	// gambarnya tidak tampil sama sekali dan isian ini memang kosong.
-	captcha: z.string().optional(),
 	remember: z.boolean().optional()
 });
 
@@ -32,15 +29,12 @@ type FormType = z.infer<typeof schema>;
 const defaultValues: FormType = {
 	email: '',
 	password: '',
-	captcha: '',
 	remember: true
 };
 
 function JwtSignInForm() {
 	const { signIn } = useJwtAuth();
 
-	const [captchaId, setCaptchaId] = useState<string | null>(null);
-	const [captchaVersi, setCaptchaVersi] = useState(0);
 	/**
 	 * Spanduk di atas formulir.
 	 *
@@ -50,7 +44,7 @@ function JwtSignInForm() {
 	 */
 	const [spanduk, setSpanduk] = useState<{ pesan: string; jaringan: boolean } | null>(null);
 
-	const { control, formState, handleSubmit, setError, resetField } = useForm<FormType>({
+	const { control, formState, handleSubmit, setError } = useForm<FormType>({
 		mode: 'onChange',
 		defaultValues,
 		resolver: zodResolver(schema)
@@ -58,21 +52,45 @@ function JwtSignInForm() {
 
 	const { isValid, isSubmitting, dirtyFields, errors } = formState;
 
+	// Skripnya diunduh begitu halaman masuk terbuka, bukan saat tombol ditekan:
+	// menunggu unduhan pihak ketiga setelah orang menekan "Masuk" terasa seperti
+	// panel yang menggantung.
+	useEffect(() => {
+		siapkanRecaptcha();
+	}, []);
+
 	async function onSubmit(formData: FormType) {
 		setSpanduk(null);
+
+		let token: string | undefined;
+
+		try {
+			token = await ambilTokenRecaptcha(AKSI_RECAPTCHA.masuk);
+		} catch {
+			/*
+			 * Gagal di sini berarti skrip Google tidak terjangkau. Permintaannya
+			 * tidak dikirim sama sekali: server menolak token kosong, dan
+			 * percobaan yang pasti gagal itu tetap menaikkan hitungan kunci
+			 * bertingkat — orangnya bisa terkunci gara-gara jaringan.
+			 */
+			setSpanduk({
+				pesan: 'Verifikasi keamanan tidak dapat dimuat. Periksa koneksi Anda lalu coba lagi.',
+				jaringan: true
+			});
+			return;
+		}
 
 		try {
 			await signIn({
 				email: formData.email,
 				password: formData.password,
-				captcha: formData.captcha,
-				captcha_id: captchaId
+				recaptcha_token: token
 			});
 		} catch (error) {
 			const galat = await bacaGalat(error);
 
 			galat.isian.forEach((item) => {
-				if (item.type === 'email' || item.type === 'password' || item.type === 'captcha') {
+				if (item.type === 'email' || item.type === 'password') {
 					setError(item.type, { type: 'manual', message: item.message });
 				}
 			});
@@ -80,16 +98,10 @@ function JwtSignInForm() {
 			// Selalu tampil, juga saat galatnya sudah menempel di isian: pesan
 			// kunci bertingkat ("coba lagi setelah 1 jam") terlalu penting untuk
 			// disembunyikan sebagai teks kecil di bawah kotak password.
+			// Penolakan reCAPTCHA tidak punya isian untuk ditempeli — tidak ada
+			// kotak captcha lagi — jadi spanduk inilah satu-satunya tempat pesan
+			// "muat ulang halaman" bisa terbaca.
 			setSpanduk({ pesan: galat.ringkasan, jaringan: galat.jaringan });
-
-			/*
-			 * Server membuang kode captcha begitu diperiksa — benar atau salah.
-			 * Tanpa memuat gambar baru di sini, percobaan berikutnya pasti
-			 * ditolak dengan alasan captcha, dan orangnya akan mengira
-			 * passwordnya yang salah.
-			 */
-			resetField('captcha');
-			setCaptchaVersi((versi) => versi + 1);
 		}
 	}
 
@@ -144,22 +156,6 @@ function JwtSignInForm() {
 						variant="outlined"
 						required
 						fullWidth
-					/>
-				)}
-			/>
-
-			<Controller
-				name="captcha"
-				control={control}
-				render={({ field }) => (
-					<KolomCaptcha
-						value={field.value ?? ''}
-						onChange={field.onChange}
-						onIdChange={setCaptchaId}
-						error={!!errors.captcha}
-						helperText={errors?.captcha?.message}
-						muatUlang={captchaVersi}
-						disabled={isSubmitting}
 					/>
 				)}
 			/>

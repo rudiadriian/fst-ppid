@@ -75,16 +75,39 @@ return [
         'reset_hitungan_gagal_jam' => (int) env('PPID_RESET_HITUNGAN_GAGAL_JAM', 72),
 
         /*
-         * Captcha gambar pada formulir masuk, permintaan lupa password, dan
-         * konfirmasi password baru.
+         * Google reCAPTCHA v3 pada formulir masuk, permintaan lupa password,
+         * dan konfirmasi password baru.
          *
-         * Dimatikan hanya untuk pengujian otomatis; pada panel yang dapat
-         * dijangkau dari jaringan ini harus tetap menyala.
+         * Dimatikan hanya untuk pengujian otomatis dan keadaan darurat (mis.
+         * layanan Google tidak terjangkau dari jaringan server); pada panel
+         * yang dapat dijangkau dari jaringan ini harus tetap menyala.
          */
-        'captcha_aktif' => (bool) env('PPID_CAPTCHA_AKTIF', true),
+        'recaptcha_aktif' => (bool) env('PPID_RECAPTCHA_AKTIF', true),
 
-        /* Umur satu kode captcha, dalam detik. */
-        'captcha_umur_detik' => (int) env('PPID_CAPTCHA_UMUR_DETIK', 300),
+        /*
+         * Kunci rahasia dari https://www.google.com/recaptcha/admin. Hanya
+         * dipakai server saat menukar token; jangan pernah sampai ke peramban.
+         * Pasangannya, site key, ada di berkas env panel admin (be-ppid).
+         */
+        'recaptcha_secret_key' => env('PPID_RECAPTCHA_SECRET_KEY'),
+
+        /*
+         * Ambang skor untuk lolos, 0.0-1.0. Google menganjurkan 0.5; di sini
+         * dipasang lebih ketat karena yang dilindungi adalah pintu masuk panel
+         * administrasi, bukan formulir publik - menolak segelintir petugas sah
+         * yang harus mengulang lebih murah daripada meloloskan bot.
+         *
+         * Naikkan/turunkan lewat env tanpa deploy ulang bila ternyata petugas
+         * di jaringan tertentu (VPN kantor, proxy bersama) sering tertolak.
+         */
+        'recaptcha_skor_min' => (float) env('PPID_RECAPTCHA_SKOR_MIN', 0.7),
+
+        /*
+         * Batas tunggu panggilan ke `siteverify`, dalam detik. Sengaja pendek:
+         * ini berada di jalur tekan-tombol-Masuk, jadi menunggu lama sama saja
+         * dengan panel yang terasa menggantung.
+         */
+        'recaptcha_timeout_detik' => (int) env('PPID_RECAPTCHA_TIMEOUT_DETIK', 5),
 
         /* Jeda minimum antar permintaan tautan lupa password, dalam menit. */
         'jeda_kirim_tautan_menit' => (int) env('PPID_JEDA_KIRIM_TAUTAN_MENIT', 5),
