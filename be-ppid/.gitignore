@@ -58,6 +58,14 @@ amplifytools.xcconfig
 **.sample
 #amplify-do-not-edit-end
 
-# Berkas rahasia: JANGAN pernah di-commit (lihat persiapan_go_live.md 1.1)
+# .env memuat nilai untuk mesin pengembang masing-masing: JANGAN di-commit.
+#
+# .env.production SENGAJA tidak diabaikan dan memang ikut di-commit. Isinya
+# hanya nilai yang toh publik — Vite menanam VITE_* ke dalam berkas build
+# yang dilayani ke setiap pengunjung, jadi menyembunyikannya di CI tidak
+# merahasiakan apa pun. Yang didapat dari menyimpannya di CI justru satu
+# cara gagal tambahan: variabel yang lupa dibuat atau ditandai Protected
+# pada branch yang tidak protected membuat build menghasilkan artefak rusak.
+# Nilai yang benar-benar rahasia tidak boleh masuk ke sini — kunci server
+# ada di api-ppid/.env, dan VITE_MAP_KEY tetap datang dari CI/CD Variables.
 .env
-.env.production
