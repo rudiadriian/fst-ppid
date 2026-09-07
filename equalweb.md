@@ -1,5 +1,3 @@
-{{-- resources/views/partials/accessibility.blade.php --}}
-{{-- Widget aksesibilitas EqualWeb (penyandang disabilitas) --}}
 <!-- Accessibility Code for "ppid.foodstation.co.id" -->
 <script>
 /*
@@ -15,7 +13,7 @@ window.interdeal = {
         }
     },
     "Position": "right",
-    "Menulang": "{{ strtoupper(app()->getLocale()) === 'EN' ? 'EN' : 'ID' }}",
+    "Menulang": "ID",
     "draggable": true,
     "btnStyle": {
         "vPosition": [
@@ -31,17 +29,18 @@ window.interdeal = {
             "0.5"
         ],
         "color": {
-            "main": "#E87317",
+            "main": "#1c4bb6",
             "second": "#ffffff"
         },
         "icon": {
-            "outline": true,
+            "outline": false,
             "outlineColor": "#ffffff",
             "type":  5 ,
             "shape": "circle"
         }
     },
-    "showTooltip": true,
+                            "showTooltip": true,
+      
 };
 
 (function(doc, head, body){
