@@ -91,6 +91,12 @@ deploy:api:
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan config:cache
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan route:cache
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan view:cache
+    # Menggagalkan deploy bila ada konfigurasi wajib yang belum dipasang di
+    # server. `.env` tidak disentuh pipeline, jadi variabel baru yang datang
+    # bersama rilis harus diisi tangan — dan langkah itu mudah terlewat.
+    # Tanpa pemeriksaan ini, akibatnya baru terlihat sebagai penolakan masuk
+    # yang tidak bisa dijelaskan dari log mana pun.
+    - sudo -u www-data HOME=/tmp $PHP_BIN artisan ppid:periksa-konfigurasi
   environment:
     name: production/api
     url: https://api-ppid.foodstation.co.id
