@@ -10,6 +10,7 @@ import Link from '@fuse/core/Link';
 import { authMintaResetPassword } from '@auth/authApi';
 import { bacaGalat } from '@auth/services/jwt/utils/pesanGalat';
 import { AKSI_RECAPTCHA, ambilTokenRecaptcha, siapkanRecaptcha } from '@auth/services/jwt/utils/recaptcha';
+import CatatanRecaptcha from '@auth/services/jwt/components/CatatanRecaptcha';
 
 const schema = z.object({
 	email: z.string().email('Format email tidak sah').nonempty('Email wajib diisi')
@@ -154,6 +155,8 @@ function FormLupaPassword() {
 					Kembali ke halaman Masuk
 				</Link>
 			</div>
+
+			<CatatanRecaptcha />
 		</form>
 	);
 }

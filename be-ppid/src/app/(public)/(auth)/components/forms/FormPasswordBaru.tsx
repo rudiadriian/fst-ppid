@@ -11,6 +11,7 @@ import Link from '@fuse/core/Link';
 import { authPasangPasswordBaru } from '@auth/authApi';
 import { bacaGalat } from '@auth/services/jwt/utils/pesanGalat';
 import { AKSI_RECAPTCHA, ambilTokenRecaptcha, siapkanRecaptcha } from '@auth/services/jwt/utils/recaptcha';
+import CatatanRecaptcha from '@auth/services/jwt/components/CatatanRecaptcha';
 
 /*
  * Syaratnya disamakan persis dengan yang ditegakkan API
@@ -228,6 +229,8 @@ function FormPasswordBaru() {
 			>
 				{isSubmitting ? 'Menyimpan…' : 'Simpan password baru'}
 			</Button>
+
+			<CatatanRecaptcha />
 		</form>
 	);
 }

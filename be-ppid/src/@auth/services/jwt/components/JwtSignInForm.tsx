@@ -14,6 +14,7 @@ import Button from '@mui/material/Button';
 import useJwtAuth from '../useJwtAuth';
 import { bacaGalat } from '../utils/pesanGalat';
 import { AKSI_RECAPTCHA, ambilTokenRecaptcha, siapkanRecaptcha } from '../utils/recaptcha';
+import CatatanRecaptcha from './CatatanRecaptcha';
 
 /**
  * Form Validation Schema
@@ -199,6 +200,8 @@ function JwtSignInForm() {
 			>
 				{isSubmitting ? 'Memeriksa…' : 'Masuk'}
 			</Button>
+
+			<CatatanRecaptcha />
 		</form>
 	);
 }
