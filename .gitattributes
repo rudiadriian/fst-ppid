@@ -1,0 +1,4 @@
+# Skrip shell dijalankan runner Linux. Akhir baris CRLF membuatnya gagal
+# seketika dengan `bad interpreter: /usr/bin/env bash^M`, dan mesin pengembang
+# di Windows mengubah LF menjadi CRLF secara otomatis saat checkout.
+*.sh text eol=lf
