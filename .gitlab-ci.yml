@@ -140,6 +140,13 @@ deploy:fe:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
 
+# Yang dikirim ke server hanyalah `build/` — hasil kompilasi Vite. Source
+# TypeScript-nya tidak pernah ikut, jadi `$DEPLOY_ROOT/be-ppid/src/` berisi
+# salinan lama yang tertinggal dari entah kapan dan tidak dipakai untuk apa
+# pun. Membacanya untuk mendiagnosis panel akan menyesatkan: pernah terjadi,
+# dan menghasilkan kesimpulan bahwa panel masih memakai captcha gambar padahal
+# berkas yang benar-benar dilayani sudah reCAPTCHA v2. Yang sahih dibaca adalah
+# isi build/, atau bundle yang diunduh langsung dari adm-ppid.foodstation.co.id.
 deploy:adm:
   stage: deploy
   tags: [ppid-prod]
