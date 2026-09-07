@@ -9,10 +9,12 @@
 # - PHP wajib 8.2 (bukan default sistem 8.3) — lcobucci/jwt tidak kompatibel 8.3
 # - Queue pakai QUEUE_CONNECTION=sync, jadi TIDAK butuh supervisorctl/queue worker
 # - storage/ dan bootstrap/cache/ butuh fix ownership setiap deploy (www-data)
-# - rsync pakai --no-g --no-o supaya tidak coba chgrp/chown file yang bukan
-#   miliknya sendiri (gitlab-runner bukan owner file lama) — itu selalu gagal
-#   untuk non-root dan bikin exit status 23. File baru otomatis ikut grup folder
-#   induk berkat bit setgid yang sudah dipasang di /var/app/ppid/*.
+# - rsync pakai --no-g --no-o --no-t --no-p supaya tidak coba ubah metadata file
+#   yang bukan miliknya sendiri (gitlab-runner bukan owner file lama) — itu
+#   selalu gagal untuk non-root dan bikin exit status 23. File baru otomatis
+#   ikut grup folder induk berkat bit setgid yang sudah dipasang di /var/app/ppid/*.
+# - HOME=/tmp (atau /var/www) wajib di setiap panggilan composer/artisan sebagai
+#   www-data, karena /var/www bukan home directory yang otomatis writable.
 #
 # Variabel yang harus diisi di Settings -> CI/CD -> Variables (Protected+Masked):
 #   VITE_API_BASE_URL, VITE_MEDIA_BASE_URL, VITE_MAP_KEY
@@ -74,7 +76,7 @@ deploy:api:
   script:
     - rsync -a --no-g --no-o --no-t --no-p --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' api-ppid/ "$DEPLOY_ROOT/api-ppid/"
     - cd "$DEPLOY_ROOT/api-ppid"
-    - sudo -u www-data $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
+    - sudo -u www-data HOME=/tmp $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
     - sudo chown -R fsit:www-data storage bootstrap/cache
     - sudo chmod -R 2775 storage bootstrap/cache
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan migrate --force
@@ -96,7 +98,7 @@ deploy:fe:
   script:
     - rsync -a --no-g --no-o --no-t --no-p --delete --exclude='.env' --exclude='storage/' --exclude='vendor/' --exclude='public/storage' fe-ppid/ "$DEPLOY_ROOT/fe-ppid/"
     - cd "$DEPLOY_ROOT/fe-ppid"
-    - sudo -u www-data $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
+    - sudo -u www-data HOME=/tmp $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
     - sudo chown -R fsit:www-data storage bootstrap/cache
     - sudo chmod -R 2775 storage bootstrap/cache
     # TIDAK ADA `artisan migrate` di sini. Skema database dimiliki api-ppid saja
