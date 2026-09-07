@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,9 +8,9 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Link from '@fuse/core/Link';
-import KolomCaptcha from '@auth/services/jwt/components/KolomCaptcha';
 import { authPasangPasswordBaru } from '@auth/authApi';
 import { bacaGalat } from '@auth/services/jwt/utils/pesanGalat';
+import { AKSI_RECAPTCHA, ambilTokenRecaptcha, siapkanRecaptcha } from '@auth/services/jwt/utils/recaptcha';
 
 /*
  * Syaratnya disamakan persis dengan yang ditegakkan API
@@ -29,8 +29,7 @@ const schema = z
 			.regex(/[a-z]/, 'Harus memuat huruf kecil')
 			.regex(/[A-Z]/, 'Harus memuat huruf besar')
 			.regex(/[0-9]/, 'Harus memuat angka'),
-		password_confirmation: z.string().nonempty('Ulangi password baru'),
-		captcha: z.string().optional()
+		password_confirmation: z.string().nonempty('Ulangi password baru')
 	})
 	.refine((nilai) => nilai.password === nilai.password_confirmation, {
 		message: 'Ulangan password tidak sama',
@@ -51,21 +50,38 @@ function FormPasswordBaru() {
 	const token = searchParams.get('token') ?? '';
 	const email = searchParams.get('email') ?? '';
 
-	const [captchaId, setCaptchaId] = useState<string | null>(null);
-	const [captchaVersi, setCaptchaVersi] = useState(0);
 	const [selesai, setSelesai] = useState<string | null>(null);
 	const [spanduk, setSpanduk] = useState<{ pesan: string; jaringan: boolean } | null>(null);
 
-	const { control, formState, handleSubmit, setError, resetField } = useForm<FormType>({
+	const { control, formState, handleSubmit, setError } = useForm<FormType>({
 		mode: 'onChange',
-		defaultValues: { password: '', password_confirmation: '', captcha: '' },
+		defaultValues: { password: '', password_confirmation: '' },
 		resolver: zodResolver(schema)
 	});
 
 	const { isValid, isSubmitting, errors } = formState;
 
+	useEffect(() => {
+		siapkanRecaptcha();
+	}, []);
+
 	async function onSubmit(formData: FormType) {
 		setSpanduk(null);
+
+		let recaptchaToken: string | undefined;
+
+		try {
+			recaptchaToken = await ambilTokenRecaptcha(AKSI_RECAPTCHA.passwordBaru);
+		} catch {
+			// Token reset hanya sekali pakai dan berumur pendek. Mengirim
+			// permintaan yang sudah pasti ditolak reCAPTCHA membuang tautannya
+			// dan memaksa orangnya meminta email baru.
+			setSpanduk({
+				pesan: 'Verifikasi keamanan tidak dapat dimuat. Periksa koneksi Anda lalu coba lagi.',
+				jaringan: true
+			});
+			return;
+		}
 
 		try {
 			const hasil = await authPasangPasswordBaru({
@@ -73,8 +89,7 @@ function FormPasswordBaru() {
 				email,
 				password: formData.password,
 				password_confirmation: formData.password_confirmation,
-				captcha: formData.captcha,
-				captcha_id: captchaId
+				recaptcha_token: recaptchaToken
 			});
 
 			setSelesai(hasil.message);
@@ -82,15 +97,13 @@ function FormPasswordBaru() {
 			const galat = await bacaGalat(error);
 
 			galat.isian.forEach((item) => {
-				if (item.type === 'password' || item.type === 'captcha') {
+				if (item.type === 'password') {
 					setError(item.type, { type: 'manual', message: item.message });
 				}
 			});
 
+			// Penolakan reCAPTCHA tidak punya isian untuk ditempeli.
 			setSpanduk({ pesan: galat.ringkasan, jaringan: galat.jaringan });
-
-			resetField('captcha');
-			setCaptchaVersi((versi) => versi + 1);
 		}
 	}
 
@@ -201,22 +214,6 @@ function FormPasswordBaru() {
 						variant="outlined"
 						required
 						fullWidth
-					/>
-				)}
-			/>
-
-			<Controller
-				name="captcha"
-				control={control}
-				render={({ field }) => (
-					<KolomCaptcha
-						value={field.value ?? ''}
-						onChange={field.onChange}
-						onIdChange={setCaptchaId}
-						error={!!errors.captcha}
-						helperText={errors?.captcha?.message}
-						muatUlang={captchaVersi}
-						disabled={isSubmitting}
 					/>
 				)}
 			/>

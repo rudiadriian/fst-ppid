@@ -6,16 +6,16 @@ use App\Models\PercobaanLoginAdmin;
 use App\Models\PercobaanTautanAdmin;
 use App\Models\Role;
 use App\Models\User;
-use App\Support\Captcha;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password as PasswordBroker;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
- * Pengaman fitur auth panel: captcha, kunci bertingkat, suspend, dan jalur
+ * Pengaman fitur auth panel: reCAPTCHA, kunci bertingkat, suspend, dan jalur
  * lupa password.
  *
  * Memakai `DatabaseTransactions`, bukan `RefreshDatabase`: skema `ppiddb`
@@ -36,7 +36,7 @@ class AuthKeamananTest extends TestCase
         config([
             'ppid.akun.gagal_per_tahap' => 3,
             'ppid.akun.tahap_kunci_menit' => [60, 1440, 20160],
-            'ppid.akun.captcha_aktif' => false,
+            'ppid.akun.recaptcha_aktif' => false,
             'ppid.akun.jeda_kirim_tautan_menit' => 0,
         ]);
 
@@ -65,42 +65,103 @@ class AuthKeamananTest extends TestCase
         ]);
     }
 
-    public function test_captcha_wajib_saat_dinyalakan(): void
+    /** Nyalakan reCAPTCHA dan tentukan jawaban Google untuk tes ini. */
+    private function siapkanRecaptcha(array $jawaban): void
     {
-        config(['ppid.akun.captcha_aktif' => true]);
+        config([
+            'ppid.akun.recaptcha_aktif' => true,
+            'ppid.akun.recaptcha_secret_key' => 'rahasia-uji',
+            'ppid.akun.recaptcha_skor_min' => 0.7,
+        ]);
+
+        Http::fake(['www.google.com/recaptcha/api/siteverify' => Http::response($jawaban)]);
+    }
+
+    public function test_recaptcha_wajib_saat_dinyalakan(): void
+    {
+        $this->siapkanRecaptcha(['success' => true, 'score' => 0.9, 'action' => 'masuk_panel']);
 
         $this->postJson('/api/v1/auth/sign-in', [
             'email' => 'siapa@contoh.test',
             'password' => 'apa saja',
-        ])->assertStatus(422)->assertJsonFragment(['type' => 'captcha']);
+        ])->assertStatus(422)->assertJsonFragment(['type' => 'recaptcha_token']);
     }
 
-    public function test_captcha_yang_benar_diterima_dan_hanya_sekali_pakai(): void
+    public function test_token_dengan_skor_tinggi_diterima(): void
     {
-        config(['ppid.akun.captcha_aktif' => true]);
+        $user = $this->petugas();
 
-        ['id' => $id, 'kode' => $kode] = Captcha::buat();
+        $this->siapkanRecaptcha(['success' => true, 'score' => 0.9, 'action' => 'masuk_panel']);
 
-        $this->assertTrue(Captcha::cocok($id, $kode));
-        // Sudah dibuang setelah diperiksa: kode yang sama tidak berlaku lagi.
-        $this->assertFalse(Captcha::cocok($id, $kode));
+        $this->postJson('/api/v1/auth/sign-in', [
+            'email' => $user->email,
+            'password' => $this->password,
+            'recaptcha_token' => 'token-uji',
+        ])->assertOk();
     }
 
-    public function test_captcha_tidak_peduli_huruf_besar_kecil(): void
+    public function test_skor_di_bawah_ambang_ditolak(): void
     {
-        ['id' => $id, 'kode' => $kode] = Captcha::buat();
+        $user = $this->petugas();
 
-        $this->assertTrue(Captcha::cocok($id, Str::lower($kode)));
+        $this->siapkanRecaptcha(['success' => true, 'score' => 0.3, 'action' => 'masuk_panel']);
+
+        // Password benar; yang menolak semata-mata skornya.
+        $this->postJson('/api/v1/auth/sign-in', [
+            'email' => $user->email,
+            'password' => $this->password,
+            'recaptcha_token' => 'token-uji',
+        ])->assertStatus(422)->assertJsonFragment(['type' => 'recaptcha_token']);
     }
 
-    public function test_endpoint_captcha_memberi_id_dan_gambar(): void
+    public function test_token_untuk_aksi_lain_ditolak(): void
     {
-        config(['ppid.akun.captcha_aktif' => true]);
+        $user = $this->petugas();
 
-        $this->getJson('/api/v1/auth/captcha')
-            ->assertOk()
-            ->assertJsonPath('data.aktif', true)
-            ->assertJsonStructure(['data' => ['aktif', 'id', 'gambar']]);
+        // Token sah, skor tinggi, tetapi dipanen dari formulir lupa password.
+        $this->siapkanRecaptcha(['success' => true, 'score' => 0.9, 'action' => 'lupa_password']);
+
+        $this->postJson('/api/v1/auth/sign-in', [
+            'email' => $user->email,
+            'password' => $this->password,
+            'recaptcha_token' => 'token-uji',
+        ])->assertStatus(422)->assertJsonFragment(['type' => 'recaptcha_token']);
+    }
+
+    public function test_google_tidak_terjangkau_menutup_pintu(): void
+    {
+        $user = $this->petugas();
+
+        config([
+            'ppid.akun.recaptcha_aktif' => true,
+            'ppid.akun.recaptcha_secret_key' => 'rahasia-uji',
+        ]);
+
+        Http::fake(['www.google.com/recaptcha/api/siteverify' => Http::response('', 500)]);
+
+        // Gagal tertutup: pemeriksaan yang tidak bisa dilakukan bukan alasan
+        // untuk meloloskan. Lihat catatan di App\Support\Recaptcha.
+        $this->postJson('/api/v1/auth/sign-in', [
+            'email' => $user->email,
+            'password' => $this->password,
+            'recaptcha_token' => 'token-uji',
+        ])->assertStatus(422)->assertJsonFragment(['type' => 'recaptcha_token']);
+    }
+
+    public function test_secret_key_kosong_menolak_bukan_melewatkan(): void
+    {
+        $user = $this->petugas();
+
+        config([
+            'ppid.akun.recaptcha_aktif' => true,
+            'ppid.akun.recaptcha_secret_key' => null,
+        ]);
+
+        $this->postJson('/api/v1/auth/sign-in', [
+            'email' => $user->email,
+            'password' => $this->password,
+            'recaptcha_token' => 'token-uji',
+        ])->assertStatus(422)->assertJsonFragment(['type' => 'recaptcha_token']);
     }
 
     public function test_tiga_kegagalan_mengunci_satu_jam(): void

@@ -36,7 +36,7 @@ class BerkasTanggapanTest extends TestCase
         $this->tanda = Str::random(8);
 
         config([
-            'ppid.akun.captcha_aktif' => false,
+            'ppid.akun.recaptcha_aktif' => false,
             'ppid.akun.gagal_per_tahap' => 99,
         ]);
 

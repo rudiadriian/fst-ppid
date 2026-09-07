@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Rules\CaptchaBenar;
+use App\Rules\RecaptchaBenar;
 use App\Support\AuditLogger;
 use App\Support\EmailAkunAdmin;
 use App\Support\KunciLoginAdmin;
@@ -42,15 +42,14 @@ class PasswordResetController extends Controller
         try {
             $data = $request->validate([
                 'email' => ['required', 'email', 'max:150'],
-                'captcha_id' => ['nullable', 'string', 'max:64'],
-                'captcha' => [
-                    ...(config('ppid.akun.captcha_aktif') ? ['required'] : ['nullable']),
+                'recaptcha_token' => [
+                    ...(config('ppid.akun.recaptcha_aktif') ? ['required'] : ['nullable']),
                     'string',
-                    'max:16',
-                    new CaptchaBenar($request->input('captcha_id')),
+                    'max:5000',
+                    new RecaptchaBenar('lupa_password', $request),
                 ],
             ], [
-                'captcha.required' => 'Kode captcha wajib diisi.',
+                'recaptcha_token.required' => 'Verifikasi keamanan belum selesai. Muat ulang halaman lalu coba lagi.',
                 'email.required' => 'Email wajib diisi.',
                 'email.email' => 'Format email tidak sah.',
             ]);
@@ -163,15 +162,14 @@ class PasswordResetController extends Controller
                     'confirmed',
                     PasswordRule::min(10)->mixedCase()->letters()->numbers(),
                 ],
-                'captcha_id' => ['nullable', 'string', 'max:64'],
-                'captcha' => [
-                    ...(config('ppid.akun.captcha_aktif') ? ['required'] : ['nullable']),
+                'recaptcha_token' => [
+                    ...(config('ppid.akun.recaptcha_aktif') ? ['required'] : ['nullable']),
                     'string',
-                    'max:16',
-                    new CaptchaBenar($request->input('captcha_id')),
+                    'max:5000',
+                    new RecaptchaBenar('password_baru', $request),
                 ],
             ], [
-                'captcha.required' => 'Kode captcha wajib diisi.',
+                'recaptcha_token.required' => 'Verifikasi keamanan belum selesai. Muat ulang halaman lalu coba lagi.',
                 'password.required' => 'Password baru wajib diisi.',
                 'password.confirmed' => 'Ulangan password tidak sama.',
                 'token.required' => 'Tautan tidak lengkap. Buka kembali tautan dari email Anda.',

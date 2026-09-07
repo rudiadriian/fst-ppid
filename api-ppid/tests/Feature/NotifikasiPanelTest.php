@@ -42,7 +42,7 @@ class NotifikasiPanelTest extends TestCase
         // Sama seperti AlurLayananPpidTest: yang diuji notifikasinya, bukan
         // pengaman formulir masuknya.
         config([
-            'ppid.akun.captcha_aktif' => false,
+            'ppid.akun.recaptcha_aktif' => false,
             'ppid.akun.gagal_per_tahap' => 99,
         ]);
 

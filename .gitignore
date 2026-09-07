@@ -1,0 +1,4 @@
+# Catatan konfigurasi berisi kunci rahasia layanan pihak ketiga.
+# Jangan pernah masuk riwayat repo — secret key reCAPTCHA ada di dalamnya.
+/reCAPTCHA.md
+/equalweb.md

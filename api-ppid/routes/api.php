@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\AnalitikController;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\CaptchaController;
 use App\Http\Controllers\Api\Cms\AlurApprovalController;
 use App\Http\Controllers\Api\Cms\AlurProsedurController;
 use App\Http\Controllers\Api\Cms\ArsipDokumenController;
@@ -61,12 +60,6 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('auth')->group(function () {
         Route::post('sign-in', [AuthController::class, 'signIn'])->middleware('throttle:login');
-
-        // Gambar captcha untuk formulir masuk, lupa password, dan password
-        // baru. Terbuka tanpa token — belum ada yang bisa masuk tanpanya —
-        // tetapi tetap direm supaya tidak dipakai memaksa server menggambar
-        // ribuan PNG.
-        Route::get('captcha', CaptchaController::class)->middleware('throttle:captcha');
 
         Route::post('lupa-password', [PasswordResetController::class, 'minta'])
             ->middleware('throttle:tautan-akun');
