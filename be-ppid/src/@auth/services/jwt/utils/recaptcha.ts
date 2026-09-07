@@ -1,24 +1,36 @@
 /**
- * Google reCAPTCHA v3 untuk formulir masuk dan pemulihan password panel.
+ * Google reCAPTCHA v2 (kotak centang) untuk formulir masuk dan pemulihan
+ * password panel.
  *
- * Menggantikan captcha gambar yang dulu diambil dari `v1/auth/captcha`. v3
- * tidak meminta apa pun dari orangnya: skrip Google menilai perilaku halaman
- * lalu mengeluarkan token sekali pakai, dan server yang memutuskan lolos atau
- * tidak berdasarkan skornya.
+ * Berkas ini hanya mengurus pemuatan skrip Google. Yang menggambar kotaknya
+ * dan memegang tokennya adalah `components/KolomRecaptcha.tsx`.
  *
- * Skripnya dimuat sesuai kebutuhan, bukan dari `index.html`. Dua alasannya:
- * lencana reCAPTCHA hanya pantas muncul di halaman yang memang dilindunginya,
- * dan sebagian besar panel adalah halaman di balik login yang tidak perlu ikut
- * menanggung unduhan skrip pihak ketiga.
+ * Bedanya dari v3 yang dipakai sebelumnya: token tidak lagi bisa diminta
+ * kapan saja lewat `execute()`. Token baru ada setelah orangnya mencentang —
+ * dan hilang lagi setelah dua menit. Karena itu formulir harus menunggu
+ * centangan, bukan mengambil token saat tombol kirim ditekan.
+ *
+ * Skripnya dimuat sesuai kebutuhan, bukan dari `index.html`: sebagian besar
+ * panel adalah halaman di balik login yang tidak perlu ikut menanggung
+ * unduhan skrip pihak ketiga.
  */
 
 const SITE_KEY = (import.meta.env.VITE_RECAPTCHA_SITE_KEY as string | undefined) ?? '';
 
-const ID_SKRIP = 'recaptcha-v3';
+const ID_SKRIP = 'recaptcha-v2';
+
+export type OpsiRender = {
+	sitekey: string;
+	theme?: 'light' | 'dark';
+	callback: (token: string) => void;
+	'expired-callback': () => void;
+	'error-callback': () => void;
+};
 
 type Grecaptcha = {
 	ready: (siap: () => void) => void;
-	execute: (siteKey: string, opsi: { action: string }) => Promise<string>;
+	render: (wadah: HTMLElement, opsi: OpsiRender) => number;
+	reset: (idWidget?: number) => void;
 };
 
 declare global {
@@ -39,21 +51,31 @@ export function recaptchaAktif(): boolean {
 	return SITE_KEY !== '';
 }
 
+export function siteKeyRecaptcha(): string {
+	return SITE_KEY;
+}
+
 /** Janji pemuatan skrip; dipakai bersama supaya tidak dimuat dua kali. */
 let pemuatan: Promise<Grecaptcha> | null = null;
 
-function muat(): Promise<Grecaptcha> {
+/**
+ * Muat skrip Google, selesai setelah `grecaptcha` siap dipakai.
+ *
+ * `render=explicit` dipakai supaya Google tidak menggambar sendiri kotak pada
+ * elemen ber-class `g-recaptcha` yang kebetulan ada di halaman; komponen React
+ * yang memutuskan kapan dan di mana kotaknya muncul, jadi ia perlu memanggil
+ * `grecaptcha.render` sendiri. `hl=id` menyamakan bahasa kotaknya dengan panel.
+ */
+export function muatRecaptcha(): Promise<Grecaptcha> {
 	if (pemuatan) {
 		return pemuatan;
 	}
 
 	pemuatan = new Promise<Grecaptcha>((selesai, gagal) => {
-		if (window.grecaptcha) {
+		if (window.grecaptcha?.render) {
 			selesai(window.grecaptcha);
 			return;
 		}
-
-		const adaSkrip = document.getElementById(ID_SKRIP) as HTMLScriptElement | null;
 
 		const tunggu = () => {
 			if (!window.grecaptcha) {
@@ -62,9 +84,11 @@ function muat(): Promise<Grecaptcha> {
 			}
 
 			// `ready` menunggu inisialisasi internal Google selesai; memanggil
-			// `execute` sebelum itu melempar.
+			// `render` sebelum itu melempar.
 			window.grecaptcha.ready(() => selesai(window.grecaptcha as Grecaptcha));
 		};
+
+		const adaSkrip = document.getElementById(ID_SKRIP) as HTMLScriptElement | null;
 
 		if (adaSkrip) {
 			adaSkrip.addEventListener('load', tunggu);
@@ -74,7 +98,7 @@ function muat(): Promise<Grecaptcha> {
 
 		const skrip = document.createElement('script');
 		skrip.id = ID_SKRIP;
-		skrip.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(SITE_KEY)}`;
+		skrip.src = 'https://www.google.com/recaptcha/api.js?render=explicit&hl=id';
 		skrip.async = true;
 		skrip.defer = true;
 		skrip.onload = tunggu;
@@ -91,47 +115,3 @@ function muat(): Promise<Grecaptcha> {
 
 	return pemuatan;
 }
-
-/**
- * Mulai mengunduh skrip lebih awal.
- *
- * Dipanggil saat halaman auth dibuka supaya unduhannya sudah selesai sebelum
- * orangnya menekan tombol kirim — tanpa ini, penantian ~1 detik itu terjadi
- * tepat setelah tombol ditekan dan terasa seperti panel yang menggantung.
- * Kegagalannya diabaikan di sini; yang menentukan tetap panggilan saat kirim.
- */
-export function siapkanRecaptcha(): void {
-	if (!recaptchaAktif()) {
-		return;
-	}
-
-	void muat().catch(() => {});
-}
-
-/**
- * Token untuk satu kali kirim formulir.
- *
- * `aksi` harus sama dengan yang diperiksa server (`masuk_panel`,
- * `lupa_password`, `password_baru`) — di sanalah token dicegah dipakai lintas
- * formulir.
- *
- * Mengembalikan `undefined` bila reCAPTCHA tidak dikonfigurasi; melempar bila
- * dikonfigurasi tetapi gagal, supaya pemanggilnya bisa menampilkan sebabnya
- * alih-alih mengirim permintaan yang sudah pasti ditolak server.
- */
-export async function ambilTokenRecaptcha(aksi: string): Promise<string | undefined> {
-	if (!recaptchaAktif()) {
-		return undefined;
-	}
-
-	const grecaptcha = await muat();
-
-	return grecaptcha.execute(SITE_KEY, { action: aksi });
-}
-
-/** Nama aksi, disatukan di sini supaya tidak pernah beda dengan sisi server. */
-export const AKSI_RECAPTCHA = {
-	masuk: 'masuk_panel',
-	lupaPassword: 'lupa_password',
-	passwordBaru: 'password_baru'
-} as const;

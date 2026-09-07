@@ -38,10 +38,10 @@ class AuthController extends Controller
                     ...(config('ppid.akun.recaptcha_aktif') ? ['required'] : ['nullable']),
                     'string',
                     'max:5000',
-                    new RecaptchaBenar('masuk_panel', $request),
+                    new RecaptchaBenar($request),
                 ],
             ], [
-                'recaptcha_token.required' => 'Verifikasi keamanan belum selesai. Muat ulang halaman lalu coba lagi.',
+                'recaptcha_token.required' => 'Centang dulu kotak "Saya bukan robot".',
                 'email.required' => 'Email wajib diisi.',
                 'email.email' => 'Format email tidak sah.',
                 'password.required' => 'Kata sandi wajib diisi.',

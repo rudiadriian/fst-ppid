@@ -71,7 +71,6 @@ class AuthKeamananTest extends TestCase
         config([
             'ppid.akun.recaptcha_aktif' => true,
             'ppid.akun.recaptcha_secret_key' => 'rahasia-uji',
-            'ppid.akun.recaptcha_skor_min' => 0.7,
         ]);
 
         Http::fake(['www.google.com/recaptcha/api/siteverify' => Http::response($jawaban)]);
@@ -79,7 +78,7 @@ class AuthKeamananTest extends TestCase
 
     public function test_recaptcha_wajib_saat_dinyalakan(): void
     {
-        $this->siapkanRecaptcha(['success' => true, 'score' => 0.9, 'action' => 'masuk_panel']);
+        $this->siapkanRecaptcha(['success' => true]);
 
         $this->postJson('/api/v1/auth/sign-in', [
             'email' => 'siapa@contoh.test',
@@ -87,11 +86,11 @@ class AuthKeamananTest extends TestCase
         ])->assertStatus(422)->assertJsonFragment(['type' => 'recaptcha_token']);
     }
 
-    public function test_token_dengan_skor_tinggi_diterima(): void
+    public function test_token_yang_diterima_google_meloloskan(): void
     {
         $user = $this->petugas();
 
-        $this->siapkanRecaptcha(['success' => true, 'score' => 0.9, 'action' => 'masuk_panel']);
+        $this->siapkanRecaptcha(['success' => true, 'hostname' => 'adm-ppid.foodstation.co.id']);
 
         $this->postJson('/api/v1/auth/sign-in', [
             'email' => $user->email,
@@ -100,27 +99,17 @@ class AuthKeamananTest extends TestCase
         ])->assertOk();
     }
 
-    public function test_skor_di_bawah_ambang_ditolak(): void
+    public function test_token_yang_ditolak_google_menggagalkan_masuk(): void
     {
         $user = $this->petugas();
 
-        $this->siapkanRecaptcha(['success' => true, 'score' => 0.3, 'action' => 'masuk_panel']);
+        // Bentuk jawaban Google untuk token kedaluwarsa atau sudah dipakai.
+        $this->siapkanRecaptcha([
+            'success' => false,
+            'error-codes' => ['timeout-or-duplicate'],
+        ]);
 
-        // Password benar; yang menolak semata-mata skornya.
-        $this->postJson('/api/v1/auth/sign-in', [
-            'email' => $user->email,
-            'password' => $this->password,
-            'recaptcha_token' => 'token-uji',
-        ])->assertStatus(422)->assertJsonFragment(['type' => 'recaptcha_token']);
-    }
-
-    public function test_token_untuk_aksi_lain_ditolak(): void
-    {
-        $user = $this->petugas();
-
-        // Token sah, skor tinggi, tetapi dipanen dari formulir lupa password.
-        $this->siapkanRecaptcha(['success' => true, 'score' => 0.9, 'action' => 'lupa_password']);
-
+        // Password benar; yang menolak semata-mata captcha-nya.
         $this->postJson('/api/v1/auth/sign-in', [
             'email' => $user->email,
             'password' => $this->password,

@@ -46,10 +46,10 @@ class PasswordResetController extends Controller
                     ...(config('ppid.akun.recaptcha_aktif') ? ['required'] : ['nullable']),
                     'string',
                     'max:5000',
-                    new RecaptchaBenar('lupa_password', $request),
+                    new RecaptchaBenar($request),
                 ],
             ], [
-                'recaptcha_token.required' => 'Verifikasi keamanan belum selesai. Muat ulang halaman lalu coba lagi.',
+                'recaptcha_token.required' => 'Centang dulu kotak "Saya bukan robot".',
                 'email.required' => 'Email wajib diisi.',
                 'email.email' => 'Format email tidak sah.',
             ]);
@@ -166,10 +166,10 @@ class PasswordResetController extends Controller
                     ...(config('ppid.akun.recaptcha_aktif') ? ['required'] : ['nullable']),
                     'string',
                     'max:5000',
-                    new RecaptchaBenar('password_baru', $request),
+                    new RecaptchaBenar($request),
                 ],
             ], [
-                'recaptcha_token.required' => 'Verifikasi keamanan belum selesai. Muat ulang halaman lalu coba lagi.',
+                'recaptcha_token.required' => 'Centang dulu kotak "Saya bukan robot".',
                 'password.required' => 'Password baru wajib diisi.',
                 'password.confirmed' => 'Ulangan password tidak sama.',
                 'token.required' => 'Tautan tidak lengkap. Buka kembali tautan dari email Anda.',

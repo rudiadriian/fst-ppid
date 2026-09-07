@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,8 +9,8 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Link from '@fuse/core/Link';
 import { authMintaResetPassword } from '@auth/authApi';
 import { bacaGalat } from '@auth/services/jwt/utils/pesanGalat';
-import { AKSI_RECAPTCHA, ambilTokenRecaptcha, siapkanRecaptcha } from '@auth/services/jwt/utils/recaptcha';
-import CatatanRecaptcha from '@auth/services/jwt/components/CatatanRecaptcha';
+import { recaptchaAktif } from '@auth/services/jwt/utils/recaptcha';
+import KolomRecaptcha from '@auth/services/jwt/components/KolomRecaptcha';
 
 const schema = z.object({
 	email: z.string().email('Format email tidak sah').nonempty('Email wajib diisi')
@@ -28,6 +28,8 @@ type FormType = z.infer<typeof schema>;
 function FormLupaPassword() {
 	const [terkirim, setTerkirim] = useState<string | null>(null);
 	const [spanduk, setSpanduk] = useState<{ pesan: string; jaringan: boolean } | null>(null);
+	const [tokenRecaptcha, setTokenRecaptcha] = useState<string | null>(null);
+	const [recaptchaVersi, setRecaptchaVersi] = useState(0);
 
 	const { control, formState, handleSubmit, setError } = useForm<FormType>({
 		mode: 'onChange',
@@ -37,31 +39,13 @@ function FormLupaPassword() {
 
 	const { isValid, isSubmitting, errors } = formState;
 
-	useEffect(() => {
-		siapkanRecaptcha();
-	}, []);
-
 	async function onSubmit(formData: FormType) {
 		setSpanduk(null);
-
-		let token: string | undefined;
-
-		try {
-			token = await ambilTokenRecaptcha(AKSI_RECAPTCHA.lupaPassword);
-		} catch {
-			// Tanpa token, permintaannya pasti ditolak server dan tetap terhitung
-			// oleh pembatas jeda kirim tautan. Lebih baik tidak dikirim.
-			setSpanduk({
-				pesan: 'Verifikasi keamanan tidak dapat dimuat. Periksa koneksi Anda lalu coba lagi.',
-				jaringan: true
-			});
-			return;
-		}
 
 		try {
 			const hasil = await authMintaResetPassword({
 				email: formData.email,
-				recaptcha_token: token
+				recaptcha_token: tokenRecaptcha ?? undefined
 			});
 
 			setTerkirim(hasil.message);
@@ -74,9 +58,11 @@ function FormLupaPassword() {
 				}
 			});
 
-			// Penolakan reCAPTCHA tidak punya isian untuk ditempeli, jadi
-			// spanduk inilah satu-satunya tempat pesannya bisa terbaca.
 			setSpanduk({ pesan: galat.ringkasan, jaringan: galat.jaringan });
+
+			// Token sudah dibuang Google saat ditukar server.
+			setTokenRecaptcha(null);
+			setRecaptchaVersi((versi) => versi + 1);
 		}
 	}
 
@@ -136,11 +122,16 @@ function FormLupaPassword() {
 				)}
 			/>
 
+			<KolomRecaptcha
+				onTokenChange={setTokenRecaptcha}
+				muatUlang={recaptchaVersi}
+			/>
+
 			<Button
 				variant="contained"
 				color="secondary"
 				className="mt-2 w-full"
-				disabled={!isValid || isSubmitting}
+				disabled={!isValid || isSubmitting || (recaptchaAktif() && !tokenRecaptcha)}
 				type="submit"
 				size="large"
 			>
@@ -155,8 +146,6 @@ function FormLupaPassword() {
 					Kembali ke halaman Masuk
 				</Link>
 			</div>
-
-			<CatatanRecaptcha />
 		</form>
 	);
 }

@@ -7,13 +7,15 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Google reCAPTCHA v3 untuk formulir masuk dan pemulihan password panel admin.
+ * Google reCAPTCHA v2 (kotak centang) untuk formulir masuk dan pemulihan
+ * password panel admin.
  *
- * Menggantikan captcha gambar buatan sendiri yang dipakai sebelumnya. v3 tidak
- * menampilkan teka-teki apa pun: peramban menjalankan skrip Google, mendapat
- * token sekali pakai, lalu server menukarnya ke `siteverify` dan menerima skor
- * 0.0–1.0 — makin tinggi makin besar keyakinan Google bahwa yang mengisi adalah
- * manusia. Tidak ada "benar/salah" seperti pada kode gambar; yang ada ambang.
+ * Sebelumnya panel ini memakai v3, yang menilai perilaku halaman diam-diam dan
+ * mengembalikan skor. v2 bekerja lain: orangnya mencentang "Saya bukan robot",
+ * kadang diminta memilih gambar, dan yang sampai ke server adalah token yang
+ * membuktikan tantangan itu terlewati. Jawaban Google karena itu tidak lagi
+ * memuat `score` maupun `action` — hanya berhasil atau tidak, jadi tidak ada
+ * ambang yang perlu disetel dan tidak ada pemisahan token antar-formulir.
  *
  * **Sengaja gagal tertutup.** Bila Google tidak terjangkau, token ditolak dan
  * orangnya tidak bisa masuk. Alternatifnya — meloloskan permintaan saat
@@ -42,13 +44,9 @@ class Recaptcha
     /**
      * Tukar token ke Google, lalu nilai jawabannya.
      *
-     * `$aksi` harus sama dengan nama aksi yang dipakai peramban saat meminta
-     * token. Tanpa pemeriksaan ini, token yang dipanen dari satu formulir bisa
-     * dipakai ulang di formulir lain yang ambangnya lebih longgar.
-     *
      * @return array{lolos: bool, alasan: string|null}
      */
-    public static function periksa(?string $token, string $aksi, ?string $ip = null): array
+    public static function periksa(?string $token, ?string $ip = null): array
     {
         if (!self::aktif()) {
             return ['lolos' => true, 'alasan' => null];
@@ -66,7 +64,7 @@ class Recaptcha
         }
 
         if (blank($token)) {
-            return ['lolos' => false, 'alasan' => self::pesanUmum()];
+            return ['lolos' => false, 'alasan' => 'Centang dulu kotak "Saya bukan robot".'];
         }
 
         try {
@@ -81,7 +79,6 @@ class Recaptcha
                 ->json();
         } catch (Throwable $e) {
             Log::warning('Verifikasi reCAPTCHA gagal dihubungi.', [
-                'aksi' => $aksi,
                 'galat' => $e->getMessage(),
             ]);
 
@@ -90,49 +87,19 @@ class Recaptcha
 
         if (!is_array($jawaban) || ($jawaban['success'] ?? false) !== true) {
             Log::info('Token reCAPTCHA ditolak Google.', [
-                'aksi' => $aksi,
                 'kode' => $jawaban['error-codes'] ?? null,
             ]);
 
-            return ['lolos' => false, 'alasan' => self::pesanUmum()];
-        }
-
-        // Aksi dikirim balik oleh Google persis seperti yang diminta peramban.
-        if (($jawaban['action'] ?? null) !== $aksi) {
-            Log::info('Aksi reCAPTCHA tidak cocok.', [
-                'diminta' => $aksi,
-                'diterima' => $jawaban['action'] ?? null,
-            ]);
-
-            return ['lolos' => false, 'alasan' => self::pesanUmum()];
-        }
-
-        $skor = (float) ($jawaban['score'] ?? 0);
-
-        if ($skor < self::skorMinimum()) {
-            Log::info('Skor reCAPTCHA di bawah ambang.', [
-                'aksi' => $aksi,
-                'skor' => $skor,
-                'ambang' => self::skorMinimum(),
-            ]);
-
-            return [
-                'lolos' => false,
-                'alasan' => 'Permintaan Anda terdeteksi sebagai aktivitas tidak wajar. Muat ulang halaman lalu coba lagi.',
-            ];
+            /*
+             * Satu pesan untuk token kedaluwarsa, sudah dipakai, dan dipalsukan:
+             * ketiganya berujung pada tindakan yang sama — centang ulang.
+             * Membedakannya hanya memberi penyerang umpan balik untuk menyetel
+             * serangan.
+             */
+            return ['lolos' => false, 'alasan' => 'Verifikasi keamanan kedaluwarsa. Centang ulang kotaknya lalu coba lagi.'];
         }
 
         return ['lolos' => true, 'alasan' => null];
-    }
-
-    /**
-     * Satu pesan untuk token hilang, kedaluwarsa, sudah dipakai, dan aksi tidak
-     * cocok: keempatnya berujung pada tindakan yang sama — muat ulang halaman.
-     * Membedakannya hanya memberi penyerang umpan balik untuk menyetel serangan.
-     */
-    private static function pesanUmum(): string
-    {
-        return 'Verifikasi keamanan kedaluwarsa. Muat ulang halaman lalu coba lagi.';
     }
 
     private static function rahasia(): ?string
@@ -140,11 +107,6 @@ class Recaptcha
         $nilai = config('ppid.akun.recaptcha_secret_key');
 
         return is_string($nilai) && $nilai !== '' ? $nilai : null;
-    }
-
-    private static function skorMinimum(): float
-    {
-        return (float) config('ppid.akun.recaptcha_skor_min', 0.7);
     }
 
     private static function timeout(): int

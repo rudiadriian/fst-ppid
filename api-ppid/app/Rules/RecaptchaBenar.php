@@ -8,10 +8,9 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\Request;
 
 /**
- * Token reCAPTCHA v3 harus lolos pemeriksaan Google untuk aksi yang dimaksud.
+ * Token reCAPTCHA v2 harus lolos pemeriksaan Google.
  *
- * Menggantikan `CaptchaBenar`. Bedanya bukan hanya layanan yang dipakai: aturan
- * ini memanggil jaringan luar, jadi ia sengaja dipasang pada isian yang
+ * Aturan ini memanggil jaringan luar, jadi sengaja dipasang pada isian yang
  * divalidasi paling akhir — tidak ada gunanya menukar token ke Google kalau
  * emailnya saja belum berbentuk email.
  *
@@ -20,17 +19,14 @@ use Illuminate\Http\Request;
  */
 class RecaptchaBenar implements ValidationRule
 {
-    public function __construct(
-        private readonly string $aksi,
-        private readonly ?Request $request = null,
-    ) {
+    public function __construct(private readonly ?Request $request = null)
+    {
     }
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $hasil = Recaptcha::periksa(
             is_string($value) ? $value : null,
-            $this->aksi,
             $this->request?->ip(),
         );
 
