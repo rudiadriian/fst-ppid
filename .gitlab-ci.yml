@@ -19,7 +19,6 @@
 # Variabel yang harus diisi di Settings -> CI/CD -> Variables:
 #   VITE_MAP_KEY (Google Maps — kuotanya bisa dihabiskan orang lain, jadi
 #   tidak ditaruh di repo)
-#   PPID_RECAPTCHA_SECRET_KEY (Masked; dipasang ke .env server oleh deploy:api)
 #
 # JANGAN centang Protected kecuali branch main memang terdaftar sebagai
 # protected branch. Variabel Protected tidak diekspos ke job pada branch yang
@@ -32,11 +31,7 @@
 # be-ppid/.env.production di dalam repo. Sebelumnya ketiganya variabel CI,
 # dan build:adm dua kali menghasilkan artefak rusak karena variabelnya tidak
 # terekspos ke job tanpa satu pun peringatan.
-#
-# `.env` Laravel hidup di server dan tidak ikut rsync — itulah sebabnya setiap
-# rsync meng-exclude-nya. Satu-satunya pengecualian ada di deploy:api, yang
-# menyetel baris PPID_RECAPTCHA_* lewat deploy/pasang-env-recaptcha.sh;
-# selebihnya berkas itu milik server sepenuhnya.
+
 
 stages:
   - build
@@ -95,25 +90,18 @@ deploy:api:
     - sudo -u www-data HOME=/tmp $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
     - sudo chown -R fsit:www-data storage bootstrap/cache
     - sudo chmod -R 2775 storage bootstrap/cache
-    # Pasang kunci reCAPTCHA ke .env server dari variabel CI. Menyunting hanya
-    # baris yang disebutnya, dan membiarkan .env apa adanya bila variabelnya
-    # tidak sampai — catatan lengkapnya ada di dalam skripnya.
-    - bash "$CI_PROJECT_DIR/deploy/pasang-env-recaptcha.sh" .
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan migrate --force
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan config:cache
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan route:cache
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan view:cache
     # Menggagalkan deploy bila ada konfigurasi wajib yang belum dipasang di
-    # server. `.env` tidak disentuh pipeline, jadi variabel baru yang datang
-    # bersama rilis harus diisi tangan — dan langkah itu mudah terlewat.
-    # Tanpa pemeriksaan ini, akibatnya baru terlihat sebagai penolakan masuk
-    # yang tidak bisa dijelaskan dari log mana pun.
+    # server. `.env` sepenuhnya milik server (diisi manual), pipeline tidak
+    # pernah menyentuhnya — command ini hanya memvalidasi, bukan mengisi.
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan ppid:periksa-konfigurasi
   environment:
     name: production/api
     url: https://api-ppid.foodstation.co.id
   rules:
-    # Rilis produksi selalu dipicu manusia, tidak otomatis saat push.
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
 
@@ -127,8 +115,6 @@ deploy:fe:
     - sudo -u www-data HOME=/tmp $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction
     - sudo chown -R fsit:www-data storage bootstrap/cache
     - sudo chmod -R 2775 storage bootstrap/cache
-    # TIDAK ADA `artisan migrate` di sini. Skema database dimiliki api-ppid saja
-    # — folder migrations fe-ppid sengaja kosong.
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan config:cache
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan route:cache
     - sudo -u www-data HOME=/tmp $PHP_BIN artisan view:cache
