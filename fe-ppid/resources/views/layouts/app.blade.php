@@ -23,7 +23,8 @@
         })();
     </script>
 
-    {{-- Memuat Tailwind CSS melalui Vite --}}
+    {{-- Tailwind CSS melalui Vite. Berkas JS-nya dimuat di bawah, setelah
+         pendaftar store tema. --}}
     @vite('resources/css/app.css')
 
     {{-- Font Eksternal: Plus Jakarta Sans (korporat modern) + Poppins fallback --}}
@@ -44,7 +45,21 @@
             });
         });
     </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Alpine dari bundel sendiri, bukan CDN.
+
+         Berkas CDN `alpinejs/dist/cdn.min.js` tidak membawa plugin apa pun,
+         sedangkan situs ini memakai `x-collapse` di header, FAQ, dan Standar
+         Layanan — Alpine menolaknya dengan peringatan di console dan panelnya
+         terbuka-tutup tanpa animasi. Bundel `resources/js/app.js` sudah
+         memasang plugin Collapse (`Alpine.plugin(collapse)`), tetapi sebelumnya
+         tidak pernah ikut dimuat halaman ini.
+
+         Sekaligus melepas ketergantungan situs publik pada CDN pihak ketiga.
+
+         Dimuat setelah `<script>` pendaftar store tema di atas: berkas Vite
+         berupa modul (ditunda sampai dokumen selesai diurai), jadi pendengar
+         `alpine:init` sudah terdaftar sebelum Alpine dijalankan. --}}
+    @vite('resources/js/app.js')
 
     <style>
         /* Palet mengikuti referensi desain: hijau hutan + oranye + krem. */

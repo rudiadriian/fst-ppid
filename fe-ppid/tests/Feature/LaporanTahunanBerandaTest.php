@@ -81,6 +81,35 @@ class LaporanTahunanBerandaTest extends TestCase
          * berbeda — halamannya tampil wajar, tombolnya diam saja.
          */
         $this->assertStringContainsString('@buka-dialog-lihat-unduh.window', $html);
+        $this->assertStringContainsString('Hanya Lihat', $html);
+    }
+
+    /**
+     * Tombol sampulnya harus berada di dalam komponen Alpine.
+     *
+     * `$dispatch` hanya tersedia di dalam `x-data`. Tanpa itu tombolnya diam
+     * saja saat diklik — markupnya tetap lengkap dan halamannya tidak
+     * menunjukkan galat apa pun, jadi tidak ada yang menangkapnya selain
+     * pemeriksaan ini.
+     */
+    public function test_tombol_sampul_berada_di_dalam_komponen_alpine(): void
+    {
+        $this->laporan();
+
+        $html = $this->get(route('ppid.home'))->assertOk()->getContent();
+
+        $section = strpos($html, '<section id="laporan-tahunan"');
+        $tombol = strpos($html, "\$dispatch('buka-dialog-lihat-unduh'");
+
+        $this->assertNotFalse($section, 'Section Laporan Tahunan tidak dirender.');
+        $this->assertNotFalse($tombol, 'Tombol sampul tidak dirender.');
+
+        // `x-data` harus berada pada pembuka section itu sendiri, sebelum
+        // tombolnya — kalau tidak, tombolnya berada di luar komponen.
+        $pembuka = substr($html, $section, strpos($html, '>', $section) - $section);
+
+        $this->assertStringContainsString('x-data', $pembuka);
+        $this->assertLessThan($tombol, $section);
     }
 
     /** Label section dua baris: nama laporan, lalu nama perusahaan. */

@@ -281,7 +281,12 @@
          be-ppid. Section-nya hilang sama sekali bila modulnya masih kosong —
          kartu sampul tanpa gambar tidak menyampaikan apa pun. --}}
     @if (!empty($laporanTahunan))
-        <section id="laporan-tahunan" class="py-16 lg:py-24 bg-[#FAF6EC] dark:bg-[#082217]">
+        {{-- `x-data` kosong bukan hiasan: `$dispatch` hanya tersedia di dalam
+             komponen Alpine. Tanpa ini tombol sampulnya diam saja — dialognya
+             tidak pernah menerima event, dan tidak ada pesan galat yang
+             terlihat di halaman. Daftar Informasi Publik tidak kena karena
+             tombolnya kebetulan berada di dalam `x-data` kotak carinya. --}}
+        <section id="laporan-tahunan" x-data class="py-16 lg:py-24 bg-[#FAF6EC] dark:bg-[#082217]">
             <div class="max-w-7xl mx-auto px-6 lg:px-8">
                 <div class="text-center max-w-3xl mx-auto mb-12">
                     <span class="text-sm font-bold text-[#10462F] uppercase tracking-widest">{{ __('Publikasi Perusahaan') }}</span>

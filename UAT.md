@@ -43,3 +43,39 @@ Berikut dibawah ini adalah poin-poin dari hasil testing dari user yang mana perl
       Penyebabnya `NotifikasiAdmin::permohonanBaru()` di fe-ppid: muatan notifikasinya menyebut `$keberatan->kode_keberatan`, variabel yang tidak ada di method itu (tersalin dari `keberatanBaru()`). Galatnya lahir saat argumen disusun — di luar jangkauan try/catch di dalam `kirim()` — sehingga sampai ke pemohon sebagai 500 padahal permohonannya sudah tersimpan dan bernomor. Kolom itu dibuang.
       Pagar tambahan: di PermohonanController dan KeberatanController, pemberitahuan setelah simpan (lonceng panel + surel tanda terima) dibungkus try/catch — pengiriman yang sudah tersimpan tidak boleh lagi berubah jadi 500 hanya karena pekerjaan ikutannya gagal.
       Uji baru: `PortalPermohonanKirimTest` (kirim permohonan, dua kiriman berturut-turut, pemohon belum terverifikasi, kirim keberatan) dan `NotifikasiAdminTest::test_notifikasi_permohonan_baru_tersusun_utuh`.
+
+4. [x] ada error di fe-ppid :
+    - [x] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse <div x-show=​"open_mobile" x-collapse.duration.300ms class=​"lg:​hidden bg-white border-t border-gray-100 pb-5 dark:​bg-[#071A12]​ dark:​border-white/​10" style=​"display:​none">​…​</div>​
+    A @ cdn.min.js:5
+    cdn.min.js:5 Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse <div x-show=​"open" x-collapse style=​"display:​none">​…​</div>​
+    A @ cdn.min.js:5
+    cdn.min.js:5 Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse <div x-show=​"open" x-collapse style=​"display:​none">​…​</div>​
+    A @ cdn.min.js:5
+    cdn.min.js:5 Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse <div x-show=​"open" x-collapse style=​"display:​none">​…​</div>​
+    A @ cdn.min.js:5
+    cdn.min.js:5 Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse <div x-show=​"open" x-collapse style=​"display:​none">​…​</div>​
+    A @ cdn.min.js:5
+    cdn.min.js:5 Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse <div x-show=​"open" x-collapse style=​"display:​none">​…​</div>​
+    A @ cdn.min.js:5
+    cdn.min.js:5 Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse <div x-show=​"open" x-collapse style=​"display:​none">​…​</div>​
+    A @ cdn.min.js:5
+    cdn.min.js:5 Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse <div x-show=​"open" x-collapse style=​"display:​none">​…​</div>​
+    A @ cdn.min.js:5
+    cdn.min.js:5 Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse <div x-show=​"open" x-collapse style=​"display:​none">​…​</div>​
+    A @ cdn.min.js:5
+    cdn.min.js:5 Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse <div x-show=​"open" x-collapse style=​"display:​none">​…​</div>​
+    A @ cdn.min.js:5
+    accessibility.js:1 An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+    GetDefaultProp @ accessibility.js:1
+    accessibility.js:1 [IND] You are running  Windows  Operating system,  Chrome  browser, version:  152
+    accessibility.js:1 [IND] Version 5.3.1
+    accessibility.js:1 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://www.google.com') does not match the recipient window's origin ('https://ppid.foodstation.co.id').
+    postFrames @ accessibility.js:1
+    accessibility.js:1 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://www.google.com') does not match the recipient window's origin ('https://ppid.foodstation.co.id').
+
+      Penyebabnya `resources/views/layouts/app.blade.php`: Alpine dimuat dari `cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js`, dan berkas CDN itu tidak membawa plugin apa pun. Padahal `x-collapse` dipakai di header (menu ponsel + 4 submenu), FAQ beranda, halaman FAQ, dan Standar Layanan.
+      Bundel sendiri sebenarnya sudah benar — `resources/js/app.js` memanggil `Alpine.plugin(collapse)` — tetapi layout hanya memuat `@vite('resources/css/app.css')`, jadi berkas JS-nya tidak pernah ikut dimuat halaman mana pun.
+      Diperbaiki: baris CDN diganti `@vite('resources/js/app.js')`, ditaruh setelah `<script>` pendaftar store tema supaya pendengar `alpine:init` sudah siap sebelum Alpine jalan. Situs publik sekaligus lepas dari CDN pihak ketiga. CI sudah membangun asetnya (`build:fe-assets`), jadi tidak ada langkah deploy baru.
+      Diperiksa pada render beranda: `cdn.jsdelivr` 0, bundel `build/assets/app-*.js` termuat, `x-collapse` 10 tempat. Uji baru `AsetAlpineTest`.
+
+      Sisa pesan di console berasal dari widget aksesibilitas EqualWeb (`accessibility.js`, pihak ketiga, versi 5.3.1 terkunci SRI): peringatan sandbox iframe dan `postMessage` ke `https://www.google.com`. Keduanya lahir di dalam skrip mereka, bukan kode kita — tidak ada yang bisa diperbaiki dari sisi ini selain melepas widgetnya.
