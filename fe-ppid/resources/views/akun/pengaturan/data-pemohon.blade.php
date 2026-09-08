@@ -13,13 +13,20 @@
             default => 'bg-amber-50 border-amber-100 text-amber-900',
         };
 
+        $terverifikasi = $pemohon->dataTerverifikasi();
+        $menunggu = $pemohon->verifikasiMenunggu();
+
         /*
-         * Data yang sudah disetujui petugas dikunci: permohonan yang berjalan
-         * memakai identitas itu sebagai dasar verifikasinya. Halaman berubah
-         * jadi tampilan baca saja, dan berkas KTP hanya bisa dilihat.
-         * Penguncian sebenarnya tetap di server (PengaturanController).
+         * Data dikunci sejak berkas dikirim, bukan hanya setelah disetujui.
+         * Yang sudah disetujui dikunci karena permohonan yang berjalan memakai
+         * identitas itu sebagai dasar verifikasinya; yang masih menunggu
+         * dikunci karena berkas yang sedang diperiksa tidak boleh berubah di
+         * tengah jalan — dan pengiriman berulang hanya membanjiri lonceng
+         * notifikasi petugas di be-ppid. Halaman berubah jadi tampilan baca
+         * saja, berkas KTP hanya bisa dilihat. Penguncian sebenarnya tetap di
+         * server (PengaturanController).
          */
-        $terkunci = $pemohon->dataTerverifikasi();
+        $terkunci = $terverifikasi || $menunggu;
         $kelasBaca = $fsInput.' opacity-70 cursor-not-allowed';
     @endphp
 
@@ -84,31 +91,50 @@
             </div>
 
             <p class="mt-6 text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-white/10 pt-4">
-                {{ __('Data Pemohon Anda sudah terverifikasi sehingga tidak dapat diubah sendiri. Hubungi petugas PPID bila ada data yang perlu diperbaiki.') }}
+                @if ($terverifikasi)
+                    {{ __('Data Pemohon Anda sudah terverifikasi sehingga tidak dapat diubah sendiri. Hubungi petugas PPID bila ada data yang perlu diperbaiki.') }}
+                @else
+                    {{ __('Berkas Anda sedang diperiksa petugas PPID sehingga data belum dapat diubah. Isian terbuka kembali bila petugas menolak berkas ini.') }}
+                @endif
             </p>
         </div>
 
     @else
 
+    @php
+        // Kosong selama pemohon belum pernah memilih sendiri — nilai lama yang
+        // di luar daftar diperlakukan sama dengan belum memilih.
+        $jenisTerpilih = old('jenis_pemohon', in_array($pemohon->jenis_pemohon, array_keys(\App\Models\Pemohon::JENIS), true) ? $pemohon->jenis_pemohon : '');
+    @endphp
+
     <div class="bg-white dark:bg-[#0B2A1D] rounded-2xl border border-gray-100 dark:border-white/10 p-6 sm:p-8">
         <form method="POST" action="{{ route('akun.data-pemohon.update') }}" enctype="multipart/form-data" class="space-y-6"
-              x-data="{ jenis: '{{ old('jenis_pemohon', in_array($pemohon->jenis_pemohon, array_keys(\App\Models\Pemohon::JENIS), true) ? $pemohon->jenis_pemohon : 'perorangan') }}' }">
+              x-data="{ jenis: '{{ $jenisTerpilih }}' }">
             @csrf
             @method('PUT')
 
             <div>
                 <label for="jenis_pemohon" class="{{ $fsLabel }}">{{ __('Jenis Pemohon') }} <span class="text-red-600">*</span></label>
+                {{-- Bukaan awalnya "Pilih Jenis Pemohon", bukan salah satu
+                     pilihan asli: jenis pemohon menentukan wajib tidaknya Nama
+                     Lembaga, jadi harus dipilih sadar oleh pemohon. Pilihan
+                     awal itu `disabled` supaya tidak bisa dipilih balik, dan
+                     `selected` disetel dari server supaya tampilannya benar
+                     bahkan sebelum Alpine jalan. --}}
                 <select id="jenis_pemohon" name="jenis_pemohon" required x-model="jenis" class="{{ $fsInput }}">
+                    <option value="" disabled @selected($jenisTerpilih === '')>{{ __('Pilih Jenis Pemohon') }}</option>
                     @foreach (\App\Models\Pemohon::JENIS as $nilai => $label)
-                        <option value="{{ $nilai }}">{{ __($label) }}</option>
+                        <option value="{{ $nilai }}" @selected($jenisTerpilih === $nilai)>{{ __($label) }}</option>
                     @endforeach
                 </select>
             </div>
 
-            <div x-show="jenis !== 'perorangan'" x-cloak>
+            {{-- Selama jenis belum dipilih isian ini ikut disembunyikan; kalau
+                 tidak, field wajib yang tersembunyi menahan submit. --}}
+            <div x-show="jenis !== '' && jenis !== 'perorangan'" x-cloak>
                 <label for="nama_lembaga" class="{{ $fsLabel }}">{{ __('Nama Lembaga / Organisasi / Kelompok') }} <span class="text-red-600">*</span></label>
                 <input id="nama_lembaga" name="nama_lembaga" type="text" value="{{ old('nama_lembaga', $pemohon->nama_lembaga) }}"
-                       :required="jenis !== 'perorangan'" class="{{ $fsInput }}">
+                       :required="jenis !== '' && jenis !== 'perorangan'" class="{{ $fsInput }}">
             </div>
 
             {{-- Nama, email, dan telepon mengikuti akun; tidak diketik ulang. --}}
@@ -134,7 +160,13 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                     <label for="nik" class="{{ $fsLabel }}">{{ __('NIK / Nomor KTP') }} <span class="text-red-600">*</span></label>
-                    <input id="nik" name="nik" type="text" inputmode="numeric" value="{{ old('nik', $pemohon->nik) }}" required class="{{ $fsInput }}">
+                    {{-- Hanya angka, paling panjang 16 digit. Ketikan disaring
+                         di tempat supaya paste dan keypad ponsel ikut terikat;
+                         `maxlength` saja tidak menahan huruf. --}}
+                    <input id="nik" name="nik" type="text" inputmode="numeric" pattern="[0-9]{16}" minlength="16" maxlength="16"
+                           title="{{ __('Isi angka saja, tepat 16 digit.') }}"
+                           x-on:input="$el.value = $el.value.replace(/\D+/g, '').slice(0, 16)"
+                           value="{{ old('nik', $pemohon->nik) }}" required class="{{ $fsInput }}">
                 </div>
                 <div>
                     <label for="pekerjaan" class="{{ $fsLabel }}">{{ __('Pekerjaan') }} <span class="text-red-600">*</span></label>

@@ -118,12 +118,43 @@ class NotifikasiAdminTest extends TestCase
         ]);
 
         $kirim()->assertSessionHasNoErrors();
-        $kirim()->assertSessionHasNoErrors();
+
+        // Berkasnya sudah menunggu diperiksa: kiriman kedua ditolak di
+        // controller, jadi lonceng petugas tidak kebanjiran kiriman berulang.
+        $kirim()->assertSessionHasErrors('nik');
 
         $baris = $this->notifikasi($this->userLayanan, 'verifikasi_pemohon');
 
-        $this->assertCount(1, $baris, 'Kiriman kedua harus memperbarui baris yang sama, bukan menambah baris baru.');
+        $this->assertCount(1, $baris, 'Kiriman kedua tidak boleh menambah baris notifikasi baru.');
         $this->assertSame($pemohon->id, (int) $baris->first()->data['pemohon_id']);
+    }
+
+    public function test_kiriman_ulang_setelah_ditolak_memakai_baris_notifikasi_yang_sama(): void
+    {
+        Storage::fake('public');
+
+        $pemohon = $this->pemohon();
+
+        $kirim = fn () => $this->actingAs($pemohon, 'pemohon')->put(route('akun.data-pemohon.update'), [
+            'jenis_pemohon' => 'perorangan',
+            'nik' => '3175010101900091',
+            'pekerjaan' => 'Karyawan',
+            'alamat' => 'Jalan Uji Nomor 91',
+            'file_ktp' => UploadedFile::fake()->image('ktp.png'),
+        ]);
+
+        $kirim()->assertSessionHasNoErrors();
+
+        // Petugas menolak berkasnya — isian terbuka lagi untuk perbaikan.
+        $pemohon->forceFill(['status_verifikasi' => 'ditolak', 'jumlah_ditolak' => 1])->save();
+
+        $kirim()->assertSessionHasNoErrors();
+
+        $this->assertCount(
+            1,
+            $this->notifikasi($this->userLayanan, 'verifikasi_pemohon'),
+            'Perbaikan setelah ditolak harus memperbarui baris yang sama, bukan menambah baris baru.',
+        );
     }
 
     public function test_notifikasi_yang_sudah_dibaca_tidak_ditimpa(): void

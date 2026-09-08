@@ -79,6 +79,18 @@ class PengaturanController extends Controller
             ]);
         }
 
+        /*
+         * Berkas yang sedang diperiksa juga terkunci. Tanpa ini pemohon bisa
+         * menekan "Kirim untuk Verifikasi" berulang kali: datanya berubah di
+         * tengah pemeriksaan petugas, dan tiap kiriman menambah satu notifikasi
+         * baru di lonceng be-ppid. Isian terbuka lagi begitu petugas menolak.
+         */
+        if ($pemohon->verifikasiMenunggu()) {
+            throw ValidationException::withMessages([
+                'nik' => __('Berkas Anda sedang diperiksa petugas PPID sehingga data belum dapat diubah. Tunggu hasil pemeriksaan sebelum mengirim ulang.'),
+            ]);
+        }
+
         // Sudah ditolak sampai batas: pengiriman ulang ditutup di sisi server,
         // bukan hanya dengan menyembunyikan tombolnya.
         if ($pemohon->verifikasiDiblokir()) {
@@ -91,7 +103,9 @@ class PengaturanController extends Controller
 
         $data = $request->validate([
             'jenis_pemohon' => ['required', 'in:'.implode(',', array_keys(Pemohon::JENIS))],
-            'nik' => ['required', 'string', 'digits_between:8,30'],
+            // NIK KTP selalu 16 digit angka — bukan "paling banyak 16", jadi
+            // 12 digit pun ditolak, bukan diterima apa adanya.
+            'nik' => ['required', 'string', 'digits:16'],
             'pekerjaan' => ['required', 'string', 'max:100'],
             'alamat' => ['required', 'string', 'max:500'],
             'nama_lembaga' => ['nullable', 'required_unless:jenis_pemohon,perorangan', 'string', 'max:255'],
@@ -120,7 +134,12 @@ class PengaturanController extends Controller
         // di lonceng notifikasi be-ppid, bukan sekadar pendaftaran akunnya.
         NotifikasiAdmin::verifikasiPemohonMenunggu($pemohon);
 
-        return back()->with('status', __('Data Pemohon terkirim dan menunggu pemeriksaan petugas PPID. Pemeriksaan memerlukan waktu paling lama :hari hari kerja.', [
+        /*
+         * Kembali ke Dashboard, bukan ke formulirnya: formulir sudah terkunci
+         * setelah kiriman ini, jadi memuat ulang halaman yang sama hanya
+         * menyuguhkan tombol kirim yang tidak lagi berfungsi.
+         */
+        return redirect()->route('akun.dashboard')->with('status', __('Data Pemohon terkirim dan menunggu pemeriksaan petugas PPID. Pemeriksaan memerlukan waktu paling lama :hari hari kerja.', [
             'hari' => (int) config('ppid.akun.sla_verifikasi_hari_kerja', 14),
         ]));
     }

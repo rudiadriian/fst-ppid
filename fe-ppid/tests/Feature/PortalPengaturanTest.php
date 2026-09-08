@@ -174,4 +174,145 @@ class PortalPengaturanTest extends TestCase
         $this->assertSame('Karyawan', $pemohon->pekerjaan);
         $this->assertSame('terverifikasi', $pemohon->status_verifikasi);
     }
+
+    public function test_data_pemohon_terkunci_selama_menunggu_pemeriksaan(): void
+    {
+        $pemohon = $this->pemohon('menunggu');
+
+        $html = $this->actingAs($pemohon, 'pemohon')
+            ->get(route('akun.data-pemohon'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('name="nik"', $html);
+        $this->assertStringNotContainsString('name="file_ktp"', $html);
+        $this->assertStringNotContainsString('Kirim untuk Verifikasi', $html);
+        $this->assertStringContainsString('sedang diperiksa petugas PPID', $html);
+    }
+
+    public function test_server_menolak_kiriman_ulang_selama_menunggu_pemeriksaan(): void
+    {
+        $pemohon = $this->pemohon('menunggu');
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->from(route('akun.data-pemohon'))
+            ->put(route('akun.data-pemohon.update'), [
+                'jenis_pemohon' => 'perorangan',
+                'nik' => '9999999999999999',
+                'pekerjaan' => 'Diubah',
+                'alamat' => 'Alamat Diubah',
+            ])
+            ->assertSessionHasErrors('nik');
+
+        $pemohon->refresh();
+
+        $this->assertSame('3175010101900001', $pemohon->nik);
+        $this->assertSame('Karyawan', $pemohon->pekerjaan);
+    }
+
+    public function test_kiriman_data_pemohon_diarahkan_ke_dashboard(): void
+    {
+        Storage::fake('public');
+
+        $pemohon = $this->pemohon();
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->from(route('akun.data-pemohon'))
+            ->put(route('akun.data-pemohon.update'), [
+                'jenis_pemohon' => 'perorangan',
+                'nik' => '3175010101900002',
+                'pekerjaan' => 'Karyawan',
+                'alamat' => 'Jalan Uji Nomor 2',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('akun.dashboard'));
+
+        $this->assertSame('menunggu', $pemohon->refresh()->status_verifikasi);
+    }
+
+    public function test_nik_lebih_dari_16_digit_ditolak(): void
+    {
+        $pemohon = $this->pemohon();
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->from(route('akun.data-pemohon'))
+            ->put(route('akun.data-pemohon.update'), [
+                'jenis_pemohon' => 'perorangan',
+                'nik' => '31750101019000012345',
+                'pekerjaan' => 'Karyawan',
+                'alamat' => 'Jalan Uji Nomor 2',
+            ])
+            ->assertSessionHasErrors('nik');
+
+        $this->assertSame('belum', $pemohon->refresh()->status_verifikasi);
+    }
+
+    public function test_nik_kurang_dari_16_digit_ditolak(): void
+    {
+        $pemohon = $this->pemohon();
+
+        // Angka yang dipakai penguji UAT: lolos waktu aturannya masih
+        // "paling banyak 16 digit".
+        $this->actingAs($pemohon, 'pemohon')
+            ->from(route('akun.data-pemohon'))
+            ->put(route('akun.data-pemohon.update'), [
+                'jenis_pemohon' => 'perorangan',
+                'nik' => '123123123123',
+                'pekerjaan' => 'Karyawan',
+                'alamat' => 'Jalan Uji Nomor 2',
+            ])
+            ->assertSessionHasErrors('nik');
+
+        $this->assertSame('belum', $pemohon->refresh()->status_verifikasi);
+    }
+
+    public function test_nik_berisi_huruf_ditolak(): void
+    {
+        $pemohon = $this->pemohon();
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->from(route('akun.data-pemohon'))
+            ->put(route('akun.data-pemohon.update'), [
+                'jenis_pemohon' => 'perorangan',
+                'nik' => '31750101019000AB',
+                'pekerjaan' => 'Karyawan',
+                'alamat' => 'Jalan Uji Nomor 2',
+            ])
+            ->assertSessionHasErrors('nik');
+    }
+
+    public function test_jenis_pemohon_tidak_punya_pilihan_bawaan(): void
+    {
+        $pemohon = $this->pemohon();
+        $pemohon->forceFill(['jenis_pemohon' => null])->save();
+
+        $html = $this->actingAs($pemohon, 'pemohon')
+            ->get(route('akun.data-pemohon'))
+            ->assertOk()
+            ->getContent();
+
+        // Bukaan dropdown-nya "Pilih Jenis Pemohon" dan itu yang terpilih,
+        // bukan salah satu jenis asli — pemohon yang memilih sendiri.
+        $this->assertStringContainsString('<option value="" disabled selected>Pilih Jenis Pemohon</option>', $html);
+        $this->assertStringNotContainsString('<option value="perorangan" selected>', $html);
+        $this->assertStringContainsString("jenis: ''", $html);
+        $this->assertStringContainsString('pattern="[0-9]{16}"', $html);
+        $this->assertStringContainsString('maxlength="16"', $html);
+    }
+
+    public function test_jenis_pemohon_yang_pernah_dipilih_tetap_terpilih(): void
+    {
+        // Berkas yang ditolak dibuka lagi untuk diperbaiki; pilihan lamanya
+        // tidak boleh ikut terhapus jadi "Pilih Jenis Pemohon".
+        $pemohon = $this->pemohon('ditolak');
+        $pemohon->forceFill(['jenis_pemohon' => 'mahasiswa'])->save();
+
+        $html = $this->actingAs($pemohon, 'pemohon')
+            ->get(route('akun.data-pemohon'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('<option value="mahasiswa" selected>', $html);
+        $this->assertStringContainsString("jenis: 'mahasiswa'", $html);
+    }
 }
