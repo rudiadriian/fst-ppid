@@ -274,6 +274,58 @@
     </section>
 
     {{-- =====================================================================
+         5. LAPORAN TAHUNAN
+         =====================================================================
+
+         Galeri sampul laporan per tahun buku; isinya modul Laporan Tahunan di
+         be-ppid. Section-nya hilang sama sekali bila modulnya masih kosong —
+         kartu sampul tanpa gambar tidak menyampaikan apa pun. --}}
+    @if (!empty($laporanTahunan))
+        <section id="laporan-tahunan" class="py-16 lg:py-24 bg-[#FAF6EC] dark:bg-[#082217]">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <span class="text-sm font-bold text-[#10462F] uppercase tracking-widest">{{ __('Publikasi Perusahaan') }}</span>
+                    {{-- Label dua baris sesuai acuan UAT: nama laporannya di
+                         baris pertama, nama perusahaan di baris kedua. Kata
+                         terakhir baris pertama beraksen, mengikuti konsep judul
+                         dua warna yang dipakai section lain. --}}
+                    <h2 class="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white mt-3 leading-snug">
+                        {!! $judulDua(__('Laporan Tahunan'), 1) !!}
+                        <span class="block mt-1 text-xl lg:text-2xl font-bold text-gray-700 dark:text-gray-200">
+                            {{ __('PT Food Station Tjipinang Jaya (Perseroda)') }}
+                        </span>
+                    </h2>
+                </div>
+
+                {{-- Tiga kolom di layar lebar, mengikuti bentuk sampul laporan
+                     yang selalu potret. `aspect-[3/4]` menjaga tingginya tetap
+                     sama walau gambar yang diunggah petugas berbeda ukuran. --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                    @foreach ($laporanTahunan as $laporan)
+                        <button type="button"
+                                @click="$dispatch('buka-dialog-lihat-unduh', {
+                                    judul: @js($laporan['judul']),
+                                    tautan: @js($laporan['tautan']),
+                                    unduh: @js(route('ppid.request'))
+                                })"
+                                class="group block w-full text-left rounded-2xl overflow-hidden bg-white dark:bg-[#0B2A1D] border border-gray-100 dark:border-white/10 shadow-lg shadow-gray-200/50 dark:shadow-black/20 hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
+                            <div class="aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-white/5">
+                                <img src="{{ $laporan['sampul'] }}" alt="{{ $laporan['judul'] }}" loading="lazy"
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            </div>
+                            <p class="bg-[#10462F] text-white text-center text-sm font-semibold py-3 px-4">
+                                {{ $laporan['judul'] }}
+                            </p>
+                        </button>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        @include('partials.dialog_lihat_unduh')
+    @endif
+
+    {{-- =====================================================================
          6. BERITA
          ===================================================================== --}}
     <section id="berita" class="py-16 lg:py-24 bg-white dark:bg-[#0B2A1D]">

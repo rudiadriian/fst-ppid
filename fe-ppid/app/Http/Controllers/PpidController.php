@@ -716,6 +716,9 @@ class PpidController extends Controller
                     'judul'     => $row->teks('judul'),
                     'ringkasan' => $row->teks('ringkasan'),
                     'file'      => $this->fileUrl($row->file_surat_penetapan),
+                    // Halaman bacanya, bila petugas mengisinya. Kosong berarti
+                    // dialognya hanya menawarkan jalur permohonan.
+                    'tautan'    => filled($row->tautan) ? $row->tautan : null,
                 ])
                 ->all(),
             [],
@@ -1016,7 +1019,16 @@ class PpidController extends Controller
      */
     private function aksiDokumen($row, $berkas): array
     {
-        if (!$row->tautan && !$berkas) {
+        /*
+         * Salinannya bisa datang dari dua sumber: berkas yang diunggah petugas,
+         * atau alamat salinan yang diisikan petugas (`tautan_unduh`) untuk
+         * dokumen yang salinannya sudah ada di tempat lain. Keduanya melewati
+         * rute unduh yang sama, jadi pemeriksaan haknya juga sama — alamat
+         * salinannya sendiri tidak pernah ikut dicetak di halaman.
+         */
+        $adaSalinan = $berkas || filled($row->tautan_unduh);
+
+        if (!$row->tautan && !$adaSalinan) {
             return ['file' => null, 'jenis' => null, 'pratinjau' => null, 'unduh' => null, 'id' => null];
         }
 
@@ -1027,11 +1039,11 @@ class PpidController extends Controller
             'jenis' => 'dialog',
             'pratinjau' => $row->tautan ?: null,
             /*
-             * Tombol unduh hanya dipasang bila berkas salinannya memang ada.
-             * Memasangnya tanpa berkas berarti mengantar orang melewati login
-             * dan permohonan untuk berakhir di 404.
+             * Tombol unduh hanya dipasang bila salinannya memang ada. Memasangnya
+             * tanpa salinan berarti mengantar orang melewati login dan permohonan
+             * untuk berakhir di 404.
              */
-            'unduh' => $berkas ? route('ppid.dokumen.unduh', $row->id) : null,
+            'unduh' => $adaSalinan ? route('ppid.dokumen.unduh', $row->id) : null,
             'id' => $row->id,
         ];
     }

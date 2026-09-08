@@ -58,7 +58,7 @@ const GRUP: { id: string; title: string; icon: string; slugs: string[] }[] = [
 		//                       tabel ini.
 		//   - `tautan-terkait`: modul Tautan dihapus dari panel pada langkah 54.
 		// Modul, API, dan datanya tetap ada dan bisa dikembalikan ke menu.
-		slugs: ['banner-slider', 'struktur-organisasi', 'regulasi', 'faq']
+		slugs: ['banner-slider', 'laporan-tahunan', 'struktur-organisasi', 'regulasi', 'faq']
 	},
 	{
 		id: 'ppid.sistem',

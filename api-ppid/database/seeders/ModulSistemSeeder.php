@@ -30,6 +30,7 @@ class ModulSistemSeeder extends Seeder
         'galeri' => ['Galeri', 'heroicons-outline:photo', '/ppid/galeri', 9],
         'faq' => ['FAQ', 'heroicons-outline:question-mark-circle', '/ppid/faq', 10],
         'banner-slider' => ['Banner Slider', 'heroicons-outline:presentation-chart-line', '/ppid/banner-slider', 11],
+        'laporan-tahunan' => ['Laporan Tahunan', 'heroicons-outline:book-open', '/ppid/laporan-tahunan', 11],
         'struktur-organisasi' => ['Struktur Organisasi', 'heroicons-outline:users', '/ppid/struktur-organisasi', 12],
         'halaman-statis' => ['Halaman Statis', 'heroicons-outline:template', '/ppid/halaman-statis', 13],
         'regulasi' => ['Regulasi & Dasar Hukum', 'heroicons-outline:scale', '/ppid/regulasi', 14],

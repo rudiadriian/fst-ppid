@@ -6,6 +6,7 @@ use App\Models\BannerSlider;
 use App\Models\Berita;
 use App\Models\Faq;
 use App\Models\KategoriInformasi;
+use App\Models\LaporanTahunan;
 use App\Support\Cms;
 
 /**
@@ -22,6 +23,7 @@ class HomeController extends Controller
         return view('ppid.home', [
             'heroSlides' => $this->heroSlides(),
             'infoPublik' => $this->kategoriInformasi(),
+            'laporanTahunan' => $this->laporanTahunan(),
             'news' => $this->beritaTerbaru(),
             'faqs' => $this->faq(),
             'contacts' => $this->kontak(),
@@ -94,6 +96,27 @@ class HomeController extends Controller
     // Statistik ringkas (Pemohon/Dokumen/Regulasi/Kepuasan) sempat pindah ke
     // halaman Laporan Statistik Informasi Publik, lalu ikut hilang bersama
     // halaman itu pada langkah 68. Tidak ada penggantinya di situs publik.
+
+    /**
+     * Sampul Laporan Tahunan yang tayang, tahun terbaru lebih dulu.
+     *
+     * Tanpa data cadangan: sampulnya berupa gambar milik perusahaan, jadi tidak
+     * ada isian bawaan yang masuk akal. Bila modulnya masih kosong, section-nya
+     * tidak dirender sama sekali — lebih baik daripada memajang kartu kosong.
+     */
+    private function laporanTahunan(): array
+    {
+        $baris = Cms::ambil(fn () => LaporanTahunan::tayang()->get(), collect(), 'laporan_tahunan');
+
+        return $baris->map(fn ($l) => [
+            'tahun' => $l->tahun,
+            'judul' => $l->teks('judul'),
+            'sampul' => Cms::url($l->sampul),
+            // Kosong berarti tombol "Melihat" tidak dipasang — mengantar orang
+            // ke tautan yang belum diisi petugas hanya berakhir di halaman mati.
+            'tautan' => filled($l->tautan) ? $l->tautan : null,
+        ])->all();
+    }
 
     /** Tiga berita terbaru yang sudah diterbitkan. */
     private function beritaTerbaru(): array

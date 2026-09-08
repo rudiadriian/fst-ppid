@@ -336,4 +336,101 @@ class DokumenTerbatasTest extends TestCase
             ->assertSee('Salinan untuk diunduh belum tersedia', false)
             ->assertSee('https://contoh.test/laporan-tahunan', false);
     }
+
+    /*
+     * ----------------------------------------------------------------------
+     * Salinan berupa alamat, bukan berkas unggahan (`tautan_unduh`)
+     * ----------------------------------------------------------------------
+     *
+     * Sebagian dokumen salinannya sudah tersedia di situs korporat sehingga
+     * tidak diunggah ulang. Gerbangnya tetap satu dan sama: yang berbeda hanya
+     * dari mana salinannya diambil setelah pemeriksaan hak unduh lolos.
+     */
+
+    /** Siapkan dokumen ini sebagai entri yang salinannya berupa alamat. */
+    private function jadikanSalinanBerupaTautan(string $tautanUnduh = 'https://contoh.test/unduh/laporan-tahunan.pdf'): void
+    {
+        InformasiPublikFile::where('informasi_publik_id', $this->dokumen->id)->delete();
+
+        $this->dokumen->forceFill(['tautan_unduh' => $tautanUnduh])->save();
+        $this->dokumen->load('files');
+    }
+
+    public function test_tautan_unduh_memasang_tombol_unduh_walau_tanpa_berkas(): void
+    {
+        $this->jadikanSalinanBerupaTautan();
+
+        $kategori = KategoriInformasi::find($this->dokumen->kategori_id);
+
+        if (!$kategori) {
+            $this->markTestSkipped('Tidak ada kategori informasi untuk diuji.');
+        }
+
+        $html = $this->get(route('ppid.information', $kategori->slug))->assertOk()->getContent();
+
+        $this->assertStringContainsString($this->sepertiDiJs(route('ppid.dokumen.unduh', $this->dokumen->id)), $html);
+        // Alamat salinannya tidak pernah ikut dicetak; kalau bocor, gerbangnya
+        // bisa dilewati cukup dengan menyalinnya dari halaman daftar.
+        $this->assertStringNotContainsString('contoh.test/unduh/laporan-tahunan.pdf', $html);
+    }
+
+    public function test_tamu_tidak_bisa_membuka_tautan_unduh(): void
+    {
+        $this->jadikanSalinanBerupaTautan();
+
+        $this->get(route('ppid.dokumen.unduh', $this->dokumen->id))
+            ->assertRedirect(route('ppid.dokumen.pratinjau', $this->dokumen->id));
+    }
+
+    public function test_pemohon_tanpa_persetujuan_tidak_bisa_membuka_tautan_unduh(): void
+    {
+        $this->jadikanSalinanBerupaTautan();
+
+        $this->actingAs($this->pemohon(), 'pemohon')
+            ->get(route('ppid.dokumen.unduh', $this->dokumen->id))
+            ->assertRedirect(route('ppid.dokumen.pratinjau', $this->dokumen->id));
+    }
+
+    public function test_permohonan_disetujui_mengantar_ke_tautan_unduh(): void
+    {
+        $this->jadikanSalinanBerupaTautan();
+
+        $pemohon = $this->pemohon();
+        $this->permohonan($pemohon, 'selesai');
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->get(route('ppid.dokumen.unduh', $this->dokumen->id))
+            ->assertRedirect('https://contoh.test/unduh/laporan-tahunan.pdf');
+    }
+
+    /**
+     * Berkas unggahan didahulukan bila keduanya terisi: berkas itu yang berada
+     * di bawah kendali PPID.
+     */
+    public function test_berkas_unggahan_didahulukan_atas_tautan_unduh(): void
+    {
+        $this->dokumen->forceFill(['tautan_unduh' => 'https://contoh.test/unduh/salinan-lain.pdf'])->save();
+
+        $pemohon = $this->pemohon();
+        $this->permohonan($pemohon, 'selesai');
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->get(route('ppid.dokumen.unduh', $this->dokumen->id))
+            ->assertOk()
+            ->assertDownload(Str::slug($this->dokumen->judul).'.pdf');
+    }
+
+    /** Halaman aksesnya ikut mengakui salinan yang berupa alamat. */
+    public function test_halaman_akses_mengakui_salinan_berupa_tautan(): void
+    {
+        $this->jadikanSalinanBerupaTautan();
+
+        $pemohon = $this->pemohon();
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->get(route('ppid.dokumen.pratinjau', $this->dokumen->id))
+            ->assertOk()
+            ->assertSee('Ajukan permohonan untuk mengunduh', false)
+            ->assertDontSee('Salinan untuk diunduh belum tersedia', false);
+    }
 }

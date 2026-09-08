@@ -19,6 +19,7 @@ class InformasiDikecualikan extends Model
         'slug',
         'ringkasan',
         'ringkasan_en',
+        'tautan',
         'alasan_pengecualian',
         'dasar_hukum_pengecualian',
         'jangka_waktu_pengecualian',

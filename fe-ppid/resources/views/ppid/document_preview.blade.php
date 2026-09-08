@@ -7,7 +7,9 @@
     @php
         $keadaan = $akses['keadaan'];
         $permohonan = $akses['permohonan'];
-        $adaBerkas = $berkas !== null;
+        // "Salinan" = berkas unggahan atau alamat salinan yang diisikan
+        // petugas; keduanya dilayani rute unduh yang sama.
+        $adaSalinan = $berkas !== null || filled($dokumen->tautan_unduh);
     @endphp
 
     {{-- HERO --}}
@@ -74,10 +76,10 @@
 
             {{-- UNDUH — keadaannya ditentukan App\Support\AksesDokumen. --}}
             <div class="bg-white dark:bg-[#0B2A1D] rounded-2xl border border-gray-100 dark:border-white/10 p-6 sm:p-7">
-                @if (!$adaBerkas)
+                @if (!$adaSalinan)
                     <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Salinan untuk diunduh belum tersedia') }}</h2>
                     <p class="mt-1 max-w-2xl text-sm font-normal text-gray-600 dark:text-gray-300">
-                        {{ __('Petugas PPID belum mengunggah berkas salinan dokumen ini. Isinya tetap dapat dibaca lewat tautan di atas.') }}
+                        {{ __('Petugas PPID belum menyiapkan salinan dokumen ini. Isinya tetap dapat dibaca lewat tautan di atas.') }}
                     </p>
 
                 @elseif ($keadaan === 'bebas' || $keadaan === 'terbuka')

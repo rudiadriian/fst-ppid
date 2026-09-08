@@ -49,7 +49,15 @@ class InformasiPublikController extends CrudController
             'konten' => ['nullable', 'string'],
             'konten_en' => ['nullable', 'string'],
             // Entri bisa menunjuk ke halaman lain, bukan berkas unggahan.
-            'tautan' => ['nullable', 'url', 'max:500'],
+            'tautan' => ['nullable', 'url', 'starts_with:http://,https://', 'max:500'],
+            /*
+             * Alamat salinan yang diunduh, dipakai bila salinannya sudah ada di
+             * tempat lain dan tidak perlu diunggah ulang. Siapa boleh membukanya
+             * tetap ditentukan `unduhan_terbatas`: alamat ini tidak pernah
+             * dicetak di halaman daftar, hanya dikirim setelah pemeriksaan hak
+             * unduh di fe-ppid lolos.
+             */
+            'tautan_unduh' => ['nullable', 'url', 'starts_with:http://,https://', 'max:500'],
             /*
              * Dokumen boleh dilihat siapa saja, tetapi salinannya hanya keluar
              * setelah permohonan pemohon disetujui petugas (langkah 83).

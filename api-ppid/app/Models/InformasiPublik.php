@@ -28,6 +28,7 @@ class InformasiPublik extends Model
         'konten',
         'konten_en',
         'tautan',
+        'tautan_unduh',
         'unduhan_terbatas',
         'nomor_klasifikasi',
         'tanggal_publikasi',

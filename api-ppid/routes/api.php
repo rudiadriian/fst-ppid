@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Cms\KategoriBeritaController;
 use App\Http\Controllers\Api\Cms\KategoriInformasiController;
 use App\Http\Controllers\Api\Cms\KeberatanController;
 use App\Http\Controllers\Api\Cms\LaporanLayananController;
+use App\Http\Controllers\Api\Cms\LaporanTahunanController;
 use App\Http\Controllers\Api\Cms\MaklumatController;
 use App\Http\Controllers\Api\Cms\MenuNavigasiController;
 use App\Http\Controllers\Api\Cms\ModulSistemController;
@@ -182,6 +183,8 @@ Route::prefix('v1')->group(function () {
         CrudRoute::register('galeri', GaleriController::class, 'galeri');
         CrudRoute::register('faq', FaqController::class, 'faq');
         CrudRoute::register('banner-slider', BannerSliderController::class, 'banner-slider');
+        // Galeri sampul Laporan Tahunan di beranda situs publik.
+        CrudRoute::register('laporan-tahunan', LaporanTahunanController::class, 'laporan-tahunan');
         CrudRoute::register('struktur-organisasi', StrukturOrganisasiController::class, 'struktur-organisasi');
         CrudRoute::register('halaman-statis', HalamanStatisController::class, 'halaman-statis');
         // Maklumat = halaman Standar Layanan berbentuk unggahan dokumen;

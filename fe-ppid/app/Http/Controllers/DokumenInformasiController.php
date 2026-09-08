@@ -79,6 +79,17 @@ class DokumenInformasiController extends Controller
                 ->with('status', __('Unduhan dokumen ini terbuka setelah permohonan Anda disetujui petugas.'));
         }
 
+        /*
+         * Salinannya boleh berupa alamat di tempat lain, bukan berkas unggahan.
+         * Alamat itu baru dikirim setelah pemeriksaan hak unduh di atas lolos,
+         * jadi pemeriksaannya sama ketatnya dengan berkas — yang berbeda hanya
+         * dari mana salinannya diambil. Berkas unggahan didahulukan bila
+         * keduanya terisi: berkas itu yang berada di bawah kendali PPID.
+         */
+        if ($baris->files->isEmpty()) {
+            return redirect()->away($baris->tautan_unduh);
+        }
+
         return $this->kirimBerkas($baris, 'attachment');
     }
 
@@ -95,10 +106,17 @@ class DokumenInformasiController extends Controller
         $baris = $this->dokumen($dokumen);
 
         if (!Auth::guard('pemohon')->check()) {
+            /*
+             * Tujuannya dititipkan sebagai `url.intended` — itu yang dibaca
+             * `redirect()->intended()` di SessionController, sehingga setelah
+             * masuk orangnya kembali ke sini sendiri dan tidak perlu mencari
+             * ulang dokumennya di daftar.
+             */
+            session()->put('url.intended', route('ppid.dokumen.ajukan', $baris->id));
+
             return redirect()
                 ->route('akun.login')
-                ->with('status', __('Masuk dulu untuk mengajukan permohonan unduh dokumen ini.'))
-                ->with('tujuan_setelah_masuk', route('ppid.dokumen.ajukan', $baris->id));
+                ->with('status', __('Masuk dulu untuk mengajukan permohonan unduh dokumen ini.'));
         }
 
         return redirect()->route('akun.permohonan.create', ['dokumen' => $baris->id]);
@@ -107,17 +125,23 @@ class DokumenInformasiController extends Controller
     /**
      * Dokumen terbit yang tunduk pada aturan unduhan terbatas.
      *
-     * @param  bool  $wajibBerkas  true untuk jalur unduh, yang memang tidak
-     *                             ada gunanya tanpa berkas; false untuk
-     *                             halaman aksesnya, yang tetap berguna sebagai
-     *                             penjelas walau berkasnya belum diunggah.
+     * @param  bool  $wajibSalinan  true untuk jalur unduh, yang memang tidak
+     *                              ada gunanya tanpa salinan; false untuk
+     *                              halaman aksesnya, yang tetap berguna sebagai
+     *                              penjelas walau salinannya belum disiapkan.
+     *
+     * "Salinan" berarti berkas unggahan **atau** alamat salinan yang diisikan
+     * petugas (`tautan_unduh`) — keduanya dilayani rute unduh yang sama.
      */
-    private function dokumen(int $id, bool $wajibBerkas = true): InformasiPublik
+    private function dokumen(int $id, bool $wajibSalinan = true): InformasiPublik
     {
         $baris = InformasiPublik::published()->with('files')->find($id);
 
         abort_if(!$baris, 404, 'Dokumen tidak ditemukan.');
-        abort_if($wajibBerkas && $baris->files->isEmpty(), 404, 'Berkas dokumen belum tersedia.');
+
+        $adaSalinan = $baris && ($baris->files->isNotEmpty() || filled($baris->tautan_unduh));
+
+        abort_if($wajibSalinan && !$adaSalinan, 404, 'Berkas dokumen belum tersedia.');
 
         return $baris;
     }

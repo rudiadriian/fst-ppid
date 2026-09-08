@@ -138,4 +138,8 @@
 
         </div>
     </section>
+
+    {{-- Dialog "melihat atau mengunduh" milik tombol pada tiap baris; dimuat
+         sekali untuk seluruh daftar. --}}
+    @include('partials.dialog_lihat_unduh')
 @endsection

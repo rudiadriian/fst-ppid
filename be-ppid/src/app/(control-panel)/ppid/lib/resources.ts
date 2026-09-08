@@ -221,11 +221,19 @@ export const resources: ResourceConfig[] = [
 			{ name: 'ringkasan_en', label: 'Ringkasan (English)', type: 'textarea', span: 2, rows: 3, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{
 				name: 'tautan',
-				label: 'Tautan halaman',
+				label: 'Tautan halaman (Melihat)',
 				type: 'text',
 				span: 2,
 				maxLength: 500,
-				help: 'Alamat halaman tempat informasi ini dapat DIBACA (mis. https://foodstation.id/laporan-tahunan-fstj/). Di situs, tombol "Di Lihat Saja" pada dialog dokumen menuju alamat ini — terbuka untuk siapa saja tanpa masuk. Lampiran dokumen di bawah dipakai untuk salinan yang DIUNDUH, dan itu menuntut permohonan yang disetujui.'
+				help: 'Alamat halaman tempat informasi ini dapat DIBACA (mis. https://foodstation.id/laporan-tahunan-fstj/). Di situs, tombol "Di Lihat Saja" pada dialog dokumen menuju alamat ini — terbuka untuk siapa saja tanpa masuk.'
+			},
+			{
+				name: 'tautan_unduh',
+				label: 'Tautan salinan (Mengunduh)',
+				type: 'text',
+				span: 2,
+				maxLength: 500,
+				help: 'Alamat salinan yang DIUNDUH, dipakai bila salinannya sudah tersedia di tempat lain sehingga tidak perlu diunggah ulang lewat Lampiran dokumen di bawah. Alamat ini tidak pernah ditampilkan di daftar: pengunjung baru diantar ke sana setelah permohonannya atas dokumen ini Anda setujui. Bila Lampiran dokumen terisi, berkas itu yang dikirim dan alamat ini diabaikan.'
 			},
 			{ name: 'konten', label: 'Isi informasi', type: 'richtext', span: 2 },
 			{ name: 'konten_en', label: 'Isi informasi (English)', type: 'richtext', span: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
@@ -289,6 +297,14 @@ export const resources: ResourceConfig[] = [
 			{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN, defaultValue: 'draft' },
 			{ name: 'ringkasan', label: 'Ringkasan', type: 'textarea', span: 2, rows: 2 },
 			{ name: 'ringkasan_en', label: 'Ringkasan (English)', type: 'textarea', span: 2, rows: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
+			{
+				name: 'tautan',
+				label: 'Tautan halaman (Melihat)',
+				type: 'text',
+				span: 2,
+				maxLength: 500,
+				help: 'Alamat halaman tempat keterangan informasi ini dapat DIBACA. Di situs, tombol "Melihat" pada dialognya menuju alamat ini — terbuka untuk siapa saja tanpa masuk. Kosongkan bila tidak ada; tombol "Mengunduh" tidak memakai alamat, ia mengantar pengunjung mengajukan Permohonan Informasi.'
+			},
 			{
 				name: 'alasan_pengecualian',
 				label: 'Alasan pengecualian',
@@ -768,6 +784,85 @@ export const resources: ResourceConfig[] = [
 			{ name: 'tanggal_selesai', label: 'Tayang sampai', type: 'date' },
 			{ name: 'is_active', label: 'Aktif', type: 'boolean', defaultValue: true }
 		]
+	},
+	{
+		slug: 'laporan-tahunan',
+		modul: 'laporan-tahunan',
+		title: 'Laporan Tahunan',
+		singular: 'Laporan Tahunan',
+		description:
+			'Sampul Laporan Tahunan perusahaan yang tampil sebagai galeri di beranda situs. Satu baris untuk satu tahun buku.',
+		icon: 'lucide:book-open',
+		defaultSort: '-tahun',
+		columns: [
+			{ key: 'tahun', label: 'Tahun', type: 'number', size: 100 },
+			{ key: 'judul', label: 'Judul', size: 300 },
+			{ key: 'sampul', label: 'Sampul', type: 'file', size: 110, noSort: true },
+			{ key: 'urutan', label: 'Urutan', type: 'number', size: 90 },
+			{ key: 'status', label: 'Status', type: 'badge', badgeMap: BADGE_KONTEN, size: 120 }
+		],
+		fields: [
+			{
+				name: 'tahun',
+				label: 'Tahun buku',
+				type: 'number',
+				required: true,
+				min: 1900,
+				max: 2200,
+				help: 'Tahun laporannya, mis. 2025. Galeri beranda mengurutkan dari tahun terbaru.'
+			},
+			{
+				name: 'urutan',
+				label: 'Urutan',
+				type: 'number',
+				min: 0,
+				defaultValue: 0,
+				help: 'Diisi hanya bila susunannya perlu dipaksa berbeda dari urutan tahun.'
+			},
+			{
+				name: 'judul',
+				label: 'Judul',
+				type: 'text',
+				required: true,
+				span: 2,
+				maxLength: 255,
+				help: 'Tampil sebagai keterangan di bawah sampul, mis. "Laporan Tahunan 2025".'
+			},
+			{
+				name: 'judul_en',
+				label: 'Judul (English)',
+				type: 'text',
+				span: 2,
+				maxLength: 255,
+				help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.'
+			},
+			{
+				name: 'sampul',
+				label: 'Gambar sampul',
+				type: 'image',
+				required: true,
+				span: 2,
+				help: 'Sampul laporan, orientasi potret (rasio 3:4), minimal 600 × 800 px. JPG/WEBP, usahakan di bawah 400 KB.',
+				upload: { folder: 'laporan-tahunan', jenis: 'gambar' }
+			},
+			{
+				name: 'tautan',
+				label: 'Tautan halaman (Melihat)',
+				type: 'text',
+				span: 2,
+				maxLength: 500,
+				help: 'Alamat halaman tempat laporan ini DIBACA, mis. https://foodstation.id/laporan-tahunan-fstj/. Di beranda, tombol "Melihat" pada dialognya menuju alamat ini — terbuka untuk siapa saja tanpa masuk. Tombol "Mengunduh" tidak memakai alamat: salinannya keluar lewat Permohonan Informasi yang Anda setujui.'
+			},
+			{
+				name: 'status',
+				label: 'Status',
+				type: 'select',
+				options: STATUS_KONTEN,
+				defaultValue: 'draft',
+				help: 'Beranda hanya menampilkan entri berstatus "Terbit".'
+			}
+		],
+		filters: [{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN }]
 	},
 	{
 		slug: 'struktur-organisasi',
