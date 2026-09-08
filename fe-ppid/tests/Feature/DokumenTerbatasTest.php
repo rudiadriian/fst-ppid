@@ -289,7 +289,7 @@ class DokumenTerbatasTest extends TestCase
             $html = $this->get($url)->assertOk()->getContent();
 
             $this->assertStringContainsString('buka-dialog-dokumen', $html, "Tombol dialog hilang di {$url}");
-            $this->assertStringContainsString('Di Lihat Saja', $html, "Markup dialog hilang di {$url}");
+            $this->assertStringContainsString('Hanya Lihat', $html, "Markup dialog hilang di {$url}");
         }
     }
 

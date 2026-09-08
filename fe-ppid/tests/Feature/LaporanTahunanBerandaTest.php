@@ -157,12 +157,9 @@ class LaporanTahunanBerandaTest extends TestCase
      */
     public function test_daftar_dikecualikan_memakai_dialog_yang_sama(): void
     {
-        $baris = InformasiDikecualikan::forceCreate([
-            'judul' => 'Informasi Dikecualikan Uji '.Str::random(6),
-            'slug' => 'informasi-dikecualikan-uji-'.Str::lower(Str::random(8)),
-            'alasan_pengecualian' => 'uji',
+        $baris = $this->dikecualikan([
             'tautan' => 'https://contoh.test/keterangan-pengecualian',
-            'status' => 'published',
+            'tautan_unduh' => 'https://contoh.test/unduh/surat-pengecualian.pdf',
         ]);
 
         $html = $this->get(route('ppid.excluded'))->assertOk()->getContent();
@@ -170,8 +167,52 @@ class LaporanTahunanBerandaTest extends TestCase
         $this->assertStringContainsString($baris->judul, $html);
         $this->assertStringContainsString('buka-dialog-lihat-unduh', $html);
         $this->assertStringContainsString($this->sepertiDiJs('https://contoh.test/keterangan-pengecualian'), $html);
-        $this->assertStringContainsString($this->sepertiDiJs(route('ppid.request')), $html);
+        $this->assertStringContainsString($this->sepertiDiJs('https://contoh.test/unduh/surat-pengecualian.pdf'), $html);
         $this->assertStringContainsString('Lihat / Unduh', $html);
         $this->assertStringContainsString('@buka-dialog-lihat-unduh.window', $html);
+    }
+
+    /**
+     * Kedua pilihan pada daftar Dikecualikan mengikuti isian petugas.
+     *
+     * Baris tanpa alamat sama sekali tetap boleh dibuka dialognya — isinya
+     * menyebutkan apa yang belum tersedia — tetapi tidak boleh memasang tombol
+     * yang tidak menuju ke mana-mana.
+     */
+    public function test_dikecualikan_tanpa_alamat_tidak_memasang_tombol(): void
+    {
+        $this->dikecualikan(['tautan' => null, 'tautan_unduh' => null]);
+
+        $html = $this->get(route('ppid.excluded'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('tautan: null', $html);
+        $this->assertStringContainsString('unduh: null', $html);
+        // Kalimat penggantinya ikut dirender di dalam dialog.
+        $this->assertStringContainsString('Salinan untuk diunduh belum tersedia.', $html);
+        $this->assertStringContainsString('Tautan untuk dibaca belum tersedia.', $html);
+    }
+
+    /** Hanya salinan yang diisi: tombol Mengunduh muncul, Hanya Lihat tidak. */
+    public function test_dikecualikan_hanya_dengan_salinan(): void
+    {
+        $this->dikecualikan([
+            'tautan' => null,
+            'tautan_unduh' => 'https://contoh.test/unduh/hanya-salinan.pdf',
+        ]);
+
+        $html = $this->get(route('ppid.excluded'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('tautan: null', $html);
+        $this->assertStringContainsString($this->sepertiDiJs('https://contoh.test/unduh/hanya-salinan.pdf'), $html);
+    }
+
+    private function dikecualikan(array $ubah = []): InformasiDikecualikan
+    {
+        return InformasiDikecualikan::forceCreate(array_merge([
+            'judul' => 'Informasi Dikecualikan Uji '.Str::random(6),
+            'slug' => 'informasi-dikecualikan-uji-'.Str::lower(Str::random(8)),
+            'alasan_pengecualian' => 'uji',
+            'status' => 'published',
+        ], $ubah));
     }
 }

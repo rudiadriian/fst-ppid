@@ -39,12 +39,16 @@ class InformasiDikecualikanController extends CrudController
             'ringkasan' => ['nullable', 'string'],
             'ringkasan_en' => ['nullable', 'string'],
             /*
-             * Halaman tempat keterangannya dibaca. Tanpa pasangan `tautan_unduh`
-             * seperti Informasi Publik: salinan informasi yang dikecualikan
-             * hanya keluar lewat Permohonan Informasi, dan permohonan belum
-             * bisa ditautkan ke baris ini (lihat migrasi 2026_09_08_000001).
+             * Dua alamat, keduanya opsional dan keduanya terbaca publik apa
+             * adanya — sama seperti Surat Penetapan pada modul ini. Tombolnya
+             * di situs hanya muncul bila alamatnya diisi, jadi mengisinya
+             * adalah keputusan petugas untuk menerbitkan.
+             *
+             * Berbeda dari `informasi_publik.tautan_unduh`, yang tetap dijaga
+             * aturan unduhan terbatas.
              */
             'tautan' => ['nullable', 'url', 'starts_with:http://,https://', 'max:500'],
+            'tautan_unduh' => ['nullable', 'url', 'starts_with:http://,https://', 'max:500'],
             // Situs publik hanya menampilkan judulnya, jadi keterangan penetapan
             // di bawah ini semuanya opsional — diisi hanya bila diperlukan.
             'alasan_pengecualian' => ['nullable', 'string'],

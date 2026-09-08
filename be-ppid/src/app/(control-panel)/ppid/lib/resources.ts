@@ -303,7 +303,15 @@ export const resources: ResourceConfig[] = [
 				type: 'text',
 				span: 2,
 				maxLength: 500,
-				help: 'Alamat halaman tempat keterangan informasi ini dapat DIBACA. Di situs, tombol "Melihat" pada dialognya menuju alamat ini — terbuka untuk siapa saja tanpa masuk. Kosongkan bila tidak ada; tombol "Mengunduh" tidak memakai alamat, ia mengantar pengunjung mengajukan Permohonan Informasi.'
+				help: 'Alamat halaman tempat keterangan informasi ini dapat DIBACA. Di situs, tombol "Hanya Lihat" pada dialognya menuju alamat ini. Kosongkan bila tidak ada — tombolnya ikut hilang.'
+			},
+			{
+				name: 'tautan_unduh',
+				label: 'Tautan salinan (Mengunduh)',
+				type: 'text',
+				span: 2,
+				maxLength: 500,
+				help: 'Alamat salinan yang DIUNDUH. Tombol "Mengunduh" di situs hanya muncul bila alamat ini diisi, dan membukanya langsung — sama seperti berkas Surat Penetapan pada modul ini. Mengisinya berarti Anda memang menerbitkan salinan itu untuk umum. Kosongkan bila salinannya belum boleh dilepas.'
 			},
 			{
 				name: 'alasan_pengecualian',

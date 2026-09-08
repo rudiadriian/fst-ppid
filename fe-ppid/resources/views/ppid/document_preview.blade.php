@@ -68,7 +68,7 @@
                         <a href="{{ $dokumen->tautan }}" target="_blank" rel="noopener"
                            class="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl border border-gray-200 dark:border-white/20 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-200">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.5 6H18a2 2 0 012 2v4.5M20 8l-7.5 7.5M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4"></path></svg>
-                            {{ __('Di Lihat Saja') }}
+                            {{ __('Hanya Lihat') }}
                         </a>
                     </div>
                 </div>
@@ -98,7 +98,7 @@
                         <a href="{{ route('ppid.dokumen.unduh', $dokumen->id) }}"
                            class="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl text-white fs-btn-cta hover:brightness-110 transition-all duration-200">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            {{ __('Unduh Dokumen') }}
+                            {{ __('Mengunduh') }}
                         </a>
                     </div>
 

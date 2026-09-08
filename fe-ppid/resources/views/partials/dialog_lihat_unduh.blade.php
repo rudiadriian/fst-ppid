@@ -15,10 +15,13 @@
         judul: '',
         tautan: null,
         unduh: null,
+        // Tujuan unduhnya di luar situs ini (dibuka di tab baru) atau bukan.
+        unduhLuar: false,
         buka(d) {
             this.judul = d.judul;
             this.tautan = d.tautan;
             this.unduh = d.unduh;
+            this.unduhLuar = Boolean(d.unduhLuar);
             this.terbuka = true;
         }
      }"
@@ -66,11 +69,24 @@
                     </p>
                 </template>
 
-                <a :href="unduh"
-                   class="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-bold rounded-xl text-white fs-btn-cta hover:brightness-110 transition-all duration-200">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    {{ __('Mengunduh') }}
-                </a>
+                <template x-if="unduh">
+                    <a :href="unduh"
+                       :target="unduhLuar ? '_blank' : null"
+                       :rel="unduhLuar ? 'noopener' : null"
+                       @click="terbuka = false"
+                       class="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-bold rounded-xl text-white fs-btn-cta hover:brightness-110 transition-all duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        {{ __('Mengunduh') }}
+                    </a>
+                </template>
+
+                {{-- Salinannya belum diterbitkan petugas. Dikatakan apa adanya,
+                     daripada memasang tombol yang tidak menuju ke mana-mana. --}}
+                <template x-if="!unduh">
+                    <p class="text-center text-sm font-normal text-gray-400 dark:text-gray-500">
+                        {{ __('Salinan untuk diunduh belum tersedia.') }}
+                    </p>
+                </template>
             </div>
         </div>
     </div>

@@ -716,9 +716,14 @@ class PpidController extends Controller
                     'judul'     => $row->teks('judul'),
                     'ringkasan' => $row->teks('ringkasan'),
                     'file'      => $this->fileUrl($row->file_surat_penetapan),
-                    // Halaman bacanya, bila petugas mengisinya. Kosong berarti
-                    // dialognya hanya menawarkan jalur permohonan.
+                    /*
+                     * Dua alamat opsional. Keduanya hanya muncul sebagai tombol
+                     * bila petugas mengisinya — pada daftar ini penerbitan
+                     * memang keputusan petugas yang langsung terbaca publik,
+                     * sama seperti berkas Surat Penetapan di sebelahnya.
+                     */
                     'tautan'    => filled($row->tautan) ? $row->tautan : null,
+                    'unduh'     => filled($row->tautan_unduh) ? $row->tautan_unduh : null,
                 ])
                 ->all(),
             [],
