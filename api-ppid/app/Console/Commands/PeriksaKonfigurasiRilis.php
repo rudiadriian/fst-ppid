@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Database\Migrations\Migrator;
 
 /**
  * Periksa konfigurasi yang tidak boleh setengah jadi saat rilis.
@@ -46,6 +47,10 @@ class PeriksaKonfigurasiRilis extends Command
             $masalah[] = 'APP_KEY kosong.';
         }
 
+        foreach ($this->migrasiTertunda() as $satu) {
+            $masalah[] = $satu;
+        }
+
         if ($masalah === []) {
             $this->info('Konfigurasi rilis lengkap.');
 
@@ -62,5 +67,55 @@ class PeriksaKonfigurasiRilis extends Command
         $this->line('Perbaiki di '.base_path('.env').' lalu jalankan ulang: php artisan config:cache');
 
         return self::FAILURE;
+    }
+
+    /**
+     * Migrasi yang berkasnya sudah ikut terkirim tetapi belum dijalankan.
+     *
+     * Keadaan itu tidak meninggalkan jejak sampai ada yang menyimpan sesuatu:
+     * kode sudah menyebut kolom baru, basis datanya belum punya, dan yang
+     * sampai ke petugas hanya "500 Server Error" tanpa sebab yang terbaca.
+     * Karena itu diperiksa di sini — lebih baik deploy berhenti daripada panel
+     * hidup dengan skema yang tertinggal.
+     *
+     * Kegagalan menghubungi basis data tidak diperlakukan sebagai masalah
+     * rilis: itu urusan lain, dan sudah terlihat dari mana-mana.
+     *
+     * @return array<int, string>
+     */
+    private function migrasiTertunda(): array
+    {
+        try {
+            /** @var Migrator $migrator */
+            $migrator = app('migrator');
+
+            $migrator->setConnection(config('database.default'));
+
+            if (!$migrator->repositoryExists()) {
+                return ['Tabel migrasi belum ada — jalankan `php artisan migrate --force`.'];
+            }
+
+            $sudah = $migrator->getRepository()->getRan();
+            $semua = $migrator->getMigrationFiles($migrator->paths() ?: [database_path('migrations')]);
+
+            $tertunda = array_values(array_diff(
+                array_map(fn (string $berkas) => $migrator->getMigrationName($berkas), $semua),
+                $sudah
+            ));
+
+            if ($tertunda === []) {
+                return [];
+            }
+
+            return [
+                'Ada '.count($tertunda).' migrasi yang belum dijalankan: '.implode(', ', $tertunda).'. '
+                    .'Jalankan `php artisan migrate --force` — tanpa itu kode yang menyebut kolom baru '
+                    .'akan menjawab 500 pada setiap penyimpanan.',
+            ];
+        } catch (\Throwable $e) {
+            $this->warn('Status migrasi tidak dapat diperiksa: '.$e->getMessage());
+
+            return [];
+        }
     }
 }

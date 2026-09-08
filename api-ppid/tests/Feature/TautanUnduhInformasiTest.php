@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\InformasiDikecualikan;
 use App\Models\InformasiPublik;
+use App\Models\InformasiPublikFile;
 use App\Models\KategoriInformasi;
 use App\Models\Role;
 use App\Models\User;
@@ -157,6 +158,52 @@ class TautanUnduhInformasiTest extends TestCase
             'https://foodstation.id/unduh/laporan-tahunan-2025.pdf',
             $baris->refresh()->tautan_unduh
         );
+    }
+
+    /**
+     * Muatan persis seperti yang tercatat pada UAT poin 7, termasuk lampiran
+     * yang dikosongkan dan berkas yang sudah terlanjur ada di barisnya.
+     *
+     * Mengosongkan `files` berarti seluruh lampiran barisnya dihapus lalu
+     * penyimpanannya diselaraskan — jalur itu yang tidak pernah tersentuh bila
+     * barisnya memang belum punya lampiran sama sekali.
+     */
+    public function test_muatan_uat_dengan_lampiran_dikosongkan(): void
+    {
+        $baris = $this->informasiPublik();
+
+        InformasiPublikFile::forceCreate([
+            'informasi_publik_id' => $baris->id,
+            'nama_file' => 'lampiran-lama.pdf',
+            'path_file' => 'uploads/informasi-publik/uji-'.Str::lower($this->tanda).'.pdf',
+            'tipe_file' => 'application/pdf',
+            'urutan' => 0,
+        ]);
+
+        $this->withToken($this->token())
+            ->putJson('/api/v1/informasi-publik/'.$baris->id, [
+                'files' => [],
+                'judul' => 'Annual Report',
+                'judul_en' => 'Annual Report',
+                'kategori_id' => $baris->kategori_id,
+                'konten' => null,
+                'konten_en' => null,
+                'nomor_klasifikasi' => '7',
+                'ringkasan' => 'Laporan tahunan perusahaan berisi kinerja dan capaian sepanjang tahun buku.',
+                'ringkasan_en' => "The company's annual report covering performance and achievements throughout the financial year.",
+                'slug' => $baris->slug,
+                'status' => 'published',
+                'tanggal_publikasi' => '2026-08-20',
+                'tautan' => 'https://foodstation.id/laporan-tahunan-fstj/',
+                'tautan_unduh' => 'https://ppid.foodstation.co.id/akun/permohonan/baru',
+                'unduhan_terbatas' => true,
+            ])
+            ->assertOk();
+
+        $baris->refresh();
+
+        $this->assertSame('https://ppid.foodstation.co.id/akun/permohonan/baru', $baris->tautan_unduh);
+        $this->assertSame(0, InformasiPublikFile::where('informasi_publik_id', $baris->id)->count());
     }
 
     public function test_informasi_dikecualikan_menerima_kedua_tautan(): void

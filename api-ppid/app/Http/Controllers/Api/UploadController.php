@@ -36,6 +36,10 @@ class UploadController extends Controller
         'laporan',
         'laporan-tahunan',
         'maklumat',
+        // Rangkaian gambar Alur Prosedur pada halaman Standar Layanan. Modulnya
+        // sudah lama ada di panel, tetapi foldernya tidak pernah didaftarkan di
+        // sini — setiap unggahan dijawab "Pilihan folder tidak sah."
+        'alur-prosedur',
         'berita',
         'galeri',
         'banner',
