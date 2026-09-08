@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Notifikasi;
 use App\Models\Pemohon;
+use App\Models\PermohonanInformasi;
 use App\Support\NotifikasiAdmin;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
@@ -155,6 +156,47 @@ class NotifikasiAdminTest extends TestCase
             $this->notifikasi($this->userLayanan, 'verifikasi_pemohon'),
             'Perbaikan setelah ditolak harus memperbarui baris yang sama, bukan menambah baris baru.',
         );
+    }
+
+    /**
+     * Notifikasi permohonan baru tersusun utuh.
+     *
+     * Muatannya sempat menyebut nomor keberatan — kolom yang tidak ada pada
+     * permohonan yang baru masuk, dan variabelnya pun tidak ada di method itu.
+     * Galatnya lahir saat argumennya disusun, di luar jangkauan penjagaan di
+     * dalam `kirim()`, sehingga sampai ke pemohon sebagai 500 padahal
+     * permohonannya sudah tersimpan.
+     */
+    public function test_notifikasi_permohonan_baru_tersusun_utuh(): void
+    {
+        $pemohon = $this->pemohon();
+
+        $permohonan = PermohonanInformasi::forceCreate([
+            'kode_permohonan' => 'UJI91-'.now()->format('His'),
+            'pemohon_id' => $pemohon->id,
+            'rincian_informasi' => 'uji',
+            'tujuan_penggunaan' => 'uji',
+            'cara_memperoleh' => array_key_first(PermohonanInformasi::CARA_MEMPEROLEH),
+            'format_informasi' => 'softcopy',
+            'cara_pengiriman' => 'email',
+            'jalur_pelayanan' => 'online',
+            'status' => 'diajukan',
+            'tanggal_permohonan' => now(),
+            'batas_waktu_tanggapan' => now()->addWeekdays(10),
+        ]);
+
+        NotifikasiAdmin::permohonanBaru($permohonan, $pemohon);
+
+        $baris = $this->notifikasi($this->userLayanan, 'permohonan_baru');
+
+        $this->assertCount(1, $baris);
+
+        $data = $baris->first()->data;
+
+        $this->assertSame($permohonan->id, (int) $data['permohonan_id']);
+        $this->assertSame($permohonan->kode_permohonan, $data['kode_permohonan']);
+        $this->assertArrayNotHasKey('kode_keberatan', $data);
+        $this->assertStringContainsString($permohonan->kode_permohonan, $baris->first()->message);
     }
 
     public function test_notifikasi_yang_sudah_dibaca_tidak_ditimpa(): void

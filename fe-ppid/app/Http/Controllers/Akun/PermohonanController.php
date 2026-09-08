@@ -205,13 +205,27 @@ class PermohonanController extends Controller
             return back()->withInput()->with('status', __('Permohonan gagal disimpan. Coba lagi beberapa saat lagi.'));
         }
 
-        // Di luar transaksi: notifikasi ke panel admin tidak boleh menggagalkan
-        // permohonan yang sudah tersimpan.
-        NotifikasiAdmin::permohonanBaru($permohonan, $pemohon);
+        /*
+         * Di luar transaksi, dan galatnya ditelan.
+         *
+         * Permohonannya sudah tersimpan dan bernomor. Apa pun yang gagal
+         * sesudah titik ini — lonceng panel, surel tanda terima — adalah
+         * pekerjaan ikutan; menjadikannya galat berarti pemohon melihat 500
+         * atas berkas yang sebenarnya sudah masuk, lalu mengirim ulang.
+         *
+         * Masing-masing kelas sudah menjaga galat kirimnya sendiri, tetapi
+         * penjagaan itu berada di dalam method-nya; galat saat menyusun
+         * argumennya tetap lolos ke sini.
+         */
+        try {
+            NotifikasiAdmin::permohonanBaru($permohonan, $pemohon);
 
-        // Tanda terima ke pemohon. Pemberitahuan berikutnya (diterima &
-        // selesai) dikirim dari panel admin saat statusnya berpindah.
-        EmailPemohon::pengajuanDikirim($permohonan, $pemohon);
+            // Tanda terima ke pemohon. Pemberitahuan berikutnya (diterima &
+            // selesai) dikirim dari panel admin saat statusnya berpindah.
+            EmailPemohon::pengajuanDikirim($permohonan, $pemohon);
+        } catch (\Throwable $e) {
+            Log::error('[PPID] Permohonan '.$permohonan->kode_permohonan.' tersimpan, tetapi pemberitahuannya gagal: '.$e->getMessage());
+        }
 
         return redirect()->route('akun.permohonan.index')
             ->with('status', __('Permohonan terkirim dengan nomor registrasi :kode.', ['kode' => $permohonan->kode_permohonan]));

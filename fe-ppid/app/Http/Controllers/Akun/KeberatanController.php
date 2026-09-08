@@ -164,14 +164,22 @@ class KeberatanController extends Controller
         // mencetak nomor itu.
         $keberatan->refresh();
 
-        // Di luar transaksi: notifikasi ke panel admin tidak boleh menggagalkan
-        // keberatan yang sudah tersimpan.
-        NotifikasiAdmin::keberatanBaru($keberatan, $permohonan, $pemohon);
+        /*
+         * Di luar transaksi, dan galatnya ditelan — alasannya sama seperti pada
+         * PermohonanController: keberatannya sudah tersimpan dan bernomor, jadi
+         * kegagalan pemberitahuan tidak boleh berubah menjadi 500 yang membuat
+         * pemohon mengira berkasnya tidak masuk.
+         */
+        try {
+            NotifikasiAdmin::keberatanBaru($keberatan, $permohonan, $pemohon);
 
-        // Relasi permohonan diisi supaya nomor induknya bisa dicetak di email
-        // tanpa query tambahan.
-        $keberatan->setRelation('permohonan', $permohonan);
-        EmailPemohon::pengajuanDikirim($keberatan, $pemohon);
+            // Relasi permohonan diisi supaya nomor induknya bisa dicetak di email
+            // tanpa query tambahan.
+            $keberatan->setRelation('permohonan', $permohonan);
+            EmailPemohon::pengajuanDikirim($keberatan, $pemohon);
+        } catch (\Throwable $e) {
+            Log::error('[PPID] Keberatan '.$keberatan->kode_keberatan.' tersimpan, tetapi pemberitahuannya gagal: '.$e->getMessage());
+        }
 
         return redirect()->route('akun.keberatan.index')
             ->with('status', __('Keberatan Anda sudah kami terima dengan nomor registrasi :kode.', ['kode' => $keberatan->kode_keberatan]));

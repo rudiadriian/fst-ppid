@@ -23,3 +23,23 @@ Berikut dibawah ini adalah poin-poin dari hasil testing dari user yang mana perl
     - [x] Section labelnya seperti ini :
         Laporan Tahunan
         PT Food Station Tjipinang Jaya (Perseroda)
+3. [x] pada fe-ppid modul Permohonan Infromasi ( https://ppid.foodstation.co.id/akun/permohonan) dan Permohonan Keberatan Informasi (https://ppid.foodstation.co.id/akun/keberatan/baru), ada masalah :
+    - [x] ketika permohonan di submit error dengan message : 500 Server Error
+    dan payloadnya ini 
+        _token
+        1mDCCHbHWzs51o1lUJIgsYpZrDBZiJaIyQ9Rl5QV
+        rincian_informasi
+        Natus nostrum tempor ea velit doloribus commodi eos voluptas quos unde et
+        tujuan_penggunaan
+        Aperiam voluptas nisi impedit exercitationem ad dolores
+        cara_memperoleh
+        membaca
+        format_informasi
+        softcopy
+        cara_pengiriman
+        email
+        pernyataan_benar
+        1
+      Penyebabnya `NotifikasiAdmin::permohonanBaru()` di fe-ppid: muatan notifikasinya menyebut `$keberatan->kode_keberatan`, variabel yang tidak ada di method itu (tersalin dari `keberatanBaru()`). Galatnya lahir saat argumen disusun — di luar jangkauan try/catch di dalam `kirim()` — sehingga sampai ke pemohon sebagai 500 padahal permohonannya sudah tersimpan dan bernomor. Kolom itu dibuang.
+      Pagar tambahan: di PermohonanController dan KeberatanController, pemberitahuan setelah simpan (lonceng panel + surel tanda terima) dibungkus try/catch — pengiriman yang sudah tersimpan tidak boleh lagi berubah jadi 500 hanya karena pekerjaan ikutannya gagal.
+      Uji baru: `PortalPermohonanKirimTest` (kirim permohonan, dua kiriman berturut-turut, pemohon belum terverifikasi, kirim keberatan) dan `NotifikasiAdminTest::test_notifikasi_permohonan_baru_tersusun_utuh`.

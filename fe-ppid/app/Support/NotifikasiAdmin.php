@@ -19,6 +19,13 @@ use Illuminate\Support\Facades\Log;
  *
  * Gagal menulis notifikasi tidak boleh menggagalkan pengiriman formulir —
  * setiap galat dicatat di log lalu diabaikan.
+ *
+ * **Batas penjagaan itu.** Yang dijaga `kirim()` adalah penulisannya. Galat
+ * saat menyusun argumennya — sebelum `kirim()` dipanggil — tetap lolos ke
+ * pemanggil; itulah yang pernah membuat pengiriman permohonan menjawab 500
+ * padahal barisnya sudah tersimpan. Pemanggil yang sudah menyimpan sesuatu
+ * karena itu tetap membungkus pemanggilan ini (lihat PermohonanController dan
+ * KeberatanController).
  */
 class NotifikasiAdmin
 {
@@ -123,7 +130,11 @@ class NotifikasiAdmin
                 'useRouter' => true,
                 'variant' => 'primary',
                 'permohonan_id' => $permohonan->id,
-                'kode_keberatan' => $keberatan->kode_keberatan,
+                // Tanpa `kode_keberatan`: permohonan yang baru masuk belum
+                // punya keberatan. Kolom itu sempat ikut tersalin dari
+                // `keberatanBaru()` di bawah dan menyebut variabel yang tidak
+                // ada di sini — pemohon menerima 500 tepat setelah
+                // permohonannya tersimpan.
                 'kode_permohonan' => $permohonan->kode_permohonan,
             ],
             'permohonan_id'
