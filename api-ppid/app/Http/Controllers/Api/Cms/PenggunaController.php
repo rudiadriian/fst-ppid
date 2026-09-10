@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api\Cms;
 
 use App\Http\Controllers\Api\CrudController;
 use App\Models\User;
+use App\Rules\EmailBelumTerpakai;
+use App\Support\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -35,11 +38,17 @@ class PenggunaController extends CrudController
         return [
             'role_id' => [$wajib, Rule::exists('roles', 'id')],
             'name' => [$wajib, 'string', 'max:150'],
+            /*
+             * Keunikan email diperiksa lintas tabel, bukan hanya di `users`:
+             * alamat yang sudah dipakai akun pemohon di situs publik ikut
+             * ditolak. Baris terhapus pun ikut dihitung — alasan lengkapnya ada
+             * di `EmailBelumTerpakai`.
+             */
             'email' => [
                 $wajib,
                 'email',
                 'max:150',
-                Rule::unique('users', 'email')->ignore($record?->getKey())->whereNull('deleted_at'),
+                new EmailBelumTerpakai(abaikanUserId: $record === null ? null : (int) $record->getKey()),
             ],
             // Kata sandi wajib saat pembuatan akun, opsional saat penyuntingan.
             'password' => [
@@ -84,5 +93,60 @@ class PenggunaController extends CrudController
                 'id' => 'Anda tidak dapat menghapus akun sendiri.',
             ]);
         }
+    }
+
+    /**
+     * Hapus permanen satu akun yang sudah berada di arsip penghapusan.
+     *
+     * Penghapusan biasa hanya menandai `deleted_at`: barisnya tetap ada, dan
+     * emailnya tetap menempati indeks unik `users.email` sehingga alamat itu
+     * tidak bisa dipakai akun baru. Yang dilepas di sini adalah barisnya sendiri.
+     *
+     * Dua pagar sebelum barisnya lenyap:
+     *
+     *  - hanya baris yang **sudah dihapus** yang boleh dihapus permanen, jadi
+     *    tidak ada akun aktif yang bisa hilang dalam satu langkah — arsipnya
+     *    menjadi ruang jeda yang disengaja;
+     *  - akun sendiri tetap tidak bisa disentuh, sama seperti pada `destroy()`.
+     *
+     * Jejak yang ditinggalkan akun ini di modul lain tidak ikut hilang: seluruh
+     * kolom `created_by`/`updated_by`/`deleted_by` berelasi `ON DELETE SET NULL`,
+     * jadi barisnya tetap ada dengan kolom pelaku kosong. Yang ikut terhapus
+     * hanya notifikasi pribadinya (`ON DELETE CASCADE`) — isinya memang tidak
+     * punya pembaca lagi. Riwayat aksinya di `audit_log` tetap tersimpan, dengan
+     * `user_id` menjadi null, dan penghapusan ini sendiri ikut tercatat di sana
+     * lengkap dengan nama serta email akun yang dilepas.
+     */
+    public function hapusPermanen(int $id): JsonResponse
+    {
+        /** @var User $record */
+        $record = User::withTrashed()->findOrFail($id);
+
+        if ($record->deleted_at === null) {
+            throw ValidationException::withMessages([
+                'id' => 'Akun ini masih aktif. Hapus dulu akunnya, baru bisa dihapus permanen.',
+            ]);
+        }
+
+        if ((int) $record->getKey() === (int) Auth::guard('api')->id()) {
+            throw ValidationException::withMessages([
+                'id' => 'Anda tidak dapat menghapus akun sendiri.',
+            ]);
+        }
+
+        $sebelum = $this->scrub($record->getAttributes());
+
+        $record->forceDelete();
+
+        AuditLogger::record(
+            Auth::guard('api')->id(),
+            'force_delete',
+            User::class,
+            $id,
+            $sebelum,
+            null
+        );
+
+        return response()->json(['message' => 'Akun dihapus permanen']);
     }
 }

@@ -115,6 +115,16 @@ export type ResourceConfig = {
 	tanpaUbah?: boolean;
 	tanpaHapus?: boolean;
 	/**
+	 * Baris yang sudah dihapus boleh dilepas permanen dari arsip penghapusan.
+	 *
+	 * Aksinya hanya dipasang pada baris yang `deleted_at`-nya terisi, dan
+	 * menuntut hak `delete` pada modulnya. Dipakai modul Pengguna: email akun
+	 * menempati indeks unik `users.email` selama barisnya masih ada, jadi alamat
+	 * itu tidak bisa dipakai akun baru sampai barisnya benar-benar dilepas.
+	 * API-nya `DELETE {resource}/{id}/permanen`.
+	 */
+	hapusPermanen?: boolean;
+	/**
 	 * Modul tanpa kolom jejak dokumen.
 	 *
 	 * Dipakai Audit Log: tabelnya memang catatan perubahan, jadi tidak punya

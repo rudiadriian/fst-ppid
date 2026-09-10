@@ -59,6 +59,17 @@ class RouteServiceProvider extends ServiceProvider
             ];
         });
 
+        /*
+         * Ubah password mandiri. Endpointnya menuntut password lama, jadi ia
+         * ikut menjadi tempat menebak password — jauh lebih sempit daripada
+         * halaman masuk (token yang sah wajib ada), tetapi tetap perlu direm.
+         * Kuncinya per akun, bukan per IP: yang ditebak adalah satu akun
+         * tertentu, dan petugas satu kantor sering berbagi satu alamat IP.
+         */
+        RateLimiter::for('ubah-password', function (Request $request) {
+            return Limit::perMinute(6)->by('ubah-password:'.($this->idPengguna($request) ?: $request->ip()));
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

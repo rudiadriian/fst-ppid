@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pemohon;
 use App\Models\PengirimanTautanAkun;
 use App\Rules\CaptchaBenar;
+use App\Rules\EmailBelumTerpakai;
 use App\Support\NotifikasiAdmin;
 use App\Support\PembatasTautan;
 use App\Support\PerisaiFormulir;
@@ -42,7 +43,9 @@ class RegisterController extends Controller
 
         $data = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email:rfc,dns', 'max:255'],
+            // Satu email, satu akun, di seluruh sistem PPID — termasuk akun
+            // petugas panel yang tersimpan di tabel lain.
+            'email' => ['required', 'string', 'email:rfc,dns', 'max:255', new EmailBelumTerpakai()],
             // Nomor WhatsApp dipakai petugas untuk mengonfirmasi berkas
             // verifikasi, jadi wajib diisi.
             'no_hp' => ['required', 'string', 'max:20', 'regex:/^[0-9+()\-\s]{8,20}$/'],

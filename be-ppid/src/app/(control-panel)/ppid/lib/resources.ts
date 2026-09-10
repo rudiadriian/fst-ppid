@@ -1286,8 +1286,10 @@ export const resources: ResourceConfig[] = [
 		modul: 'pengguna',
 		title: 'Pengguna',
 		singular: 'Pengguna',
-		description: 'Akun admin panel beserta rolenya.',
+		description:
+			'Akun admin panel beserta rolenya. Akun yang dihapus pindah ke arsip (filter "Status data" → Terhapus) dan bisa dilepas permanen dari sana — selama barisnya masih ada, emailnya tidak bisa dipakai akun baru.',
 		icon: 'lucide:user-cog',
+		hapusPermanen: true,
 		columns: [
 			{ key: 'name', label: 'Nama' },
 			{ key: 'email', label: 'Email' },

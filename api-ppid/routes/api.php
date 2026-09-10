@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AkunController;
 use App\Http\Controllers\Api\AnalitikController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Cms\AlurApprovalController;
@@ -72,6 +73,14 @@ Route::prefix('v1')->group(function () {
             Route::post('refresh', [AuthController::class, 'refresh']);
             Route::post('sign-out', [AuthController::class, 'signOut']);
             Route::put('user/{id}', [AuthController::class, 'updateUser']);
+            /*
+             * Ubah password sendiri. Sengaja di grup `auth`, bukan di grup modul
+             * CMS: yang disentuh akun pemiliknya sendiri, jadi tidak digantung
+             * pada hak modul Pengguna — petugas tanpa hak apa pun di modul itu
+             * tetap boleh mengganti passwordnya.
+             */
+            Route::post('ubah-password', [AkunController::class, 'ubahPassword'])
+                ->middleware('throttle:ubah-password');
         });
     });
 
@@ -213,6 +222,14 @@ Route::prefix('v1')->group(function () {
             ->middleware('akses:pengguna,view')->whereNumber('id');
         Route::put('role/{id}/akses', [RoleController::class, 'simpanAkses'])
             ->middleware('akses:pengguna,edit')->whereNumber('id');
+        /*
+         * Hapus permanen satu akun. Didaftarkan sebelum CrudRoute supaya tidak
+         * tertangkap pola `/{id}`, dan hanya untuk modul Pengguna: modul lain
+         * cukup dengan penghapusan lunak, sedangkan akun perlu jalur pelepasan
+         * sungguhan karena emailnya menempati indeks unik selama barisnya ada.
+         */
+        Route::delete('pengguna/{id}/permanen', [PenggunaController::class, 'hapusPermanen'])
+            ->middleware('akses:pengguna,delete')->whereNumber('id');
         CrudRoute::register('pengguna', PenggunaController::class, 'pengguna');
         CrudRoute::register('role', RoleController::class, 'pengguna');
         // Modul sistem = dasar matrix hak akses; hak aksesnya ikut modul Pengguna.

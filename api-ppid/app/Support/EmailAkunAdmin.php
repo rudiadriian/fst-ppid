@@ -56,13 +56,13 @@ class EmailAkunAdmin
      * Ini bukan basa-basi: kalau bukan pemiliknya yang mengganti, email inilah
      * satu-satunya tanda bahwa akunnya sudah berpindah tangan.
      */
-    public static function passwordDiubah(User $user): void
+    public static function passwordDiubah(User $user, string $lewat = 'melalui tautan atur ulang password'): void
     {
         self::antre((string) $user->email, new StatusLayananMail('Password panel PPID Anda telah diubah', [
             'judul' => 'Password Berhasil Diubah',
             'nama' => filled($user->name) ? $user->name : 'Petugas',
             'paragraf' => [
-                'Password akun panel PPID milik Anda baru saja diubah melalui tautan atur ulang password.',
+                'Password akun panel PPID milik Anda baru saja diubah '.$lewat.'.',
                 'Mulai sekarang, gunakan password baru tersebut untuk masuk.',
             ],
             'baris' => [

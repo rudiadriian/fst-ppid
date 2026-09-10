@@ -5,6 +5,8 @@ import PpidAuthGuard from './components/PpidAuthGuard';
 
 const PpidDashboard = lazy(() => import('./PpidDashboard'));
 const PpidResourcePage = lazy(() => import('./PpidResourcePage'));
+/** Akun milik petugas sendiri: ubah password mandiri. */
+const PpidAkunPage = lazy(() => import('./PpidAkunPage'));
 /**
  * Halaman arsip notifikasi. Komponennya sudah lama ada di `apps/notifications`
  * tetapi tidak pernah punya route, jadi satu-satunya jalan melihat notifikasi
@@ -32,6 +34,10 @@ const route: FuseRouteItemType[] = [
 			// Didaftarkan sebelum `:resourceSlug`: tanpa itu alamatnya tertangkap
 			// pola modul dan dijawab "Modul tidak dikenal".
 			{ path: 'notifikasi', element: <NotifikasiPage /> },
+			// Sama alasannya: didaftarkan sebelum `:resourceSlug` supaya tidak
+			// dikira nama modul. Tidak digantung hak modul mana pun — isinya
+			// akun pemiliknya sendiri.
+			{ path: 'akun', element: <PpidAkunPage /> },
 			{ path: ':resourceSlug', element: <PpidResourcePage /> }
 		]
 	}

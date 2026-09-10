@@ -13,7 +13,13 @@ import { useTranslation } from 'react-i18next';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import DataTable from '@/components/data-table/DataTable';
 import { ApiRecord, PpidApiError } from '../api/ppidApi';
-import { useDeleteManyResource, useDeleteResource, useRelationOptions, useResourceList } from '../api/useResource';
+import {
+	useDeleteManyResource,
+	useDeleteResource,
+	useForceDeleteResource,
+	useRelationOptions,
+	useResourceList
+} from '../api/useResource';
 import { useAksesModul } from '../api/useNavigasi';
 import { apiPathOf, ColumnConfig, FilterConfig, ResourceConfig } from '../lib/types';
 import { FILTER_TERHAPUS, kolomDenganJejak, punyaJejak, visibilitasAwalJejak } from '../lib/jejak';
@@ -215,6 +221,7 @@ export function ResourceListPage({ config, aksiBaris, onRowClick, headerExtra }:
 	const { data, isLoading, isFetching, error } = useResourceList<ApiRecord>(apiPath, params);
 	const hapus = useDeleteResource(apiPath);
 	const hapusBanyak = useDeleteManyResource(apiPath);
+	const hapusPermanen = useForceDeleteResource(apiPath);
 
 	// Data terhapus hanya bisa dilihat, bukan disunting atau dihapus lagi.
 	const melihatTerhapus = (nilaiFilter.terhapus ?? '') !== '';
@@ -269,6 +276,49 @@ export function ResourceListPage({ config, aksiBaris, onRowClick, headerExtra }:
 		[hapus, enqueueSnackbar, t]
 	);
 
+	const jalankanHapusPermanen = useCallback(
+		async (id: number, nama: string) => {
+			/*
+			 * Dua pertanyaan, bukan satu. Yang pertama menjelaskan apa yang
+			 * hilang; yang kedua menuntut nama barisnya diketik ulang, supaya
+			 * tindakan yang tidak bisa dibatalkan tidak selesai hanya dengan
+			 * menekan Enter dua kali.
+			 */
+			if (
+				!window.confirm(
+					t('Hapus permanen data ini? Barisnya dilepas dari basis data dan tidak bisa dikembalikan.')
+				)
+			) {
+				return;
+			}
+
+			const ketikan = window.prompt(`${t('Ketik ulang nama berikut untuk memastikan:')} ${nama}`, '');
+
+			if (ketikan === null) {
+				return;
+			}
+
+			if (ketikan.trim() !== nama.trim()) {
+				enqueueSnackbar(t('Namanya tidak cocok. Penghapusan permanen dibatalkan.'), {
+					variant: 'info'
+				});
+				return;
+			}
+
+			try {
+				await hapusPermanen.mutateAsync(id);
+				enqueueSnackbar(t('Data dihapus permanen'), { variant: 'success' });
+			} catch (err) {
+				const pesan =
+					err instanceof PpidApiError
+						? (Object.values(err.errors)[0]?.[0] ?? err.message)
+						: t('Gagal menghapus data secara permanen');
+				enqueueSnackbar(pesan, { variant: 'error' });
+			}
+		},
+		[hapusPermanen, enqueueSnackbar, t]
+	);
+
 	// Saat daftar menampilkan data terhapus, aksi tulis dimatikan: barisnya
 	// tinggal arsip jejak, bukan data yang masih dipakai.
 	const bolehTulis = !config.readOnly && !melihatTerhapus;
@@ -279,6 +329,13 @@ export function ResourceListPage({ config, aksiBaris, onRowClick, headerExtra }:
 	const bolehTambah = bolehTulis && akses.create && !config.tanpaTambah;
 	const bolehUbah = bolehTulis && akses.edit && !config.tanpaUbah;
 	const bolehHapus = bolehTulis && akses.delete && !config.tanpaHapus;
+	/*
+	 * Hapus permanen tidak ikut `bolehTulis`: justru di daftar data terhapus ia
+	 * berguna. Aksinya tetap dipasang per baris — hanya baris yang `deleted_at`
+	 * -nya terisi yang memilikinya, sehingga filter "Aktif + terhapus" tidak
+	 * menawarkannya pada akun yang masih hidup.
+	 */
+	const bolehHapusPermanen = Boolean(config.hapusPermanen) && !config.readOnly && akses.delete;
 	// Formulirnya hanya ada gunanya bila salah satu jalur tulisnya hidup.
 	const adaFormulir = bolehTambah || bolehUbah;
 
@@ -413,7 +470,7 @@ export function ResourceListPage({ config, aksiBaris, onRowClick, headerExtra }:
 					// Kolom aksi juga muncul untuk modul baca-saja yang punya
 					// aksi khusus — mis. Pemohon, yang datanya tidak boleh
 					// disunting tetapi berkasnya perlu diverifikasi petugas.
-					enableRowActions={Boolean(aksiBaris) || bolehUbah || bolehHapus}
+					enableRowActions={Boolean(aksiBaris) || bolehUbah || bolehHapus || bolehHapusPermanen}
 					renderTopToolbarCustomActions={({ table }) => (
 						<div className="flex flex-wrap items-center gap-2">
 							{bolehHapus && table.getSelectedRowModel().rows.length > 0 && (
@@ -522,6 +579,33 @@ export function ResourceListPage({ config, aksiBaris, onRowClick, headerExtra }:
 										<FuseSvgIcon size={18}>lucide:pencil</FuseSvgIcon>
 									</ListItemIcon>
 									{t('Ubah')}
+								</MenuItem>
+							) : null,
+							bolehHapusPermanen && row.original.deleted_at ? (
+								<MenuItem
+									key="hapus-permanen"
+									onClick={() => {
+										closeMenu();
+										void jalankanHapusPermanen(
+											Number(row.original.id),
+											String(
+												row.original.name ??
+													row.original.nama ??
+													row.original.email ??
+													row.original.id
+											)
+										);
+									}}
+								>
+									<ListItemIcon>
+										<FuseSvgIcon
+											size={18}
+											color="error"
+										>
+											lucide:trash-2
+										</FuseSvgIcon>
+									</ListItemIcon>
+									{t('Hapus permanen')}
 								</MenuItem>
 							) : null,
 							bolehHapus ? (

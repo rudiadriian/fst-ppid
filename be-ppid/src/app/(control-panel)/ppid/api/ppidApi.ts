@@ -128,6 +128,20 @@ export const ppidApi = {
 		}
 	},
 
+	/**
+	 * Hapus permanen satu baris yang sudah berada di arsip penghapusan.
+	 *
+	 * Bukan pengganti `remove`: yang ini melepas barisnya dari basis data, jadi
+	 * API hanya menerimanya untuk baris yang `deleted_at`-nya sudah terisi.
+	 */
+	async removePermanent(resource: string, id: number | string): Promise<void> {
+		try {
+			await api.delete(`v1/${resource}/${id}/permanen`);
+		} catch (error) {
+			await toPpidError(error);
+		}
+	},
+
 	async removeMany(resource: string, ids: number[]): Promise<void> {
 		try {
 			await api.post(`v1/${resource}/hapus-massal`, { json: { ids } });

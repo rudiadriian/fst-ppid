@@ -172,6 +172,19 @@ function UserMenu(props: UserMenuProps) {
 							</ListItemIcon>
 							<ListItemText primary="Dashboard" />
 						</MenuItem>
+						{/* Ubah password sendiri; halamannya terbuka untuk semua
+						    petugas, tanpa hak modul Pengguna. */}
+						<MenuItem
+							component={Link}
+							to="/ppid/akun"
+							onClick={userMenuClose}
+							role="button"
+						>
+							<ListItemIcon>
+								<FuseSvgIcon>lucide:key-round</FuseSvgIcon>
+							</ListItemIcon>
+							<ListItemText primary="Akun Saya" />
+						</MenuItem>
 						<MenuItem
 							onClick={() => {
 								signOut();

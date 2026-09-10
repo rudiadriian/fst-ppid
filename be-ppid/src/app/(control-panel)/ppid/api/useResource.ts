@@ -61,6 +61,16 @@ export function useDeleteResource(resource: string) {
 	});
 }
 
+/** Pelepasan permanen satu baris dari arsip penghapusan (mis. akun pengguna). */
+export function useForceDeleteResource(resource: string) {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (id: number | string) => ppidApi.removePermanent(resource, id),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: resourceKeys.all(resource) })
+	});
+}
+
 export function useDeleteManyResource(resource: string) {
 	const queryClient = useQueryClient();
 
