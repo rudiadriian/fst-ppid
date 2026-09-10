@@ -81,6 +81,16 @@ Route::prefix('v1')->group(function () {
              */
             Route::post('ubah-password', [AkunController::class, 'ubahPassword'])
                 ->middleware('throttle:ubah-password');
+
+            /*
+             * Halaman Akun Saya di panel: profil + role & hak akses, penyuntingan
+             * profil sendiri, dan riwayat aktivitas. Alasannya sama seperti ubah
+             * password — isinya akun pemanggil sendiri, jadi tidak digantung hak
+             * modul Pengguna maupun Audit Log.
+             */
+            Route::get('akun', [AkunController::class, 'profil']);
+            Route::put('akun', [AkunController::class, 'perbaruiProfil']);
+            Route::get('akun/aktivitas', [AkunController::class, 'aktivitas']);
         });
     });
 

@@ -44,6 +44,8 @@ class UploadController extends Controller
         'galeri',
         'banner',
         'struktur-organisasi',
+        // Foto profil akun panel, diunggah sendiri dari halaman Akun Saya.
+        'pengguna',
         'regulasi',
         'tautan',
         'pengaturan',
