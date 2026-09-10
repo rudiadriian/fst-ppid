@@ -356,7 +356,7 @@ class PpidController extends Controller
         $fromDb = $this->fromDatabase(
             fn () => $this->mapRegulasi(
                 Regulasi::kategori(['regulasi', 'pedoman', 'dasar_hukum_ppid'])
-                    ->with('pengunggah')
+                    ->with('pengunggah.role')
                     ->orderByDesc('created_at')
                     ->orderBy('judul')
                     ->get()
@@ -590,7 +590,7 @@ class PpidController extends Controller
     {
         $baris = $this->fromDatabase(
             fn () => Maklumat::published()
-                ->with('penerbit')
+                ->with('penerbit.role')
                 ->orderByDesc('tanggal_terbit')
                 ->orderByDesc('id')
                 ->first(),
@@ -626,7 +626,8 @@ class PpidController extends Controller
             // dilepas dari halaman, dan meneruskan data yang tidak dipakai
             // membuat view berikutnya mengira ia masih tayang.
             'tanggal' => $baris->tanggal_terbit ? \App\Support\Cms::tanggal($baris->tanggal_terbit) : null,
-            'pengunggah' => $baris->penerbit->name ?? null,
+            // Jabatan pengunggah, bukan namanya — lihat PenggunaPanel::labelPublik().
+            'pengunggah' => $baris->penerbit?->labelPublik(),
         ];
 
         return $data;
@@ -778,7 +779,7 @@ class PpidController extends Controller
             fn () => $this->mapLaporanPelayanan(
                 LaporanLayanan::published()
                     ->tipe($meta['tipe'])
-                    ->with('penerbit')
+                    ->with('penerbit.role')
                     ->orderByDesc('tahun')
                     ->orderByDesc('id')
                     ->get()
@@ -804,7 +805,7 @@ class PpidController extends Controller
         $baris = $this->fromDatabase(
             fn () => LaporanLayanan::published()
                 ->tipe('pelayanan_informasi')
-                ->with('penerbit')
+                ->with('penerbit.role')
                 ->find($laporan),
             null,
             'laporan_pelayanan_detail'
@@ -816,7 +817,7 @@ class PpidController extends Controller
             fn () => $this->mapLaporanPelayanan(
                 LaporanLayanan::published()
                     ->tipe('pelayanan_informasi')
-                    ->with('penerbit')
+                    ->with('penerbit.role')
                     ->where('id', '!=', $baris->id)
                     ->orderByDesc('tahun')
                     ->orderByDesc('id')
@@ -854,7 +855,8 @@ class PpidController extends Controller
             // Dipakai view untuk memilih cara menampilkan berkas: PDF digambar
             // lewat pdf.js, gambar ditampilkan apa adanya.
             'ext'        => strtolower(pathinfo((string) $row->file_laporan, PATHINFO_EXTENSION)),
-            'pengunggah' => $row->penerbit->name ?? null,
+            // Jabatan penerbit, bukan namanya — lihat PenggunaPanel::labelPublik().
+            'pengunggah' => $row->penerbit?->labelPublik(),
             'link'       => $this->fileUrl($row->file_laporan),
             'url'        => route('ppid.report.show', $row->id),
         ];
@@ -953,7 +955,8 @@ class PpidController extends Controller
             // lewat pdf.js, gambar ditampilkan apa adanya.
             'ext'       => strtolower(pathinfo((string) $row->file_path, PATHINFO_EXTENSION)),
             'type'      => $this->labelKategoriRegulasi($row->kategori),
-            'pengunggah' => $row->pengunggah->name ?? null,
+            // Jabatan pengunggah, bukan namanya — lihat PenggunaPanel::labelPublik().
+            'pengunggah' => $row->pengunggah?->labelPublik(),
             // Berkas kosong sengaja dibiarkan null: view menampilkan "Belum
             // tersedia", bukan tautan yang tidak menuju ke mana-mana.
             'link'      => $this->fileUrl($row->file_path),
@@ -969,7 +972,7 @@ class PpidController extends Controller
     public function showRegulationDetail(int $regulasi)
     {
         $baris = $this->fromDatabase(
-            fn () => Regulasi::with('pengunggah')->find($regulasi),
+            fn () => Regulasi::with('pengunggah.role')->find($regulasi),
             null,
             'regulasi_detail'
         );
@@ -979,7 +982,7 @@ class PpidController extends Controller
         $lainnya = $this->fromDatabase(
             fn () => $this->mapRegulasi(
                 Regulasi::kategori(['regulasi', 'pedoman', 'dasar_hukum_ppid'])
-                    ->with('pengunggah')
+                    ->with('pengunggah.role')
                     ->where('id', '!=', $baris->id)
                     // Yang sekategori didahulukan, sisanya menyusul yang terbaru.
                     ->orderByRaw('CASE WHEN kategori = ? THEN 0 ELSE 1 END', [$baris->kategori])

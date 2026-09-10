@@ -7,7 +7,7 @@
         <div class="absolute inset-0 opacity-[0.07]" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 28px 28px;"></div>
         <div class="relative z-10 max-w-screen-2xl mx-auto px-6 lg:px-8 py-16 lg:py-20 text-center">
             <p class="text-sm font-semibold tracking-widest uppercase text-white/70 mb-4">{{ __('Pencarian') }}</p>
-            <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight">{!! $judulDua(__('Hasil Pencarian'), 1, 'fs-title-accent-soft') !!}</h1>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">{!! $judulDua(__('Hasil Pencarian'), 1, 'fs-title-accent-soft') !!}</h1>
             @if ($query !== '')
                 <p class="mt-4 text-lg font-normal text-white/80">{{ __('Kata kunci') }}: <span class="font-semibold">{{ $query }}</span></p>
             @endif

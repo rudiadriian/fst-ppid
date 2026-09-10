@@ -10,7 +10,7 @@
         @include('partials.latar_informasi', ['opasitas' => 0.66, 'terang' => 0.68, 'muat' => 'eager'])
         <div class="relative z-10 max-w-screen-2xl mx-auto px-6 lg:px-8 py-16 lg:py-20 text-center">
             <p class="text-sm font-semibold tracking-widest uppercase text-white/70 mb-4">{{ __('Informasi Publik') }}</p>
-            <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight">{!! $judulDua(__('Daftar Informasi').' '.__($data['title']), 1, 'fs-title-accent-soft') !!}</h1>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">{!! $judulDua(__('Daftar Informasi').' '.__($data['title']), 1, 'fs-title-accent-soft') !!}</h1>
         </div>
     </section>
 

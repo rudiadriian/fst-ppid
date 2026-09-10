@@ -8,7 +8,7 @@
         <div class="absolute inset-0 opacity-[0.07]" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 28px 28px;"></div>
         <div class="relative z-10 max-w-screen-2xl mx-auto px-6 lg:px-8 py-16 lg:py-20 text-center">
             <p class="text-sm font-semibold tracking-widest uppercase text-white/70 mb-4">{{ __('Informasi Publik') }}</p>
-            <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight">{!! $judulDua(__($data['title']), 1, 'fs-title-accent-soft') !!}</h1>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">{!! $judulDua(__($data['title']), 1, 'fs-title-accent-soft') !!}</h1>
             <p class="mt-4 text-lg font-normal text-white/80 max-w-3xl mx-auto leading-relaxed">{{ __($data['description']) }}</p>
         </div>
     </section>
@@ -67,6 +67,10 @@
                 {{-- Tabel dipakai mulai layar sedang; di ponsel isinya jadi kartu
                      supaya tidak perlu digeser ke samping. --}}
                 <div class="hidden md:block bg-white dark:bg-[#0B2A1D] rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
+                    {{-- Tabelnya boleh digeser mendatar pada layar sedang: tanpa
+                         ini kolom Surat Penetapan terpotong diam-diam oleh
+                         `overflow-hidden` milik kartu pembungkusnya. --}}
+                    <div class="overflow-x-auto">
                     <table class="min-w-full">
                         <thead>
                             <tr class="bg-[#FAF6EC] dark:bg-[#082217] border-b border-gray-100 dark:border-white/10">
@@ -94,6 +98,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
 
                     @if (empty($data['items']))
                         <div class="px-6 py-16 text-center">

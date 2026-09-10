@@ -233,6 +233,44 @@ export function ResourceListPage({ config, aksiBaris, onRowClick, headerExtra }:
 		[config]
 	);
 
+	/** Pilihan satu filter select, dihitung ulang bila filter acuannya berubah. */
+	const opsiFilter = useCallback(
+		(filter: FilterConfig) => filter.opsiDinamis?.(nilaiFilter) ?? filter.options ?? [],
+		[nilaiFilter]
+	);
+
+	/*
+	 * Nilai yang tidak lagi ada di daftarnya dilepas sendiri.
+	 *
+	 * Tanpa ini, memilih Status "Kedaluwarsa" lalu berpindah ke kategori
+	 * Keberatan menyisakan penyaring yang tidak terlihat di mana pun — daftarnya
+	 * kosong dan tidak ada satu pun kotak yang menjelaskan kenapa.
+	 */
+	useEffect(() => {
+		const usang = daftarFilter.filter((filter) => {
+			const nilai = nilaiFilter[filter.name] ?? '';
+
+			if (filter.type !== 'select' || nilai === '' || !filter.opsiDinamis) {
+				return false;
+			}
+
+			return !opsiFilter(filter).some((opsi) => String(opsi.value) === nilai);
+		});
+
+		if (usang.length === 0) {
+			return;
+		}
+
+		setNilaiFilter((lama) => {
+			const baru = { ...lama };
+			usang.forEach((filter) => {
+				baru[filter.name] = '';
+			});
+
+			return baru;
+		});
+	}, [daftarFilter, nilaiFilter, opsiFilter]);
+
 	// Dihitung sekali saat tabel dipasang: MRT hanya membaca `initialState` pada
 	// render pertama, dan setelah itu visibilitas kolom milik operator.
 	const [visibilitasAwal] = useState(() => visibilitasAwalJejak(config));
@@ -544,7 +582,7 @@ export function ResourceListPage({ config, aksiBaris, onRowClick, headerExtra }:
 										sx={{ minWidth: 170 }}
 									>
 										<MenuItem value="">{t(filter.labelKosong ?? 'Semua')}</MenuItem>
-										{(filter.options ?? []).map((opsi) => (
+										{opsiFilter(filter).map((opsi) => (
 											<MenuItem
 												key={String(opsi.value)}
 												value={String(opsi.value)}

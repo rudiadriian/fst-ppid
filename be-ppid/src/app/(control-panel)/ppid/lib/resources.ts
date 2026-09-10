@@ -1,4 +1,4 @@
-import { JENIS_KEBERATAN } from './statusPengajuan';
+import { JENIS_KEBERATAN, opsiStatusPengajuan, petaBadgeStatus } from './statusPengajuan';
 import { ResourceConfig } from './types';
 
 /**
@@ -89,35 +89,21 @@ const BADGE_SLA = {
 
 const KEADAAN_SLA = Object.entries(BADGE_SLA).map(([value, info]) => ({ value, label: info.label }));
 
-const BADGE_PERMOHONAN = {
-	diajukan: { label: 'Diajukan', color: 'info' as const },
-	diverifikasi: { label: 'Diverifikasi', color: 'info' as const },
-	diproses: { label: 'Diproses', color: 'warning' as const },
-	revisi: { label: 'Revisi', color: 'warning' as const },
-	menunggu_approval: { label: 'Menunggu Persetujuan', color: 'warning' as const },
-	disetujui: { label: 'Disetujui', color: 'success' as const },
-	ditolak: { label: 'Ditolak', color: 'error' as const },
-	ditolak_sebagian: { label: 'Ditolak Sebagian', color: 'error' as const },
-	selesai: { label: 'Selesai', color: 'success' as const },
-	kedaluwarsa: { label: 'Kedaluwarsa', color: 'default' as const }
-};
-
-/**
- * Status keberatan; nilainya dari `KeberatanInformasi::TRANSISI` di api-ppid.
+/*
+ * Chip status pengajuan disusun dari katalog alur di `statusPengajuan.ts`,
+ * tidak lagi ditulis ulang di sini.
  *
- * Sebelum alur persetujuan berjenjang dipakai, daftar ini hanya memuat tiga
- * status. `revisi`, `menunggu_approval`, dan `ditolak` sudah lama diterima
- * CHECK constraint tabelnya tetapi tidak punya label di panel — barisnya
- * tampil sebagai nilai mentah.
+ * Sebelumnya label, warna, dan pilihan filternya hidup di dua berkas sekaligus.
+ * Begitu alurnya berubah, salinan yang terlewat membuat filter Status
+ * menawarkan status yang tidak ada di alur — persis yang dilaporkan pada UAT
+ * poin 12.
+ *
+ * Daftar Permohonan memuat dua kategori, jadi chipnya memakai katalog gabungan;
+ * modul Keberatan memakai bagiannya sendiri.
  */
-const BADGE_KEBERATAN = {
-	diajukan: { label: 'Diajukan', color: 'info' as const },
-	diproses: { label: 'Diproses', color: 'warning' as const },
-	revisi: { label: 'Revisi', color: 'warning' as const },
-	menunggu_approval: { label: 'Menunggu Persetujuan', color: 'warning' as const },
-	ditolak: { label: 'Ditolak', color: 'error' as const },
-	selesai: { label: 'Selesai', color: 'success' as const }
-};
+const BADGE_PENGAJUAN = petaBadgeStatus();
+
+const BADGE_KEBERATAN = petaBadgeStatus('keberatan');
 
 export const resources: ResourceConfig[] = [
 	// ------------------------------------------------------------------
@@ -428,7 +414,7 @@ export const resources: ResourceConfig[] = [
 			{ key: 'kode', label: 'Kode', size: 190, noSort: true },
 			{ key: 'nama_pemohon', label: 'Pemohon', size: 180, noSort: true },
 			{ key: 'pokok', label: 'Pokok pengajuan', size: 260, noSort: true },
-			{ key: 'status', label: 'Status', type: 'badge', badgeMap: BADGE_PERMOHONAN, size: 170, noSort: true },
+			{ key: 'status', label: 'Status', type: 'badge', badgeMap: BADGE_PENGAJUAN, size: 170, noSort: true },
 			{ key: 'jalur_pelayanan', label: 'Jalur', type: 'badge', badgeMap: BADGE_JALUR, size: 120, noSort: true },
 			{ key: 'sla_keadaan', label: 'Tenggat', type: 'badge', badgeMap: BADGE_SLA, size: 170, noSort: true },
 			{ key: 'tanggal_pengajuan', label: 'Diajukan', type: 'datetime', size: 160, noSort: true },
@@ -443,7 +429,16 @@ export const resources: ResourceConfig[] = [
 				name: 'status',
 				label: 'Status',
 				type: 'select',
-				options: Object.entries(BADGE_PERMOHONAN).map(([value, info]) => ({ value, label: info.label }))
+				/*
+				 * Pilihannya mengikuti kategori yang sedang dipilih: daftar ini
+				 * memuat dua kategori dengan alur yang tidak sama. Memilih
+				 * Keberatan tidak lagi menawarkan "Diverifikasi", "Disetujui",
+				 * "Ditolak Sebagian", maupun "Kedaluwarsa" — status yang tidak
+				 * pernah dipakai tabel keberatan dan hanya menghasilkan daftar
+				 * kosong tanpa keterangan.
+				 */
+				options: opsiStatusPengajuan(),
+				opsiDinamis: (nilaiFilter) => opsiStatusPengajuan(nilaiFilter.jenis)
 			},
 			{ name: 'jalur_pelayanan', label: 'Jalur pelayanan', type: 'select', options: JALUR_PELAYANAN },
 			{ name: 'sla_keadaan', label: 'Tenggat', type: 'select', options: KEADAAN_SLA }
@@ -478,7 +473,7 @@ export const resources: ResourceConfig[] = [
 				name: 'status',
 				label: 'Status',
 				type: 'select',
-				options: Object.entries(BADGE_KEBERATAN).map(([value, info]) => ({ value, label: info.label }))
+				options: opsiStatusPengajuan('keberatan')
 			},
 			{
 				name: 'jenis_keberatan',

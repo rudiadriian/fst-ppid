@@ -9,6 +9,17 @@
       font-family: 'Poppins', sans-serif;
     }
 
+    /* Media tidak pernah lebih lebar dari wadahnya.
+       Gambar yang diunggah petugas bisa berukuran ribuan piksel; tanpa pagar
+       ini satu gambar besar di isi CMS sudah cukup membuat seluruh halaman
+       bisa digeser mendatar di ponsel. */
+    img,
+    video,
+    iframe,
+    canvas {
+      max-width: 100%;
+    }
+
     /* Elemen ber-`x-cloak` disembunyikan sampai Alpine selesai memuat.
        Tanpa ini panel yang seharusnya tertutup sempat berkedip tampil
        pada muat pertama. */
@@ -138,4 +149,26 @@
 }
 .fs-rte th {
     @apply bg-[#FAF6EC] dark:bg-[#082217] font-semibold text-gray-900 dark:text-white;
+}
+
+/* ---------------------------------------------------------------------------
+   Tabel di dalam isi rich text CMS.
+
+   Isinya ditulis petugas lewat editor, jadi jumlah kolomnya tidak bisa
+   ditentukan dari sini — tabel enam kolom pada layar 360 px akan melebarkan
+   seluruh halaman dan memunculkan geseran mendatar di semua bagian, bukan
+   hanya di tabelnya. `resources/js/app.js` membungkus tiap tabel dengan
+   pembungkus di bawah supaya yang bergeser cukup tabelnya sendiri.
+   --------------------------------------------------------------------------- */
+.fs-tabel-scroll {
+    @apply w-full overflow-x-auto;
+}
+.fs-tabel-scroll > table {
+    @apply min-w-full;
+}
+
+/* Alamat panjang tanpa spasi (URL, nomor berkas) tidak boleh mendorong lebar
+   halaman; dipatahkan di ujung baris. */
+.fs-rte {
+    overflow-wrap: break-word;
 }

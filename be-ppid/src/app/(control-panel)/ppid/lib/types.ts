@@ -78,6 +78,17 @@ export type FilterConfig = {
 	label: string;
 	type: 'select' | 'relation' | 'date';
 	options?: PilihanOpsi[];
+	/**
+	 * Pilihan yang bergantung pada filter lain yang sedang aktif.
+	 *
+	 * Dipakai daftar gabungan Permohonan: status yang sah berbeda antara
+	 * Permohonan Informasi dan Keberatan, jadi memilih kategori mempersempit
+	 * pilihan Status — daripada menawarkan status yang pasti tidak pernah
+	 * dipakai kategori itu dan selalu menghasilkan daftar kosong. Bila filter
+	 * yang menjadi acuannya berubah dan nilai yang terpilih tidak lagi ada di
+	 * daftarnya, nilainya dilepas sendiri oleh halaman daftar.
+	 */
+	opsiDinamis?: (nilaiFilter: Record<string, string>) => PilihanOpsi[];
 	relation?: { resource: string; labelKey: string };
 	/** Label pilihan kosong pada filter select; default "Semua". */
 	labelKosong?: string;

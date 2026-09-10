@@ -12,20 +12,115 @@
  * menampilkan nilai mentah kepada petugas.
  */
 
+import { PilihanOpsi } from './types';
+
 export type WarnaChip = 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
 
-export const STATUS_PERMOHONAN: Record<string, { label: string; warna: WarnaChip }> = {
-	diajukan: { label: 'Diajukan', warna: 'info' },
-	diverifikasi: { label: 'Diverifikasi', warna: 'info' },
-	diproses: { label: 'Diproses', warna: 'warning' },
-	revisi: { label: 'Revisi', warna: 'warning' },
-	menunggu_approval: { label: 'Menunggu Persetujuan', warna: 'warning' },
-	disetujui: { label: 'Disetujui', warna: 'success' },
-	ditolak: { label: 'Ditolak', warna: 'error' },
-	ditolak_sebagian: { label: 'Ditolak Sebagian', warna: 'error' },
-	selesai: { label: 'Selesai', warna: 'success' },
-	kedaluwarsa: { label: 'Kedaluwarsa', warna: 'default' }
+export type JenisPengajuan = 'permohonan' | 'keberatan';
+
+export type StatusPengajuan = {
+	value: string;
+	label: string;
+	warna: WarnaChip;
+	/** Kategori pengajuan yang benar-benar memakai status ini. */
+	jenis: JenisPengajuan[];
+	/**
+	 * Kosakata lama: tidak dipasang lagi oleh alur mana pun, tetapi baris yang
+	 * telanjur tersimpan masih memakainya. Tetap bisa disaring supaya berkas
+	 * lama tidak menjadi tidak terjangkau, dengan label yang mengatakan
+	 * keadaannya.
+	 */
+	lama?: boolean;
 };
+
+/**
+ * Satu katalog status pengajuan, berurut mengikuti alur prosesnya.
+ *
+ * Urutannya bukan abjad melainkan jalannya berkas: masuk → diperiksa →
+ * diproses → putusan → tutup. Dari katalog inilah label chip, warna, dan
+ * pilihan filter Status disusun — sebelumnya ketiganya ditulis ulang di dua
+ * berkas, dan salinan yang terlewat membuat filter menawarkan status yang tidak
+ * ada di alur sekaligus melewatkan status yang ada.
+ *
+ * Sumber kebenarannya tetap `PermohonanInformasi::TRANSISI` dan
+ * `KeberatanInformasi::TRANSISI` di api-ppid; `jenis` di bawah menyalin
+ * status mana yang dikenal masing-masing tabel (ikut CHECK constraint-nya).
+ */
+export const ALUR_STATUS_PENGAJUAN: StatusPengajuan[] = [
+	{ value: 'diajukan', label: 'Diajukan', warna: 'info', jenis: ['permohonan', 'keberatan'] },
+	// Hanya permohonan: keberatan tidak punya langkah verifikasi berkas.
+	{ value: 'diverifikasi', label: 'Diverifikasi', warna: 'info', jenis: ['permohonan'] },
+	{ value: 'diproses', label: 'Diproses', warna: 'warning', jenis: ['permohonan', 'keberatan'] },
+	{ value: 'revisi', label: 'Revisi', warna: 'warning', jenis: ['permohonan', 'keberatan'] },
+	{ value: 'disetujui', label: 'Disetujui', warna: 'success', jenis: ['permohonan'] },
+	{ value: 'ditolak_sebagian', label: 'Ditolak Sebagian', warna: 'error', jenis: ['permohonan'] },
+	{ value: 'ditolak', label: 'Ditolak', warna: 'error', jenis: ['permohonan', 'keberatan'] },
+	{ value: 'selesai', label: 'Selesai', warna: 'success', jenis: ['permohonan', 'keberatan'] },
+	{ value: 'kedaluwarsa', label: 'Kedaluwarsa', warna: 'default', jenis: ['permohonan'] },
+	{
+		value: 'menunggu_approval',
+		label: 'Menunggu Persetujuan',
+		warna: 'warning',
+		jenis: ['permohonan', 'keberatan'],
+		lama: true
+	}
+];
+
+function petaStatus(jenis: JenisPengajuan): Record<string, { label: string; warna: WarnaChip }> {
+	return ALUR_STATUS_PENGAJUAN.filter((status) => status.jenis.includes(jenis)).reduce<
+		Record<string, { label: string; warna: WarnaChip }>
+	>((hasil, status) => {
+		hasil[status.value] = { label: status.label, warna: status.warna };
+		return hasil;
+	}, {});
+}
+
+/**
+ * Peta status untuk chip pada tabel (`badgeMap` memakai `color`, bukan `warna`).
+ *
+ * Tanpa argumen: seluruh status kedua kategori — dipakai daftar gabungan
+ * Permohonan, yang memuat permohonan dan keberatan sekaligus.
+ */
+export function petaBadgeStatus(jenis?: JenisPengajuan): Record<string, { label: string; color: WarnaChip }> {
+	return ALUR_STATUS_PENGAJUAN.filter((status) => !jenis || status.jenis.includes(jenis)).reduce<
+		Record<string, { label: string; color: WarnaChip }>
+	>((hasil, status) => {
+		hasil[status.value] = { label: status.label, color: status.warna };
+		return hasil;
+	}, {});
+}
+
+/**
+ * Pilihan filter Status.
+ *
+ * Daftarnya mengikuti kategori yang sedang dipilih operator: memilih
+ * **Keberatan** tidak lagi menawarkan "Diverifikasi" atau "Kedaluwarsa", yang
+ * memang tidak pernah dipakai tabel keberatan dan hanya menghasilkan daftar
+ * kosong. Saat kategorinya belum dipilih, status yang cuma berlaku di satu
+ * kategori diberi keterangan supaya jelas ke mana ia menyaring.
+ */
+export function opsiStatusPengajuan(jenis?: string): PilihanOpsi[] {
+	const kategori = jenis === 'permohonan' || jenis === 'keberatan' ? (jenis as JenisPengajuan) : undefined;
+
+	return ALUR_STATUS_PENGAJUAN.filter((status) => !kategori || status.jenis.includes(kategori)).map((status) => {
+		const keterangan: string[] = [];
+
+		if (!kategori && status.jenis.length === 1) {
+			keterangan.push(status.jenis[0] === 'permohonan' ? 'permohonan saja' : 'keberatan saja');
+		}
+
+		if (status.lama) {
+			keterangan.push('kosakata lama');
+		}
+
+		return {
+			value: status.value,
+			label: keterangan.length > 0 ? `${status.label} (${keterangan.join(', ')})` : status.label
+		};
+	});
+}
+
+export const STATUS_PERMOHONAN: Record<string, { label: string; warna: WarnaChip }> = petaStatus('permohonan');
 
 export const TRANSISI_PERMOHONAN: Record<string, string[]> = {
 	diajukan: ['diverifikasi', 'diproses', 'ditolak', 'kedaluwarsa'],
@@ -44,14 +139,7 @@ export const TRANSISI_PERMOHONAN: Record<string, string[]> = {
 	kedaluwarsa: []
 };
 
-export const STATUS_KEBERATAN: Record<string, { label: string; warna: WarnaChip }> = {
-	diajukan: { label: 'Diajukan', warna: 'info' },
-	diproses: { label: 'Diproses', warna: 'warning' },
-	revisi: { label: 'Revisi', warna: 'warning' },
-	menunggu_approval: { label: 'Menunggu Persetujuan', warna: 'warning' },
-	ditolak: { label: 'Ditolak', warna: 'error' },
-	selesai: { label: 'Selesai', warna: 'success' }
-};
+export const STATUS_KEBERATAN: Record<string, { label: string; warna: WarnaChip }> = petaStatus('keberatan');
 
 export const TRANSISI_KEBERATAN: Record<string, string[]> = {
 	diajukan: ['diproses', 'ditolak'],

@@ -63,7 +63,7 @@
                         @error('komentar')<p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="flex items-center gap-4">
+                    <div class="flex flex-wrap items-center gap-4">
                         <button type="submit" class="{{ $btnClass }}">{{ __('Kirim Penilaian') }}</button>
                         <a href="{{ route('akun.dashboard') }}" class="text-sm font-semibold text-[#10462F] dark:text-[#3E9C6C] hover:underline">{{ __('Batal') }}</a>
                     </div>
