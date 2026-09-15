@@ -170,3 +170,8 @@ Berikut dibawah ini adalah poin-poin dari hasil testing dari user yang mana perl
       Kiriman tanpa token sengaja tetap dilayani. Penjagaan ini menahan klik ganda yang tidak disengaja; pengiriman beruntun yang disengaja adalah urusan pembatas laju dan `PerisaiFormulir`, dan menolak kiriman tanpa token hanya akan mematikan formulir lama yang masih terbuka di peramban pemohon saat deploy berjalan.
       Uji baru: `fe-ppid/tests/Feature/SekaliKirimPengajuanTest.php` (8 kasus) — kedua formulir membawa token dan penanda tombol, token berganti tiap formulir dibuka, token sama hanya tersimpan sekali pada permohonan maupun keberatan, token berbeda tetap tersimpan sendiri-sendiri, gagal validasi tidak menghanguskan token, dan kiriman tanpa token tetap dilayani. Seluruh suite fe-ppid: 157 lulus.
       **Deploy:** tanpa migrasi. `deploy:fe` saja — aset JS dibangun pipeline lewat `build:fe-assets`.
+16. [x] pada fe-ppid di halaman https://ppid.foodstation.co.id/regulasi tolong dihapus Tombol Lihatnya
+      Dilepas dari `resources/views/ppid/regulation.blade.php`. Jalan ke dokumennya tidak ikut hilang: seluruh kartu memang sudah menjadi tautan ke halaman rincian regulasi — judulnya dilebarkan lewat `::after` ke sekartu penuh — jadi tombol itu hanya mengulang jalan yang sama.
+      Keterangan **"Belum tersedia"** tetap dipasang pada baris yang belum punya dokumen maupun berkas; syaratnya ditulis ulang (`@elseif` menjadi `@if` tersendiri) supaya tidak ikut lenyap bersama tombolnya.
+      Uji baru: `fe-ppid/tests/Feature/RegulasiTombolLihatTest.php` (2 kasus) — markup daftarnya tidak lagi memuat tombol itu, dan kartunya tetap tertaut ke rinciannya. Seluruh suite fe-ppid: 159 lulus.
+      **Deploy:** tanpa migrasi. `deploy:fe` saja.
