@@ -1,18 +1,28 @@
-import { lazy } from 'react';
 import { FuseRouteItemType } from '@fuse/utils/FuseUtils';
 import { Navigate } from 'react-router';
+import lazyModul from '@/utils/lazyModul';
 import PpidAuthGuard from './components/PpidAuthGuard';
 
-const PpidDashboard = lazy(() => import('./PpidDashboard'));
-const PpidResourcePage = lazy(() => import('./PpidResourcePage'));
+/*
+ * `lazyModul`, bukan `lazy` biasa: panel yang sudah terbuka sebelum deploy
+ * memegang nama chunk rilis lama, dan meminta berkas yang sudah tidak ada
+ * menjatuhkan halaman dengan "Failed to fetch dynamically imported module"
+ * (UAT poin 17). Pembungkus ini memuat ulang halaman satu kali supaya nama
+ * chunk yang benar terambil.
+ */
+const PpidDashboard = lazyModul(() => import('./PpidDashboard'), 'dashboard');
+const PpidResourcePage = lazyModul(() => import('./PpidResourcePage'), 'resource');
 /** Akun milik petugas sendiri: ubah password mandiri. */
-const PpidAkunPage = lazy(() => import('./PpidAkunPage'));
+const PpidAkunPage = lazyModul(() => import('./PpidAkunPage'), 'akun');
 /**
  * Halaman arsip notifikasi. Komponennya sudah lama ada di `apps/notifications`
  * tetapi tidak pernah punya route, jadi satu-satunya jalan melihat notifikasi
  * adalah lonceng — dan lonceng hanya memuat yang belum dibaca.
  */
-const NotifikasiPage = lazy(() => import('@/app/(control-panel)/apps/notifications/components/views/NotificationsAppView'));
+const NotifikasiPage = lazyModul(
+	() => import('@/app/(control-panel)/apps/notifications/components/views/NotificationsAppView'),
+	'notifikasi'
+);
 
 /**
  * Route panel CMS PPID.

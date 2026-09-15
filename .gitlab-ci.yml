@@ -138,7 +138,20 @@ deploy:adm:
   tags: [ppid-prod]
   needs: ["build:adm"]
   script:
-    - rsync -a --no-g --no-o --no-t --no-p --delete be-ppid/build/ "$DEPLOY_ROOT/be-ppid/build/"
+    # index.html dan berkas non-aset disamakan persis dengan hasil build.
+    - rsync -a --no-g --no-o --no-t --no-p --delete --exclude='assets/***' be-ppid/build/ "$DEPLOY_ROOT/be-ppid/build/"
+    # `assets/` sengaja TIDAK memakai --delete. Nama berkasnya sudah ber-hash,
+    # jadi rilis baru tidak pernah menimpa berkas rilis lama — sedangkan
+    # menghapusnya mematikan panel yang sedang terbuka di peramban petugas:
+    # halaman lama masih memegang nama chunk lama dan memuatnya baru saat
+    # menunya diklik, sehingga jawabannya 404 dan React menjatuhkan
+    # "Failed to fetch dynamically imported module" (UAT poin 17).
+    - rsync -a --no-g --no-o --no-t --no-p be-ppid/build/assets/ "$DEPLOY_ROOT/be-ppid/build/assets/"
+    # Berkas milik rilis ini ditandai waktu sekarang, lalu chunk yang sudah
+    # lebih dari 14 hari tidak ikut rilis mana pun dibuang — tanpa ini
+    # foldernya tumbuh selamanya.
+    - (cd be-ppid/build/assets && find . -type f -exec touch "$DEPLOY_ROOT/be-ppid/build/assets/{}" \;)
+    - find "$DEPLOY_ROOT/be-ppid/build/assets" -type f -mtime +14 -delete
     - sudo chown -R www-data:www-data "$DEPLOY_ROOT/be-ppid/build"
   environment:
     name: production/adm
