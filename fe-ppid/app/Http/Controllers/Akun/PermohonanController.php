@@ -9,6 +9,7 @@ use App\Models\PermohonanTanggapanFile;
 use App\Support\Cms;
 use App\Support\EmailPemohon;
 use App\Support\NotifikasiAdmin;
+use App\Support\SekaliKirim;
 use App\Support\SlaLayanan;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
@@ -147,6 +148,18 @@ class PermohonanController extends Controller
             'pernyataan_benar' => ['accepted'],
         ]);
 
+        /*
+         * Klik ganda pada tombol Kirim berhenti di sini.
+         *
+         * Diletakkan sesudah validasi supaya kiriman yang isiannya keliru tidak
+         * ikut membakar tokennya: formulir yang kembali dengan pesan kesalahan
+         * harus tetap bisa dikirim setelah dibetulkan.
+         */
+        if (!SekaliKirim::klaim($request, 'permohonan')) {
+            return redirect()->route('akun.permohonan.index')
+                ->with('status', $this->pesanKiriminUlang($request));
+        }
+
         if ($data['format_informasi'] === 'hardcopy' && $data['cara_pengiriman'] !== 'ambil_langsung') {
             $data['cara_pengiriman'] = 'ambil_langsung';
         }
@@ -202,8 +215,14 @@ class PermohonanController extends Controller
         } catch (\Throwable $e) {
             Log::error('[PPID] Gagal menyimpan permohonan portal: '.$e->getMessage());
 
+            // Tidak ada berkas yang tersimpan, jadi kuncinya dilepas: pemohon
+            // menekan Kirim sekali lagi pada formulir yang sama.
+            SekaliKirim::lepas($request, 'permohonan');
+
             return back()->withInput()->with('status', __('Permohonan gagal disimpan. Coba lagi beberapa saat lagi.'));
         }
+
+        SekaliKirim::catat($request, 'permohonan', $permohonan->kode_permohonan);
 
         /*
          * Di luar transaksi, dan galatnya ditelan.
@@ -229,6 +248,21 @@ class PermohonanController extends Controller
 
         return redirect()->route('akun.permohonan.index')
             ->with('status', __('Permohonan terkirim dengan nomor registrasi :kode.', ['kode' => $permohonan->kode_permohonan]));
+    }
+
+    /**
+     * Kabar untuk kiriman kembar: berkasnya sudah masuk, tidak dikirim dua kali.
+     *
+     * Bukan pesan galat — bagi pemohon klik gandanya memang berhasil, dan
+     * menyebutnya kegagalan hanya membuatnya mencoba lagi.
+     */
+    private function pesanKiriminUlang(Request $request): string
+    {
+        $kode = SekaliKirim::hasil($request, 'permohonan');
+
+        return $kode
+            ? __('Permohonan ini sudah terkirim dengan nomor registrasi :kode, jadi tidak dikirim ulang.', ['kode' => $kode])
+            : __('Permohonan ini sudah kami terima dan sedang diproses, jadi tidak dikirim ulang.');
     }
 
     public function show(int $permohonan): View

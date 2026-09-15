@@ -8,6 +8,7 @@ use App\Models\KeberatanInformasi;
 use App\Models\PermohonanInformasi;
 use App\Support\EmailPemohon;
 use App\Support\NotifikasiAdmin;
+use App\Support\SekaliKirim;
 use App\Support\SlaLayanan;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
@@ -109,6 +110,16 @@ class KeberatanController extends Controller
             ]);
         }
 
+        /*
+         * Klik ganda berhenti di sini — sesudah validasi dan sesudah permohonan
+         * induknya diperiksa, supaya kiriman yang memang ditolak tidak ikut
+         * membakar tokennya. Lihat App\Support\SekaliKirim.
+         */
+        if (!SekaliKirim::klaim($request, 'keberatan')) {
+            return redirect()->route('akun.keberatan.index')
+                ->with('status', $this->pesanKiriminUlang($request));
+        }
+
         try {
             $keberatan = DB::transaction(function () use ($request, $data, $pemohon, $permohonan) {
                 $keberatan = KeberatanInformasi::create([
@@ -155,6 +166,8 @@ class KeberatanController extends Controller
         } catch (\Throwable $e) {
             Log::error('[PPID] Gagal menyimpan keberatan portal: '.$e->getMessage());
 
+            SekaliKirim::lepas($request, 'keberatan');
+
             return back()->withInput()->with('status', __('Keberatan gagal disimpan. Coba lagi beberapa saat lagi.'));
         }
 
@@ -163,6 +176,8 @@ class KeberatanController extends Controller
         // di memori — lonceng panel maupun surel tanda terima sama-sama
         // mencetak nomor itu.
         $keberatan->refresh();
+
+        SekaliKirim::catat($request, 'keberatan', $keberatan->kode_keberatan);
 
         /*
          * Di luar transaksi, dan galatnya ditelan — alasannya sama seperti pada
@@ -183,6 +198,16 @@ class KeberatanController extends Controller
 
         return redirect()->route('akun.keberatan.index')
             ->with('status', __('Keberatan Anda sudah kami terima dengan nomor registrasi :kode.', ['kode' => $keberatan->kode_keberatan]));
+    }
+
+    /** Kabar untuk kiriman kembar: berkasnya sudah masuk, tidak dikirim dua kali. */
+    private function pesanKiriminUlang(Request $request): string
+    {
+        $kode = SekaliKirim::hasil($request, 'keberatan');
+
+        return $kode
+            ? __('Keberatan ini sudah terkirim dengan nomor registrasi :kode, jadi tidak dikirim ulang.', ['kode' => $kode])
+            : __('Keberatan ini sudah kami terima dan sedang diproses, jadi tidak dikirim ulang.');
     }
 
     /**

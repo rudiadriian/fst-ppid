@@ -30,9 +30,13 @@
 
             {{-- Field lain dikunci sampai permohonan dipilih: keberatan tanpa
                  permohonan induk tidak punya dasar. --}}
+            {{-- `data-sekali-kirim`: unggahan lampiran membuat jeda kirimnya
+                 panjang, jadi justru di sinilah klik kedua paling mungkin
+                 terjadi. Lihat App\Support\SekaliKirim. --}}
             <form method="POST" action="{{ route('akun.keberatan.store') }}" enctype="multipart/form-data" class="space-y-6"
-                  x-data="{ dipilih: '{{ old('permohonan_id') }}' }">
+                  data-sekali-kirim x-data="{ dipilih: '{{ old('permohonan_id') }}' }">
                 @csrf
+                @include('akun.partials.sekali-kirim')
 
                 <div>
                     <label for="permohonan_id" class="{{ $fsLabel }}">{{ __('Pilih Permohonan Informasi') }} <span class="text-red-600">*</span></label>
@@ -77,8 +81,11 @@
                     </label>
 
                     <div class="flex flex-wrap items-center gap-4 pt-2">
-                        <button type="submit" class="{{ $fsBtn }}">{{ __('Ajukan Keberatan') }}</button>
-                        <a href="{{ route('akun.keberatan.index') }}" class="text-sm font-semibold text-[#10462F] dark:text-[#3E9C6C] hover:underline">{{ __('Batal') }}</a>
+                        <button type="submit" class="{{ $fsBtn }} gap-2" data-kirim data-label-sibuk="{{ __('Mengirim…') }}">
+                            <span data-putaran class="hidden h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true"></span>
+                            <span data-label>{{ __('Ajukan Keberatan') }}</span>
+                        </button>
+                        <a href="{{ route('akun.keberatan.index') }}" data-batal class="text-sm font-semibold text-[#10462F] dark:text-[#3E9C6C] hover:underline">{{ __('Batal') }}</a>
                     </div>
                 </fieldset>
             </form>

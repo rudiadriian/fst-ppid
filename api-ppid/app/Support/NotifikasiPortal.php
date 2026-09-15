@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Log;
  * dibaca pemohon di `/akun`, bukan petugas di panel.
  *
  * Cakupannya lebih luas daripada email pemberitahuan ({@see EmailPemohon}).
- * Email hanya dikirim pada dua tahap besar karena kuota SMTP terbatas;
+ * Email hanya dikirim pada tiga tahap besar (diterima, selesai, ditolak)
+ * karena kuota SMTP terbatas;
  * lonceng tidak punya batasan itu, jadi setiap perpindahan status, setiap
  * berkas tanggapan, dan setiap keputusan verifikasi ikut diberitahukan —
  * termasuk keterangan petugas yang memang ditujukan ke pemohon (alasan
@@ -289,10 +290,16 @@ class NotifikasiPortal
         return $nomor !== '' ? $nomor : '(tanpa nomor)';
     }
 
+    /**
+     * Rincian pengajuannya sendiri, bukan daftarnya.
+     *
+     * Keberatan sempat diarahkan ke `/akun/keberatan` karena belum punya
+     * halaman rincian; sejak halaman itu ada, tautan ke daftar hanya membuat
+     * pemohon mencari sendiri baris mana yang dimaksud — sementara alasan
+     * penolakan dan tanggapan atasan tertulis di rinciannya.
+     */
     private static function tautan(Model $pengajuan, bool $keberatan): string
     {
-        return $keberatan
-            ? '/akun/keberatan'
-            : '/akun/permohonan/'.$pengajuan->getKey();
+        return ($keberatan ? '/akun/keberatan/' : '/akun/permohonan/').$pengajuan->getKey();
     }
 }

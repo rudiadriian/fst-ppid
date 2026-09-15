@@ -13,10 +13,15 @@ use Illuminate\Support\Facades\Mail;
 /**
  * Email pemberitahuan ke pemohon dari sisi panel admin.
  *
- * Hanya dua peristiwa yang dikirim dari sini — pengajuan DITERIMA petugas dan
- * SELESAI ditangani. Tanda terima "berhasil dikirim" sudah dikirim aplikasi
- * situs saat formulirnya tersimpan, dan pergeseran status internal lain
- * sengaja tidak mengirim email supaya kuota SMTP tidak habis.
+ * Hanya tiga peristiwa yang dikirim dari sini — pengajuan DITERIMA petugas,
+ * SELESAI ditangani, dan DITOLAK. Tanda terima "berhasil dikirim" sudah
+ * dikirim aplikasi situs saat formulirnya tersimpan, dan pergeseran status
+ * internal lain sengaja tidak mengirim email supaya kuota SMTP tidak habis.
+ *
+ * Penolakan ikut disurati karena ia menutup perkara sama seperti Selesai, dan
+ * UU KIP menuntut penolakan disampaikan kepada pemohon beserta alasannya —
+ * bukan sekadar tercatat di portal yang belum tentu dibuka. Tanpa surel ini
+ * tenggat keberatan (atau sengketa) mulai berjalan tanpa pemohon tahu.
  *
  * Kegagalan kirim tidak boleh menggagalkan perubahan status yang sudah
  * tersimpan: setiap galat dicatat di log lalu diabaikan.
@@ -27,21 +32,28 @@ class EmailPemohon
 
     public const TAHAP_SELESAI = 'selesai';
 
+    public const TAHAP_DITOLAK = 'ditolak';
+
     /**
      * Status yang memicu email, per jenis pengajuan.
      *
      * Permohonan memakai `diverifikasi` sebagai penanda "berkas diperiksa dan
      * diterima"; keberatan tidak punya status itu sehingga `diproses` yang
-     * dipakai.
+     * dipakai. Ditolak sebagian ikut disurati sebagai penolakan: sebagian
+     * informasinya tidak diberikan, dan hak keberatan pemohon berlaku atas
+     * bagian itu.
      */
     public const PEMICU_PERMOHONAN = [
         'diverifikasi' => self::TAHAP_DITERIMA,
         'selesai' => self::TAHAP_SELESAI,
+        'ditolak' => self::TAHAP_DITOLAK,
+        'ditolak_sebagian' => self::TAHAP_DITOLAK,
     ];
 
     public const PEMICU_KEBERATAN = [
         'diproses' => self::TAHAP_DITERIMA,
         'selesai' => self::TAHAP_SELESAI,
+        'ditolak' => self::TAHAP_DITOLAK,
     ];
 
     /**
@@ -295,13 +307,20 @@ class EmailPemohon
             $keberatan = $pengajuan instanceof KeberatanInformasi;
             $jenis = $keberatan ? 'Keberatan Informasi' : 'Permohonan Informasi';
             $nomor = self::nomor($pengajuan, $keberatan);
-            $subjek = self::subjek($tahap, $jenis, $nomor);
+            $sebagian = $tahap === self::TAHAP_DITOLAK && $pengajuan->status === 'ditolak_sebagian';
+            $subjek = self::subjek($tahap, $jenis, $nomor, $sebagian);
+
+            $baris = self::baris($pengajuan, $keberatan, $nomor);
+
+            if ($tahap === self::TAHAP_DITOLAK) {
+                $baris += self::barisPenolakan($pengajuan, $keberatan);
+            }
 
             self::antre((string) $pemohon->email, new StatusLayananMail($subjek, [
-                'judul' => ($tahap === self::TAHAP_SELESAI ? 'Pengajuan Selesai' : 'Pengajuan Diterima').' — '.$jenis,
+                'judul' => self::judul($tahap, $sebagian).' — '.$jenis,
                 'nama' => filled($pemohon->nama) ? $pemohon->nama : 'Pemohon',
-                'paragraf' => self::paragraf($tahap, $jenis, $nomor, $keberatan),
-                'baris' => self::baris($pengajuan, $keberatan, $nomor),
+                'paragraf' => self::paragraf($tahap, $jenis, $nomor, $keberatan, $sebagian),
+                'baris' => $baris,
                 'catatan' => self::catatan($tahap, $keberatan),
                 'url' => self::url($pengajuan, $keberatan),
                 'labelTombol' => 'Lihat di Portal Pemohon',
@@ -329,15 +348,45 @@ class EmailPemohon
         return (string) ($pengajuan->kode_keberatan ?? '-');
     }
 
-    protected static function subjek(string $tahap, string $jenis, string $nomor): string
+    protected static function subjek(string $tahap, string $jenis, string $nomor, bool $sebagian = false): string
     {
-        return $tahap === self::TAHAP_SELESAI
-            ? "{$jenis} {$nomor} telah selesai"
-            : "{$jenis} {$nomor} diterima PPID";
+        return match ($tahap) {
+            self::TAHAP_SELESAI => "{$jenis} {$nomor} telah selesai",
+            self::TAHAP_DITOLAK => "{$jenis} {$nomor} ".($sebagian ? 'ditolak sebagian' : 'ditolak'),
+            default => "{$jenis} {$nomor} diterima PPID",
+        };
+    }
+
+    protected static function judul(string $tahap, bool $sebagian): string
+    {
+        return match ($tahap) {
+            self::TAHAP_SELESAI => 'Pengajuan Selesai',
+            self::TAHAP_DITOLAK => $sebagian ? 'Pengajuan Ditolak Sebagian' : 'Pengajuan Ditolak',
+            default => 'Pengajuan Diterima',
+        };
+    }
+
+    /**
+     * Alasan penolakan dan — pada keberatan — batas mengajukan sengketa.
+     *
+     * Alasannya dibaca dari kolom yang memang ditujukan ke pemohon:
+     * `alasan_penolakan` pada permohonan, `tanggapan_atasan_ppid` pada
+     * keberatan. Catatan internal petugas tidak pernah ikut.
+     *
+     * @return array<string, string>
+     */
+    protected static function barisPenolakan(Model $pengajuan, bool $keberatan): array
+    {
+        $alasan = $keberatan ? $pengajuan->tanggapan_atasan_ppid : $pengajuan->alasan_penolakan;
+
+        return array_filter([
+            'Alasan penolakan' => filled($alasan) ? (string) $alasan : 'Silakan hubungi petugas PPID.',
+            'Batas pengajuan sengketa' => $keberatan ? self::tanggal($pengajuan->batas_waktu_sengketa) : '',
+        ], fn ($nilai) => $nilai !== '');
     }
 
     /** @return array<int, string> */
-    protected static function paragraf(string $tahap, string $jenis, string $nomor, bool $keberatan): array
+    protected static function paragraf(string $tahap, string $jenis, string $nomor, bool $keberatan, bool $sebagian = false): array
     {
         $instansi = config('ppid.kontak.instansi');
 
@@ -357,6 +406,16 @@ class EmailPemohon
                 "Pengajuan {$jenis} Anda dengan nomor registrasi {$nomor} telah SELESAI ditangani PPID {$instansi}.",
                 'Tanggapan beserta lampirannya (bila ada) dapat dilihat dan diunduh melalui Portal Pemohon.',
             ];
+        }
+
+        if ($tahap === self::TAHAP_DITOLAK) {
+            $putusan = $sebagian ? 'DITOLAK SEBAGIAN' : 'DITOLAK';
+
+            return array_values(array_filter([
+                "Dengan menyesal kami sampaikan bahwa pengajuan {$jenis} Anda dengan nomor registrasi {$nomor} {$putusan} oleh PPID {$instansi}.",
+                $sebagian ? 'Sebagian informasi yang Anda minta tidak dapat diberikan.' : null,
+                'Alasan penolakan tercantum di bawah dan dapat dilihat kembali pada rincian pengajuan di Portal Pemohon.',
+            ]));
         }
 
         return [
@@ -419,6 +478,15 @@ class EmailPemohon
     /** @return array<int, string> */
     protected static function catatan(string $tahap, bool $keberatan): array
     {
+        if ($tahap === self::TAHAP_DITOLAK) {
+            // Penolakan membuka hak jenjang berikutnya: keberatan atas
+            // permohonan (Pasal 35–36 UU KIP), sengketa atas keberatan
+            // (Pasal 37). Surat penolakan tanpa hak itu hanya menutup pintu.
+            return $keberatan
+                ? ['Bila Anda tidak menerima tanggapan ini, Anda dapat mengajukan sengketa informasi ke Komisi Informasi paling lambat 14 (empat belas) hari kerja sejak tanggapan diterima.']
+                : ['Bila Anda tidak menerima alasan penolakan ini, Anda dapat mengajukan keberatan melalui Portal Pemohon paling lambat 30 (tiga puluh) hari kerja sejak pemberitahuan ini diterima.'];
+        }
+
         if ($tahap !== self::TAHAP_SELESAI) {
             return [];
         }
@@ -435,12 +503,11 @@ class EmailPemohon
         ];
     }
 
+    /** Rincian pengajuannya sendiri — di sanalah tanggapan dan alasan penolakan terbaca. */
     protected static function url(Model $pengajuan, bool $keberatan): string
     {
         $situs = rtrim((string) config('ppid.situs_url'), '/');
 
-        return $keberatan
-            ? $situs.'/akun/keberatan'
-            : $situs.'/akun/permohonan/'.$pengajuan->getKey();
+        return $situs.($keberatan ? '/akun/keberatan/' : '/akun/permohonan/').$pengajuan->getKey();
     }
 }

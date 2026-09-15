@@ -15,9 +15,12 @@
             ({{ $pemohon->email }}). {{ __('Data pemohon mengikuti akun Anda, jadi tidak perlu diisi ulang.') }}
         </p>
 
-        <form method="POST" action="{{ route('akun.permohonan.store') }}" class="space-y-6"
+        {{-- `data-sekali-kirim`: tombol Kirim terkunci begitu formulir dikirim,
+             dan isian tokennya menahan berkas kedua di server. --}}
+        <form method="POST" action="{{ route('akun.permohonan.store') }}" class="space-y-6" data-sekali-kirim
               x-data="{ salinan: '{{ old('format_informasi', 'softcopy') }}' }">
             @csrf
+            @include('akun.partials.sekali-kirim')
 
             {{-- Permohonan yang berangkat dari satu dokumen berunduhan terbatas
                  (langkah 83). Nomornya ikut terkirim supaya persetujuan petugas
@@ -136,8 +139,11 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-4 pt-2">
-                <button type="submit" class="{{ $fsBtn }}">{{ __('Kirim Permohonan') }}</button>
-                <a href="{{ route('akun.permohonan.index') }}" class="text-sm font-semibold text-[#10462F] dark:text-[#3E9C6C] hover:underline">{{ __('Batal') }}</a>
+                <button type="submit" class="{{ $fsBtn }} gap-2" data-kirim data-label-sibuk="{{ __('Mengirim…') }}">
+                    <span data-putaran class="hidden h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true"></span>
+                    <span data-label>{{ __('Kirim Permohonan') }}</span>
+                </button>
+                <a href="{{ route('akun.permohonan.index') }}" data-batal class="text-sm font-semibold text-[#10462F] dark:text-[#3E9C6C] hover:underline">{{ __('Batal') }}</a>
             </div>
         </form>
     </div>

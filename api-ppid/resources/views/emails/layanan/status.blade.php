@@ -2,9 +2,9 @@
     /*
      * Pemberitahuan status pengajuan layanan (permohonan informasi & keberatan).
      *
-     * Dipakai untuk tiga peristiwa saja — terkirim, diterima petugas, dan
-     * selesai — supaya kotak masuk pemohon tidak dibanjiri setiap pergeseran
-     * status internal.
+     * Dipakai untuk empat peristiwa saja — terkirim, diterima petugas,
+     * selesai, dan ditolak — supaya kotak masuk pemohon tidak dibanjiri setiap
+     * pergeseran status internal.
      *
      * Variabel: judul, preheader, nama, paragraf[], baris[], catatan[], url,
      * labelTombol. Nilai bawaan di bawah menjaga view tetap bisa dirender

@@ -61,10 +61,10 @@ export function KeberatanTanggapanPanel({
 		setTanggapan(tanggapanAwal ?? '');
 	}, [keberatanId, statusSekarang, tanggapanAwal]);
 
-	// Keberatan yang dinyatakan selesai wajib punya tanggapan: itu jawaban
-	// resmi yang dibaca pemohon, dan tanpa isinya status "selesai" tidak
-	// berarti apa-apa baginya.
-	const perluTanggapan = status === 'selesai';
+	// Keberatan yang dinyatakan selesai atau ditolak wajib punya tanggapan: itu
+	// jawaban resmi yang dibaca pemohon — pada penolakan sekaligus alasannya,
+	// yang ikut dikirim lewat lonceng dan surel.
+	const perluTanggapan = status === 'selesai' || status === 'ditolak';
 	const pilihan = [statusSekarang, ...tujuan];
 
 	// Terkunci penuh selama jenjang berjalan (langkah 100): perpindahan

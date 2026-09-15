@@ -106,6 +106,22 @@ class KeberatanController extends CrudController
         }
 
         /*
+         * Penolakan wajib bertanggapan, sejajar dengan `alasan_penolakan` pada
+         * permohonan: tanggapan itulah alasan yang sampai ke pemohon lewat
+         * lonceng dan surel, dan dasar ia menimbang sengketa ke Komisi
+         * Informasi. Tanggapan yang sudah tersimpan sebelumnya ikut dihitung.
+         */
+        $tanggapan = array_key_exists('tanggapan_atasan_ppid', $data)
+            ? $data['tanggapan_atasan_ppid']
+            : $keberatan->tanggapan_atasan_ppid;
+
+        if ($statusBaru === 'ditolak' && $statusBaru !== $statusLama && blank($tanggapan)) {
+            throw ValidationException::withMessages([
+                'tanggapan_atasan_ppid' => 'Tanggapan atasan PPID wajib diisi saat menolak keberatan.',
+            ]);
+        }
+
+        /*
          * Selama satu tahap persetujuan masih menunggu, perpindahan status
          * bukan lagi milik dropdown ini — milik putusan penyetujunya
          * (langkah 100). Sebelumnya yang dijaga hanya putusan akhir dari
