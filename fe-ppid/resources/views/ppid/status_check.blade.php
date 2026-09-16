@@ -77,7 +77,7 @@
                     <div class="flex flex-col sm:flex-row gap-3">
                         <input x-model="form.registration_number" type="text" required
                             class="flex-grow px-4 py-3.5 bg-gray-50 border border-gray-200 dark:border-white/10 rounded-xl focus:bg-white dark:bg-[#0B2A1D] focus:border-[#10462F] focus:ring-2 focus:ring-[#10462F]/15 outline-none transition-all text-base font-mono uppercase"
-                            placeholder="{{ __('Contoh: PPID-FSTJ/20251010/1234') }}">
+                            placeholder="{{ __('Contoh: PPID-FSTJ/202609/001') }}">
                         <button type="submit" :disabled="isSearching"
                             class="inline-flex items-center justify-center py-3.5 px-7 fs-gradient-accent text-white text-base font-semibold rounded-xl shadow-lg shadow-emerald-900/20 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70">
                             <svg x-show="isSearching" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>

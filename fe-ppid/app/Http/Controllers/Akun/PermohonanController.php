@@ -179,7 +179,11 @@ class PermohonanController extends Controller
 
         try {
             $permohonan = DB::transaction(fn () => PermohonanInformasi::create([
-                'kode_permohonan' => $this->kodeBaru(),
+                // `kode_permohonan` sengaja tidak diisi: nomornya dilahirkan
+                // trigger basis data, satu-satunya tempat aturan penomoran
+                // tinggal. Portal dan panel admin sama-sama menyimpan
+                // permohonan; dua penghasil nomor berarti cepat atau lambat
+                // keduanya berbeda tafsir dan deretnya bertabrakan.
                 'pemohon_id' => $pemohon->id,
                 'informasi_publik_id' => $dokumen?->id,
                 'rincian_informasi' => $data['rincian_informasi'],
@@ -221,6 +225,12 @@ class PermohonanController extends Controller
 
             return back()->withInput()->with('status', __('Permohonan gagal disimpan. Coba lagi beberapa saat lagi.'));
         }
+
+        // refresh() wajib dan harus lebih dulu: kode_permohonan dilahirkan
+        // trigger basis data, jadi baris yang baru saja dibuat belum memuatnya
+        // di memori — tanda terima, lonceng panel, dan surel sama-sama
+        // mencetak nomor itu.
+        $permohonan->refresh();
 
         SekaliKirim::catat($request, 'permohonan', $permohonan->kode_permohonan);
 
@@ -366,23 +376,4 @@ class PermohonanController extends Controller
         return in_array($per, self::PER_HALAMAN, true) ? $per : 10;
     }
 
-    /**
-     * Nomor registrasi unik: PPID-FSTJ/<tanggal>/<urutan harian>.
-     * Baris hari itu dikunci di dalam transaksi supaya dua pengajuan
-     * bersamaan tidak mendapat nomor yang sama.
-     */
-    private function kodeBaru(): string
-    {
-        $prefix = 'PPID-FSTJ/'.now()->format('Ymd').'/';
-
-        $terakhir = PermohonanInformasi::withTrashed()
-            ->where('kode_permohonan', 'like', $prefix.'%')
-            ->lockForUpdate()
-            ->orderByDesc('kode_permohonan')
-            ->value('kode_permohonan');
-
-        $urutan = $terakhir ? ((int) substr($terakhir, strlen($prefix))) + 1 : 1;
-
-        return $prefix.str_pad((string) $urutan, 4, '0', STR_PAD_LEFT);
-    }
 }
