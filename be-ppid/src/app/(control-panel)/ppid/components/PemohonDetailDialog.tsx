@@ -194,19 +194,44 @@ export function PemohonDetailDialog({ open, onClose, pemohonId, bolehVerifikasi 
 	const queryClient = useQueryClient();
 	const { enqueueSnackbar } = useSnackbar();
 
-	useEffect(() => {
-		if (open) {
-			setStatus('terverifikasi');
-			setCatatan('');
-		}
-	}, [open, pemohonId]);
-
 	const statusSekarang = String(pemohon?.status_verifikasi ?? 'belum');
 	const ditolakSekarang = Number(pemohon?.jumlah_ditolak ?? 0);
 	const sisaKesempatan = Math.max(0, BATAS_DITOLAK - ditolakSekarang);
 	const sudahDiblokir = sisaKesempatan === 0;
 	const sudahTerverifikasi = statusSekarang === 'terverifikasi';
+
+	/*
+	 * Kelengkapan datanya dihitung server (`Pemohon::WAJIB_VERIFIKASI`), bukan
+	 * diterka ulang di sini: panel dan server harus menyebut daftar kekurangan
+	 * yang sama, kalau tidak tombolnya hidup sementara penyimpanannya ditolak.
+	 */
+	const kekurangan = Array.isArray(pemohon?.kekurangan_data) ? (pemohon.kekurangan_data as string[]) : [];
+	const dataLengkap = pemohon ? Boolean(pemohon.data_lengkap) : true;
+
+	/*
+	 * Persetujuan atas data yang belum lengkap tidak pernah sah, jadi masih bisa
+	 * dicabut. Begitu datanya lengkap, penguncian biasa berlaku lagi.
+	 */
+	const bolehCabutPersetujuan = sudahTerverifikasi && !dataLengkap;
 	const menolak = status === 'ditolak';
+
+	let labelAksi = t('Setujui Data');
+
+	if (menolak) {
+		labelAksi = bolehCabutPersetujuan ? t('Cabut Persetujuan') : t('Tolak Data');
+	}
+
+	useEffect(() => {
+		if (!open) {
+			return;
+		}
+
+		// Berkas yang datanya belum lengkap hanya punya satu keputusan yang
+		// mungkin; memasang "Terverifikasi" sebagai pilihan awal di situ hanya
+		// menuntun petugas ke tombol yang akan ditolak server.
+		setStatus(dataLengkap ? 'terverifikasi' : 'ditolak');
+		setCatatan('');
+	}, [open, pemohonId, dataLengkap]);
 
 	async function kirim() {
 		if (!pemohonId) {
@@ -222,10 +247,15 @@ export function PemohonDetailDialog({ open, onClose, pemohonId, bolehVerifikasi 
 			});
 
 			await queryClient.invalidateQueries({ queryKey: resourceKeys.all('pemohon') });
-			enqueueSnackbar(
-				menolak ? t('Data pemohon ditolak.') : t('Data pemohon dinyatakan terverifikasi.'),
-				{ variant: menolak ? 'warning' : 'success' }
-			);
+			let pesanBerhasil = t('Data pemohon dinyatakan terverifikasi.');
+
+			if (menolak) {
+				pesanBerhasil = bolehCabutPersetujuan
+					? t('Persetujuan dicabut. Pemohon dapat melengkapi datanya kembali.')
+					: t('Data pemohon ditolak.');
+			}
+
+			enqueueSnackbar(pesanBerhasil, { variant: menolak ? 'warning' : 'success' });
 			onClose();
 		} catch (error) {
 			const pesan =
@@ -363,6 +393,32 @@ export function PemohonDetailDialog({ open, onClose, pemohonId, bolehVerifikasi 
 							<>
 								<Divider />
 
+								{!dataLengkap && (
+									<Alert severity="warning">
+										<Typography
+											variant="body2"
+											className="font-medium"
+										>
+											{t('Data Pemohon belum lengkap sehingga belum dapat disetujui.')}
+										</Typography>
+										<Typography variant="body2">
+											{t('Belum terisi')}: {kekurangan.map((item) => t(item)).join(', ')}.
+										</Typography>
+										<Typography
+											variant="body2"
+											className="mt-1"
+										>
+											{sudahTerverifikasi
+												? t(
+														'Persetujuan sebelumnya masih bisa dicabut: tolak berkasnya dengan menyebut apa yang kurang, agar pemohon dapat melengkapinya.'
+													)
+												: t(
+														'Tolak berkasnya dengan menyebut apa yang kurang agar pemohon dapat melengkapinya.'
+													)}
+										</Typography>
+									</Alert>
+								)}
+
 								{sudahDiblokir ? (
 									<Alert severity="error">
 										{t('Pemohon ini sudah ditolak :batas kali dan tidak dapat mengirim berkas lagi.').replace(
@@ -386,16 +442,21 @@ export function PemohonDetailDialog({ open, onClose, pemohonId, bolehVerifikasi 
 									onChange={(event) => setStatus(event.target.value)}
 									fullWidth
 								>
-									<MenuItem value="terverifikasi">{t('Terverifikasi')}</MenuItem>
+									<MenuItem
+										value="terverifikasi"
+										disabled={!dataLengkap}
+									>
+										{t('Terverifikasi')}
+									</MenuItem>
 									<MenuItem
 										value="ditolak"
-										disabled={sudahDiblokir || sudahTerverifikasi}
+										disabled={(sudahDiblokir || sudahTerverifikasi) && !bolehCabutPersetujuan}
 									>
 										{t('Ditolak')}
 									</MenuItem>
 								</TextField>
 
-								{sudahTerverifikasi && (
+								{sudahTerverifikasi && dataLengkap && (
 									<Alert severity="info">
 										{t('Data yang sudah terverifikasi tidak dapat ditolak dari sini.')}
 									</Alert>
@@ -431,11 +492,18 @@ export function PemohonDetailDialog({ open, onClose, pemohonId, bolehVerifikasi 
 					<Button
 						variant="contained"
 						color={menolak ? 'error' : 'secondary'}
-						disabled={menyimpan || isLoading || (menolak && !catatan.trim())}
+						disabled={
+							menyimpan ||
+							isLoading ||
+							(menolak && !catatan.trim()) ||
+							// Tombol Setujui mati selama datanya belum lengkap —
+							// pagar yang sama ditegakkan server.
+							(!menolak && !dataLengkap)
+						}
 						onClick={kirim}
 						startIcon={menyimpan ? <CircularProgress size={16} /> : undefined}
 					>
-						{menolak ? t('Tolak Data') : t('Setujui Data')}
+						{labelAksi}
 					</Button>
 				)}
 			</DialogActions>

@@ -68,16 +68,28 @@ class NotifikasiPanelTest extends TestCase
         ])->assertOk()->json('access_token');
     }
 
+    /**
+     * Datanya sengaja lengkap: sejak langkah 90 berkas yang isiannya belum
+     * lengkap memang tidak bisa disetujui (lihat {@see VerifikasiDataPemohonTest}),
+     * sedangkan yang diuji di sini adalah pemberitahuannya.
+     */
     private function pemohon(): Pemohon
     {
-        return Pemohon::create([
+        $pemohon = new Pemohon;
+
+        $pemohon->forceFill([
             'nama' => "Pemohon Uji $this->tanda",
             'email' => 'pemohon.'.Str::lower($this->tanda).'@uji.test',
             'password' => Hash::make($this->password),
             'jenis_pemohon' => 'pribadi',
             'nik' => '3175010101900091',
+            'pekerjaan' => 'Karyawan',
+            'alamat' => "Alamat uji $this->tanda",
+            'file_ktp' => 'uploads/ktp/uji-'.$this->tanda.'.jpg',
             'status_verifikasi' => 'menunggu',
-        ]);
+        ])->save();
+
+        return $pemohon;
     }
 
     public function test_putusan_verifikasi_yang_diulang_tidak_menggandakan_pemberitahuan(): void
@@ -135,14 +147,19 @@ class NotifikasiPanelTest extends TestCase
         $token = $this->token($this->akun('ppid-utama'));
 
         $tautan = function (string $status, ?string $catatan) use ($token): string {
-            $pemohon = Pemohon::create([
+            $pemohon = new Pemohon;
+
+            $pemohon->forceFill([
                 'nama' => "Pemohon $status $this->tanda",
                 'email' => Str::lower($status).'.'.Str::lower($this->tanda).'@uji.test',
                 'password' => Hash::make($this->password),
                 'jenis_pemohon' => 'pribadi',
                 'nik' => '3175010101900093',
+                'pekerjaan' => 'Karyawan',
+                'alamat' => "Alamat uji $this->tanda",
+                'file_ktp' => 'uploads/ktp/uji-'.Str::lower($status).'-'.$this->tanda.'.jpg',
                 'status_verifikasi' => 'menunggu',
-            ]);
+            ])->save();
 
             $this->withToken($token)
                 ->postJson("/api/v1/pemohon/{$pemohon->id}/verifikasi", array_filter([

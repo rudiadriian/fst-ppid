@@ -50,6 +50,20 @@ const kamusPpid: Record<string, string> = {
 	'Verifikasi gagal disimpan': 'Failed to save the verification',
 	'Data yang sudah terverifikasi tidak dapat ditolak dari sini.':
 		'Data that is already verified cannot be rejected from here.',
+	'Cabut Persetujuan': 'Revoke approval',
+	'Persetujuan dicabut. Pemohon dapat melengkapi datanya kembali.':
+		'Approval revoked. The applicant can complete their data again.',
+	'Data Pemohon belum lengkap sehingga belum dapat disetujui.':
+		'The applicant data is incomplete, so it cannot be approved yet.',
+	'Belum terisi': 'Still empty',
+	'Tolak berkasnya dengan menyebut apa yang kurang agar pemohon dapat melengkapinya.':
+		'Reject the submission and say what is missing so the applicant can complete it.',
+	'Persetujuan sebelumnya masih bisa dicabut: tolak berkasnya dengan menyebut apa yang kurang, agar pemohon dapat melengkapinya.':
+		'The earlier approval can still be revoked: reject the submission and say what is missing so the applicant can complete it.',
+	// Label kekurangan data; dikirim server dari `Pemohon::WAJIB_VERIFIKASI`.
+	// Sisanya (Nama, Jenis pemohon, Pekerjaan, Alamat, Nama lembaga, Berkas
+	// KTP) sudah ada di kamus ini.
+	'NIK (16 digit angka)': 'ID number (16 digits)',
 	'Ditampilkan kepada pemohon agar ia tahu apa yang harus diperbaiki.':
 		'Shown to the applicant so they know what to fix.',
 	'Pemohon ini sudah ditolak :batas kali dan tidak dapat mengirim berkas lagi.':

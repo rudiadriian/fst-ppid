@@ -109,9 +109,20 @@ class PemohonController extends CrudController
      * mengirim ulang berkasnya lagi (aturan itu ditegakkan di situs publik,
      * lihat `Akun\PengaturanController`).
      *
-     * Berkas yang sudah disetujui tidak bisa ditolak belakangan lewat endpoint
-     * ini — membalik keputusan berarti mencabut layanan yang mungkin sudah
-     * berjalan, jadi itu urusan yang harus disengaja, bukan salah klik.
+     * Dua pagar yang berpasangan:
+     *
+     * 1. **Data yang belum lengkap tidak bisa disetujui.** Verifikasi menjawab
+     *    "identitas pemohon ini sudah jelas"; tanpa NIK, alamat, atau berkas
+     *    KTP tidak ada yang bisa dinyatakan jelas. Persetujuan semacam itu
+     *    membuka layanan atas identitas yang tidak pernah diperiksa.
+     * 2. **Persetujuan yang telanjur diberikan atas data tak lengkap masih
+     *    bisa dicabut.** Berkas yang sudah disetujui memang tidak boleh
+     *    ditolak belakangan — membalik keputusan berarti mencabut layanan yang
+     *    mungkin sudah berjalan. Tetapi persetujuan atas data yang belum
+     *    lengkap tidak pernah sah sejak awal, dan menguncinya berarti satu
+     *    salah klik menutup berkas itu selamanya: pemohon tidak bisa
+     *    memperbaiki apa pun (isiannya terkunci selama berstatus
+     *    terverifikasi) dan petugas tidak bisa membatalkannya.
      */
     public function verifikasi(Request $request, int $id): JsonResponse
     {
@@ -127,13 +138,34 @@ class PemohonController extends CrudController
             'catatan.required' => 'Alasan penolakan wajib diisi agar pemohon tahu apa yang harus diperbaiki.',
         ]);
 
-        if ($pemohon->status_verifikasi === 'terverifikasi' && $data['status'] === 'ditolak') {
+        $dataLengkap = $pemohon->data_lengkap;
+
+        if ($data['status'] === 'terverifikasi' && !$dataLengkap) {
+            throw ValidationException::withMessages([
+                'status' => 'Data Pemohon belum lengkap sehingga belum dapat disetujui. Belum terisi: '
+                    .implode(', ', $pemohon->kekurangan_data).'.',
+            ]);
+        }
+
+        /*
+         * Pencabutan persetujuan yang tidak pernah sah. Hanya mungkin selama
+         * datanya memang belum lengkap; begitu lengkap, penguncian lama berlaku
+         * lagi.
+         */
+        $mencabutPersetujuan = $pemohon->status_verifikasi === 'terverifikasi'
+            && $data['status'] === 'ditolak'
+            && !$dataLengkap;
+
+        if ($pemohon->status_verifikasi === 'terverifikasi' && $data['status'] === 'ditolak' && $dataLengkap) {
             throw ValidationException::withMessages([
                 'status' => 'Data yang sudah terverifikasi tidak dapat ditolak dari sini.',
             ]);
         }
 
-        if ($pemohon->verifikasi_diblokir && $data['status'] === 'ditolak') {
+        // Pencabutan dilewatkan: yang dihitung pagar ini adalah berkas yang
+        // ditolak setelah diperiksa, dan pencabutan di bawah memang tidak
+        // menaikkan hitungan itu.
+        if ($pemohon->verifikasi_diblokir && $data['status'] === 'ditolak' && !$mencabutPersetujuan) {
             throw ValidationException::withMessages([
                 'status' => 'Pemohon ini sudah ditolak '.Pemohon::BATAS_DITOLAK.' kali dan tidak dapat mengirim berkas lagi.',
             ]);
@@ -170,7 +202,13 @@ class PemohonController extends CrudController
         $pemohon->tanggal_verifikasi = now();
         $pemohon->diverifikasi_oleh = Auth::guard('api')->id();
 
-        if ($data['status'] === 'ditolak') {
+        /*
+         * Pencabutan tidak memakan jatah kirim ulang pemohon: berkasnya belum
+         * pernah diperiksa dan ditolak — yang salah adalah persetujuannya.
+         * Membebankan satu penolakan di situ berarti menghukum pemohon atas
+         * salah klik petugas.
+         */
+        if ($data['status'] === 'ditolak' && !$mencabutPersetujuan) {
             $pemohon->jumlah_ditolak = (int) $pemohon->jumlah_ditolak + 1;
         }
 
