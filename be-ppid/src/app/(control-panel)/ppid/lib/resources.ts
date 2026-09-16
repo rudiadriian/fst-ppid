@@ -221,8 +221,8 @@ export const resources: ResourceConfig[] = [
 				maxLength: 500,
 				help: 'Alamat salinan yang DIUNDUH, dipakai bila salinannya sudah tersedia di tempat lain sehingga tidak perlu diunggah ulang lewat Lampiran dokumen di bawah. Alamat ini tidak pernah ditampilkan di daftar: pengunjung baru diantar ke sana setelah permohonannya atas dokumen ini Anda setujui. Bila Lampiran dokumen terisi, berkas itu yang dikirim dan alamat ini diabaikan.'
 			},
-			{ name: 'konten', label: 'Isi informasi', type: 'richtext', span: 2 },
-			{ name: 'konten_en', label: 'Isi informasi (English)', type: 'richtext', span: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
+			{ name: 'konten', label: 'Isi informasi', type: 'richtext', span: 2, upload: { folder: 'informasi-publik', jenis: 'gambar' } },
+			{ name: 'konten_en', label: 'Isi informasi (English)', type: 'richtext', span: 2, upload: { folder: 'informasi-publik', jenis: 'gambar' }, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{
 				name: 'files',
 				label: 'Lampiran dokumen',
@@ -650,8 +650,8 @@ export const resources: ResourceConfig[] = [
 			},
 			{ name: 'ringkasan', label: 'Ringkasan', type: 'textarea', span: 2, rows: 3 },
 			{ name: 'ringkasan_en', label: 'Ringkasan (English)', type: 'textarea', span: 2, rows: 3, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
-			{ name: 'konten', label: 'Isi berita', type: 'richtext', span: 2 },
-			{ name: 'konten_en', label: 'Isi berita (English)', type: 'richtext', span: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
+			{ name: 'konten', label: 'Isi berita', type: 'richtext', span: 2, upload: { folder: 'berita', jenis: 'gambar' } },
+			{ name: 'konten_en', label: 'Isi berita (English)', type: 'richtext', span: 2, upload: { folder: 'berita', jenis: 'gambar' }, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 		],
 		filters: [{ name: 'status', label: 'Status', type: 'select', options: STATUS_KONTEN }]
 	},
@@ -725,8 +725,8 @@ export const resources: ResourceConfig[] = [
 		fields: [
 			{ name: 'pertanyaan', label: 'Pertanyaan', type: 'textarea', required: true, span: 2, rows: 2 },
 			{ name: 'pertanyaan_en', label: 'Pertanyaan (English)', type: 'textarea', span: 2, rows: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
-			{ name: 'jawaban', label: 'Jawaban', type: 'richtext', required: true, span: 2 },
-			{ name: 'jawaban_en', label: 'Jawaban (English)', type: 'richtext', span: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
+			{ name: 'jawaban', label: 'Jawaban', type: 'richtext', required: true, span: 2, upload: { folder: 'umum', jenis: 'gambar' } },
+			{ name: 'jawaban_en', label: 'Jawaban (English)', type: 'richtext', span: 2, upload: { folder: 'umum', jenis: 'gambar' }, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'kategori', label: 'Kategori', type: 'text', maxLength: 100 },
 			{ name: 'kategori_en', label: 'Kategori (English)', type: 'text', maxLength: 100, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'urutan', label: 'Urutan', type: 'number', min: 0, defaultValue: 0 },
@@ -948,8 +948,8 @@ export const resources: ResourceConfig[] = [
 			{ name: 'judul', label: 'Judul halaman', type: 'text', required: true, maxLength: 255 },
 			{ name: 'judul_en', label: 'Judul halaman (English)', type: 'text', maxLength: 255, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'slug', label: 'Slug', type: 'text', help: 'Menentukan URL di situs publik. Kosongkan agar dibuat otomatis.' },
-			{ name: 'konten', label: 'Isi halaman', type: 'richtext', span: 2 },
-			{ name: 'konten_en', label: 'Isi halaman (English)', type: 'richtext', span: 2, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
+			{ name: 'konten', label: 'Isi halaman', type: 'richtext', span: 2, upload: { folder: 'umum', jenis: 'gambar' } },
+			{ name: 'konten_en', label: 'Isi halaman (English)', type: 'richtext', span: 2, upload: { folder: 'umum', jenis: 'gambar' }, help: 'Opsional. Dipakai saat pengunjung memilih bahasa Inggris; bila kosong, teks Indonesia yang tampil.' },
 			{ name: 'is_active', label: 'Aktif', type: 'boolean', defaultValue: true }
 		]
 	},

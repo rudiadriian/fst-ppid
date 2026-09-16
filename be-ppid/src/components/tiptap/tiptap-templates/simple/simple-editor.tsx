@@ -25,6 +25,7 @@ import { Toolbar, ToolbarGroup, ToolbarSeparator } from '@/components/tiptap/tip
 
 // --- Tiptap Node ---
 import { ImageUploadNode } from '@/components/tiptap/tiptap-node/image-upload-node/image-upload-node-extension';
+import type { UploadFunction } from '@/components/tiptap/tiptap-node/image-upload-node/image-upload-node-extension';
 import '@/components/tiptap/tiptap-node/code-block-node/code-block-node.scss';
 import '@/components/tiptap/tiptap-node/list-node/list-node.scss';
 import '@/components/tiptap/tiptap-node/image-node/image-node.scss';
@@ -62,6 +63,14 @@ interface SimpleEditorProps {
 	onChange?: (value: string) => void;
 	error?: string;
 	required?: boolean;
+	/**
+	 * Pengunggah gambar sisipan. Mengembalikan URL yang siap dipakai sebagai
+	 * `src`, jadi pemanggilnya yang menentukan ke mana berkasnya disimpan —
+	 * penyunting ini tidak tahu apa-apa soal API.
+	 */
+	uploadImage?: UploadFunction;
+	/** Dipanggil saat unggahan gagal, mis. untuk memunculkan notifikasi. */
+	onUploadError?: (error: Error) => void;
 }
 
 const MainToolbarContent = ({
@@ -154,7 +163,7 @@ const MobileToolbarContent = ({ type, onBack }: { type: 'highlighter' | 'link'; 
 	</>
 );
 
-export function SimpleEditor({ value, onChange, error, className }: SimpleEditorProps) {
+export function SimpleEditor({ value, onChange, error, className, uploadImage, onUploadError }: SimpleEditorProps) {
 	const isMobile = useMobile();
 	const windowSize = useWindowSize();
 	const [mobileView, setMobileView] = React.useState<'main' | 'highlighter' | 'link'>('main');
@@ -165,6 +174,20 @@ export function SimpleEditor({ value, onChange, error, className }: SimpleEditor
 		height: 0
 	});
 	const toolbarRef = React.useRef<HTMLDivElement>(null);
+
+	/*
+	 * Editor tiptap dibangun sekali; opsi extension-nya tidak ikut berubah saat
+	 * komponen dirender ulang. Pengunggah dan penangan galatnya karena itu
+	 * dibaca lewat ref, supaya keduanya boleh berupa fungsi baru tiap render
+	 * tanpa membuat editor memakai versi yang basi.
+	 */
+	const uploadRef = React.useRef<UploadFunction>(uploadImage ?? handleImageUpload);
+	const errorRef = React.useRef<SimpleEditorProps['onUploadError']>(onUploadError);
+
+	React.useEffect(() => {
+		uploadRef.current = uploadImage ?? handleImageUpload;
+		errorRef.current = onUploadError;
+	}, [uploadImage, onUploadError]);
 
 	React.useEffect(() => {
 		const updateRect = () => {
@@ -216,8 +239,15 @@ export function SimpleEditor({ value, onChange, error, className }: SimpleEditor
 				accept: 'image/*',
 				maxSize: MAX_FILE_SIZE,
 				limit: 3,
-				upload: handleImageUpload,
-				onError: (error) => console.error('Upload failed:', error)
+				upload: (file, onProgress, signal) => uploadRef.current(file, onProgress, signal),
+				onError: (error) => {
+					if (errorRef.current) {
+						errorRef.current(error);
+						return;
+					}
+
+					console.error('Upload failed:', error);
+				}
 			}),
 			TrailingNode,
 			Link.configure({ openOnClick: false })

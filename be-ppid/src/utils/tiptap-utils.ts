@@ -21,27 +21,30 @@ export const isNodeInSchema = (nodeName: string, editor: Editor | null) =>
 	editor?.schema.spec.nodes.get(nodeName) !== undefined;
 
 /**
- * Handles image upload with progress tracking and abort capability
+ * Pengunggah gambar bawaan: berkasnya ditanam sebagai data URL.
+ *
+ * Dipakai penyunting yang tidak diberi pengunggah sendiri (mis. contoh di
+ * halaman dokumentasi). Sebelumnya fungsi ini memalsukan kemajuan unggahan lalu
+ * mengembalikan `/images/placeholder-image.png` — berkas yang tidak pernah ada
+ * di `public/`, jadi gambar yang disisipkan selalu tampil rusak dan gambar
+ * aslinya hilang tanpa pesan apa pun.
+ *
+ * Modul CMS tidak memakai ini: data URL membengkakkan kolom HTML-nya, jadi
+ * di sana `SimpleEditor` diberi `uploadImage` yang menyimpan berkasnya lewat
+ * API dan mengembalikan URL biasa.
  */
 export const handleImageUpload = async (
-	_file: File,
+	file: File,
 	onProgress?: (event: { progress: number }) => void,
 	abortSignal?: AbortSignal
 ): Promise<string> => {
-	// Simulate upload progress
-	for (let progress = 0; progress <= 100; progress += 10) {
-		if (abortSignal?.aborted) {
-			throw new Error('Upload cancelled');
-		}
+	onProgress?.({ progress: 0 });
 
-		await new Promise((resolve) => setTimeout(resolve, 500));
-		onProgress?.({ progress });
-	}
+	const dataUrl = await convertFileToBase64(file, abortSignal);
 
-	return '/images/placeholder-image.png';
+	onProgress?.({ progress: 100 });
 
-	// Uncomment to use actual file conversion:
-	// return convertFileToBase64(file, abortSignal)
+	return dataUrl;
 };
 
 /**

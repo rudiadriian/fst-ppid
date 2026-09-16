@@ -33,7 +33,10 @@ export type FieldConfig = {
 	options?: PilihanOpsi[];
 	/** Untuk type 'relation': ambil opsi dari resource lain. */
 	relation?: { resource: string; labelKey: string };
-	/** Untuk type 'file' | 'image' | 'files'. */
+	/**
+	 * Untuk type 'file' | 'image' | 'files'; pada 'richtext' hanya `folder`
+	 * yang dipakai, sebagai tujuan gambar yang disisipkan di dalam teks.
+	 */
 	upload?: { folder: string; jenis: 'gambar' | 'dokumen' | 'dokumen_gambar' | 'video' };
 	help?: string;
 	rows?: number;

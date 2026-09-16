@@ -197,10 +197,19 @@ export const ppidApi = {
 		}
 	},
 
+	/**
+	 * Unggah satu berkas ke `v1/uploads`.
+	 *
+	 * `onProgress` dan `signal` dipakai penyunting teks kaya: gambar disisipkan
+	 * di tengah pengetikan, jadi kemajuannya perlu terlihat dan unggahannya
+	 * perlu bisa dibatalkan saat blok gambarnya dihapus sebelum selesai.
+	 */
 	async upload(
 		file: File,
 		folder: string,
-		jenis: 'gambar' | 'dokumen' | 'dokumen_gambar' | 'video'
+		jenis: 'gambar' | 'dokumen' | 'dokumen_gambar' | 'video',
+		onProgress?: (persen: number) => void,
+		signal?: AbortSignal
 	): Promise<{ path: string; url: string; nama_file: string; ukuran_file: number; tipe_file: string }> {
 		const form = new FormData();
 		form.append('file', file);
@@ -209,7 +218,12 @@ export const ppidApi = {
 
 		try {
 			const hasil = await api
-				.post('v1/uploads', { body: form, timeout: 120_000 })
+				.post('v1/uploads', {
+					body: form,
+					timeout: 120_000,
+					signal,
+					onUploadProgress: onProgress ? ({ percent }) => onProgress(Math.round(percent * 100)) : undefined
+				})
 				.json<{ data: { path: string; url: string; nama_file: string; ukuran_file: number; tipe_file: string } }>();
 
 			return hasil.data;

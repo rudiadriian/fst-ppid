@@ -5,10 +5,13 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
+import { useCallback } from 'react';
+import { useSnackbar } from 'notistack';
 import { SimpleEditor } from '@/components/tiptap/tiptap-templates/simple/simple-editor';
 import { FieldConfig } from '../lib/types';
 import { useRelationOptions } from '../api/useResource';
-import { LampiranBerkas, MultiUploadField, UploadField } from './UploadField';
+import ppidApi, { PpidApiError } from '../api/ppidApi';
+import { LampiranBerkas, MultiUploadField, UploadField, urlMedia } from './UploadField';
 
 type ResourceFieldProps = {
 	field: FieldConfig;
@@ -24,7 +27,42 @@ type ResourceFieldProps = {
  */
 export function ResourceField({ field, control, disabled }: ResourceFieldProps) {
 	const { t } = useTranslation();
+	const { enqueueSnackbar } = useSnackbar();
 	const perluRelasi = field.type === 'relation' && Boolean(field.relation);
+
+	/*
+	 * Gambar yang disisipkan di dalam teks kaya lewat jalur unggah yang sama
+	 * dengan berkas lampiran: satu endpoint, satu daftar putih ekstensi, satu
+	 * jejak audit. Yang masuk ke HTML adalah URL berkasnya — bukan data URL —
+	 * supaya kolom kontennya tidak membengkak dan situs publik bisa meminta
+	 * gambarnya langsung ke penyimpanan media.
+	 */
+	const folderGambar = field.upload?.folder ?? 'umum';
+
+	const unggahGambar = useCallback(
+		async (file: File, onProgress?: (event: { progress: number }) => void, signal?: AbortSignal) => {
+			const hasil = await ppidApi.upload(
+				file,
+				folderGambar,
+				'gambar',
+				(persen) => onProgress?.({ progress: persen }),
+				signal
+			);
+
+			return hasil.url || urlMedia(hasil.path);
+		},
+		[folderGambar]
+	);
+
+	const galatUnggahGambar = useCallback(
+		(error: Error) => {
+			const pesan =
+				error instanceof PpidApiError ? (error.errors.file?.[0] ?? error.message) : 'Gambar gagal diunggah';
+
+			enqueueSnackbar(pesan, { variant: 'error' });
+		},
+		[enqueueSnackbar]
+	);
 	const { data: opsiRelasi, isLoading: memuatRelasi } = useRelationOptions(
 		field.relation?.resource ?? '',
 		field.relation?.labelKey ?? 'nama',
@@ -83,6 +121,8 @@ export function ResourceField({ field, control, disabled }: ResourceFieldProps) 
 								onChange={rhf.onChange}
 								error={pesanError}
 								required={field.required}
+								uploadImage={unggahGambar}
+								onUploadError={galatUnggahGambar}
 								className=""
 							/>
 							{(pesanError || field.help) && (
