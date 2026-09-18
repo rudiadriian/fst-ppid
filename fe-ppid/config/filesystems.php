@@ -45,6 +45,19 @@ return [
         ],
 
         /*
+ * Folder media CMS tempat api-ppid menulis unggahan panel (disk `media`
+ * milik api-ppid). Umumnya sama dengan `public` di atas; kalau di server
+ * api-ppid diarahkan ke folder lain lewat MEDIA_ROOT, isi nilai yang sama
+ * di sini supaya berkas tanggapan petugas bisa ditemukan portal.
+ */
+        'media' => [
+            'driver' => 'local',
+            'root' => env('MEDIA_ROOT') ?: storage_path('app/public'),
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        /*
  * Berkas dokumen yang unduhannya terbatas (langkah 83).
  *
  * Sengaja di luar `storage/app/public`: folder itu ditautkan ke

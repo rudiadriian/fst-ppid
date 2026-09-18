@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\InformasiPublik;
 use App\Models\PermohonanInformasi;
 use App\Models\PermohonanTanggapanFile;
+use App\Support\BerkasPortal;
 use App\Support\Cms;
 use App\Support\EmailPemohon;
 use App\Support\NotifikasiAdmin;
@@ -17,7 +18,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\View;
 
@@ -304,11 +304,7 @@ class PermohonanController extends Controller
         abort_unless($permohonan && $permohonan->pemohon_id === $pemohon->id, 403);
         abort_unless($permohonan->tanggapanTerbukaUntukPemohon(), 403, __('Tanggapan permohonan ini belum diserahkan.'));
 
-        $disk = Storage::disk('public');
-
-        abort_unless($disk->exists($baris->path_file), 404);
-
-        return $disk->download($baris->path_file, $baris->nama_file);
+        return BerkasPortal::unduh($baris->path_file, $baris->nama_file, route('akun.permohonan.show', $permohonan->id));
     }
 
     /** Daftar permohonan milik akun: tab status, pencarian, pengurutan, pagination. */

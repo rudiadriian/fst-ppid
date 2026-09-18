@@ -122,10 +122,14 @@ class BerkasTanggapanPortalTest extends TestCase
             ->assertDownload('Tanggapan.pdf');
     }
 
-    /** Berkas yang barisnya ada tetapi fisiknya hilang dijawab 404, bukan 500. */
-    public function test_berkas_yang_hilang_di_disk_dijawab_404(): void
+    /**
+     * Berkas yang barisnya ada tetapi fisiknya hilang (UAT 21): pemohon
+     * dikembalikan ke rincian permohonan dengan pesan, bukan halaman
+     * "404 | NOT FOUND" kosong.
+     */
+    public function test_berkas_yang_hilang_kembali_ke_rincian_dengan_pesan(): void
     {
-        Storage::fake('public');
+        $this->palsukanDisk();
 
         $pemohon = $this->pemohon('uji-tanggapan-97g@example.test');
         $permohonan = $this->permohonan($pemohon, 'selesai');
@@ -133,6 +137,87 @@ class BerkasTanggapanPortalTest extends TestCase
 
         $this->actingAs($pemohon, 'pemohon')
             ->get(route('akun.permohonan.berkas-tanggapan', $berkas->id))
-            ->assertStatus(404);
+            ->assertRedirect(route('akun.permohonan.show', $permohonan->id))
+            ->assertSessionHasErrors('berkas');
+    }
+
+    /** Nama lampiran tanpa ekstensi diberi ekstensi berkas aslinya. */
+    public function test_nama_unduhan_diberi_ekstensi(): void
+    {
+        $this->palsukanDisk();
+        Storage::disk('public')->put('uploads/permohonan/2026/09/uji-21a.pdf', 'isi');
+
+        $pemohon = $this->pemohon('uji-tanggapan-21a@example.test');
+        $permohonan = $this->permohonan($pemohon, 'selesai');
+        $berkas = PermohonanTanggapanFile::create([
+            'permohonan_id' => $permohonan->id,
+            'nama_file' => 'Laporan tahunan 2025',
+            'path_file' => 'uploads/permohonan/2026/09/uji-21a.pdf',
+        ]);
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->get(route('akun.permohonan.berkas-tanggapan', $berkas->id))
+            ->assertOk()
+            ->assertDownload('Laporan tahunan 2025.pdf');
+    }
+
+    /** Path lama berawalan `storage/` tetap ditemukan. */
+    public function test_path_berawalan_storage_tetap_ditemukan(): void
+    {
+        $this->palsukanDisk();
+        Storage::disk('public')->put('uploads/permohonan/2026/09/uji-21b.pdf', 'isi');
+
+        $pemohon = $this->pemohon('uji-tanggapan-21b@example.test');
+        $permohonan = $this->permohonan($pemohon, 'selesai');
+        $berkas = $this->berkas($permohonan, '/storage/uploads/permohonan/2026/09/uji-21b.pdf');
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->get(route('akun.permohonan.berkas-tanggapan', $berkas->id))
+            ->assertOk()
+            ->assertDownload('Tanggapan.pdf');
+    }
+
+    /**
+     * Berkas yang dipilih dari arsip lalu dipindah ke disk terbatas (atau
+     * ditulis api-ppid ke MEDIA_ROOT lain) tetap bisa diunduh pemiliknya.
+     */
+    public function test_berkas_di_disk_lain_tetap_ditemukan(): void
+    {
+        $this->palsukanDisk();
+        Storage::disk('dokumen_terbatas')->put('uploads/permohonan/2026/09/uji-21c.pdf', 'isi');
+        Storage::disk('media')->put('uploads/permohonan/2026/09/uji-21d.pdf', 'isi');
+
+        $pemohon = $this->pemohon('uji-tanggapan-21c@example.test');
+        $permohonan = $this->permohonan($pemohon, 'selesai');
+        $terbatas = $this->berkas($permohonan, 'uploads/permohonan/2026/09/uji-21c.pdf');
+        $media = $this->berkas($permohonan, 'uploads/permohonan/2026/09/uji-21d.pdf');
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->get(route('akun.permohonan.berkas-tanggapan', $terbatas->id))
+            ->assertOk();
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->get(route('akun.permohonan.berkas-tanggapan', $media->id))
+            ->assertOk();
+    }
+
+    public function test_path_keluar_folder_ditolak(): void
+    {
+        $this->palsukanDisk();
+
+        $pemohon = $this->pemohon('uji-tanggapan-21e@example.test');
+        $permohonan = $this->permohonan($pemohon, 'selesai');
+        $berkas = $this->berkas($permohonan, 'uploads/../../.env');
+
+        $this->actingAs($pemohon, 'pemohon')
+            ->get(route('akun.permohonan.berkas-tanggapan', $berkas->id))
+            ->assertRedirect(route('akun.permohonan.show', $permohonan->id));
+    }
+
+    private function palsukanDisk(): void
+    {
+        Storage::fake('public');
+        Storage::fake('media');
+        Storage::fake('dokumen_terbatas');
     }
 }

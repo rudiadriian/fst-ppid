@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\KeberatanFile;
 use App\Models\KeberatanInformasi;
 use App\Models\PermohonanInformasi;
+use App\Support\BerkasPortal;
 use App\Support\EmailPemohon;
 use App\Support\NotifikasiAdmin;
 use App\Support\SekaliKirim;
@@ -16,7 +17,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -302,10 +302,6 @@ class KeberatanController extends Controller
 
         abort_unless($baris->keberatan && $baris->keberatan->pemohon_id === $pemohon->id, 403);
 
-        $disk = Storage::disk('public');
-
-        abort_unless($disk->exists($baris->path_file), 404);
-
-        return $disk->download($baris->path_file, $baris->nama_file);
+        return BerkasPortal::unduh($baris->path_file, $baris->nama_file, route('akun.keberatan.show', $baris->keberatan->id));
     }
 }
